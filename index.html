@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MinimaK SPM1 anatomy</title>
+<meta name="description" content="An interactive anatomy of the MinimaK SPM1 simple magnetised torus: take it apart, open the vessel, run the glow and see why a purely toroidal field leaks.">
+<style>
+  :root {
+    --paper: #f2f0e9;
+    --card: #fbfaf6;
+    --ink: #1c1c1a;
+    --muted: #6a6962;
+    --rule: #dad7cd;
+    --soft: #efede5;
+    --chip: #e8e5da;
+    --accent: #cf5320;
+    --field: #2b8a6e;
+    --ion: #d9412f;
+    --electron: #2d67cf;
+    --efield: #c99400;
+    --drift: #7a3fd0;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #111110;
+      --card: #191917;
+      --ink: #ebe9e1;
+      --muted: #9c9a91;
+      --rule: #34332e;
+      --soft: #22211e;
+      --chip: #2a2925;
+      --accent: #ff985a;
+      --field: #5fd3a8;
+      --ion: #ff7a66;
+      --electron: #78a8ff;
+      --efield: #ffcf4a;
+      --drift: #c39bff;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #111110;
+    --card: #191917;
+    --ink: #ebe9e1;
+    --muted: #9c9a91;
+    --rule: #34332e;
+    --soft: #22211e;
+    --chip: #2a2925;
+    --accent: #ff985a;
+    --field: #5fd3a8;
+    --ion: #ff7a66;
+    --electron: #78a8ff;
+    --efield: #ffcf4a;
+    --drift: #c39bff;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 16px 72px; }
+  header { display: flex; gap: 16px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; margin-bottom: 18px; }
+  header h1 { font-size: 26px; line-height: 1.15; margin: 0 0 6px; letter-spacing: -0.01em; font-weight: 650; }
+  header p { margin: 0; color: var(--muted); max-width: 64ch; }
+  .theme-btn { flex: none; }
+
+  .card { position: relative; margin: 0; background: var(--card); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; aspect-ratio: 16 / 10; min-height: 360px; }
+  @media (max-width: 720px) { .card { aspect-ratio: 4 / 5; } }
+  .stage { position: absolute; inset: 0; cursor: grab; touch-action: none; outline: none; }
+  .stage.dragging { cursor: grabbing; }
+  .stage.pointing { cursor: pointer; }
+  .stage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 14px; }
+  canvas { display: block; width: 100%; height: 100%; }
+  .corner { position: absolute; font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); pointer-events: none; }
+  .corner.tl { top: 14px; left: 16px; color: var(--ink); }
+  .corner.tr { top: 14px; right: 16px; text-align: right; }
+  .corner.bl { bottom: 10px; left: 12px; max-width: 58%; }
+  .corner.br { bottom: 10px; right: 12px; text-align: right; color: var(--ink); max-width: 40%; }
+  .corner.bl, .corner.br { background: color-mix(in srgb, var(--card) 84%, transparent); padding: 3px 6px; border-radius: 6px; }
+  .corner b { font-weight: 600; color: var(--ink); }
+  @media (max-width: 720px) {
+    .corner.tr { display: none; }
+    .corner.br { top: 30px; bottom: auto; left: 10px; right: auto; text-align: left; max-width: none; color: var(--muted); }
+    .corner.bl { max-width: none; right: 12px; }
+  }
+  .fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; margin-top: 18px; }
+  @media (max-width: 880px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; }
+  .panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  button, .seg label {
+    font: inherit; font-size: 13px; color: var(--ink); background: var(--soft); border: 1px solid var(--rule);
+    border-radius: 999px; padding: 6px 12px; cursor: pointer; line-height: 1.2;
+  }
+  button:hover, .seg label:hover { border-color: var(--muted); }
+  button:focus-visible, .seg input:focus-visible + span, input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  button kbd { font: 11px ui-monospace, Menlo, Consolas, monospace; opacity: 0.6; margin-left: 6px; }
+  .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+  .seg label { border: 0; border-radius: 0; padding: 0; background: transparent; }
+  .seg input { position: absolute; opacity: 0; pointer-events: none; }
+  .seg span { display: block; padding: 6px 12px; }
+  .seg input:checked + span { background: var(--ink); color: var(--card); }
+  .slider { display: grid; grid-template-columns: 128px minmax(0, 1fr) 82px; align-items: center; gap: 10px; margin: 10px 0; font-size: 13px; }
+  .slider output { font: 12px ui-monospace, Menlo, Consolas, monospace; text-align: right; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+
+  table.model { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.model td { padding: 6px 0; border-top: 1px solid var(--rule); vertical-align: top; }
+  table.model td:last-child { text-align: right; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; white-space: nowrap; padding-left: 12px; }
+  table.model .sub { color: var(--muted); font-size: 12px; }
+
+  .info .num { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
+  .info h3 { font-size: 19px; margin: 2px 0 8px; line-height: 1.25; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip { font-size: 11.5px; background: var(--chip); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
+  .chip.basis-spec { color: var(--ink); }
+  .info .spec { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; background: var(--soft); border-radius: 8px; padding: 8px 10px; margin: 0 0 10px; }
+  .info p { margin: 0 0 10px; }
+  .info .know { border-left: 3px solid var(--accent); padding-left: 10px; }
+  .lesson-key { display: none; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .lesson-key.on { display: flex; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .bar { display: inline-block; width: 16px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
+
+  .legend { margin-top: 18px; }
+  .legend .groups { columns: 3 240px; column-gap: 24px; }
+  .legend .grp { break-inside: avoid; margin-bottom: 14px; }
+  .legend h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+  .legend button { display: flex; width: 100%; text-align: left; gap: 10px; align-items: baseline; background: transparent; border: 0; border-radius: 6px; padding: 4px 6px; margin: 0 -6px; font-size: 13.5px; }
+  .legend button:hover, .legend button.hot { background: var(--soft); }
+  .legend button.sel { background: var(--chip); }
+  .legend .n { font: 11.5px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); min-width: 1.8em; }
+  .legend .approx { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .caption { margin-top: 18px; color: var(--muted); font-size: 13px; max-width: 92ch; }
+  .caption a { color: inherit; }
+</style>
+<script type="importmap">
+  { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>MinimaK SPM1, taken apart</h1>
+      <p>The tabletop magnetised torus TU/e is installing. Take it apart, open the vessel, run the glow, and watch why a purely toroidal field cannot hold a plasma.</p>
+    </div>
+    <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch colour theme">Theme</button>
+  </header>
+
+  <figure class="card" id="card">
+    <div class="stage" id="stage" tabindex="0" role="application" aria-label="3D model of the MinimaK SPM1. Drag to turn, scroll to zoom, E to take apart, C to open the vessel, F for field lines, D for the drift lesson.">
+      <canvas id="view"></canvas>
+    </div>
+    <div class="fallback" id="fallback">This figure needs WebGL. The parts list and the physics numbers below still work.</div>
+    <div class="corner tl">Fig 1</div>
+    <div class="corner tr">MinimaK SPM1<br>simple magnetised torus</div>
+    <div class="corner bl" id="hint">Drag to turn · scroll to zoom · E take apart · C open</div>
+    <div class="corner br" id="readout"></div>
+  </figure>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="ctlTitle">
+      <h2 id="ctlTitle">Run it</h2>
+      <div class="row">
+        <button type="button" id="bExplode" aria-pressed="false">Take apart<kbd>E</kbd></button>
+        <button type="button" id="bCut" aria-pressed="true">Open vessel<kbd>C</kbd></button>
+        <button type="button" id="bField" aria-pressed="false">Field lines<kbd>F</kbd></button>
+        <button type="button" id="bDrift" aria-pressed="false">Drift lesson<kbd>D</kbd></button>
+        <button type="button" id="bReset">Reset view<kbd>R</kbd></button>
+      </div>
+      <div class="row">
+        <button type="button" id="bGlow" aria-pressed="true">Discharge 4 kV</button>
+        <div class="seg" role="radiogroup" aria-label="Fill gas">
+          <label><input type="radio" name="gas" value="N2" checked><span>N₂</span></label>
+          <label><input type="radio" name="gas" value="He"><span>He</span></label>
+        </div>
+      </div>
+      <div class="slider"><label for="sTF">TF current, each coil</label><input id="sTF" type="range" min="0" max="40" step="1" value="40"><output id="oTF" for="sTF"></output></div>
+      <div class="slider"><label for="sPF">PF1 + PF2 current</label><input id="sPF" type="range" min="-40" max="40" step="1" value="0"><output id="oPF" for="sPF"></output></div>
+      <div class="slider"><label for="sP">Fill pressure</label><input id="sP" type="range" min="0" max="100" step="1" value="43"><output id="oP" for="sP"></output></div>
+      <p class="note">The glow's brightness, width and height shift are drawn to show the trend, not measured. Every number in the table comes from <span class="mono">model.js</span>.</p>
+      <div class="lesson-key" id="lessonKey">
+        <span><span class="dot" style="background:var(--ion)"></span>ions (+)</span>
+        <span><span class="dot" style="background:var(--electron)"></span>electrons (−)</span>
+        <span><span class="mono" style="color:var(--field)">⊗</span> B, into the page</span>
+        <span><span class="bar" style="background:var(--efield)"></span>E from charge separation</span>
+        <span><span class="bar" style="background:var(--drift)"></span>E×B drift</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="modelTitle">
+      <h2 id="modelTitle">What the model says</h2>
+      <table class="model"><tbody id="modelRows"></tbody></table>
+      <p class="note">Assumes T<sub>e</sub> = 3 eV, T<sub>i</sub> = 0.1 eV, n<sub>e</sub> = 10¹⁶ m⁻³, gas at 300 K and 400 TF turns in all. Same formulas as <span class="mono">minimak-groundwork/docs/primer.md</span>.</p>
+    </section>
+
+    <section class="panel info" id="info" aria-live="polite"></section>
+
+    <section class="panel legend" aria-labelledby="legendTitle" style="margin-top:0">
+      <h2 id="legendTitle">Parts</h2>
+      <div class="groups" id="legend"></div>
+    </section>
+  </div>
+
+  <p class="caption">
+    Fig 1. MinimaK SPM1 by Rideo Systems: four 150 mm stainless elbows bolted into a 460 mm ring (R₀ 23 cm, a 7.5 cm), eight copper TF coils, four PF coils, two satellite coils and a central solenoid on an optical table.
+    Sizes in the spec come from the <a href="https://www.rideosystems.biz/technology">Rideo spec sheet</a>, <a href="https://www.minitmak.com/">minitmak.com</a> and the Oct 2025 Manchester webinar slides. Parts marked <i>approx.</i> are scaled from photos or placed where they are plausible. Check them against the real machine.
+    The drawing style follows <a href="https://github.com/wheresryan22/anatomy">wheresryan22/anatomy</a>.
+  </p>
+</div>
+
+<script src="model.js"></script>
+<script src="parts.js"></script>
+<script src="device.js"></script>
+<script type="module">
+import * as THREE from 'three';
+
+THREE.ColorManagement.enabled = false;
+
+const M = window.MinimakModel;
+const PARTS = window.SPM1_PARTS;
+const partById = new Map(PARTS.map((p) => [p.id, p]));
+const DEG = Math.PI / 180;
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+const $ = (id) => document.getElementById(id);
+const stage = $('stage');
+const canvas = $('view');
+
+// ---------- Theme ----------
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+};
+const systemDark = matchMedia('(prefers-color-scheme: dark)');
+function themeName() {
+  const t = document.documentElement.dataset.theme;
+  return t === 'dark' || t === 'light' ? t : systemDark.matches ? 'dark' : 'light';
+}
+const savedTheme = store.get('spm1-theme');
+if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+
+const TONES = {
+  steel: '#d9dad5', steel2: '#cbcdc8', bolt: '#b3b5b0', copper: '#d79e72', black: '#4a4b4c', ink: '#2b2b29',
+  tape: '#454644', hose: '#3d3e3c', alu: '#dcdedb', slot: '#8f928e', table: '#cfd1cc', hole: '#8a8c88',
+  glass: '#7e95a3', lcd: '#2f3a33', led: '#39463d', brass: '#cfb37a', ceramic: '#f1efe8', tip: '#262624',
+  panel: '#5b5c59', red: '#c9473a', yellow: '#e4bd3d', pink: '#df7aa0', pumpblue: '#7f93a6', oil: '#c99a3c',
+};
+const THEME = {
+  light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#ef6a2c', field: '#2b8a6e', ion: '#d9412f', electron: '#2d67cf', efield: '#c99400', drift: '#7a3fd0', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92 },
+  dark: { paper: '#191917', cut: '#2b2a25', ink: '#e7e5dc', lit: '#ff9a5c', field: '#5fd3a8', ion: '#ff7a66', electron: '#78a8ff', efield: '#ffcf4a', drift: '#c39bff', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.78 },
+};
+function toneColor(name, theme) {
+  const c = new THREE.Color(TONES[name] || '#ff00ff');
+  if (theme === 'dark') {
+    c.multiplyScalar(0.6);
+    const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+    if (l < 0.13) c.lerp(new THREE.Color('#2e2e2c'), 0.5);
+  }
+  return c;
+}
+
+// ---------- Renderer ----------
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+} catch (err) {
+  $('fallback').style.display = 'grid';
+  canvas.style.display = 'none';
+}
+if (renderer) {
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
+  renderer.localClippingEnabled = true;
+}
+
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 50, 1250);
+camera.up.set(0, 0, 1);
+camera.layers.enable(1);
+
+// ---------- Materials ----------
+const shared = {
+  uLight: { value: new THREE.Vector3(-0.42, 0.58, 0.7).normalize() },
+  uCut: { value: new THREE.Color() },
+  uInk: { value: new THREE.Color() },
+  uLitColor: { value: new THREE.Color() },
+  uDpr: { value: 1 },
+};
+
+const VERT = /* glsl */`
+  #include <clipping_planes_pars_vertex>
+  varying vec3 vNv;
+  varying vec3 vNw;
+  void main() {
+    vec4 p = vec4(position, 1.0);
+    vec3 n = normal;
+    #ifdef USE_INSTANCING
+      p = instanceMatrix * p;
+      n = mat3(instanceMatrix) * n;
+    #endif
+    vec4 mvPosition = modelViewMatrix * p;
+    vNv = normalize(normalMatrix * n);
+    vNw = normalize(mat3(modelMatrix) * n);
+    gl_Position = projectionMatrix * mvPosition;
+    #include <clipping_planes_vertex>
+  }
+`;
+
+const FRAG_COLOR = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  uniform vec3 uColor;
+  uniform vec3 uLitColor;
+  uniform float uLit;
+  uniform vec3 uEmit;
+  uniform vec3 uLight;
+  uniform vec3 uCut;
+  uniform vec3 uInk;
+  uniform float uDpr;
+  varying vec3 vNv;
+  varying vec3 vNw;
+  void main() {
+    #include <clipping_planes_fragment>
+    if (!gl_FrontFacing) {
+      float h = step(mod(gl_FragCoord.x - gl_FragCoord.y, 6.0 * uDpr), 1.0 * uDpr);
+      gl_FragColor = vec4(mix(uCut, uInk, h * 0.5), 1.0);
+      return;
+    }
+    vec3 n = normalize(vNv);
+    float k = dot(n, uLight);
+    float w = smoothstep(-0.4, 1.0, k);
+    float top = smoothstep(0.6, 1.0, vNw.z);
+    float tone = mix(0.66, 1.05, w) + 0.06 * top;
+    vec3 c = uColor * tone;
+    c = mix(c, uLitColor, uLit);
+    gl_FragColor = vec4(c + uEmit, 1.0);
+  }
+`;
+
+const FRAG_INK = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  uniform float uId;
+  varying vec3 vNv;
+  varying vec3 vNw;
+  void main() {
+    #include <clipping_planes_fragment>
+    if (!gl_FrontFacing) { gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0); return; }
+    gl_FragColor = vec4(normalize(vNv) * 0.5 + 0.5, uId);
+  }
+`;
+
+const clipPlanes = [new THREE.Plane(new THREE.Vector3(0, 0, -1), 1e6), new THREE.Plane(), new THREE.Plane()];
+const SECTOR = [-12, 102];
+clipPlanes[1].set(new THREE.Vector3(Math.sin(SECTOR[0] * DEG), -Math.cos(SECTOR[0] * DEG), 0), 0);
+clipPlanes[2].set(new THREE.Vector3(-Math.sin(SECTOR[1] * DEG), Math.cos(SECTOR[1] * DEG), 0), 0);
+
+const colorMats = new Map();
+function colorMat(tone, clip) {
+  const key = `${tone}|${clip ? 1 : 0}`;
+  if (colorMats.has(key)) return colorMats.get(key);
+  const m = new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) },
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uDpr: shared.uDpr,
+    },
+    vertexShader: VERT, fragmentShader: FRAG_COLOR, side: THREE.DoubleSide, clipping: true,
+  });
+  if (clip) { m.clippingPlanes = clipPlanes; m.clipIntersection = true; }
+  m.userData.tone = tone;
+  colorMats.set(key, m);
+  return m;
+}
+function inkMat(clip) {
+  const m = new THREE.ShaderMaterial({ uniforms: { uId: { value: 0 } }, vertexShader: VERT, fragmentShader: FRAG_INK, side: THREE.DoubleSide, clipping: true });
+  m.userData.ink = true;
+  if (clip) { m.clippingPlanes = clipPlanes; m.clipIntersection = true; }
+  return m;
+}
+const INK = { clip: inkMat(true), free: inkMat(false) };
+
+const solids = [];
+const partMeshes = new Map();
+let nextInk = 0;
+const ZERO = new THREE.Color(0, 0, 0);
+
+function perMesh(r, s, c, g, material) {
+  const u = material.uniforms;
+  if (material.userData.ink) u.uId.value = this.userData.inkId;
+  else { u.uLit.value = this.userData.lit; u.uEmit.value.copy(this.userData.emit); }
+  material.uniformsNeedUpdate = true;
+}
+function register(mesh, tone, o) {
+  mesh.userData.part = o.part;
+  mesh.userData.tone = tone;
+  mesh.userData.lit = 0;
+  mesh.userData.emit = ZERO.clone();
+  mesh.userData.clip = !!o.clip;
+  mesh.userData.colorMat = mesh.material;
+  mesh.userData.inkMat = o.clip ? INK.clip : INK.free;
+  mesh.userData.inkId = ((nextInk++ % 250) + 2) / 255;
+  mesh.onBeforeRender = perMesh;
+  solids.push(mesh);
+  if (!partMeshes.has(o.part)) partMeshes.set(o.part, []);
+  partMeshes.get(o.part).push(mesh);
+}
+function paint(geometry, tone, o) {
+  const mesh = new THREE.Mesh(geometry, colorMat(tone, o.clip));
+  register(mesh, tone, o);
+  return mesh;
+}
+paint.instanced = (geometry, tone, matrices, o) => {
+  const mesh = new THREE.InstancedMesh(geometry, colorMat(tone, o.clip), matrices.length);
+  matrices.forEach((m, i) => mesh.setMatrixAt(i, m));
+  mesh.instanceMatrix.needsUpdate = true;
+  mesh.computeBoundingSphere();
+  register(mesh, tone, o);
+  return mesh;
+};
+
+// ---------- Build the machine ----------
+const dev = window.SPM1Device.build(THREE, paint);
+scene.add(dev.root);
+const R0 = dev.dims.R0;
+for (const m of solids) {
+  if (m.userData.sameInkAs) m.userData.inkId = partMeshes.get(m.userData.sameInkAs)[0].userData.inkId;
+}
+const groupByName = new Map(dev.groups.map((g) => [g.obj.name, g]));
+for (const g of dev.groups) g.p = 0;
+
+// ---------- Plasma glow, field lines, drift particles, arrows, floor shadow (layer 1, no ink) ----------
+const GLOW_VERT = /* glsl */`
+  uniform float uR0;
+  uniform float uMinor;
+  uniform float uShiftZ;
+  uniform float uShiftR;
+  varying vec3 vNv;
+  varying float vPhi;
+  void main() {
+    float phi = atan(position.y, position.x);
+    vec3 c = vec3(uR0 * cos(phi), uR0 * sin(phi), 0.0);
+    vec3 p = c + (position - c) * uMinor;
+    p += vec3(cos(phi), sin(phi), 0.0) * uShiftR + vec3(0.0, 0.0, uShiftZ);
+    vNv = normalize(normalMatrix * normal);
+    vPhi = phi;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+  }
+`;
+const GLOW_FRAG = /* glsl */`
+  uniform vec3 uCore;
+  uniform vec3 uRim;
+  uniform float uI;
+  uniform float uStri;
+  uniform float uTime;
+  varying vec3 vNv;
+  varying float vPhi;
+  void main() {
+    float f = abs(normalize(vNv).z);
+    float core = pow(f, 1.6);
+    float s = 1.0 - uStri * 0.32 * (0.5 - 0.5 * cos(vPhi * 28.0 - uTime * 1.3));
+    float a = clamp(uI * (0.16 + 0.84 * core) * s, 0.0, 0.95);
+    gl_FragColor = vec4(mix(uRim, uCore, core * core), a);
+  }
+`;
+function glowMaterial(scale) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uR0: { value: R0 }, uMinor: { value: 5 }, uShiftZ: { value: 0 }, uShiftR: { value: 0 },
+      uCore: { value: new THREE.Color() }, uRim: { value: new THREE.Color() }, uI: { value: 0 }, uStri: { value: 0 }, uTime: { value: 0 },
+    },
+    vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthWrite: false, userData: { scale },
+  });
+}
+const torusUnit = new THREE.TorusGeometry(R0, 1, 40, 320);
+const glow = [glowMaterial(1), glowMaterial(1.45)].map((mat, i) => {
+  const mesh = new THREE.Mesh(torusUnit, mat);
+  mesh.layers.set(1);
+  mesh.renderOrder = 2 + i;
+  scene.add(mesh);
+  return mesh;
+});
+
+const fieldGroup = new THREE.Group();
+scene.add(fieldGroup);
+const FIELD_FRAG = /* glsl */`
+  uniform vec3 uColor;
+  uniform float uAlpha;
+  uniform float uPhase;
+  uniform float uN;
+  varying vec2 vUv;
+  void main() {
+    float d = fract(vUv.x * uN - uPhase);
+    float on = smoothstep(0.0, 0.06, d) * (1.0 - smoothstep(0.52, 0.58, d));
+    gl_FragColor = vec4(uColor, uAlpha * (0.2 + 0.8 * on));
+  }
+`;
+const FIELD_VERT = /* glsl */`
+  varying vec2 vUv;
+  void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`;
+const fieldLines = [];
+{
+  const aw = 6.2, n = 8;
+  for (const z of [0]) {
+    for (let k = 0; k < n; k++) {
+      const R = (R0 - aw) * Math.pow((R0 + aw) / (R0 - aw), k / (n - 1));
+      const mat = new THREE.ShaderMaterial({
+        uniforms: { uColor: { value: new THREE.Color() }, uAlpha: { value: 0 }, uPhase: { value: Math.random() }, uN: { value: Math.round((2 * Math.PI * R) / 4.5) } },
+        vertexShader: FIELD_VERT, fragmentShader: FIELD_FRAG, transparent: true, depthWrite: false,
+      });
+      const mesh = new THREE.Mesh(new THREE.TorusGeometry(R, 0.17, 8, 360), mat);
+      mesh.position.z = z;
+      mesh.layers.set(1);
+      mesh.renderOrder = 4;
+      fieldGroup.add(mesh);
+      fieldLines.push({ mesh, mat, R, z });
+    }
+  }
+}
+
+const PARTICLE_N = 360;
+const LESSON_PHI = [84, 100];
+const LESSON_FACE = 102;
+const particles = (() => {
+  const pos = new Float32Array(PARTICLE_N * 3);
+  const kind = new Float32Array(PARTICLE_N);
+  const seeds = [];
+  for (let i = 0; i < PARTICLE_N; i++) {
+    kind[i] = i % 2;
+    const rho = Math.sqrt(Math.random()) * 4.3, psi = Math.random() * Math.PI * 2;
+    seeds.push({ phi: LESSON_PHI[0] + Math.random() * (LESSON_PHI[1] - LESSON_PHI[0]), dR: rho * Math.cos(psi), z: rho * Math.sin(psi), jitter: Math.random(), gyro: Math.random() * Math.PI * 2 });
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('aKind', new THREE.BufferAttribute(kind, 1));
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uSize: { value: 9 }, uIon: { value: new THREE.Color() }, uEl: { value: new THREE.Color() }, uAlpha: { value: 0 } },
+    vertexShader: /* glsl */`
+      attribute float aKind;
+      uniform float uSize;
+      varying float vKind;
+      void main() { vKind = aKind; gl_PointSize = uSize; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: /* glsl */`
+      uniform vec3 uIon;
+      uniform vec3 uEl;
+      uniform float uAlpha;
+      varying float vKind;
+      void main() {
+        vec2 q = gl_PointCoord * 2.0 - 1.0;
+        float r = dot(q, q);
+        if (r > 1.0) discard;
+        float h = step(abs(q.y), 0.17) * step(abs(q.x), 0.58);
+        float v = step(abs(q.x), 0.17) * step(abs(q.y), 0.58);
+        float glyph = vKind > 0.5 ? max(h, v) : h;
+        vec3 c = mix(vKind > 0.5 ? uIon : uEl, vec3(1.0), glyph * 0.92);
+        gl_FragColor = vec4(c, uAlpha * smoothstep(1.0, 0.75, r));
+      }
+    `,
+    transparent: true, depthWrite: false,
+  });
+  const pts = new THREE.Points(g, mat);
+  pts.layers.set(1);
+  pts.renderOrder = 5;
+  pts.frustumCulled = false;
+  scene.add(pts);
+  return { pts, pos, seeds, mat, geom: g };
+})();
+
+function arrow(len, color) {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color(color) }, uAlpha: { value: 0 } },
+    vertexShader: 'void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform vec3 uColor; uniform float uAlpha; void main(){ gl_FragColor = vec4(uColor, uAlpha); }',
+    transparent: true, depthWrite: false,
+  });
+  const shaft = new THREE.CylinderGeometry(0.3, 0.3, len - 2, 12).translate(0, (len - 2) / 2, 0);
+  const head = new THREE.ConeGeometry(0.95, 2, 18).translate(0, len - 1, 0);
+  const g = new THREE.Group();
+  for (const geom of [shaft, head]) { const m = new THREE.Mesh(geom, mat); m.layers.set(1); m.renderOrder = 6; g.add(m); }
+  scene.add(g);
+  return { g, mat };
+}
+// B into the page: a circled cross facing the lesson camera.
+function intoPage() {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color() }, uAlpha: { value: 0 } },
+    vertexShader: 'void main(){ gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: 'uniform vec3 uColor; uniform float uAlpha; void main(){ gl_FragColor = vec4(uColor, uAlpha); }',
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  });
+  const g = new THREE.Group();
+  const parts = [new THREE.TorusGeometry(1.1, 0.16, 8, 40), new THREE.BoxGeometry(1.7, 0.3, 0.1).rotateZ(Math.PI / 4), new THREE.BoxGeometry(1.7, 0.3, 0.1).rotateZ(-Math.PI / 4)];
+  for (const geom of parts) { const m = new THREE.Mesh(geom, mat); m.layers.set(1); m.renderOrder = 6; g.add(m); }
+  scene.add(g);
+  return { g, mat };
+}
+const lessonArrows = { B: intoPage(), E: arrow(7, '#000'), V: arrow(6.5, '#000') };
+{
+  const at = (deg, R, z) => new THREE.Vector3(R * Math.cos(deg * DEG), R * Math.sin(deg * DEG), z);
+  const up = new THREE.Vector3(0, 1, 0);
+  const toCamera = new THREE.Vector3(Math.sin(LESSON_FACE * DEG), -Math.cos(LESSON_FACE * DEG), 0);
+  lessonArrows.B.g.position.copy(at(97, R0 - 5.3, 0));
+  lessonArrows.B.g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), toCamera);
+  lessonArrows.E.g.position.copy(at(97, R0 - 2.6, 3.5));
+  lessonArrows.E.g.quaternion.setFromUnitVectors(up, new THREE.Vector3(0, 0, -1));
+  lessonArrows.V.g.position.copy(at(97, R0 + 0.2, 0));
+  lessonArrows.V.g.quaternion.setFromUnitVectors(up, new THREE.Vector3(Math.cos(97 * DEG), Math.sin(97 * DEG), 0));
+}
+
+const shadow = (() => {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uInk: { value: new THREE.Color(0, 0, 0) }, uA: { value: 0.12 } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: /* glsl */`
+      uniform vec3 uInk; uniform float uA; varying vec2 vUv;
+      void main() {
+        vec2 q = (vUv - 0.5) * 2.0;
+        float table = 1.0 - smoothstep(0.25, 0.62, max(abs(q.x), abs(q.y)) * 0.75 + length(q) * 0.25);
+        vec2 pq = q - vec2(0.43, -0.43);
+        float pump = 1.0 - smoothstep(0.0, 0.16, length(pq));
+        gl_FragColor = vec4(uInk, uA * max(table, pump * 0.9));
+      }
+    `,
+    transparent: true, depthWrite: false,
+  });
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(260, 260), mat);
+  m.position.z = dev.dims.table.floor + 0.02;
+  m.layers.set(1);
+  scene.add(m);
+  return mat;
+})();
+
+// ---------- Post-processing: colour, then normals + ids + depth, then ink ----------
+const post = (() => {
+  const mat = new THREE.ShaderMaterial({
+    uniforms: {
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null },
+      uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
+      uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
+    },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: /* glsl */`
+      uniform sampler2D tColor;
+      uniform sampler2D tNid;
+      uniform sampler2D tDepth;
+      uniform vec2 uTexel;
+      uniform float uThick;
+      uniform vec3 uInk;
+      uniform float uRange;
+      uniform float uDepthT;
+      uniform float uInkAlpha;
+      varying vec2 vUv;
+      float dep(vec2 uv) { return texture2D(tDepth, uv).x * uRange; }
+      vec3 nrm(vec4 t) { return t.a > 0.0 ? normalize(t.xyz * 2.0 - 1.0) : vec3(0.0); }
+      void probe(vec2 uv, vec4 c, vec3 nc, inout float lap, inout float ne, inout float ide) {
+        vec4 t = texture2D(tNid, uv);
+        lap += dep(uv);
+        if (c.a > 0.0 && t.a > 0.0) ne = max(ne, 1.0 - dot(nc, nrm(t)));
+        ide = max(ide, step(0.0015, abs(t.a - c.a)));
+      }
+      void main() {
+        vec2 ox = vec2(uTexel.x * uThick, 0.0);
+        vec2 oy = vec2(0.0, uTexel.y * uThick);
+        vec4 c = texture2D(tNid, vUv);
+        vec3 nc = nrm(c);
+        float lap = 0.0, ne = 0.0, ide = 0.0;
+        probe(vUv + ox, c, nc, lap, ne, ide);
+        probe(vUv - ox, c, nc, lap, ne, ide);
+        probe(vUv + oy, c, nc, lap, ne, ide);
+        probe(vUv - oy, c, nc, lap, ne, ide);
+        lap = abs(lap - 4.0 * dep(vUv));
+        float eD = smoothstep(uDepthT, uDepthT * 3.0, lap);
+        float eN = smoothstep(0.2, 0.55, ne) * 0.72;
+        float e = clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
+        vec3 col = texture2D(tColor, vUv).rgb;
+        gl_FragColor = vec4(mix(col, uInk, e * uInkAlpha), 1.0);
+      }
+    `,
+    depthTest: false, depthWrite: false,
+  });
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3));
+  geom.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 2, 0, 0, 2], 2));
+  const mesh = new THREE.Mesh(geom, mat);
+  mesh.frustumCulled = false;
+  const s = new THREE.Scene();
+  s.add(mesh);
+  return { scene: s, camera: new THREE.Camera(), mat };
+})();
+
+let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
+function resize() {
+  if (!renderer) return;
+  const r = stage.getBoundingClientRect();
+  width = Math.max(1, Math.round(r.width));
+  height = Math.max(1, Math.round(r.height));
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  renderer.setPixelRatio(dpr);
+  renderer.setSize(width, height, false);
+  const w = Math.round(width * dpr), h = Math.round(height * dpr);
+  rtColor?.dispose();
+  rtInk?.dispose();
+  rtColor = new THREE.WebGLRenderTarget(w, h, { samples: 4 });
+  rtInk = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthTexture: new THREE.DepthTexture(w, h) });
+  post.mat.uniforms.tColor.value = rtColor.texture;
+  post.mat.uniforms.tNid.value = rtInk.texture;
+  post.mat.uniforms.tDepth.value = rtInk.depthTexture;
+  post.mat.uniforms.uTexel.value.set(1 / w, 1 / h);
+  post.mat.uniforms.uThick.value = Math.max(1, dpr * 0.75);
+  shared.uDpr.value = dpr;
+  particles.mat.uniforms.uSize.value = 9 * dpr;
+  fitView();
+  dirty = true;
+}
+
+function draw() {
+  const pal = THEME[themeName()];
+  camera.layers.set(0);
+  camera.layers.enable(1);
+  renderer.setRenderTarget(rtColor);
+  renderer.setClearColor(pal.paper, 1);
+  renderer.clear();
+  renderer.render(scene, camera);
+
+  camera.layers.set(0);
+  for (const m of solids) m.material = m.userData.inkMat;
+  renderer.setRenderTarget(rtInk);
+  renderer.setClearColor(0x000000, 0);
+  renderer.clear();
+  renderer.render(scene, camera);
+  for (const m of solids) m.material = m.userData.colorMat;
+
+  renderer.setRenderTarget(null);
+  renderer.render(post.scene, post.camera);
+}
+
+// ---------- Camera ----------
+const HOME = { az: 32, el: 27 };
+const ZOOM_MIN = 0.4, ZOOM_MAX = 7;
+const view = { az: HOME.az, el: HOME.el, zoom: 1, pan: new THREE.Vector3() };
+let fit = { half: 100, centre: new THREE.Vector3() };
+function basis(az, el) {
+  const a = az * DEG, e = el * DEG;
+  const dir = new THREE.Vector3(Math.cos(e) * Math.cos(a), Math.cos(e) * Math.sin(a), Math.sin(e));
+  const right = new THREE.Vector3(-Math.sin(a), Math.cos(a), 0);
+  const up = new THREE.Vector3().crossVectors(dir, right);
+  return { dir, right, up };
+}
+function fitView() {
+  const { right, up } = basis(HOME.az, HOME.el);
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const p of dev.fit) {
+    const x = p.dot(right), y = p.dot(up);
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  const aspect = width / height;
+  fit.half = Math.max((y1 - y0) / 2, (x1 - x0) / 2 / aspect) * 1.1;
+  fit.centre = right.clone().multiplyScalar((x0 + x1) / 2).add(up.clone().multiplyScalar((y0 + y1) / 2));
+}
+function placeCamera() {
+  const { dir } = basis(view.az, view.el);
+  const target = fit.centre.clone().add(view.pan);
+  camera.position.copy(target).addScaledVector(dir, 650);
+  camera.lookAt(target);
+  const half = fit.half / view.zoom, aspect = width / height;
+  camera.left = -half * aspect; camera.right = half * aspect; camera.top = half; camera.bottom = -half;
+  camera.updateProjectionMatrix();
+}
+
+// ---------- State ----------
+const state = {
+  glow: true, gas: 'N2', tfA: 40, pfA: 0, pressure: 0.1,
+  explode: false, explodeAt: -1e9, cut: true, cutZ: 0,
+  fields: false, lesson: false, lessonT: 0,
+  hover: null, select: null, legendHot: null,
+};
+const sliderToMbar = (v) => Math.pow(10, -2 + (2.3 * v) / 100);
+const mbarToSlider = (p) => ((Math.log10(p) + 2) / 2.3) * 100;
+let model = M.state({ tfA: state.tfA, pfA: state.pfA, pressureMbar: state.pressure, gas: state.gas });
+let look = M.glowLook(model, state.glow);
+
+function updateModel() {
+  model = M.state({ tfA: state.tfA, pfA: state.pfA, pressureMbar: state.pressure, gas: state.gas });
+  look = M.glowLook(model, state.glow);
+  $('oTF').textContent = `${state.tfA} A`;
+  $('oPF').textContent = `${state.pfA > 0 ? '+' : ''}${state.pfA} A`;
+  $('oP').textContent = state.pressure < 0.1 ? `${state.pressure.toFixed(3)} mbar` : `${state.pressure.toFixed(2)} mbar`;
+  const g = model.gas;
+  const rows = [
+    ['Toroidal field on axis', 'R = 23 cm', M.fmtField(model.B0)],
+    ['At the inner and outer wall', 'R = 15.5 and 30.5 cm', `${M.fmtField(model.Bin)} / ${M.fmtField(model.Bout)}`],
+    ['Electron gyroradius', '3 eV', M.fmtLength(model.rLe)],
+    [`${g.ion} gyroradius`, '0.1 eV, minor radius is 75 mm', M.fmtLength(model.rLi)],
+    ['Vertical drift of electrons', model.B0 > 0 ? `crosses the minor radius in ${M.fmtTime(model.tCross)}` : 'no field, no drift', M.fmtSpeed(model.vDrift)],
+    ['ω_ce / ν, electrons', model.magnetised ? 'magnetised: the field steers them' : 'collisions win: barely magnetised', isFinite(model.hall) ? model.hall.toFixed(model.hall < 10 ? 2 : 1) : '∞'],
+    ['Debye length', 'n_e = 10¹⁶ m⁻³', M.fmtLength(model.lambdaD)],
+    ['ECR at 2.45 GHz needs', model.B0 > 0 ? `${(model.ecrB / model.B0).toFixed(1)} × the field on axis` : 'pulsed TF only', M.fmtField(model.ecrB)],
+    ['Lines to look for', `${g.label} glow`, g.lines],
+  ];
+  const body = $('modelRows');
+  body.replaceChildren(...rows.map(([a, b, c]) => {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    td1.append(a, document.createElement('br'));
+    const sub = document.createElement('span');
+    sub.className = 'sub';
+    sub.textContent = b;
+    td1.append(sub);
+    const td2 = document.createElement('td');
+    td2.textContent = c;
+    tr.append(td1, td2);
+    return tr;
+  }));
+  applyLook();
+  updateReadout();
+  dirty = true;
+}
+
+function updateReadout() {
+  const hall = isFinite(model.hall) ? model.hall.toFixed(model.hall < 10 ? 1 : 0) : '∞';
+  $('readout').innerHTML = '';
+  const line1 = document.createElement('div');
+  line1.textContent = `TF ${state.tfA} A · B₀ ${M.fmtField(model.B0)}`;
+  const line2 = document.createElement('div');
+  line2.textContent = `${model.gas.label} ${state.pressure < 0.1 ? state.pressure.toFixed(3) : state.pressure.toFixed(2)} mbar · ω/ν ${hall}`;
+  $('readout').append(line1, line2);
+}
+
+function applyTheme() {
+  const t = themeName();
+  const pal = THEME[t];
+  for (const m of colorMats.values()) m.uniforms.uColor.value.copy(toneColor(m.userData.tone, t));
+  shared.uCut.value.set(pal.cut);
+  shared.uInk.value.set(pal.ink);
+  shared.uLitColor.value.set(pal.lit);
+  post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
+  shadow.uniforms.uA.value = pal.shadow;
+  shadow.uniforms.uInk.value.set(pal.shadowInk);
+  for (const g of glow) { g.material.blending = t === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending; g.material.needsUpdate = true; }
+  for (const f of fieldLines) f.mat.uniforms.uColor.value.set(pal.field);
+  particles.mat.uniforms.uIon.value.set(pal.ion);
+  particles.mat.uniforms.uEl.value.set(pal.electron);
+  lessonArrows.B.mat.uniforms.uColor.value.set(pal.field);
+  lessonArrows.E.mat.uniforms.uColor.value.set(pal.efield);
+  lessonArrows.V.mat.uniforms.uColor.value.set(pal.drift);
+  $('themeBtn').textContent = t === 'dark' ? 'Light theme' : 'Dark theme';
+  applyLook();
+  dirty = true;
+}
+
+function applyLook() {
+  const t = themeName();
+  const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
+  const dim = (state.lesson ? 0.35 : state.fields ? 0.6 : 1) * (1 - apartAmount());
+  const I = look.intensity * boost * dim * (t === 'dark' ? 0.42 : 1);
+  for (const g of glow) {
+    const u = g.material.uniforms, sc = g.material.userData.scale;
+    u.uMinor.value = Math.min(look.minor * sc, dev.dims.aIn - 0.35);
+    u.uShiftZ.value = look.shiftZ;
+    u.uI.value = sc > 1 ? I * 0.32 : I;
+    u.uStri.value = look.striation;
+    u.uCore.value.set(model.gas.core);
+    u.uRim.value.set(model.gas.rim);
+    if (t === 'light') { u.uRim.value.multiplyScalar(0.9); }
+    g.visible = state.glow && !state.lesson;
+  }
+  const rim = new THREE.Color(model.gas.rim).multiplyScalar(state.glow ? 0.55 * look.intensity * dim : 0);
+  const lcdOn = new THREE.Color(t === 'dark' ? '#3f9a5c' : '#5fbf78').multiplyScalar(state.tfA > 0 ? 0.55 : 0.12);
+  for (const m of solids) {
+    if ((m.userData.part === 'viewport' || m.userData.part === 'diagPort') && m.userData.tone === 'glass') m.userData.emit.copy(rim);
+    if (m.userData.tone === 'lcd') m.userData.emit.copy(lcdOn);
+    if (m.userData.tone === 'led') m.userData.emit.set(t === 'dark' ? '#2fae55' : '#36c060').multiplyScalar(0.7);
+  }
+}
+
+// ---------- Highlight ----------
+function refreshLit() {
+  for (const m of solids) {
+    const p = m.userData.part;
+    m.userData.lit = p === state.select ? 0.5 : p === state.hover || p === state.legendHot ? 0.36 : 0;
+  }
+  for (const b of document.querySelectorAll('#legend button')) {
+    b.classList.toggle('sel', b.dataset.part === state.select);
+    b.classList.toggle('hot', b.dataset.part === state.hover);
+  }
+  applyLook();
+  dirty = true;
+}
+
+function showInfo(id) {
+  const box = $('info');
+  box.replaceChildren();
+  const p = id ? partById.get(id) : null;
+  if (!p) {
+    const h = document.createElement('h2');
+    h.textContent = 'About this figure';
+    const a = document.createElement('p');
+    a.textContent = 'Hover a part to name it, click it to read about it. The vessel is open on the side facing you: the violet ring inside is the glow discharge.';
+    const b = document.createElement('p');
+    b.textContent = 'Try the drift lesson: it shows, slowed down, why the glow drifts outward when the field is purely toroidal. That is the reason tokamaks need a plasma current.';
+    box.append(h, a, b);
+    return;
+  }
+  const h = document.createElement('h2');
+  h.textContent = p.group;
+  const num = document.createElement('div');
+  num.className = 'num';
+  num.textContent = `Part ${p.n} of ${PARTS.length}`;
+  const t = document.createElement('h3');
+  t.textContent = p.name;
+  const chips = document.createElement('div');
+  chips.className = 'chips';
+  const basis = { spec: 'from the spec', photo: 'approx., from photos', assumed: 'approx., placed by guess' }[p.basis];
+  const c1 = document.createElement('span');
+  c1.className = `chip basis-${p.basis}`;
+  c1.textContent = `Geometry ${basis}`;
+  chips.append(c1);
+  const spec = document.createElement('div');
+  spec.className = 'spec';
+  spec.textContent = p.spec;
+  const text = document.createElement('p');
+  text.textContent = p.text;
+  box.append(h, num, t, chips, spec, text);
+  if (p.know) {
+    const k = document.createElement('p');
+    k.className = 'know';
+    k.textContent = p.know;
+    box.append(k);
+  }
+}
+
+function buildLegend() {
+  const host = $('legend');
+  const order = ['Plasma', 'Magnets', 'Vacuum', 'Diagnostics', 'Power', 'Structure'];
+  for (const name of order) {
+    const grp = document.createElement('div');
+    grp.className = 'grp';
+    const h = document.createElement('h4');
+    h.textContent = name;
+    grp.append(h);
+    for (const p of PARTS.filter((x) => x.group === name)) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.part = p.id;
+      const n = document.createElement('span');
+      n.className = 'n';
+      n.textContent = String(p.n).padStart(2, '0');
+      const label = document.createElement('span');
+      label.textContent = p.name;
+      b.append(n, label);
+      if (p.basis !== 'spec') {
+        const a = document.createElement('span');
+        a.className = 'approx';
+        a.textContent = 'approx.';
+        b.append(a);
+      }
+      b.addEventListener('mouseenter', () => { state.legendHot = p.id; refreshLit(); });
+      b.addEventListener('mouseleave', () => { state.legendHot = null; refreshLit(); });
+      b.addEventListener('focus', () => { state.legendHot = p.id; refreshLit(); });
+      b.addEventListener('blur', () => { state.legendHot = null; refreshLit(); });
+      b.addEventListener('click', () => select(state.select === p.id ? null : p.id));
+      grp.append(b);
+    }
+    host.append(grp);
+  }
+}
+
+function select(id) {
+  state.select = id;
+  if (id === 'probe' || id === 'plasma') setCut(true);
+  showInfo(id);
+  refreshLit();
+}
+
+// ---------- Controls ----------
+function setPressed(id, on) { $(id).setAttribute('aria-pressed', on ? 'true' : 'false'); }
+function setExplode(on) { state.explode = on; state.explodeAt = performance.now() / 1000; setPressed('bExplode', on); dirty = true; }
+function setCut(on) { state.cut = on; setPressed('bCut', on); dirty = true; }
+function setFields(on) {
+  state.fields = on; setPressed('bField', on);
+  if (on) { setCut(true); if (state.explode) setExplode(false); if (!state.lesson) focusVessel(); }
+  applyLook(); dirty = true;
+}
+function setLesson(on) {
+  state.lesson = on; state.lessonT = 0; setPressed('bDrift', on); $('lessonKey').classList.toggle('on', on);
+  if (on) { setCut(true); if (state.explode) setExplode(false); focusLesson(); }
+  else { setHint(hintFor(state.hover)); resetView(); }
+  applyLook(); dirty = true;
+}
+$('bExplode').addEventListener('click', () => setExplode(!state.explode));
+$('bCut').addEventListener('click', () => setCut(!state.cut));
+$('bField').addEventListener('click', () => setFields(!state.fields));
+$('bDrift').addEventListener('click', () => setLesson(!state.lesson));
+$('bReset').addEventListener('click', resetView);
+$('bGlow').addEventListener('click', () => { state.glow = !state.glow; setPressed('bGlow', state.glow); updateModel(); });
+for (const r of document.querySelectorAll('input[name="gas"]')) r.addEventListener('change', () => { state.gas = r.value; updateModel(); });
+$('sTF').addEventListener('input', (e) => { state.tfA = +e.target.value; updateModel(); });
+$('sPF').addEventListener('input', (e) => { state.pfA = +e.target.value; updateModel(); });
+$('sP').addEventListener('input', (e) => { state.pressure = sliderToMbar(+e.target.value); updateModel(); });
+$('sP').value = String(Math.round(mbarToSlider(state.pressure)));
+$('themeBtn').addEventListener('click', () => {
+  const next = themeName() === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  store.set('spm1-theme', next);
+  applyTheme();
+});
+systemDark.addEventListener('change', applyTheme);
+
+function flyTo(to, dur = 0.9) {
+  if (reduceMotion.matches) dur = 0.01;
+  view.az = to.az + ((((view.az - to.az) % 360) + 540) % 360) - 180;
+  tween = { from: { az: view.az, el: view.el, zoom: view.zoom, pan: view.pan.clone() }, to, t0: performance.now() / 1000, dur };
+  lastInput = performance.now() / 1000;
+  dirty = true;
+}
+function resetView() { flyTo({ az: HOME.az, el: HOME.el, zoom: 1, pan: new THREE.Vector3() }, 0.7); }
+function focusVessel() {
+  const focus = new THREE.Vector3(R0 * Math.cos(45 * DEG), R0 * Math.sin(45 * DEG), -1.5);
+  flyTo({ az: 50, el: 41, zoom: 2.5, pan: focus.sub(fit.centre) });
+}
+// Look along B at the cut face of the next quarter: up is up, outward is to the right.
+function focusLesson() {
+  const focus = new THREE.Vector3(R0 * Math.cos(LESSON_FACE * DEG), R0 * Math.sin(LESSON_FACE * DEG), 0.5);
+  flyTo({ az: LESSON_FACE - 90, el: 6, zoom: 3.1, pan: focus.sub(fit.centre) }, 1.2);
+}
+let tween = null;
+
+// ---------- Pointer and keyboard ----------
+const pointers = new Map();
+let drag = null, lastInput = -1e9, hoverPending = null;
+const raycaster = new THREE.Raycaster();
+
+function ndcOf(e) {
+  const r = stage.getBoundingClientRect();
+  return new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+}
+function inCut(p) {
+  if (!state.cut || state.cutZ > 40) return false;
+  return p.z > state.cutZ && clipPlanes[1].distanceToPoint(p) < 0 && clipPlanes[2].distanceToPoint(p) < 0;
+}
+function pick(ndc) {
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(solids, false);
+  for (const h of hits) {
+    if (h.object.userData.clip && inCut(h.point)) continue;
+    return h.object.userData.part;
+  }
+  return null;
+}
+function hintFor(id) {
+  const p = partById.get(id);
+  return p ? `${String(p.n).padStart(2, '0')} ${p.name} · click to read` : null;
+}
+
+stage.addEventListener('pointerdown', (e) => {
+  stage.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  drag = { x: e.clientX, y: e.clientY, moved: 0, pan: e.button === 2 || e.shiftKey, pinch: null };
+  if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    drag.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), zoom: view.zoom };
+  }
+  stage.classList.add('dragging');
+  lastInput = performance.now() / 1000;
+  tween = null;
+});
+stage.addEventListener('pointermove', (e) => {
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (drag) {
+    if (pointers.size === 2 && drag.pinch) {
+      const [a, b] = [...pointers.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      view.zoom = THREE.MathUtils.clamp(drag.pinch.zoom * (d / drag.pinch.d), ZOOM_MIN, ZOOM_MAX);
+      drag.moved += 10;
+    } else {
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      drag.moved += Math.abs(dx) + Math.abs(dy);
+      if (drag.pan) {
+        const { right, up } = basis(view.az, view.el);
+        const k = (2 * fit.half) / view.zoom / height;
+        view.pan.addScaledVector(right, -dx * k).addScaledVector(up, dy * k);
+      } else {
+        view.az -= dx * 0.35;
+        view.el = THREE.MathUtils.clamp(view.el + dy * 0.25, 4, 82);
+      }
+      drag.x = e.clientX; drag.y = e.clientY;
+    }
+    lastInput = performance.now() / 1000;
+    dirty = true;
+  } else {
+    hoverPending = ndcOf(e);
+  }
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (!drag) return;
+  if (drag.moved < 5 && pointers.size === 0) {
+    const id = pick(ndcOf(e));
+    select(id && id === state.select ? null : id);
+  }
+  if (pointers.size === 0) { drag = null; stage.classList.remove('dragging'); }
+}
+stage.addEventListener('pointerup', endPointer);
+stage.addEventListener('pointercancel', endPointer);
+stage.addEventListener('pointerleave', () => { if (!drag && state.hover) { state.hover = null; refreshLit(); setHint(); } });
+stage.addEventListener('contextmenu', (e) => e.preventDefault());
+stage.addEventListener('dblclick', resetView);
+stage.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const ndc = ndcOf(e);
+  const before = fit.half / view.zoom;
+  view.zoom = THREE.MathUtils.clamp(view.zoom * Math.exp(-e.deltaY * 0.0015), ZOOM_MIN, ZOOM_MAX);
+  const after = fit.half / view.zoom;
+  const { right, up } = basis(view.az, view.el);
+  const aspect = width / height;
+  view.pan.addScaledVector(right, ndc.x * (before - after) * aspect).addScaledVector(up, ndc.y * (before - after));
+  lastInput = performance.now() / 1000;
+  tween = null;
+  dirty = true;
+}, { passive: false });
+
+window.addEventListener('keydown', (e) => {
+  const tag = (e.target && e.target.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  const onStage = document.activeElement === stage;
+  let used = true;
+  if (k === 'e') setExplode(!state.explode);
+  else if (k === 'c') setCut(!state.cut);
+  else if (k === 'f') setFields(!state.fields);
+  else if (k === 'd') setLesson(!state.lesson);
+  else if (k === 'r') resetView();
+  else if (k === 'escape') select(null);
+  else if (onStage && k === 'arrowleft') view.az += 6;
+  else if (onStage && k === 'arrowright') view.az -= 6;
+  else if (onStage && k === 'arrowup') view.el = Math.min(82, view.el + 4);
+  else if (onStage && k === 'arrowdown') view.el = Math.max(4, view.el - 4);
+  else if (onStage && (k === '+' || k === '=')) view.zoom = Math.min(ZOOM_MAX, view.zoom * 1.15);
+  else if (onStage && (k === '-' || k === '_')) view.zoom = Math.max(ZOOM_MIN, view.zoom / 1.15);
+  else used = false;
+  if (used) { lastInput = performance.now() / 1000; tween = null; dirty = true; if (onStage) e.preventDefault(); }
+});
+
+const HINT = matchMedia('(pointer: coarse)').matches ? 'Drag to turn · pinch to zoom · tap a part' : 'Drag to turn · scroll to zoom · E take apart · C open';
+function setHint(text) { $('hint').textContent = text || HINT; }
+
+// ---------- Animation ----------
+let dirty = true, visible = true, lastT = performance.now() / 1000, tourT = 0;
+const ease = (x) => x * x * (3 - 2 * x);
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+
+const stretchGroup = (name) => groupByName.get(name)?.obj.position || new THREE.Vector3();
+function apartAmount() { return Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p)); }
+function rebuildStretch() {
+  for (const s of dev.stretch) {
+    const a = stretchGroup(s.ends[0]), b = stretchGroup(s.ends[1]);
+    if (a.lengthSq() + b.lengthSq() === 0 && !s.moved) continue;
+    s.moved = a.lengthSq() + b.lengthSq() > 0;
+    const n = s.points.length;
+    const pts = s.points.map((p, i) => p.clone().add(a.clone().lerp(b, i / (n - 1))));
+    s.mesh.geometry.dispose();
+    s.mesh.geometry = dev.tube(pts, s.r, s.o);
+  }
+}
+
+function lessonFrame(dt) {
+  const L = 10;
+  const B = model.B0 > 0;
+  if (!reduceMotion.matches) state.lessonT = (state.lessonT + dt) % L;
+  else state.lessonT = 6.5;
+  const t = state.lessonT;
+  const fadeIn = clamp01(t / 0.8), fadeOut = 1 - clamp01((t - 8.6) / 1.2);
+  const sep = B ? ease(clamp01((t - 1.5) / 3)) : 0;
+  const out = B ? ease(clamp01((t - 4.5) / 3.5)) : 0;
+  particles.mat.uniforms.uAlpha.value = state.lesson ? fadeIn * fadeOut : 0;
+  const a = dev.dims.aIn - 0.7;
+  const zShift = look.shiftZ;
+  for (let i = 0; i < PARTICLE_N; i++) {
+    const s = particles.seeds[i];
+    const ion = i % 2 === 1;
+    const dR0 = s.dR;
+    const zTop = Math.sqrt(Math.max(0, a * a - dR0 * dR0)) - 0.4;
+    const z = s.z + sep * ((ion ? zTop : -zTop) * (0.55 + 0.45 * s.jitter) - s.z);
+    const wallR = Math.sqrt(Math.max(0, a * a - z * z));
+    const gyro = B ? (ion ? 0.35 : 0.12) * Math.sin(s.gyro + t * (ion ? 2 : 9)) : 0;
+    const dR = dR0 + out * (wallR - dR0) + gyro * (1 - out);
+    const R = R0 + dR;
+    particles.pos[i * 3] = R * Math.cos(s.phi * DEG);
+    particles.pos[i * 3 + 1] = R * Math.sin(s.phi * DEG);
+    particles.pos[i * 3 + 2] = z + zShift + gyro * 0.6 * (1 - out);
+  }
+  particles.geom.attributes.position.needsUpdate = true;
+  const on = state.lesson ? fadeOut : 0;
+  lessonArrows.B.mat.uniforms.uAlpha.value = on * (B ? 0.95 : 0.25) * fadeIn;
+  lessonArrows.E.mat.uniforms.uAlpha.value = on * clamp01((t - 3) / 1) * (B ? 0.95 : 0);
+  lessonArrows.V.mat.uniforms.uAlpha.value = on * clamp01((t - 4.5) / 0.8) * (B ? 0.95 : 0);
+  for (const k of ['B', 'E', 'V']) lessonArrows[k].g.visible = state.lesson;
+  particles.pts.visible = state.lesson;
+  if (!state.lesson || state.hover) return;
+  const factor = model.B0 > 0 ? 3.5 / model.tCross : 0;
+  let msg;
+  if (!B) msg = 'Turn the TF current up: with no field there is no drift to show.';
+  else if (t < 1.5) msg = '1 · Looking along B (into the page), outward to the right. Ions and electrons gyrate round the field.';
+  else if (t < 4.5) msg = `2 · B falls off as 1/R, so ∇B and curvature drifts push ions up and electrons down, ~${M.fmtSpeed(model.vDrift)} (slowed ${M.fmtSci(factor, 0)}×).`;
+  else if (t < 8.0) msg = '3 · The separated charge sets up a vertical E. E × B carries ions and electrons outward together.';
+  else msg = '4 · The plasma hits the outer wall. A plasma current would twist the field lines and short out the charge: that is why tokamaks need one.';
+  setHint(msg);
+}
+
+function frame() {
+  requestAnimationFrame(frame);
+  if (!renderer || !visible) return;
+  const now = performance.now() / 1000;
+  const dt = Math.min(0.05, now - lastT);
+  lastT = now;
+  let active = false;
+
+  if (tween) {
+    const k = ease(clamp01((now - tween.t0) / tween.dur));
+    view.az = THREE.MathUtils.lerp(tween.from.az, tween.to.az, k);
+    view.el = THREE.MathUtils.lerp(tween.from.el, tween.to.el, k);
+    view.zoom = THREE.MathUtils.lerp(tween.from.zoom, tween.to.zoom, k);
+    view.pan.lerpVectors(tween.from.pan, tween.to.pan, k);
+    if (k >= 1) tween = null;
+    active = true;
+  }
+
+  const idle = now - lastInput > 8 && !drag && !tween && !state.lesson && !reduceMotion.matches;
+  if (idle) {
+    tourT += dt;
+    const w = clamp01(tourT / 3);
+    view.az += 9 * ((Math.PI * 2) / 30) * Math.cos((tourT / 30) * Math.PI * 2) * w * dt;
+    active = true;
+  } else tourT = 0;
+
+  const target = state.explode ? 1 : 0;
+  let moving = false;
+  for (const g of dev.groups) {
+    const delay = state.explode ? g.delay : 0.45 - g.delay;
+    if (now - state.explodeAt < delay && !reduceMotion.matches) { if (Math.abs(target - g.p) > 1e-4) moving = true; continue; }
+    const before = g.p;
+    g.p = reduceMotion.matches ? target : g.p + (target - g.p) * (1 - Math.exp(-dt * 4.2));
+    if (Math.abs(target - g.p) < 1e-4) g.p = target;
+    if (g.p !== before) moving = true;
+    g.obj.position.copy(g.offset).multiplyScalar(ease(g.p));
+  }
+  if (moving) { rebuildStretch(); applyLook(); active = true; }
+
+  const cutTarget = state.lesson ? -40 : state.cut ? 0 : 45;
+  if (Math.abs(state.cutZ - cutTarget) > 0.01) {
+    state.cutZ = reduceMotion.matches ? cutTarget : state.cutZ + (cutTarget - state.cutZ) * (1 - Math.exp(-dt * 6));
+    if (Math.abs(state.cutZ - cutTarget) < 0.05) state.cutZ = cutTarget;
+    active = true;
+  }
+  clipPlanes[0].constant = state.cutZ >= 44.9 ? 1e6 : state.cutZ;
+
+  for (const g of glow) g.material.uniforms.uTime.value = reduceMotion.matches ? 0 : now;
+  if (state.glow && look.striation > 0) active = true;
+
+  fieldGroup.visible = state.fields && state.tfA > 0;
+  if (fieldGroup.visible) {
+    const Bmax = M.fieldAt(M.DEVICE.R0, M.DEVICE.tfMaxA);
+    for (const f of fieldLines) {
+      const B = M.fieldAt(f.R / 100, state.tfA);
+      f.mat.uniforms.uAlpha.value = 0.35 + 0.6 * Math.min(1, state.tfA / 40);
+      if (!reduceMotion.matches) f.mat.uniforms.uPhase.value += dt * (B / Bmax) * 2.2;
+      f.mesh.position.z = f.z + look.shiftZ * 0.5;
+    }
+    active = true;
+  }
+
+  if (state.lesson) { lessonFrame(dt); active = true; }
+  else { particles.pts.visible = false; for (const k of ['B', 'E', 'V']) lessonArrows[k].g.visible = false; }
+
+  if (hoverPending && !drag) {
+    const id = pick(hoverPending);
+    hoverPending = null;
+    if (id !== state.hover) {
+      state.hover = id;
+      stage.classList.toggle('pointing', !!id);
+      refreshLit();
+      setHint(hintFor(id));
+    }
+  }
+
+  if (!active && !dirty) return;
+  dirty = false;
+  placeCamera();
+  draw();
+}
+
+// ---------- Start ----------
+setHint();
+buildLegend();
+showInfo(null);
+if (renderer) {
+  new ResizeObserver(resize).observe(stage);
+  new IntersectionObserver((entries) => { visible = entries[0].isIntersecting; dirty = true; }).observe(stage);
+  document.addEventListener('visibilitychange', () => { lastT = performance.now() / 1000; dirty = true; });
+  resize();
+}
+applyTheme();
+updateModel();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
