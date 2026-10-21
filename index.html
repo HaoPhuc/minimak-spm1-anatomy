@@ -150,6 +150,16 @@
   .isobar button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 4px 9px; font-size: 12px; cursor: pointer; white-space: nowrap; }
   .isobar button[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
   .isobar button.done { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
+  .slide[hidden] { display: none; }
+  .slide input { width: 92px; accent-color: var(--accent); }
+  .slide output { font: 11.5px ui-monospace, Menlo, Consolas, monospace; color: var(--ink); min-width: 3em; }
+  .mb .slide { border-left: 1px solid var(--rule); }
+  .mb button[aria-disabled="true"] { opacity: 0.4; }
+  .subs { list-style: none; margin: 0; padding: 0; }
+  .subs button { width: calc(100% + 12px); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: none; text-align: left; padding: 4px 6px; margin: 0 -6px; border-radius: 6px; font-size: 13px; cursor: default; }
+  .subs button:hover { background: var(--soft); }
+  .subs .k { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); white-space: nowrap; }
   .fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
 
   /* ---------- Inspector ---------- */
@@ -243,6 +253,7 @@
       </div>
       <div class="mb" role="group" aria-label="Model">
         <button type="button" id="bExplode" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span></button>
+        <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
         <button type="button" id="bCut" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span></button>
       </div>
       <div class="mb"><button type="button" id="themeBtn" title="Switch colour theme"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11a5.5 5.5 0 0 0 0-11z" fill="currentColor"/></svg><span class="lbl" id="themeLbl">Theme</span></button></div>
@@ -267,7 +278,8 @@
     <div class="isobar" id="isobar">
       <span class="lbl" id="isoLabel"></span>
       <button type="button" id="bAll" title="Back to every piece of this part (Esc)">All</button>
-      <button type="button" id="bSection" aria-pressed="false" title="Cut the part in half, facing you (S)">Section</button>
+      <button type="button" id="bApart" aria-pressed="false" title="Take the part apart into its pieces (T)">Take apart</button>
+      <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
@@ -324,7 +336,7 @@ const savedTheme = store.get('spm1-theme');
 if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
 
 const TONES = {
-  steel: '#d9dad5', steel2: '#cbcdc8', bolt: '#b3b5b0', copper: '#d79e72', black: '#4a4b4c', ink: '#2b2b29',
+  steel: '#d9dad5', vessel: '#d9dad5', steel2: '#cbcdc8', bolt: '#b3b5b0', copper: '#d79e72', black: '#4a4b4c', ink: '#2b2b29',
   tape: '#454644', hose: '#3d3e3c', alu: '#dcdedb', slot: '#8f928e', table: '#cfd1cc', hole: '#8a8c88',
   glass: '#7e95a3', lcd: '#2f3a33', led: '#39463d', brass: '#cfb37a', ceramic: '#f1efe8', tip: '#262624',
   panel: '#5b5c59', red: '#c9473a', yellow: '#e4bd3d', pink: '#df7aa0', pumpgrey: '#c2c6c2', oil: '#c99a3c',
@@ -332,8 +344,8 @@ const TONES = {
   grey: '#a3a5a1', pcb: '#3f7a52', hvlcd: '#3a2f2f',
 };
 const THEME = {
-  light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#ef6a2c', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12 },
-  dark: { paper: '#191917', cut: '#2b2a25', ink: '#e7e5dc', lit: '#ff9a5c', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.78, ghost: 0.08 },
+  light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#ef6a2c', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  dark: { paper: '#191917', cut: '#2b2a25', ink: '#e7e5dc', lit: '#ff9a5c', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.78, ghost: 0.08, glass: 0.34 },
 };
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
@@ -371,13 +383,37 @@ const shared = {
   uLitColor: { value: new THREE.Color() },
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
+  uGlass: { value: 0.28 },
+  // Port openings in the vessel wall (filled once the machine is built): axis + radius, base + length.
+  uHoleA: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
+  uHoleP: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
 };
+// Discards the vessel wall inside each port's cylinder, in the shell's own coordinates so the holes travel with it.
+const HOLES = /* glsl */`
+  #ifdef HOLES
+    uniform vec4 uHoleA[12];
+    uniform vec4 uHoleP[12];
+    varying vec3 vObj;
+    void holes() {
+      for (int i = 0; i < 12; i++) {
+        vec3 d = vObj - uHoleP[i].xyz;
+        float s = dot(d, uHoleA[i].xyz);
+        if (s > 0.0 && s < uHoleP[i].w) {
+          vec3 q = d - s * uHoleA[i].xyz;
+          if (dot(q, q) < uHoleA[i].w * uHoleA[i].w) discard;
+        }
+      }
+    }
+  #endif
+`;
 
 const VERT = /* glsl */`
   #include <clipping_planes_pars_vertex>
   varying vec3 vNv;
   varying vec3 vNw;
+  varying vec3 vObj;
   void main() {
+    vObj = position;
     vec4 p = vec4(position, 1.0);
     vec3 n = normal;
     #ifdef USE_INSTANCING
@@ -394,6 +430,7 @@ const VERT = /* glsl */`
 
 const FRAG_COLOR = /* glsl */`
   #include <clipping_planes_pars_fragment>
+  ${HOLES}
   uniform vec3 uColor;
   uniform vec3 uLitColor;
   uniform float uLit;
@@ -406,6 +443,9 @@ const FRAG_COLOR = /* glsl */`
   varying vec3 vNw;
   void main() {
     #include <clipping_planes_fragment>
+    #ifdef HOLES
+      holes();
+    #endif
     if (!gl_FrontFacing) {
       float h = step(mod(gl_FragCoord.x - gl_FragCoord.y, 6.0 * uDpr), 1.0 * uDpr);
       gl_FragColor = vec4(mix(uCut, uInk, h * 0.5), 1.0);
@@ -424,11 +464,15 @@ const FRAG_COLOR = /* glsl */`
 
 const FRAG_INK = /* glsl */`
   #include <clipping_planes_pars_fragment>
+  ${HOLES}
   uniform float uId;
   varying vec3 vNv;
   varying vec3 vNw;
   void main() {
     #include <clipping_planes_fragment>
+    #ifdef HOLES
+      holes();
+    #endif
     if (!gl_FrontFacing) { gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0); return; }
     gl_FragColor = vec4(normalize(vNv) * 0.5 + 0.5, uId);
   }
@@ -448,32 +492,56 @@ const FRAG_GHOST = /* glsl */`
   }
 `;
 
+// Window glass is see-through: a faint tint, stronger at grazing angles, with a small glint.
+const FRAG_GLASS = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  uniform vec3 uColor;
+  uniform vec3 uLitColor;
+  uniform float uLit;
+  uniform vec3 uLight;
+  uniform float uGlass;
+  uniform float uLoose;
+  varying vec3 vNv;
+  varying vec3 vNw;
+  void main() {
+    #include <clipping_planes_fragment>
+    vec3 n = normalize(vNv);
+    float rim = pow(1.0 - abs(n.z), 2.0);
+    float glint = pow(max(dot(n, uLight), 0.0), 14.0);
+    vec3 c = mix(uColor, uLitColor, uLit) + vec3(0.4 * glint);
+    gl_FragColor = vec4(c, uGlass * (0.5 + 0.5 * rim) * (1.0 + 1.4 * uLoose) + 0.3 * uLit + 0.2 * glint);
+  }
+`;
+
 const sectorPlanes = [new THREE.Plane(new V3(0, 0, -1), 1e6), new THREE.Plane(), new THREE.Plane()];
-const sectionPlane = new THREE.Plane(new V3(1, 0, 0), 0);
 
 const colorMats = new Map();
 function colorMat(tone, clip) {
   const key = `${tone}|${clip ? 1 : 0}`;
   if (colorMats.has(key)) return colorMats.get(key);
+  const glass = tone === 'glass';
   const m = new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) },
-      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uDpr: shared.uDpr,
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
     },
-    vertexShader: VERT, fragmentShader: FRAG_COLOR, side: THREE.DoubleSide, clipping: true,
+    vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
+    transparent: glass, depthWrite: !glass, clipping: true,
   });
+  if (tone === 'vessel') { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
   m.userData.tone = tone;
   m.userData.clip = clip;
   colorMats.set(key, m);
   return m;
 }
-function inkMat(clip) {
+function inkMat(clip, holes) {
   const m = new THREE.ShaderMaterial({ uniforms: { uId: { value: 0 } }, vertexShader: VERT, fragmentShader: FRAG_INK, side: THREE.DoubleSide, clipping: true });
+  if (holes) { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
   m.userData.ink = true;
   m.userData.clip = clip;
   return m;
 }
-const INK = { clip: inkMat(true), free: inkMat(false) };
+const INK = { clip: inkMat(true), free: inkMat(false), clipHoles: inkMat(true, true), freeHoles: inkMat(false, true) };
 const GHOST = new THREE.ShaderMaterial({
   uniforms: { uInk: shared.uInk, uGhost: shared.uGhost },
   vertexShader: VERT, fragmentShader: FRAG_GHOST, transparent: true, depthWrite: false, side: THREE.FrontSide,
@@ -490,7 +558,12 @@ function perMesh(r, s, c, g, material) {
   if (material.userData.ghost) return;
   const u = material.uniforms;
   if (material.userData.ink) u.uId.value = this.userData.inkId;
-  else { u.uLit.value = this.userData.lit; u.uEmit.value.copy(this.userData.emit); }
+  else {
+    u.uLit.value = this.userData.lit;
+    u.uEmit.value.copy(this.userData.emit);
+    // A window taken out of its flange is drawn more solid, so it reads as a part of its own.
+    if (material.userData.tone === 'glass') u.uLoose.value = Math.min(1, this.position.length() / 3);
+  }
   material.uniformsNeedUpdate = true;
 }
 function register(mesh, tone, o) {
@@ -500,9 +573,10 @@ function register(mesh, tone, o) {
   mesh.userData.emit = ZERO.clone();
   mesh.userData.clip = !!o.clip;
   mesh.userData.colorMat = mesh.material;
-  mesh.userData.inkMat = o.clip ? INK.clip : INK.free;
+  mesh.userData.inkMat = tone === 'vessel' ? (o.clip ? INK.clipHoles : INK.freeHoles) : o.clip ? INK.clip : INK.free;
   mesh.userData.inkId = ((nextInk++ % 250) + 2) / 255;
   mesh.onBeforeRender = perMesh;
+  if (tone === 'glass') mesh.renderOrder = 10;
   solids.push(mesh);
 }
 function paint(geometry, tone, o) {
@@ -523,6 +597,10 @@ paint.instanced = (geometry, tone, matrices, o) => {
 const dev = window.SPM1Device.build(THREE, paint);
 scene.add(dev.root);
 const DIMS = dev.dims;
+dev.holes.slice(0, 12).forEach((h, i) => {
+  shared.uHoleA.value[i].set(h.a.x, h.a.y, h.a.z, h.r);
+  shared.uHoleP.value[i].set(h.p.x, h.p.y, h.p.z, h.len);
+});
 const R0 = DIMS.R0;
 {
   const a0 = DIMS.cut[0] * DEG, a1 = DIMS.cut[1] * DEG;
@@ -553,7 +631,7 @@ for (const pc of pieces) {
   if (!piecesOf.has(part)) piecesOf.set(part, []);
   piecesOf.get(part).push(pc);
   const box = new THREE.Box3();
-  pc.traverse((o) => { if (o.isMesh) { o.userData.piece = pc; meshBox(o, box); } });
+  pc.traverse((o) => { if (o.isMesh) { o.userData.piece = pc; o.userData.restBox = meshBox(o, new THREE.Box3()); box.union(o.userData.restBox); } });
   pc.userData.restBox = box;
   let g = pc.parent, eg = null;
   while (g && !eg) { eg = dev.groups.find((x) => x.obj === g) || null; g = g.parent; }
@@ -569,7 +647,17 @@ for (const pc of pieces) {
   }
   pc.userData.detachVec = v;
   pc.userData.dp = 0;
+  pc.userData.tp = 0;
   pc.userData.ghost = false;
+}
+// The named sub-parts of a part (or of one piece), in build order, with how many pieces carry each.
+function subsOf(part, only) {
+  const out = new Map();
+  for (const pc of only ? [only] : piecesOf.get(part) || []) {
+    const seen = new Set();
+    pc.traverse((m) => { if (m.isMesh && m.userData.sub && !seen.has(m.userData.sub)) { seen.add(m.userData.sub); out.set(m.userData.sub, (out.get(m.userData.sub) || 0) + 1); } });
+  }
+  return out;
 }
 for (const [part, list] of piecesOf) list.forEach((pc, i) => { if (!pc.userData.label) pc.userData.label = list.length > 1 ? `${partById.get(part)?.name || part} ${i + 1}` : partById.get(part)?.name || part; });
 
@@ -738,7 +826,7 @@ function draw() {
   camera.layers.set(0);
   for (const m of solids) {
     m.material = m.userData.inkMat;
-    if (m.userData.piece?.userData.ghost) m.visible = false;
+    if (m.userData.piece?.userData.ghost || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4)) m.visible = false;
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
@@ -814,10 +902,9 @@ function resetView() {
   lookFrom(HOME.az, HOME.el, { zoom: 1, target: fit.centre });
 }
 function fitAll() {
-  const f = frameOf(dev.fitAll, goal.az, goal.el, 1.06);
-  goal.zoom = fit.half / f.half;
-  goal.target.copy(f.centre);
-  dirty = true;
+  const b = new THREE.Box3();
+  for (const pc of pieces) if (pc.visible && !pc.userData.ghost) b.union(boxOfPiece(pc));
+  if (!b.isEmpty()) frameBox(b, 1.08);
 }
 const VIEWS = {
   iso: [HOME.az, HOME.el],
@@ -860,16 +947,25 @@ function frameBox(box, pad = 1.35) {
 }
 
 // ---------- State ----------
-const state = { explode: false, explodeAt: -1e9, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, legendHot: null };
-const iso = { part: null, section: false, context: true, saved: null, focus: null };
+const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, legendHot: null };
+const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null };
 const hidden = new Set();
 
-function explodeTarget(pc) { const g = pc.userData.egroup; return g && state.explode ? g.offset.clone() : new V3(); }
-function boxOfPiece(pc) {
-  const b = pc.userData.restBox.clone();
-  const off = explodeTarget(pc);
+// Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
+function pieceOffset(pc) {
+  const off = new V3();
+  const e = state.explode ? state.spread : 0;
+  if (pc.userData.egroup) off.addScaledVector(pc.userData.egroup.offset, e);
+  off.addScaledVector(pc.userData.apart, e);
   if (iso.part === pc.userData.part) off.add(pc.userData.detachVec);
-  return b.translate(off);
+  return off;
+}
+function boxOfPiece(pc) {
+  const off = pieceOffset(pc);
+  const k = iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc) ? iso.apartSpread : 0;
+  const b = new THREE.Box3();
+  pc.traverse((m) => { if (m.isMesh) b.union(m.userData.restBox.clone().translate(off.clone().addScaledVector(m.userData.ex, k))); });
+  return b;
 }
 function boxOfPart(id) {
   if (id === 'plasma') return new THREE.Box3(new V3(-R0 - DIMS.aIn, -R0 - DIMS.aIn, -DIMS.aIn), new V3(R0 + DIMS.aIn, R0 + DIMS.aIn, DIMS.aIn));
@@ -878,30 +974,19 @@ function boxOfPart(id) {
   return b;
 }
 
-// ---------- Clipping: the sector cutaway in the assembly, a live half-section when inspecting ----------
+// ---------- Clipping: the sector cutaway, only in the assembled machine ----------
 let clipKey = '';
 function applyClip() {
-  const key = iso.part ? (iso.section ? 'section' : 'none') : 'sector';
+  const key = iso.part ? 'none' : 'sector';
   if (key === clipKey) return;
   clipKey = key;
-  const mats = [...colorMats.values(), INK.clip, INK.free];
+  const mats = [...colorMats.values(), ...Object.values(INK)];
   for (const m of mats) {
-    if (key === 'section') { m.clippingPlanes = [sectionPlane]; m.clipIntersection = false; }
-    else if (key === 'sector' && m.userData.clip) { m.clippingPlanes = sectorPlanes; m.clipIntersection = true; }
+    if (key === 'sector' && m.userData.clip) { m.clippingPlanes = sectorPlanes; m.clipIntersection = true; }
     else m.clippingPlanes = [];
     m.needsUpdate = true;
   }
   dirty = true;
-}
-function updateSection() {
-  if (!iso.part || !iso.section) return;
-  const b = iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
-  const c = b.getCenter(new V3());
-  const { dir } = basis(view.az, view.el);
-  const n = new V3(-dir.x, -dir.y, 0);
-  if (n.lengthSq() < 1e-6) n.set(1, 0, 0);
-  n.normalize();
-  sectionPlane.setFromNormalAndCoplanarPoint(n, c);
 }
 
 // ---------- Visibility, ghosts, highlight ----------
@@ -920,7 +1005,9 @@ function refreshLit() {
     const pc = m.userData.piece;
     const p = m.userData.part;
     let lit = 0;
-    if (iso.part) lit = pc && pc === state.hoverPiece && !iso.focus ? 0.26 : 0;
+    const sub = m.userData.sub;
+    if (state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) lit = 0.45;
+    else if (iso.part) lit = pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub ? 0.32 : 0;
     else lit = p === state.select ? 0.42 : p === state.hover || p === state.legendHot ? 0.26 : 0;
     m.userData.lit = lit;
   }
@@ -952,10 +1039,8 @@ function applyLook() {
     u.uI.value = sc > 1 ? I * 0.32 : I;
     g.visible = plasmaShown();
   }
-  const rim = new THREE.Color('#b84ad6').multiplyScalar(plasmaShown() ? 0.42 : 0);
   const lcdOn = new THREE.Color(t === 'dark' ? '#3f9a5c' : '#5fbf78').multiplyScalar(0.5);
   for (const m of solids) {
-    if (m.userData.tone === 'glass' && (m.userData.part === 'viewport' || m.userData.part === 'laser')) m.userData.emit.copy(rim);
     if (m.userData.tone === 'lcd') m.userData.emit.copy(lcdOn);
     if (m.userData.tone === 'hvlcd') m.userData.emit.set(t === 'dark' ? '#8a2f2a' : '#d2473b').multiplyScalar(0.55);
     if (m.userData.tone === 'led') m.userData.emit.set(t === 'dark' ? '#2fae55' : '#36c060').multiplyScalar(0.7);
@@ -973,6 +1058,7 @@ function inspect(id, focusPiece = null) {
   if (!id || !partById.has(id)) return;
   if (!iso.part) iso.saved = snapshot();
   if (hidden.has(id)) hidden.delete(id);
+  if (iso.part !== id) iso.apart = false;
   iso.part = id;
   iso.focus = focusPiece;
   state.select = id;
@@ -987,7 +1073,7 @@ function endInspect() {
   if (!iso.part) return;
   iso.part = null;
   iso.focus = null;
-  iso.section = false;
+  iso.apart = false;
   refreshPieces();
   applyClip();
   if (iso.saved) { goal.az = nearestAz(iso.saved.az); goal.el = iso.saved.el; goal.zoom = iso.saved.zoom; goal.target.copy(iso.saved.target); }
@@ -999,6 +1085,7 @@ function focusPiece(pc) {
   if (!pc) return;
   if (iso.part !== pc.userData.part) return inspect(pc.userData.part, pc);
   iso.focus = iso.focus === pc ? null : pc;
+  if (!iso.focus) iso.apart = false;
   refreshPieces();
   frameIsolated(false);
   updateIsoBar();
@@ -1010,16 +1097,37 @@ function updateIsoBar() {
   if (!iso.part) return;
   const p = partById.get(iso.part);
   const lbl = $('isoLabel');
-  lbl.replaceChildren('Inspecting ', el('b', null, iso.focus ? iso.focus.userData.label : p.name), p.count > 1 && !iso.focus ? ` ×${p.count}` : '');
-  $('bSection').setAttribute('aria-pressed', iso.section ? 'true' : 'false');
+  lbl.replaceChildren(el('b', null, iso.focus ? iso.focus.userData.label : p.name), p.count > 1 && !iso.focus ? ` ×${p.count}` : '');
+  lbl.title = `Inspecting ${lbl.textContent}`;
+  $('bApart').setAttribute('aria-pressed', iso.apart ? 'true' : 'false');
+  $('bApart').textContent = iso.apart ? 'Put together' : 'Take apart';
+  $('apartWrap').hidden = !iso.apart;
   $('bContext').setAttribute('aria-pressed', iso.context ? 'true' : 'false');
-  $('bSection').disabled = iso.part === 'plasma';
+  $('bApart').disabled = iso.part === 'plasma';
   $('bAll').hidden = !iso.focus;
   if (iso.focus) $('bAll').textContent = `All ${p.count}`;
 }
 $('bDone').addEventListener('click', endInspect);
 $('bAll').addEventListener('click', () => focusPiece(iso.focus));
-$('bSection').addEventListener('click', () => { iso.section = !iso.section; applyClip(); updateIsoBar(); dirty = true; });
+function setApart(on) {
+  if (!iso.part || iso.part === 'plasma') return;
+  iso.apart = on;
+  // Pieces of one part sit close together (eight coils round one ring), so take apart one at a time: the nearest.
+  const list = piecesOf.get(iso.part) || [];
+  if (on && !iso.focus && list.length > 1) {
+    const { dir } = basis(view.az, view.el);
+    iso.focus = list.reduce((a, b) => (boxOfPiece(b).getCenter(new V3()).dot(dir) > boxOfPiece(a).getCenter(new V3()).dot(dir) ? b : a));
+    refreshPieces();
+  }
+  frameIsolated(false);
+  updateIsoBar();
+  renderInspector();
+  dirty = true;
+}
+const fmtSpread = (v) => `${(+v).toFixed(1)}×`;
+$('bApart').addEventListener('click', () => setApart(!iso.apart));
+$('sApart').addEventListener('input', (e) => { iso.apartSpread = +e.target.value; $('oApart').textContent = fmtSpread(iso.apartSpread); dirty = true; });
+$('sApart').addEventListener('change', () => frameIsolated(false));
 $('bContext').addEventListener('click', () => { iso.context = !iso.context; refreshPieces(); updateIsoBar(); });
 
 // ---------- Selection ----------
@@ -1177,7 +1285,10 @@ function renderInspector() {
   chips.append(c);
   box.append(chips);
   const acts = el('div', 'actions');
-  if (iso.part === p.id) acts.append(action('Back to assembly', endInspect, true), action(iso.section ? 'Whole part' : 'Section view', () => { iso.section = !iso.section; applyClip(); updateIsoBar(); renderInspector(); }));
+  if (iso.part === p.id) {
+    acts.append(action('Back to assembly', endInspect, true));
+    if (p.id !== 'plasma') acts.append(action(iso.apart ? 'Put back together' : 'Take apart', () => setApart(!iso.apart)));
+  }
   else acts.append(action('Inspect on its own', () => inspect(p.id), true), action('Zoom to it', () => zoomToPart(p.id)));
   acts.append(action(hidden.has(p.id) ? 'Show' : 'Hide', () => { setHidden([p.id], !hidden.has(p.id)); renderInspector(); }));
   box.append(acts);
@@ -1195,6 +1306,24 @@ function renderInspector() {
       wrap.append(b);
     }
     box.append(wrap);
+  }
+  const subs = subsOf(p.id, iso.part === p.id ? iso.focus : null);
+  if (subs.size > 1) {
+    box.append(el('h3', null, iso.part === p.id && iso.apart ? 'Taken apart into' : 'Made of'));
+    const ul = el('ul', 'subs');
+    const n = iso.part === p.id && iso.focus ? 1 : (piecesOf.get(p.id) || []).length;
+    for (const [name, count] of subs) {
+      const li = el('li');
+      const b = el('button');
+      b.type = 'button';
+      b.append(el('span', null, name));
+      if (n > 1) b.append(el('span', 'k', count === n ? `on all ${n}` : `on ${count} of ${n}`));
+      b.addEventListener('mouseenter', () => { state.hoverSub = name; refreshLit(); });
+      b.addEventListener('mouseleave', () => { state.hoverSub = null; refreshLit(); });
+      li.append(b);
+      ul.append(li);
+    }
+    box.append(ul);
   }
   box.append(el('h3', null, 'Specification'));
   const t = el('table', 'specs');
@@ -1276,7 +1405,8 @@ function renderOverview(box) {
   for (const s of [
     'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is.',
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
-    'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Section” cuts it in half to show the inside.',
+    'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
+    'Explode separates every component at once; the Spread slider beside it sets how far.',
     'The coloured dot next to each part says how far to trust its drawn shape and position.',
   ]) box.append(el('p', null, s));
 }
@@ -1333,9 +1463,10 @@ function renderHelp(box) {
       ['1 2 3 4', 'iso, front, right, top'],
       ['O / P', 'left-drag turns / pans'],
       ['E', 'explode'],
+      ['[ ]', 'less or more spread (explode, or take apart)'],
       ['C', 'cutaway'],
       ['I', 'inspect the selected part'],
-      ['S', 'section (while inspecting)'],
+      ['T', 'take the inspected part apart'],
       ['G', 'ghost context on or off'],
       ['H', 'hide the selected part'],
       ['Esc', 'step back: one piece, then the part, then the selection'],
@@ -1368,7 +1499,25 @@ $('bZoomIn').addEventListener('click', () => { touched = true; zoomBy(1.35); });
 $('bZoomOut').addEventListener('click', () => { touched = true; zoomBy(1 / 1.35); });
 $('bHome').addEventListener('click', () => { touched = true; resetView(); });
 $('bFitAll').addEventListener('click', () => { touched = true; fitAll(); });
-function setExplode(on) { state.explode = on; state.explodeAt = performance.now() / 1000; setPressed('bExplode', on); if (iso.part) frameIsolated(false); dirty = true; }
+function setExplode(on) {
+  state.explode = on;
+  state.explodeAt = performance.now() / 1000;
+  setPressed('bExplode', on);
+  $('spreadWrap').hidden = !on;
+  $('bCut').setAttribute('aria-disabled', on ? 'true' : 'false');
+  touched = true;
+  if (iso.part) frameIsolated(false);
+  else if (on) fitAll();
+  else lookFrom(goal.az, goal.el, { zoom: 1, target: fit.centre });
+  dirty = true;
+}
+$('sSpread').addEventListener('input', (e) => {
+  state.spread = +e.target.value;
+  $('oSpread').textContent = fmtSpread(state.spread);
+  if (!state.explode) setExplode(true);
+  dirty = true;
+});
+$('sSpread').addEventListener('change', () => { if (!iso.part) fitAll(); else frameIsolated(false); });
 function setCut(on) { state.cut = on; setPressed('bCut', on); dirty = true; }
 $('bExplode').addEventListener('click', () => setExplode(!state.explode));
 $('bCut').addEventListener('click', () => setCut(!state.cut));
@@ -1388,6 +1537,7 @@ function applyTheme() {
   shared.uInk.value.set(pal.ink);
   shared.uLitColor.value.set(pal.lit);
   shared.uGhost.value = pal.ghost;
+  shared.uGlass.value = pal.glass;
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
   shadow.uniforms.uA.value = pal.shadow;
   shadow.uniforms.uInk.value.set(pal.shadowInk);
@@ -1439,7 +1589,7 @@ function drawScale() {
 }
 function updateReadout() {
   const az = ((Math.round(view.az) % 360) + 540) % 360 - 180;
-  const line1 = `az ${az}° · el ${Math.round(view.el)}° · ${view.zoom.toFixed(view.zoom < 10 ? 2 : 1)}×`;
+  const line1 = `az ${az}° · el ${Math.round(view.el)}° · ${view.zoom.toFixed(view.zoom < 10 ? 2 : 1)}×${state.explode ? ` · spread ${fmtSpread(state.spread)}` : ''}`;
   let line2;
   if (iso.part) line2 = iso.focus ? iso.focus.userData.label : `${partById.get(iso.part).name}${partById.get(iso.part).count > 1 ? ` ×${partById.get(iso.part).count}` : ''}`;
   else if (state.select) line2 = partById.get(state.select).name;
@@ -1468,17 +1618,17 @@ function inSector(p) {
   if (state.cutZ > 40) return false;
   return p.z > state.cutZ && sectorPlanes[1].distanceToPoint(p) < 0 && sectorPlanes[2].distanceToPoint(p) < 0;
 }
-function pick(ndc) {
+function pickMesh(ndc) {
   raycaster.setFromCamera(ndc, camera);
   const list = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost; });
   const hits = raycaster.intersectObjects(list, false);
   for (const h of hits) {
     if (!iso.part && h.object.userData.clip && inSector(h.point)) continue;
-    if (iso.part && iso.section && sectionPlane.distanceToPoint(h.point) < 0) continue;
-    return h.object.userData.piece;
+    return h.object;
   }
   return null;
 }
+const pick = (ndc) => pickMesh(ndc)?.userData.piece || null;
 
 stage.addEventListener('pointerdown', (e) => {
   stage.setPointerCapture(e.pointerId);
@@ -1522,8 +1672,7 @@ function endPointer(e) {
   if (drag.moved < 5 && pointers.size === 0 && e.type === 'pointerup' && e.button === 0) {
     const pc = pick(ndcOf(e));
     const id = pc?.userData.part || null;
-    if (iso.part) { if (pc) { state.hoverPiece = pc; refreshLit(); } }
-    else select(id && id === state.select ? null : id);
+    if (!iso.part) select(id && id === state.select ? null : id);
   }
   if (pointers.size === 0) { drag = null; stage.classList.remove('dragging'); }
   else if (pointers.size === 1) { const [p] = [...pointers.values()]; drag.x = p.x; drag.y = p.y; drag.pinch = null; }
@@ -1545,17 +1694,21 @@ stage.addEventListener('wheel', (e) => {
   zoomBy(Math.exp(-clamp(dy, -240, 240) * 0.0016), ndcOf(e));
 }, { passive: false });
 
-function setHover(pc) {
+function setHover(mesh) {
+  const pc = mesh?.userData.piece || null;
   const id = pc?.userData.part || null;
-  if (pc === state.hoverPiece && id === state.hover) return;
+  const sub = mesh?.userData.sub || null;
+  if (pc === state.hoverPiece && id === state.hover && sub === (state.hoverMesh?.userData.sub || null)) return;
   state.hover = id;
   state.hoverPiece = pc;
+  state.hoverMesh = mesh;
   stage.classList.toggle('pointing', !!pc);
   refreshLit();
   if (pc && lastPointer && !coarse) {
     const r = stage.getBoundingClientRect();
     const p = partById.get(id);
-    tip.replaceChildren(iso.part ? pc.userData.label : p.name, el('small', null, iso.part ? 'double-click to zoom' : 'double-click to inspect'));
+    if (iso.part) tip.replaceChildren(sub || pc.userData.label, el('small', null, sub ? pc.userData.label : 'double-click to zoom'));
+    else tip.replaceChildren(p.name, el('small', null, 'double-click to inspect'));
     tip.style.left = `${lastPointer.clientX - r.left}px`;
     tip.style.top = `${lastPointer.clientY - r.top}px`;
     tip.classList.add('on');
@@ -1579,7 +1732,12 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'o') setDragMode('orbit');
   else if (k === 'p') setDragMode('pan');
   else if (k === 'i' && state.select) inspect(state.select);
-  else if (k === 's' && iso.part) { iso.section = !iso.section; applyClip(); updateIsoBar(); renderInspector(); }
+  else if (k === 't' && iso.part) setApart(!iso.apart);
+  else if (k === '[' || k === ']') {
+    const dv = k === ']' ? 0.2 : -0.2;
+    if (iso.part && iso.apart) { iso.apartSpread = clamp(iso.apartSpread + dv, 0.4, 2.5); $('sApart').value = iso.apartSpread; $('oApart').textContent = fmtSpread(iso.apartSpread); }
+    else { state.spread = clamp(state.spread + dv, 0.4, 2.5); $('sSpread').value = state.spread; $('oSpread').textContent = fmtSpread(state.spread); if (!state.explode) setExplode(true); }
+  }
   else if (k === 'g' && iso.part) { iso.context = !iso.context; refreshPieces(); updateIsoBar(); }
   else if (k === 'h' && state.select) { setHidden([state.select], !hidden.has(state.select)); renderInspector(); }
   else if (k === 'escape') { if (iso.focus) focusPiece(iso.focus); else if (iso.part) endInspect(); else select(null); }
@@ -1595,14 +1753,19 @@ window.addEventListener('keydown', (e) => {
 
 // ---------- Animation ----------
 let visible = true, lastT = performance.now() / 1000, idleSince = lastT;
-const groupPos = (name) => groupByName.get(name)?.obj.position || new V3();
+// How far an object has moved from rest: the sum of its own and its parents' offsets.
+function offsetOf(o) { const v = new V3(); for (let x = o; x && x !== dev.root; x = x.parent) v.add(x.position); return v; }
+// A cable or hose follows the two things it plugs into, wherever explode, inspect or take-apart sends them.
 function rebuildStretch() {
   for (const s of dev.stretch) {
-    const a = groupPos(s.ends[0]), b = groupPos(s.ends[1]);
-    if (a.lengthSq() + b.lengthSq() === 0 && !s.moved) continue;
-    s.moved = a.lengthSq() + b.lengthSq() > 0;
+    const a = offsetOf(s.ends[0]), b = offsetOf(s.ends[1]), h = offsetOf(s.mesh);
+    const key = [a, b, h].map((v) => v.toArray().map((x) => x.toFixed(2)).join(',')).join('|');
+    if (key === s.key) continue;
+    const first = s.key == null;
+    s.key = key;
+    if (first && a.lengthSq() + b.lengthSq() + h.lengthSq() === 0) continue;
     const n = s.points.length;
-    const pts = s.points.map((p, i) => p.clone().add(a.clone().lerp(b, i / (n - 1))));
+    const pts = s.points.map((p, i) => p.clone().add(a.clone().lerp(b, i / (n - 1))).sub(h));
     s.mesh.geometry.dispose();
     s.mesh.geometry = dev.tube(pts, s.r, s.o);
   }
@@ -1629,40 +1792,55 @@ function frame() {
     active = true;
   } else { view.az = goal.az; view.el = goal.el; view.zoom = goal.zoom; view.target.copy(goal.target); }
 
-  const target = state.explode ? 1 : 0;
+  const follow = (x, t, rate) => { if (reduceMotion.matches) return t; const y = x + (t - x) * (1 - Math.exp(-dt * rate)); return Math.abs(t - y) < 1e-4 ? t : y; };
   let moving = false;
+  const sp0 = state.spreadNow, ap0 = iso.apartNow;
+  state.spreadNow = follow(state.spreadNow, state.spread, 6);
+  iso.apartNow = follow(iso.apartNow, iso.apartSpread, 6);
+  const spreadMoved = state.spreadNow !== sp0, apartMoved = iso.apartNow !== ap0;
+
+  // The explode: groups move with a stagger, each piece adds its own offset, the spread scales both.
+  const target = state.explode ? 1 : 0;
   for (const g of dev.groups) {
     const delay = state.explode ? g.delay : 0.45 - g.delay;
-    if (now - state.explodeAt < delay && !reduceMotion.matches) { if (Math.abs(target - g.p) > 1e-4) moving = true; continue; }
     const before = g.p;
-    g.p = reduceMotion.matches ? target : g.p + (target - g.p) * (1 - Math.exp(-dt * 4.2));
-    if (Math.abs(target - g.p) < 1e-4) g.p = target;
-    if (g.p !== before) moving = true;
-    g.obj.position.copy(g.offset).multiplyScalar(ease(g.p));
+    if (!(now - state.explodeAt < delay && !reduceMotion.matches)) g.p = follow(g.p, target, 4.2);
+    else if (Math.abs(target - g.p) > 1e-4) moving = true;
+    if (g.p !== before || spreadMoved) { moving = true; g.obj.position.copy(g.offset).multiplyScalar(ease(g.p) * state.spreadNow); }
+  }
+  const ep0 = state.ep;
+  state.ep = follow(state.ep, target, 4.2);
+  if (state.ep !== ep0) moving = true;
+
+  // Inspect lifts a part out; take-apart moves each of its sub-parts along its own direction.
+  for (const pc of pieces) {
+    const u = pc.userData;
+    const d0 = u.dp, t0 = u.tp;
+    u.dp = follow(u.dp, iso.part === u.part ? 1 : 0, 5);
+    u.tp = follow(u.tp, iso.part === u.part && iso.apart && (!iso.focus || iso.focus === pc) ? 1 : 0, 4.5);
+    const p = u.egroup ? u.egroup.p : state.ep;
+    if (u.dp !== d0 || moving) {
+      pc.position.copy(u.detachVec).multiplyScalar(ease(u.dp)).addScaledVector(u.apart, ease(p) * state.spreadNow);
+      moving = true;
+    }
+    if (u.tp !== t0 || (apartMoved && u.tp > 0)) {
+      const k = ease(u.tp) * iso.apartNow;
+      pc.traverse((m) => { if (m.isMesh) m.position.copy(m.userData.ex).multiplyScalar(k); });
+      moving = true;
+    }
   }
   if (moving) { rebuildStretch(); applyLook(); active = true; }
 
-  for (const pc of pieces) {
-    const t = iso.part === pc.userData.part ? 1 : 0;
-    const u = pc.userData;
-    if (u.dp === t) continue;
-    u.dp = reduceMotion.matches ? t : u.dp + (t - u.dp) * (1 - Math.exp(-dt * 5));
-    if (Math.abs(t - u.dp) < 1e-4) u.dp = t;
-    pc.position.copy(u.detachVec).multiplyScalar(ease(u.dp));
-    active = true;
-  }
-
-  const cutTarget = state.cut && !iso.part ? 0 : 45;
+  const cutTarget = state.cut && !iso.part && !state.explode ? 0 : 45;
   if (Math.abs(state.cutZ - cutTarget) > 0.01) {
     state.cutZ = reduceMotion.matches ? cutTarget : state.cutZ + (cutTarget - state.cutZ) * (1 - Math.exp(-dt * 6));
     if (Math.abs(state.cutZ - cutTarget) < 0.05) state.cutZ = cutTarget;
     active = true;
   }
   sectorPlanes[0].constant = state.cutZ >= 44.9 ? 1e6 : state.cutZ;
-  updateSection();
 
   if (hoverPending && !drag) {
-    setHover(pick(hoverPending));
+    setHover(pickMesh(hoverPending));
     hoverPending = null;
   }
 
@@ -1690,7 +1868,7 @@ if (renderer) {
 }
 applyTheme();
 requestAnimationFrame(frame);
-window.__spm1 = { view, goal, iso, state, inspect, endInspect, select, lookFrom, setExplode, setCut, focusPiece, piecesOf, fitAll, resetView };
+window.__spm1 = { view, goal, iso, state, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView };
 </script>
 </body>
 </html>

@@ -11,25 +11,43 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | **Assembly** (left) | The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec or description. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. |
 | **Viewer** (centre) | The model. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The scale bar is true at every zoom, because the view is orthographic. |
 | **Inspector** (right) | **Part**: what the part does, its specification with a source tag on every row, its pieces, what it connects to, and practical notes. **Sources**: every reference, what was taken from it, and which parts cite it. **Controls**: every mouse, touch and key binding. |
-| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode, Cutaway, theme. |
+| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, theme. |
+
+### Explode
+
+**Explode** takes every component off the machine at once:
+
+- The quarters move out, and the coils, ports and fittings lift off them.
+- The PF and satellite coils rise.
+- The table, the supplies and the pump drop away.
+- Cables and the pump hose stay plugged into both ends.
+
+The **Spread** slider next to the button, or `[` and `]`, sets how far apart they go (0.4× to 2.5×). The plasma is off while the machine is apart. The windows are clear glass, and each elbow has a real opening behind its port, so you can look into the vessel through any window.
 
 ### Inspecting one component
 
 Double-click a part, or press **Inspect on its own**. The part lifts out of the machine, everything else turns into an x-ray ghost, and the camera frames the part and turns around it. Then:
 
-- **Section** cuts the part in half, on the side facing you, and hatches the cut faces. The cut follows the camera as you turn, so you always see inside (the TF winding under its copper cover, the probe shaft inside its bellows).
+- **Take apart** separates the part into its sub-parts along the directions they come off:
+  - Bolts slide out of their holes and nuts come off the back.
+  - Gaskets come out from between their flanges.
+  - A TF coil's copper former, winding and cover band separate along the coil axis.
+  - The pump's motor and fan cover come off its block.
+
+  Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest.
+- The inspector lists what the part is **made of**. Hover a name to light that sub-part in the view, or hover the view to name the sub-part under the pointer.
 - **Context** turns the ghost of the rest of the machine on or off.
 - The **pieces** list in the inspector, or a double-click on one piece, zooms to a single piece (one of the eight TF coils, one joint flange). **All** goes back to every piece.
 - **Esc** steps back one level: piece, then part, then selection.
 
-Keys: arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `C` cutaway, `I` inspect, `S` section, `G` ghost, `H` hide.
+Keys: arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `G` ghost, `H` hide.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
 | [`index.html`](index.html) | The page: renderer and ink pass, turntable camera, inspect mode, assembly tree, inspector |
-| [`device.js`](device.js) | The geometry in centimetres. One table of dimensions (`D`) at the top, the ConFlat sizes (`CF`), and `DETACH`, how far each part travels when inspected |
+| [`device.js`](device.js) | The geometry in centimetres. One table of dimensions (`D`) at the top, the ConFlat sizes (`CF`), and `DETACH`, how far each part travels when inspected. Each piece carries `apart`, where it goes in the exploded view. Each mesh carries `sub`, the sub-part it belongs to, and `ex`, where that sub-part goes when the part is taken apart |
 | [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS`, and `NOT_DRAWN` |
 
 ## Sources
