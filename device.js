@@ -371,7 +371,38 @@
       const h = af * 0.48;
       return merge([at(hex(af, h), T(0, h / 2, 0)), at(rod(r, len), T(0, -len / 2, 0))]);
     }
-    const nutGeom = (af = 1.2) => at(hex(af, af * 0.55), T(0, af * 0.275, 0));
+    // A hex nut (or any hex fitting) with a bore of radius r; local Y is its axis, centred like hex().
+    function hexNut(af, h, r) {
+      const R = af / Math.sqrt(3);
+      const shape = new THREE.Shape();
+      // The hexagon runs one way round and the bore the other, so the extruded walls face out of the metal.
+      for (let k = 0; k <= 6; k++) {
+        const a = (k / 6) * Math.PI * 2, x = R * Math.cos(a), y = -R * Math.sin(a);
+        if (k === 0) shape.moveTo(x, y); else shape.lineTo(x, y);
+      }
+      const bore = new THREE.Path();
+      for (let k = 0; k <= 16; k++) {
+        const a = (-k / 16) * Math.PI * 2, x = r * Math.cos(a), y = -r * Math.sin(a);
+        if (k === 0) bore.moveTo(x, y); else bore.lineTo(x, y);
+      }
+      shape.holes.push(bore);
+      const g = new THREE.ExtrudeGeometry(shape, { depth: h, bevelEnabled: false, steps: 1, curveSegments: 1 });
+      g.deleteAttribute('uv');
+      g.translate(0, 0, -h / 2);
+      g.rotateX(-Math.PI / 2);
+      // The bore shades as a cylinder; the six flats keep their own facing.
+      const p = g.attributes.position, nrm = g.attributes.normal;
+      for (let k = 0; k < p.count; k++) {
+        if (Math.abs(nrm.getY(k)) > 0.5) continue;
+        const x = p.getX(k), z = p.getZ(k), rho = Math.hypot(x, z);
+        if (rho < r + 0.01) nrm.setXYZ(k, -x / rho, 0, -z / rho);
+      }
+      g.computeBoundingSphere();
+      g.computeBoundingBox();
+      return g;
+    }
+    // Nuts are bored to the bolt's shank, so a bolt taken out leaves a nut you can see through.
+    const nutGeom = (af = 1.2, r = 0.42) => at(hexNut(af, af * 0.55, r), T(0, af * 0.275, 0));
 
     // Bolt-circle matrices on a flange face: `centre` on the face, `axis` out of the face, `u` and `v` span it.
     function circleMatrices(centre, axis, u, v, rad, n, phase = 0.5) {
@@ -390,7 +421,7 @@
       const len = cf.t * 2 + D.gap + 0.7;
       addInst(pc, boltGeom(len, cf.af, cf.br), 'bolt', circleMatrices(face, axis, u, v, cf.bc / 2, cf.n, o.phase ?? 0.5),
         { sub: `${cf.n} bolts`, ex: along(axis, o.bolts ?? 10) });
-      addInst(pc, nutGeom(cf.af), 'bolt', circleMatrices(back, axis.clone().negate(), u, v, cf.bc / 2, cf.n, o.phase ?? 0.5),
+      addInst(pc, nutGeom(cf.af, cf.br + 0.02), 'bolt', circleMatrices(back, axis.clone().negate(), u, v, cf.bc / 2, cf.n, o.phase ?? 0.5),
         { sub: `${cf.n} nuts`, ex: along(axis, -(o.nuts ?? 4)) });
     }
 
@@ -422,7 +453,7 @@
         const face = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t));
         const mats = circleMatrices(face, tdir, radial(pj), Z, J.bc / 2, J.n);
         if (side < 0) addInst(fl, boltGeom(J.t * 2 + D.gap + 0.9), 'bolt', mats, { sub: '20 bolts', ex: along(tdir, 9) });
-        else addInst(fl, nutGeom(), 'bolt', mats, { sub: '20 nuts', ex: along(tdir, 7) });
+        else addInst(fl, nutGeom(1.2, J.br + 0.02), 'bolt', mats, { sub: '20 nuts', ex: along(tdir, 7) });
       }
 
       // Lateral DN100CF port: a tube welded into the elbow, with a flange welded on its end.
@@ -639,7 +670,7 @@
       const KF = { sub: 'KF16 clamp and centring ring', ex: along(radial(deg), 6) };
       add(gg, at(flangeRing(0.75, 1.5, 0.45, 32), frame(pol(D.R0, deg, kfFrom + 3), Z)), 'steel2', KF);
       add(gg, at(revolve([[1.0, -0.5], [1.8, -0.35], [1.8, 0.35], [1.0, 0.5], [1.0, -0.5]], 32), frame(pol(D.R0, deg, kfFrom + 3), Z)), 'alu', KF);
-      add(gg, at(hex(1.7, 1.0), frame(pol(D.R0, deg, kfTo - 0.5), Z)), 'steel2', { sub: 'Sensor tube nut', ex: V(0, 0, 3) });
+      add(gg, at(hexNut(1.7, 1.0, 0.97), frame(pol(D.R0, deg, kfTo - 0.5), Z)), 'steel2', { sub: 'Sensor tube nut', ex: V(0, 0, 3) });
       const head = pol(D.R0, deg, kfTo + 2.6);
       const HEAD = { ex: V(0, 0, 7) };
       add(gg, at(box(3.2, 8.4, 5.0), rtz(head, deg)), 'gaugeblue', HEAD);
@@ -671,7 +702,7 @@
       add(nv, merge(ridges), 'black', STEM);
       const OUT = { sub: 'Outlet compression fitting', ex: along(ax, 10) };
       add(nv, at(rod(0.4, 1.0), frame(vb.clone().add(ax.clone().multiplyScalar(1.7)), ax)), 'brass', OUT);
-      needleOut = add(nv, at(hex(1.1, 0.7), frame(vb.clone().add(ax.clone().multiplyScalar(2.3)), ax)), 'brass', OUT);
+      needleOut = add(nv, at(hexNut(1.1, 0.7, 0.3), frame(vb.clone().add(ax.clone().multiplyScalar(2.3)), ax)), 'brass', OUT);
       gasFrom = vb.clone().add(ax.clone().multiplyScalar(2.7));
     }
 
@@ -985,7 +1016,7 @@
     {
       const gb = piece('needle', tableG, { label: 'Gas inlet fitting', sub: 'Gas inlet fitting', apart: V(0, 0, 5) });
       gasFitting = add(gb, at(box(2.4, 2.4, 1.8), T(gasTo.x, gasTo.y + 1.2, TB.top + 0.9)), 'brass');
-      add(gb, at(hex(1.4, 0.8), frame(V(gasTo.x, gasTo.y + 2.8, TB.top + 0.9), V(0, 1, 0))), 'brass');
+      add(gb, at(hexNut(1.4, 0.8, 0.3), frame(V(gasTo.x, gasTo.y + 2.8, TB.top + 0.9), V(0, 1, 0))), 'brass');
     }
     stretchLine('needle', [gasFrom, gasFrom.clone().add(V(1.4, 0.4, 1.4)), V(14, 30, 21.5), V(13.5, 37, 20.8), V(13, 40.6, 15), V(13, 41.2, 0), V(13, 41.4, -16), V(13, 42.4, TB.top + 1.6), gasTo], 0.26, 'brass', { seg: 70, radial: 8 }, [needleOut, gasFitting], 'Gas line');
 
