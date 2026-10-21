@@ -143,6 +143,38 @@
   .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--card); font-size: 12px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; transform: translate(12px, 14px); opacity: 0; transition: opacity .12s; }
   .tip.on { opacity: 0.94; }
   .tip small { opacity: 0.7; margin-left: 6px; }
+  /* The sub-part sheet: a frosted glass board beside the model, with an arrow to the part it describes. */
+  .leader { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .leader[hidden] { display: none; }
+  .leader path { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; }
+  .leader marker path { fill: var(--accent); stroke: none; }
+  .leader circle { fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 3 3; }
+  .leader .knot { fill: var(--accent); stroke: none; }
+  .board {
+    position: absolute; top: 86px; width: min(310px, calc(100% - 32px)); max-height: calc(100% - 150px); overflow-y: auto; overscroll-behavior: contain;
+    padding: 12px 14px; border-radius: 12px; font-size: 13px;
+    background: color-mix(in srgb, var(--card) 60%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+    border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.25);
+  }
+  .board[hidden] { display: none; }
+  .board.left { left: 14px; }
+  .board.right { right: 14px; }
+  .board .eyebrow { margin-right: 26px; }
+  .board h4 { margin: 2px 26px 2px 0; font-size: 15px; font-weight: 650; line-height: 1.25; }
+  .board .from { font-size: 11.5px; color: var(--muted); margin-bottom: 8px; }
+  .board .mat { margin: 0 0 8px; font-size: 12.5px; }
+  .board .mat b { font-weight: 600; }
+  .board table.specs td:first-child { width: 42%; }
+  .board .note { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+  .board .srcs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; align-items: center; font-size: 11.5px; color: var(--muted); }
+  .board .x { position: absolute; top: 7px; right: 7px; width: 26px; height: 26px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 18px; line-height: 1; }
+  .board .x:hover { background: var(--chip); color: var(--ink); }
+  @media (max-width: 520px) {
+    .board, .board.left, .board.right { top: auto; bottom: 8px; left: 8px; right: 8px; width: auto; max-height: 40%; }
+    .view.sheet .corner.bl, .view.sheet .corner.br { display: none; }
+  }
   .isobar { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 4px 4px 4px 12px; box-shadow: 0 4px 18px rgb(0 0 0 / 0.08); max-width: calc(100% - 200px); }
   .isobar.on { display: flex; }
   .isobar .lbl { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 6px; }
@@ -159,6 +191,9 @@
   .subs { list-style: none; margin: 0; padding: 0; }
   .subs button { width: calc(100% + 12px); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: none; text-align: left; padding: 4px 6px; margin: 0 -6px; border-radius: 6px; font-size: 13px; cursor: default; }
   .subs button:hover { background: var(--soft); }
+  .subs button { cursor: pointer; }
+  .subs button.on { background: var(--chip); }
+  .subs button.on span:first-child { font-weight: 600; }
   .subs .k { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); white-space: nowrap; }
   .fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
 
@@ -283,6 +318,8 @@
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
+    <svg class="leader" id="leader" hidden aria-hidden="true"><defs><marker id="arrowHead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs><path id="leaderLine" marker-end="url(#arrowHead)"/><circle class="knot" id="leaderKnot" r="2.6"/><circle id="leaderRing" r="10"/></svg>
+    <aside class="board" id="board" hidden aria-live="polite" aria-label="Technical sheet of the selected sub-part"></aside>
     <div class="tip" id="tip"></div>
     <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><div class="hint" id="hint"></div></div>
     <div class="corner br" id="readout"></div>
@@ -1006,7 +1043,8 @@ function refreshLit() {
     const p = m.userData.part;
     let lit = 0;
     const sub = m.userData.sub;
-    if (state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) lit = 0.45;
+    if (state.subSel && pc === state.subSel.pc && sub === state.subSel.sub) lit = 0.5;
+    else if (state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) lit = 0.45;
     else if (iso.part) lit = pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub ? 0.32 : 0;
     else lit = p === state.select ? 0.42 : p === state.hover || p === state.legendHot ? 0.26 : 0;
     m.userData.lit = lit;
@@ -1058,7 +1096,7 @@ function inspect(id, focusPiece = null) {
   if (!id || !partById.has(id)) return;
   if (!iso.part) iso.saved = snapshot();
   if (hidden.has(id)) hidden.delete(id);
-  if (iso.part !== id) iso.apart = false;
+  if (iso.part !== id) { iso.apart = false; state.subSel = null; hideBoard(); }
   iso.part = id;
   iso.focus = focusPiece;
   state.select = id;
@@ -1071,6 +1109,8 @@ function inspect(id, focusPiece = null) {
 }
 function endInspect() {
   if (!iso.part) return;
+  state.subSel = null;
+  hideBoard();
   iso.part = null;
   iso.focus = null;
   iso.apart = false;
@@ -1086,6 +1126,7 @@ function focusPiece(pc) {
   if (iso.part !== pc.userData.part) return inspect(pc.userData.part, pc);
   iso.focus = iso.focus === pc ? null : pc;
   if (!iso.focus) iso.apart = false;
+  if (state.subSel && state.subSel.pc !== iso.focus) { state.subSel = null; hideBoard(); }
   refreshPieces();
   frameIsolated(false);
   updateIsoBar();
@@ -1129,6 +1170,143 @@ $('bApart').addEventListener('click', () => setApart(!iso.apart));
 $('sApart').addEventListener('input', (e) => { iso.apartSpread = +e.target.value; $('oApart').textContent = fmtSpread(iso.apartSpread); dirty = true; });
 $('sApart').addEventListener('change', () => frameIsolated(false));
 $('bContext').addEventListener('click', () => { iso.context = !iso.context; refreshPieces(); updateIsoBar(); });
+
+// ---------- Sub-part sheet: a glass board beside the model, an arrow to the part ----------
+const board = $('board'), leader = $('leader'), leaderLine = $('leaderLine'), leaderRing = $('leaderRing'), leaderKnot = $('leaderKnot');
+function subDocOf(part, sub) {
+  const key = DOCS.SUBMAP[`${part}|${sub}`] || DOCS.SUBMAP[`*|${sub}`];
+  return key ? DOCS.SUBDOCS[key] : null;
+}
+function subMeshes(pc, sub) { const out = []; pc.traverse((m) => { if (m.isMesh && m.userData.sub === sub) out.push(m); }); return out; }
+// Up to ~300 surface points of a mesh at rest (every instance of an instanced mesh), cached.
+function surfacePoints(m) {
+  if (m.userData.points) return m.userData.points;
+  const pos = m.geometry.attributes.position, pts = [];
+  const mats = [];
+  if (m.isInstancedMesh) for (let i = 0; i < m.count; i++) { const im = new THREE.Matrix4(); m.getMatrixAt(i, im); mats.push(im); }
+  else mats.push(new THREE.Matrix4());
+  const step = Math.max(1, Math.floor((pos.count * mats.length) / 300));
+  let k = 0;
+  for (const im of mats) for (let i = 0; i < pos.count; i++, k++) if (k % step === 0) pts.push(new V3().fromBufferAttribute(pos, i).applyMatrix4(im));
+  m.userData.points = pts;
+  return pts;
+}
+function nearestPiece(list) {
+  const { dir } = basis(view.az, view.el);
+  return list.reduce((a, b) => (boxOfPiece(b).getCenter(new V3()).dot(dir) > boxOfPiece(a).getCenter(new V3()).dot(dir) ? b : a));
+}
+// From the inspector: inspect the part, take it apart, and open the sheet on the nearest piece that has this sub-part.
+function showSubOf(part, sub) {
+  const list = (piecesOf.get(part) || []).filter((pc) => subMeshes(pc, sub).length);
+  if (!list.length) return;
+  let pc = iso.part === part && iso.focus && list.includes(iso.focus) ? iso.focus : nearestPiece(list);
+  if (iso.part !== part) inspect(part, (piecesOf.get(part) || []).length > 1 ? pc : null);
+  else if ((piecesOf.get(part) || []).length > 1 && iso.focus !== pc) focusPiece(pc);
+  if (!iso.apart) setApart(true);
+  openSub(pc, sub);
+}
+function openSub(pc, sub) {
+  if (!pc || !sub) return;
+  state.subSel = { pc, sub };
+  // On a phone the sheet takes the lower part of the view, so bring the sub-part to the middle, above it.
+  if (width < 520) {
+    const box = new THREE.Box3();
+    for (const m of subMeshes(pc, sub)) box.union(m.userData.restBox.clone().translate(offsetOf(m)).translate(m.userData.ex.clone().multiplyScalar(iso.apart && iso.part === pc.userData.part ? iso.apartSpread : 0).sub(m.position)));
+    const { up } = basis(goal.az, goal.el);
+    goal.target.copy(box.getCenter(new V3())).addScaledVector(up, -0.25 * fit.half / goal.zoom);
+  }
+  renderBoard();
+  refreshLit();
+  renderInspector();
+  dirty = true;
+}
+function hideBoard() {
+  board.hidden = true;
+  leader.toggleAttribute('hidden', true);
+  $('card').classList.remove('sheet');
+}
+function closeSub() {
+  if (!state.subSel) return;
+  state.subSel = null;
+  hideBoard();
+  refreshLit();
+  renderInspector();
+  dirty = true;
+}
+function renderBoard() {
+  const sel = state.subSel;
+  if (!sel) { hideBoard(); return; }
+  const part = partById.get(sel.pc.userData.part);
+  const doc = subDocOf(part.id, sel.sub);
+  const x = el('button', 'x', '×');
+  x.type = 'button';
+  x.setAttribute('aria-label', 'Close the sheet');
+  x.addEventListener('click', closeSub);
+  board.replaceChildren(x, el('div', 'eyebrow', part.name), el('h4', null, doc?.title || sel.sub));
+  board.append(el('div', 'from', doc && doc.title !== sel.sub ? `${sel.sub} · ${sel.pc.userData.label}` : sel.pc.userData.label));
+  if (doc?.material) { const m = el('p', 'mat'); m.append(el('b', null, 'Material: '), doc.material); board.append(m); }
+  if (doc?.rows.length) {
+    const t = el('table', 'specs');
+    const tb = el('tbody');
+    for (const [label, value, src] of doc.rows) {
+      const tr = el('tr');
+      const v = el('td');
+      v.append(value, ' ', refButton(src));
+      tr.append(el('td', null, label), v);
+      tb.append(tr);
+    }
+    t.append(tb);
+    board.append(t);
+  }
+  if (doc?.note) board.append(el('p', 'note', doc.note));
+  if (!doc) board.append(el('p', 'note', `Part of the ${part.name.toLowerCase()}. No separate data is published for it; see the component’s specification in the inspector.`));
+  if (doc?.sources?.length) {
+    const sr = el('div', 'srcs');
+    sr.append('Sources ');
+    for (const id of doc.sources) sr.append(refButton(id));
+    board.append(sr);
+  }
+  board.hidden = false;
+  leader.toggleAttribute('hidden', false);
+  $('card').classList.add('sheet');
+  placeBoard();
+}
+// Keep the board on the side away from the part and draw the arrow from its edge to the part's centre.
+function placeBoard() {
+  const sel = state.subSel;
+  if (!sel || board.hidden) return;
+  const meshes = subMeshes(sel.pc, sel.sub);
+  const box = new THREE.Box3();
+  for (const m of meshes) box.union(m.userData.restBox.clone().translate(offsetOf(m)));
+  // Aim at the metal, not the middle of a ring: the surface point nearest the box centre, on the side facing the viewer.
+  const { dir } = basis(view.az, view.el);
+  const aim = box.getCenter(new V3()).addScaledVector(dir, box.getSize(new V3()).length() * 0.25);
+  let best = null, bestD = Infinity;
+  for (const m of meshes) {
+    const off = offsetOf(m);
+    for (const p of surfacePoints(m)) { const d = p.distanceToSquared(aim.clone().sub(off)); if (d < bestD) { bestD = d; best = p.clone().add(off); } }
+  }
+  const c = (best || box.getCenter(new V3())).project(camera);
+  const tx = (c.x * 0.5 + 0.5) * width, ty = (-c.y * 0.5 + 0.5) * height;
+  const phone = width < 520;
+  const left = tx > width / 2;
+  board.classList.toggle('left', !phone && left);
+  board.classList.toggle('right', !phone && !left);
+  const offscreen = Math.abs(c.x) > 1.02 || Math.abs(c.y) > 1.02;
+  leader.toggleAttribute('hidden', offscreen);
+  if (offscreen) return;
+  const vr = stage.getBoundingClientRect(), br = board.getBoundingClientRect();
+  const bx0 = br.left - vr.left, by0 = br.top - vr.top, bx1 = bx0 + br.width, by1 = by0 + br.height;
+  const ax = phone ? clamp(tx, bx0 + 18, bx1 - 18) : left ? bx1 : bx0;
+  const ay = phone ? by0 : clamp(ty, by0 + 20, by1 - 20);
+  const dx = tx - ax, dy = ty - ay, d = Math.hypot(dx, dy) || 1;
+  const stop = Math.min(13, d * 0.5);
+  leaderLine.setAttribute('d', `M${ax.toFixed(1)} ${ay.toFixed(1)} L${(tx - (dx / d) * stop).toFixed(1)} ${(ty - (dy / d) * stop).toFixed(1)}`);
+  leaderKnot.setAttribute('cx', ax.toFixed(1));
+  leaderKnot.setAttribute('cy', ay.toFixed(1));
+  leaderRing.setAttribute('cx', tx.toFixed(1));
+  leaderRing.setAttribute('cy', ty.toFixed(1));
+}
 
 // ---------- Selection ----------
 function select(id, o = {}) {
@@ -1314,10 +1492,12 @@ function renderInspector() {
     const n = iso.part === p.id && iso.focus ? 1 : (piecesOf.get(p.id) || []).length;
     for (const [name, count] of subs) {
       const li = el('li');
-      const b = el('button');
+      const b = el('button', state.subSel && state.subSel.sub === name && state.subSel.pc.userData.part === p.id ? 'on' : null);
       b.type = 'button';
+      b.title = 'Show its technical sheet';
       b.append(el('span', null, name));
       if (n > 1) b.append(el('span', 'k', count === n ? `on all ${n}` : `on ${count} of ${n}`));
+      b.addEventListener('click', () => showSubOf(p.id, name));
       b.addEventListener('mouseenter', () => { state.hoverSub = name; refreshLit(); });
       b.addEventListener('mouseleave', () => { state.hoverSub = null; refreshLit(); });
       li.append(b);
@@ -1407,6 +1587,7 @@ function renderOverview(box) {
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
+    'While inspecting, click a sub-part (or its name under “Taken apart into”) to open its technical sheet: material, dimensions and sources, on a glass board with an arrow to the part.',
     'The coloured dot next to each part says how far to trust its drawn shape and position.',
   ]) box.append(el('p', null, s));
 }
@@ -1446,6 +1627,7 @@ function renderHelp(box) {
       ['Wheel', 'zoom toward the pointer'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own; again on one piece to zoom to it'],
+      ['Click a sub-part (inspecting)', 'open its technical sheet; click empty space to close it'],
       ['Double-click empty space', 'reset the view'],
     ]],
     ['Touch', [
@@ -1469,7 +1651,7 @@ function renderHelp(box) {
       ['T', 'take the inspected part apart'],
       ['G', 'ghost context on or off'],
       ['H', 'hide the selected part'],
-      ['Esc', 'step back: one piece, then the part, then the selection'],
+      ['Esc', 'step back: the sheet, one piece, the part, then the selection'],
     ]],
   ];
   for (const [title, rows] of groups) {
@@ -1591,7 +1773,8 @@ function updateReadout() {
   const az = ((Math.round(view.az) % 360) + 540) % 360 - 180;
   const line1 = `az ${az}° · el ${Math.round(view.el)}° · ${view.zoom.toFixed(view.zoom < 10 ? 2 : 1)}×${state.explode ? ` · spread ${fmtSpread(state.spread)}` : ''}`;
   let line2;
-  if (iso.part) line2 = iso.focus ? iso.focus.userData.label : `${partById.get(iso.part).name}${partById.get(iso.part).count > 1 ? ` ×${partById.get(iso.part).count}` : ''}`;
+  if (state.subSel) line2 = state.subSel.sub;
+  else if (iso.part) line2 = iso.focus ? iso.focus.userData.label : `${partById.get(iso.part).name}${partById.get(iso.part).count > 1 ? ` ×${partById.get(iso.part).count}` : ''}`;
   else if (state.select) line2 = partById.get(state.select).name;
   else line2 = `${DOCS.PARTS.length} components · ${pieces.length} pieces`;
   const r = $('readout');
@@ -1673,6 +1856,10 @@ function endPointer(e) {
     const pc = pick(ndcOf(e));
     const id = pc?.userData.part || null;
     if (!iso.part) select(id && id === state.select ? null : id);
+    else {
+      const m = pickMesh(ndcOf(e));
+      if (m && m.userData.sub) openSub(m.userData.piece, m.userData.sub); else closeSub();
+    }
   }
   if (pointers.size === 0) { drag = null; stage.classList.remove('dragging'); }
   else if (pointers.size === 1) { const [p] = [...pointers.values()]; drag.x = p.x; drag.y = p.y; drag.pinch = null; }
@@ -1707,7 +1894,7 @@ function setHover(mesh) {
   if (pc && lastPointer && !coarse) {
     const r = stage.getBoundingClientRect();
     const p = partById.get(id);
-    if (iso.part) tip.replaceChildren(sub || pc.userData.label, el('small', null, sub ? pc.userData.label : 'double-click to zoom'));
+    if (iso.part) tip.replaceChildren(sub || pc.userData.label, el('small', null, sub ? 'click for its sheet' : 'double-click to zoom'));
     else tip.replaceChildren(p.name, el('small', null, 'double-click to inspect'));
     tip.style.left = `${lastPointer.clientX - r.left}px`;
     tip.style.top = `${lastPointer.clientY - r.top}px`;
@@ -1740,7 +1927,7 @@ window.addEventListener('keydown', (e) => {
   }
   else if (k === 'g' && iso.part) { iso.context = !iso.context; refreshPieces(); updateIsoBar(); }
   else if (k === 'h' && state.select) { setHidden([state.select], !hidden.has(state.select)); renderInspector(); }
-  else if (k === 'escape') { if (iso.focus) focusPiece(iso.focus); else if (iso.part) endInspect(); else select(null); }
+  else if (k === 'escape') { if (state.subSel) closeSub(); else if (iso.focus) focusPiece(iso.focus); else if (iso.part) endInspect(); else select(null); }
   else if (onStage && k.startsWith('arrow')) {
     const sx = k === 'arrowleft' ? -1 : k === 'arrowright' ? 1 : 0, sy = k === 'arrowup' ? -1 : k === 'arrowdown' ? 1 : 0;
     if (e.shiftKey) panBy(-sx * 40, -sy * 40); else orbitBy(sx * 16, -sy * 16);
@@ -1850,6 +2037,7 @@ function frame() {
   draw();
   drawTriad();
   drawScale();
+  placeBoard();
   updateReadout();
 }
 
@@ -1868,7 +2056,7 @@ if (renderer) {
 }
 applyTheme();
 requestAnimationFrame(frame);
-window.__spm1 = { view, goal, iso, state, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView };
+window.__spm1 = { view, goal, iso, state, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, showSubOf, openSub, closeSub };
 </script>
 </body>
 </html>

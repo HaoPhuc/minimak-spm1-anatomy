@@ -38,7 +38,18 @@ Double-click a part, or press **Inspect on its own**. The part lifts out of the 
 - The inspector lists what the part is **made of**. Hover a name to light that sub-part in the view, or hover the view to name the sub-part under the pointer.
 - **Context** turns the ghost of the rest of the machine on or off.
 - The **pieces** list in the inspector, or a double-click on one piece, zooms to a single piece (one of the eight TF coils, one joint flange). **All** goes back to every piece.
-- **Esc** steps back one level: piece, then part, then selection.
+- **Esc** steps back one level: sheet, piece, part, then selection.
+
+### Technical sheets for sub-parts
+
+While inspecting, click a sub-part in the view, or its name under "Taken apart into". Its technical sheet opens on a frosted glass board beside the model, with an arrow to the part. The arrow follows the part as you turn, and on a phone the sheet docks at the bottom. A sheet gives the material, the dimensions and notes, with a source tag on every row.
+
+- **Vacuum hardware** is drawn to the standard and documented from it:
+  - ConFlat flanges, port tubes and copper gaskets for DN40, DN63, DN100 and DN160 come from the MBE-Komponenten table: OD, thickness, bolt circle, holes, knife edge and seal recess.
+  - Bolts and nuts get the thread their holes take (M6 or ¼-28; M8 or 5/16-24) and their grip length.
+  - The viewport windows (Kodial glass, Kovar sleeve, 90 × 6 mm for DN100CF, 38 × 3 mm for DN40CF, 350 °C bake-out) come from Lesker's reference parts.
+  - Each sheet says when the SPM1's own part is not published.
+- **Coils, electrodes, the gauge and the control parts** carry what the sources and photos show. Where nothing is published, the sheet says so rather than guessing.
 
 Keys: arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `G` ghost, `H` hide.
 
@@ -62,6 +73,8 @@ Keys: arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everyt
 | S6 | [Wikipedia, Vacuum flange](https://en.wikipedia.org/wiki/Vacuum_flange) | How CF and KF joints seal |
 | S7 | [MKS, Mini-Convectron gauge](https://www.mks.com/p/275600-0-GD-T) | The Convectron gauge family and its range |
 | S8 | [minimak-groundwork](https://github.com/HaoPhuc/minimak-groundwork) | TU/e context and the Langmuir fit script |
+| S9 | [MBE-Komponenten, flange, gasket and tube dimensions](https://www.mbe-komponenten.de/service/flange-gasket/) | Every CF flange, port tube, gasket and bolt hole in the model and on the sheets |
+| S10 | [Kurt J. Lesker, Kodial CF viewports](https://www.lesker.com/viewports/viewports-cf-flanged-kodial-glass.cfm) | Viewport glass, view diameter, thickness, Kovar seal, bake-out |
 
 ## How true it is
 
@@ -71,6 +84,6 @@ Every part has a basis, shown as the dot in the tree:
 - **Photo** (half dot): scaled or placed from the webinar photos. The joints sit on the diagonals, clamped to four aluminium corner posts. The TF formers have fold-out copper tabs. The PF1/PF2 windings and leads are on a white central former. The satellite coils are hose-wound rings. The gauge and gas stack is on top of the back quarter. The table is a Thorlabs Nexus. The control drawer, the coil-supply chassis and the pump are under the table.
 - **Assumed** (ring): placed where plausible. These are the outer PF coils (PF3, PF4), the solenoid's position, the HV supply, the gas valve, the Langmuir probe, the webcam and the spectrometer.
 
-The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) follow the CF standard and match the bolt counts in the photos. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived".
+The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) are drawn to the MBE-Komponenten CF table (S9) and match the bolt counts in the photos. The vessel is drawn as a 154 × 2 mm DN160CF tube, so its 150 mm bore gives the published 75 mm minor radius. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived".
 
 To correct the model at the kickoff, change `D` at the top of `device.js` and the `basis` and spec rows in `parts.js`.
