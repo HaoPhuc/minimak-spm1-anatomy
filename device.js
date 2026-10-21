@@ -233,6 +233,54 @@
       const b = Math.min(0.3, h / 4);
       return revolve([[rIn, -h / 2], [rOut - b, -h / 2], [rOut, -h / 2 + b], [rOut, h / 2 - b], [rOut - b, h / 2], [rIn, h / 2], [rIn, -h / 2]], seg);
     }
+    // A ConFlat flange drilled for its bolts: an annulus rIn..rOut (rIn 0 for a blank), thickness t, centred on
+    // `centre` with its axis along `axis`. Each hole set puts n clearance holes of radius r on a bolt circle of
+    // radius rad, at exactly the angles circleMatrices(.., u, v, rad, n, phase) gives the bolts that pass through.
+    function cfRing(centre, axis, rIn, rOut, t, sets, seg = 72) {
+      const M = frame(centre, axis);
+      const inv = M.clone().invert();
+      // The outline runs one way round and every hole the other, so the extruded walls face out of the metal.
+      const poly = (path, cx, cz, r, n, hole) => {
+        for (let k = 0; k <= n; k++) {
+          const a = (hole ? -k / n : k / n) * Math.PI * 2, x = cx + r * Math.cos(a), y = -(cz + r * Math.sin(a));
+          if (k === 0) path.moveTo(x, y); else path.lineTo(x, y);
+        }
+        return path;
+      };
+      const shape = poly(new THREE.Shape(), 0, 0, rOut, seg);
+      if (rIn > 0) shape.holes.push(poly(new THREE.Path(), 0, 0, rIn, seg, true));
+      const holes = [];
+      for (const h of sets) {
+        for (let i = 0; i < h.n; i++) {
+          const b = ((i + (h.phase ?? 0.5)) / h.n) * Math.PI * 2;
+          const w = centre.clone().add(h.u.clone().multiplyScalar(h.rad * Math.cos(b))).add(h.v.clone().multiplyScalar(h.rad * Math.sin(b))).applyMatrix4(inv);
+          holes.push([w.x, w.z, h.r]);
+          shape.holes.push(poly(new THREE.Path(), w.x, w.z, h.r, 14, true));
+        }
+      }
+      const g = new THREE.ExtrudeGeometry(shape, { depth: t, bevelEnabled: false, steps: 1, curveSegments: 1 });
+      g.deleteAttribute('uv');
+      g.translate(0, 0, -t / 2);
+      g.rotateX(-Math.PI / 2);
+      // Shade the rim, the bore and every hole wall as true cylinders, not facets.
+      const p = g.attributes.position, nrm = g.attributes.normal;
+      for (let k = 0; k < p.count; k++) {
+        if (Math.abs(nrm.getY(k)) > 0.5) continue;
+        const x = p.getX(k), z = p.getZ(k), rho = Math.hypot(x, z);
+        if (Math.abs(rho - rOut) < 0.02) nrm.setXYZ(k, x / rho, 0, z / rho);
+        else if (rIn > 0 && Math.abs(rho - rIn) < 0.02) nrm.setXYZ(k, -x / rho, 0, -z / rho);
+        else {
+          let best = null, bd = Infinity;
+          for (const hl of holes) { const d = Math.hypot(x - hl[0], z - hl[1]) - hl[2]; if (Math.abs(d) < bd) { bd = Math.abs(d); best = hl; } }
+          if (best) { const dx = x - best[0], dz = z - best[1], l = Math.hypot(dx, dz) || 1; nrm.setXYZ(k, -dx / l, 0, -dz / l); }
+        }
+      }
+      g.applyMatrix4(M);
+      g.computeBoundingSphere();
+      g.computeBoundingBox();
+      return g;
+    }
+    const drilled = (u, v, cf) => ({ u, v, rad: cf.bc / 2, n: cf.n, r: cf.br + 0.05 });
     const disc = (r, h, seg = 32) => revolve([[0, -h / 2], [r, -h / 2], [r, h / 2], [0, h / 2]], seg);
     const rod = (r, len, seg = 10) => { const g = new THREE.CylinderGeometry(r, r, len, seg); g.deleteAttribute('uv'); return g; };
     function hex(af, h) {
@@ -369,7 +417,7 @@
         const tdir = toroidal(pj).multiplyScalar(side);
         const fl = piece('joints', q, { clip: true, sub: 'DN160CF flange', detach: tdir.clone().multiplyScalar(3.2).add(radial(pj).multiplyScalar(2)) });
         const centre = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t / 2));
-        add(fl, at(flangeRing(D.aIn, J.od / 2, J.t, 80), frame(centre, tdir)), 'steel2');
+        add(fl, cfRing(centre, tdir, D.aIn, J.od / 2, J.t, [drilled(radial(pj), Z, J)], 80), 'steel2');
         add(fl, bead(D.aOut, pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t + 0.14)), tdir), 'steel2', { sub: 'TIG weld to the elbow', ex: along(tdir, 3) });
         const face = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t));
         const mats = circleMatrices(face, tdir, radial(pj), Z, J.bc / 2, J.n);
@@ -382,7 +430,7 @@
       const lat = piece('lateral', q, { clip: true, sub: 'Port tube, 4 in', label: ['Right (pump)', 'Back', 'Left', 'Front'][k] + ' port' });
       const nR = L.tube / 2;
       add(lat, saddleNeck(pol(D.R0, pk), rdir, nR - 0.2, nR, D.lat.flangeAt - D.R0, lateralStart(pk)), 'steel');
-      add(lat, at(flangeRing(nR - 0.2, L.od / 2, L.t), frame(pol(D.lat.flangeAt + L.t / 2, pk), rdir)), 'steel2', { sub: 'DN100CF flange', ex: along(rdir, 7) });
+      add(lat, cfRing(pol(D.lat.flangeAt + L.t / 2, pk), rdir, nR - 0.2, L.od / 2, L.t, [drilled(Z, toroidal(pk), L)]), 'steel2', { sub: 'DN100CF flange', ex: along(rdir, 7) });
       add(lat, bead(nR, pol(D.lat.flangeAt - 0.14, pk), rdir.clone().negate()), 'steel2', { sub: 'TIG weld', ex: along(rdir, 3.5) });
 
       // Two TF coils per quarter, either side of the lateral port. Taken apart along the coil axis:
@@ -436,7 +484,7 @@
     function windowFlange(pc, deg, glassR) {
       const rdir = radial(deg);
       add(pc, at(ring(L.tube / 2, 6.2, D.gap * 0.9, 48), frame(pol(latFace + D.gap / 2, deg), rdir)), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
-      add(pc, at(flangeRing(glassR + 0.4, L.od / 2, L.t), frame(pol(latFace + D.gap + L.t / 2, deg), rdir)), 'steel2', { sub: 'Viewport flange', ex: along(rdir, 7) });
+      add(pc, cfRing(pol(latFace + D.gap + L.t / 2, deg), rdir, glassR + 0.4, L.od / 2, L.t, [drilled(Z, toroidal(deg), L)]), 'steel2', { sub: 'Viewport flange', ex: along(rdir, 7) });
       add(pc, at(disc(glassR + 0.4, 0.6, 48), frame(pol(latFace + D.gap + 0.5, deg), rdir)), 'glass', { sub: 'Window glass, sealed into the flange', ex: along(rdir, 11) });
       cfBolts(pc, L, pol(latFace + D.gap + L.t, deg), pol(D.lat.flangeAt, deg), rdir, Z, toroidal(deg), { bolts: 16, nuts: 5 });
     }
@@ -454,7 +502,7 @@
       const pc = piece('pumpPort', qR, { clip: true, apart: along(rdir, 10) });
       add(pc, at(ring(L.tube / 2, 6.2, D.gap * 0.9, 48), frame(pol(latFace + D.gap / 2, 0), rdir)), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
       const RED = { sub: 'Zero-length reducer with KF40 stub', ex: along(rdir, 7) };
-      add(pc, at(flangeRing(2.05, L.od / 2, L.t), frame(pol(latFace + D.gap + L.t / 2, 0), rdir)), 'steel2', RED);
+      add(pc, cfRing(pol(latFace + D.gap + L.t / 2, 0), rdir, 2.05, L.od / 2, L.t, [drilled(Z, toroidal(0), L)]), 'steel2', RED);
       cfBolts(pc, L, pol(latFace + D.gap + L.t, 0), pol(D.lat.flangeAt, 0), rdir, Z, toroidal(0), { bolts: 13, nuts: 5 });
       const from = latFace + D.gap + L.t, to = from + 3.2;
       add(pc, at(ring(1.85, 2.05, to - from, 32), frame(pol((from + to) / 2, 0), rdir)), 'steel', RED);
@@ -473,7 +521,7 @@
       const zs = up ? 1 : -1;
       const nr = S.tube / 2;
       add(pc, saddleNeck(pol(D.R0, deg, 0), dir, nr - 0.15, nr, D.small.flangeAt, verticalStart(deg), 36), 'steel');
-      add(pc, at(flangeRing(nr - 0.15, S.od / 2, S.t, 40), frame(pol(D.R0, deg, zs * (D.small.flangeAt + S.t / 2)), dir)), 'steel2', { sub: 'DN40CF flange', ex: along(dir, 5) });
+      add(pc, cfRing(pol(D.R0, deg, zs * (D.small.flangeAt + S.t / 2)), dir, nr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', { sub: 'DN40CF flange', ex: along(dir, 5) });
       add(pc, bead(nr, pol(D.R0, deg, zs * (D.small.flangeAt - 0.14)), dir.clone().negate()), 'steel2', { sub: 'TIG weld', ex: along(dir, 2.5) });
       const face = D.small.flangeAt + S.t;
       const mate = zs * (face + D.gap);
@@ -490,7 +538,7 @@
       const sp = smallPort(qF, 270, true, 'Front top port');
       const pc = piece('laser', qF, { clip: true, apart: V(0, 0, 10) });
       sp.gasket(pc);
-      add(pc, at(flangeRing(1.6, S.od / 2, S.t, 40), frame(pol(D.R0, 270, sp.mate + S.t / 2), Z)), 'steel2', { sub: 'DN40CF viewport flange', ex: V(0, 0, 5) });
+      add(pc, cfRing(pol(D.R0, 270, sp.mate + S.t / 2), Z, 1.6, S.od / 2, S.t, [drilled(radial(270), toroidal(270), S)], 40), 'steel2', { sub: 'DN40CF viewport flange', ex: V(0, 0, 5) });
       add(pc, at(disc(1.6, 0.45, 32), frame(pol(D.R0, 270, sp.mate + 0.4), Z)), 'glass', { sub: 'Fused silica window', ex: V(0, 0, 8) });
       sp.bolts(pc, { bolts: 12, nuts: 3 });
     }
@@ -503,7 +551,7 @@
       sp.gasket(pc);
       const FEED = { sub: 'HV feedthrough: flange, ceramic insulator, anode rod', ex: V(0, 0, -6) };
       const zf = sp.mate - S.t / 2;
-      add(pc, at(flangeRing(0.55, S.od / 2, S.t, 40), frame(pol(D.R0, deg, zf), Z)), 'steel2', FEED);
+      add(pc, cfRing(pol(D.R0, deg, zf), Z, 0.55, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', FEED);
       sp.bolts(pc, { bolts: 12, nuts: 3 });
       const insFrom = -(sp.face + D.gap + S.t);
       const prof = [[0.55, 0]];
@@ -526,7 +574,7 @@
       const FEED = { sub: 'Bellows linear feedthrough', ex: V(0, 0, 6) };
       const DRIVE = { sub: 'Micrometer drive and knob', ex: V(0, 0, 11) };
       const PROBE = { sub: 'Probe: shaft, ceramic sleeve, tungsten tip', ex: along(radial(180), 7).add(V(0, 0, 3)) };
-      add(pc, at(flangeRing(0.5, S.od / 2, S.t, 40), frame(pol(D.R0, 180, sp.mate + S.t / 2), Z)), 'steel2', FEED);
+      add(pc, cfRing(pol(D.R0, 180, sp.mate + S.t / 2), Z, 0.5, S.od / 2, S.t, [drilled(radial(180), toroidal(180), S)], 40), 'steel2', FEED);
       sp.bolts(pc, { bolts: 16, nuts: 3 });
       const top = base + 6;
       const prof = [[0.6, base]];
@@ -551,37 +599,37 @@
       const port = piece('diagPorts', qB, { clip: true, sub: 'Port tube, 2½ in', label: 'Back top gauge port (DN63)' });
       const nr = G.tube / 2;
       add(port, saddleNeck(pol(D.R0, deg, 0), Z, nr - 0.15, nr, D.gport.flangeAt, verticalStart(deg), 40), 'steel');
-      add(port, at(flangeRing(nr - 0.15, G.od / 2, G.t, 56), frame(pol(D.R0, deg, D.gport.flangeAt + G.t / 2), Z)), 'steel2', { sub: 'DN63CF flange', ex: V(0, 0, 5) });
+      add(port, cfRing(pol(D.R0, deg, D.gport.flangeAt + G.t / 2), Z, nr - 0.15, G.od / 2, G.t, [drilled(radial(deg), toroidal(deg), G)], 56), 'steel2', { sub: 'DN63CF flange', ex: V(0, 0, 5) });
       add(port, bead(nr, pol(D.R0, deg, D.gport.flangeAt - 0.14), Z.clone().negate()), 'steel2', { sub: 'TIG weld', ex: V(0, 0, 2.5) });
       const face = D.gport.flangeAt + G.t;
 
       const st = piece('stack', qB, { clip: true, apart: V(0, 0, 10) });
       add(st, at(ring(nr, 3.8, D.gap * 0.9, 40), frame(pol(D.R0, deg, face + D.gap / 2), Z)), 'copper', { sub: 'Copper gasket', ex: V(0, 0, 2) });
       const rz = face + D.gap;
-      add(st, at(flangeRing(1.75, G.od / 2, G.t, 56), frame(pol(D.R0, deg, rz + G.t / 2), Z)), 'bronze', { sub: 'DN63 to DN40 reducer flange', ex: V(0, 0, 5) });
+      add(st, cfRing(pol(D.R0, deg, rz + G.t / 2), Z, 1.75, G.od / 2, G.t, [drilled(radial(deg), toroidal(deg), G), drilled(radial(deg), toroidal(deg), S)], 56), 'bronze', { sub: 'DN63 to DN40 reducer flange', ex: V(0, 0, 5) });
       cfBolts(st, G, pol(D.R0, deg, rz + G.t), pol(D.R0, deg, D.gport.flangeAt), Z, radial(deg), toroidal(deg), { bolts: 9, nuts: 3 });
       // DN40 four-way cross: vertical body, two side arms along the ring.
       const CROSS = { sub: 'DN40 four-way cross', ex: V(0, 0, 10) };
       const c0 = rz + G.t, c1 = c0 + 8, cm = (c0 + c1) / 2;
       const cr = S.tube / 2;
       add(st, at(ring(cr - 0.15, cr, c1 - c0 - 2 * S.t, 32), frame(pol(D.R0, deg, cm), Z)), 'steel', CROSS);
-      add(st, at(flangeRing(cr - 0.15, S.od / 2, S.t, 40), frame(pol(D.R0, deg, c0 + S.t / 2), Z)), 'steel2', CROSS);
+      add(st, cfRing(pol(D.R0, deg, c0 + S.t / 2), Z, cr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', CROSS);
       addInst(st, boltGeom(S.t + 0.8, S.af, S.br), 'bolt', circleMatrices(pol(D.R0, deg, c0 + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), { sub: '6 bolts into the reducer', ex: V(0, 0, 18) });
-      add(st, at(flangeRing(cr - 0.15, S.od / 2, S.t, 40), frame(pol(D.R0, deg, c1 - S.t / 2), Z)), 'steel2', CROSS);
+      add(st, cfRing(pol(D.R0, deg, c1 - S.t / 2), Z, cr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', CROSS);
       const tq = toroidal(deg);
       for (const s of [-1, 1]) {
         const ax = tq.clone().multiplyScalar(s);
         const centre = pol(D.R0, deg, cm);
         add(st, at(ring(cr - 0.15, cr, 4 - S.t, 32), frame(centre.clone().add(ax.clone().multiplyScalar(cr + (4 - S.t) / 2 - 0.2)), ax)), 'steel', CROSS);
-        add(st, at(flangeRing(cr - 0.15, S.od / 2, S.t, 40), frame(centre.clone().add(ax.clone().multiplyScalar(cr + 4 - S.t / 2 - 0.2)), ax)), 'steel2', CROSS);
+        add(st, cfRing(centre.clone().add(ax.clone().multiplyScalar(cr + 4 - S.t / 2 - 0.2)), ax, cr - 0.15, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40), 'steel2', CROSS);
         if (s > 0) {
           // Blank on the +toroidal arm.
-          add(st, at(disc(S.od / 2, S.t, 40), frame(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t / 2 - 0.2 + D.gap)), ax)), 'steel2', { sub: 'DN40 blank flange', ex: along(ax, 5).add(V(0, 0, 10)) });
+          add(st, cfRing(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t / 2 - 0.2 + D.gap)), ax, 0, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40), 'steel2', { sub: 'DN40 blank flange', ex: along(ax, 5).add(V(0, 0, 10)) });
           addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br), 'bolt', circleMatrices(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t - 0.2 + D.gap)), ax, Z, radial(deg), S.bc / 2, S.n), { sub: '6 bolts on the blank', ex: along(ax, 10).add(V(0, 0, 10)) });
         }
       }
       // Top: DN40 to KF16 adaptor flange.
-      add(st, at(flangeRing(0.8, S.od / 2, S.t, 40), frame(pol(D.R0, deg, c1 + D.gap + S.t / 2), Z)), 'steel2', { sub: 'DN40 to KF16 adaptor flange', ex: V(0, 0, 15) });
+      add(st, cfRing(pol(D.R0, deg, c1 + D.gap + S.t / 2), Z, 0.8, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', { sub: 'DN40 to KF16 adaptor flange', ex: V(0, 0, 15) });
       addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br), 'bolt', circleMatrices(pol(D.R0, deg, c1 + D.gap + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), { sub: '6 bolts on the adaptor', ex: V(0, 0, 21) });
       const kfFrom = c1 + D.gap + S.t;
 
@@ -606,7 +654,7 @@
       const ax = tq.clone().negate();
       const nv = piece('needle', qB, { clip: true, apart: along(ax, 7).add(V(0, 0, 10)), label: 'Needle valve' });
       const armEnd = pol(D.R0, deg, cm).add(ax.clone().multiplyScalar(cr + 4 - 0.2 + D.gap));
-      add(nv, at(flangeRing(0.4, S.od / 2, S.t, 40), frame(armEnd.clone().add(ax.clone().multiplyScalar(S.t / 2)), ax)), 'steel2', { sub: 'DN40 inlet flange', ex: along(ax, 3) });
+      add(nv, cfRing(armEnd.clone().add(ax.clone().multiplyScalar(S.t / 2)), ax, 0.4, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40), 'steel2', { sub: 'DN40 inlet flange', ex: along(ax, 3) });
       addInst(nv, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br), 'bolt', circleMatrices(armEnd.clone().add(ax.clone().multiplyScalar(S.t)), ax, Z, radial(deg), S.bc / 2, S.n), { sub: '6 bolts', ex: along(ax, 8) });
       const vb = armEnd.clone().add(ax.clone().multiplyScalar(S.t + 1.2));
       const BODY = { sub: 'Needle valve body', ex: along(ax, 6) };
@@ -636,7 +684,7 @@
       const h = F.top - top;
       add(fm, at(ring(F.r - F.t, F.r, h - 0.45, 72), frame(V(0, 0, top + (h - 0.45) / 2), Z)), 'white');
       add(fm, at(flangeRing(F.r - F.t - 0.2, F.r + 0.25, 0.5, 72), frame(V(0, 0, F.top - 0.2), Z)), 'white', { sub: 'Top rim', ex: V(0, 0, 5) });
-      add(fm, at(flangeRing(F.r - F.t, F.r + 2.2, 0.6, 72), frame(V(0, 0, top + 0.3), Z)), 'alu', { sub: 'Base flange', ex: V(0, 0, -4) });
+      add(fm, cfRing(V(0, 0, top + 0.3), Z, F.r - F.t, F.r + 2.2, 0.6, [{ u: V(1, 0, 0), v: V(0, 1, 0), rad: F.r + 1.2, n: 8, r: 0.3 }]), 'alu', { sub: 'Base flange', ex: V(0, 0, -4) });
       addInst(fm, hex(0.9, 0.5), 'bolt', circleMatrices(V(0, 0, top + 0.6 + 0.25), Z, V(1, 0, 0), V(0, 1, 0), F.r + 1.2, 8), { sub: '8 base bolts', ex: V(0, 0, 5) });
       const screws = [];
       for (let i = 0; i < 8; i++) {
