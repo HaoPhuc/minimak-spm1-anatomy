@@ -1,37 +1,58 @@
 # SPM1 anatomy
 
-An interactive 3D anatomy of the MinimaK SPM1, drawn in the style of [wheresryan22/anatomy](https://github.com/wheresryan22/anatomy): solid shaded parts with inked outlines, a framed card, a live readout and calm motion.
+An interactive 3D anatomy of the MinimaK SPM1 simple magnetised torus by Rideo Systems, drawn in the style of [wheresryan22/anatomy](https://github.com/wheresryan22/anatomy): solid shaded parts with inked outlines on a framed card. Its aim is the structure of the machine: what each part is, how it attaches to the next one, and where each number comes from. It does not model the plasma physics.
 
-Open [`index.html`](index.html) in a browser. It needs an internet connection the first time, to load three.js from jsDelivr. There is no build step.
+Open [`index.html`](index.html) in a browser. The first time it needs an internet connection, to load three.js from jsDelivr. There is no build step.
 
-## What you can do
+## The page
 
-| Control | What it shows |
+| Area | What it does |
 | --- | --- |
-| **Take apart** (E) | The four vessel quarters, coils and pump separate. The copper gaskets sit between the ConFlat flanges. |
-| **Open vessel** (C) | Cuts away the top of one quarter. Cut faces are hatched. The Langmuir probe tip stands in the glow. |
-| **Field lines** (F) | Toroidal field lines at equal flux spacing, so they crowd toward the inboard side: B ∝ 1/R. |
-| **Drift lesson** (D) | A cross-section looking along B. ∇B and curvature drifts separate the charges, E × B carries the plasma into the outer wall. |
-| Sliders | TF current, PF1 + PF2 current, fill pressure, gas, discharge on or off |
-| Click a part | Spec, what it does, and what to know before you touch it |
+| **Assembly** (left) | The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec or description. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. |
+| **Viewer** (centre) | The model. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The scale bar is true at every zoom, because the view is orthographic. |
+| **Inspector** (right) | **Part**: what the part does, its specification with a source tag on every row, its pieces, what it connects to, and practical notes. **Sources**: every reference, what was taken from it, and which parts cite it. **Controls**: every mouse, touch and key binding. |
+| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode, Cutaway, theme. |
 
-Drag to turn, scroll or pinch to zoom, right-drag or shift-drag to pan, double-click to reset.
+### Inspecting one component
+
+Double-click a part, or press **Inspect on its own**. The part lifts out of the machine, everything else turns into an x-ray ghost, and the camera frames the part and turns around it. Then:
+
+- **Section** cuts the part in half, on the side facing you, and hatches the cut faces. The cut follows the camera as you turn, so you always see inside (the TF winding under its copper cover, the probe shaft inside its bellows).
+- **Context** turns the ghost of the rest of the machine on or off.
+- The **pieces** list in the inspector, or a double-click on one piece, zooms to a single piece (one of the eight TF coils, one joint flange). **All** goes back to every piece.
+- **Esc** steps back one level: piece, then part, then selection.
+
+Keys: arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `C` cutaway, `I` inspect, `S` section, `G` ghost, `H` hide.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
-| [`index.html`](index.html) | The page: renderer, ink pass, controls, legend |
-| [`device.js`](device.js) | The geometry, in centimetres, from one table of dimensions (`D`) |
-| [`parts.js`](parts.js) | The parts list: names, specs, notes, and where each shape comes from |
-| [`model.js`](model.js) | The physics behind every number on the page. Same formulas and assumptions as [`docs/primer.md`](https://github.com/HaoPhuc/minimak-groundwork/blob/main/docs/primer.md) in minimak-groundwork |
+| [`index.html`](index.html) | The page: renderer and ink pass, turntable camera, inspect mode, assembly tree, inspector |
+| [`device.js`](device.js) | The geometry in centimetres. One table of dimensions (`D`) at the top, the ConFlat sizes (`CF`), and `DETACH`, how far each part travels when inspected |
+| [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS`, and `NOT_DRAWN` |
+
+## Sources
+
+| Id | Source | Used for |
+| --- | --- | --- |
+| S1 | [minitmak.com](https://www.minitmak.com/) | Vessel quarters and ring, port counts, TF turns, cable and current, PF and satellite coils, supplies, discharge, diagnostics, software |
+| S2 | [minitmak.com/specification](https://www.minitmak.com/specification) | R₀ and a, TF field, PF control, solenoid drive, gases, plasma temperature, envelope |
+| S3 | [rideosystems.biz/technology](https://www.rideosystems.biz/technology) | The same headline specification |
+| S4 | [P. Apte, "The Minimak. Design, Build and Operation", Univ. of Manchester webinar, Oct 2025 (PDF)](https://www.minitmak.com/_files/ugd/5de522_5cee74b6dc514f1eb1a3fee4cb50b9e4.pdf) | Construction (TIG welds, ConFlat, leak test, copper TF formers, metal PF formers), pump and gauge, 40 A supplies, 4 kV glow supply, PLC, software, operating fields, upgrades. Its photos set most of the proportions |
+| S5 | [Kurt J. Lesker, ConFlat technical notes](https://www.lesker.com/newweb/flanges/flanges_technicalnotes_conflat_1.cfm) | CF flange sizes |
+| S6 | [Wikipedia, Vacuum flange](https://en.wikipedia.org/wiki/Vacuum_flange) | How CF and KF joints seal |
+| S7 | [MKS, Mini-Convectron gauge](https://www.mks.com/p/275600-0-GD-T) | The Convectron gauge family and its range |
+| S8 | [minimak-groundwork](https://github.com/HaoPhuc/minimak-groundwork) | TU/e context and the Langmuir fit script |
 
 ## How true it is
 
-- **From the spec:** R₀ 23 cm, a 7.5 cm, four 150 mm elbows in a 460 mm ring, 8 TF coils × 50 turns up to 40 A, 4 PF coils, 2 satellite coils, central solenoid, 3 viewports, 1 pumping port, 4 diagnostic ports, the 90 × 90 × 160 cm envelope.
-- **Scaled from photos:** flange sizes, the copper coil formers, the hose-wound satellite rings, the posts, the optical table, the pump line.
-- **Placed by guess:** PF coil radii and heights, which feedthrough sits on which port, the electrodes, the gauge, the supply rack. The parts list marks these *approx.*
+Every part has a basis, shown as the dot in the tree:
 
-The glow's brightness, width and vertical shift only show the trend. The table of numbers comes from `model.js` and assumes T_e = 3 eV, T_i = 0.1 eV and n_e = 10¹⁶ m⁻³.
+- **Spec** (filled dot): the number or placement is published. R₀ 230 mm, a 75 mm, four 150 mm elbows, 8 TF coils × 50 turns of 6 mm cable up to 40 A, 3 viewing + 1 vacuum + 4 diagnostic ports, the 90 × 90 × 160 cm envelope.
+- **Photo** (half dot): scaled or placed from the webinar photos. The joints sit on the diagonals, clamped to four aluminium corner posts. The TF formers have fold-out copper tabs. The PF1/PF2 windings and leads are on a white central former. The satellite coils are hose-wound rings. The gauge and gas stack is on top of the back quarter. The table is a Thorlabs Nexus. The control drawer, the coil-supply chassis and the pump are under the table.
+- **Assumed** (ring): placed where plausible. These are the outer PF coils (PF3, PF4), the solenoid's position, the HV supply, the gas valve, the Langmuir probe, the webcam and the spectrometer.
 
-After the kickoff, correct the dimensions in `D` at the top of `device.js` and the `basis` of each part in `parts.js`.
+The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) follow the CF standard and match the bolt counts in the photos. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived".
+
+To correct the model at the kickoff, change `D` at the top of `device.js` and the `basis` and spec rows in `parts.js`.

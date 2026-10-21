@@ -1,25 +1,50 @@
-// Geometry of the MinimaK SPM1, in centimetres, z up, vessel midplane at z = 0.
+// Geometry of the MinimaK SPM1, in centimetres, z up, vessel midplane at z = 0, torus axis at the origin.
+// The front of the table is -y. Lateral ports sit at 0°, 90°, 180°, 270°; the four joints sit on the diagonals,
+// where the corner posts clamp them (as in the photos on slides 9, 15 and 16 of the Oct 2025 webinar).
 // Classic script: window.SPM1Device.build(THREE, paint) returns the assembled scene graph.
 // `paint(geometry, tone, { part, clip })` and `paint.instanced(geometry, tone, matrices, opts)` come from the page,
-// which owns the materials; this file only knows shapes, tones and part ids.
+// which owns the materials; this file only knows shapes, tones, part ids and how each piece comes apart.
 (function (root) {
   const DEG = Math.PI / 180;
 
+  // ConFlat sizes: OD, bolt circle, bolt count, thickness, tube OD (CF standard; see parts.js, source S5).
+  const CF = {
+    160: { od: 20.32, bc: 18.11, n: 20, t: 2.24, tube: 15.24, af: 1.2, br: 0.4 },
+    100: { od: 15.24, bc: 13.03, n: 16, t: 1.98, tube: 10.16, af: 1.2, br: 0.4 },
+    63: { od: 11.43, bc: 9.22, n: 8, t: 1.75, tube: 6.35, af: 1.2, br: 0.4 },
+    40: { od: 6.99, bc: 5.87, n: 6, t: 1.27, tube: 3.81, af: 1.0, br: 0.32 },
+  };
+
   const D = {
     R0: 23,
-    aIn: 7.2,
     aOut: 7.5,
-    table: { top: -30, thick: 6, half: 45, floor: -110, leg: 8, legAt: 37, shelf: -94 },
-    tf: { halfW: 3.0, rIn: 7.62, rOut: 9.2, cheekR: 9.9, cheekT: 0.35, ribs: 28 },
-    joint: { R: 10.15, t: 2.2, gap: 0.24, boltR: 9.05, bolts: 20 },
-    lat: { neckR: 3.5, neckFrom: 29.6, flangeAt: 35.2, t: 1.3, flR: 5.7, boltR: 4.6, bolts: 8, glassR: 3.2 },
-    small: { neckR: 1.9, neckFrom: 7.3, flangeAt: 12.4, t: 1.2, flR: 3.5, boltR: 2.9, bolts: 6, glassR: 1.5 },
-    pfIn: { R: 11, z: 12.6 },
-    pfOut: { R: 31.5, z: 12.6 },
-    sat: { R: 36.5, z: 21, r: 1.6 },
-    sol: { r: 4.6, rw: 5.8, half: 10.2, col: 2.5, top: 24 },
-    postR: 42,
-    pump: { R: 80, phi: 315 },
+    aIn: 7.3,
+    gap: 0.2,
+    table: { top: -22, thick: 11, half: 45, floor: -107, leg: 9, legAt: 36, shelf: -91 },
+    lat: { flangeAt: 35.5 },
+    small: { flangeAt: 11.5 },
+    gport: { flangeAt: 11 },
+    tf: { halfW: 3.6, rIn: 7.6, rOut: 10.0, tabR: 10.75, tabs: 26 },
+    former: { r: 10.4, t: 0.4, top: 9.5 },
+    pfIn: { z: 6.2, h: 2.6, rOut: 11.4 },
+    sol: { h: 6, rOut: 11.0 },
+    pfOut: { R: 31.5, z: 12.8 },
+    satTop: { R: 35, z: 16.5, r: 1.6 },
+    satBot: { R: 33.5, z: -18.6, r: 1.6 },
+    post: { R: 40.2, half: 2.25, top: 19 },
+    cut: [287, 352],
+    CF,
+  };
+
+  // How far each part travels when it is inspected on its own: up (`lift`), away from the torus axis (`spread`).
+  // Instances can override this with an explicit vector (joint flanges part along the ring, the drawer slides out).
+  const DETACH = {
+    vessel: { spread: 7 }, joints: { spread: 2 }, gaskets: { lift: 0 }, lateral: { spread: 7 }, viewport: { spread: 10 },
+    diagPorts: { lift: 0 }, tf: { lift: 16 }, pfInner: { lift: 0 }, pfOuter: { lift: 0 }, satellite: { lift: 0 },
+    solenoid: { lift: 0 }, former: { lift: 0 }, electrode: { lift: 0 }, hv: { lift: 6 }, pumpPort: { spread: 8 },
+    hose: { spread: 6 }, pump: { spread: 12 }, stack: { lift: 10 }, gauge: { lift: 10 }, needle: { lift: 8 }, laser: { lift: 10 },
+    probe: { lift: 12 }, camera: { lift: 8 }, spectro: { lift: 8 }, table: {}, posts: { spread: 6 }, psu: {},
+    drawer: {}, estop: { lift: 8 },
   };
 
   function build(THREE, paint) {
@@ -82,6 +107,7 @@
     function rtz(origin, deg) {
       return new THREE.Matrix4().makeBasis(radial(deg), toroidal(deg), Z.clone()).setPosition(origin);
     }
+    const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z);
 
     const at = (g, m) => g.applyMatrix4(m);
 
@@ -208,6 +234,7 @@
       return revolve([[rIn, -h / 2], [rOut - b, -h / 2], [rOut, -h / 2 + b], [rOut, h / 2 - b], [rOut - b, h / 2], [rIn, h / 2], [rIn, -h / 2]], seg);
     }
     const disc = (r, h, seg = 32) => revolve([[0, -h / 2], [r, -h / 2], [r, h / 2], [0, h / 2]], seg);
+    const rod = (r, len, seg = 10) => { const g = new THREE.CylinderGeometry(r, r, len, seg); g.deleteAttribute('uv'); return g; };
     function hex(af, h) {
       const r = af / Math.sqrt(3);
       const g = new THREE.CylinderGeometry(r, r, h, 6).toNonIndexed();
@@ -219,14 +246,14 @@
 
     function tube(points, r, o = {}) {
       const curve = new THREE.CatmullRomCurve3(points, false, 'centripetal');
-      const seg = o.seg ?? 64, radial = o.radial ?? 10;
-      const g = new THREE.TubeGeometry(curve, seg, r, radial, false);
+      const seg = o.seg ?? 64, radialSeg = o.radial ?? 10;
+      const g = new THREE.TubeGeometry(curve, seg, r, radialSeg, false);
       g.deleteAttribute('uv');
       if (o.corrugate) {
         const p = g.attributes.position, n = g.attributes.normal;
         const len = curve.getLength();
         for (let k = 0; k < p.count; k++) {
-          const i = Math.floor(k / (radial + 1));
+          const i = Math.floor(k / (radialSeg + 1));
           const s = (i / seg) * len;
           const d = o.corrugate * Math.cos((s / o.pitch) * Math.PI * 2);
           p.setXYZ(k, p.getX(k) + n.getX(k) * d, p.getY(k) + n.getY(k) * d, p.getZ(k) + n.getZ(k) * d);
@@ -235,7 +262,7 @@
       }
       const parts = [g];
       for (const [t, s] of [[0, -1], [1, 1]]) {
-        const c = new THREE.CircleGeometry(r, radial);
+        const c = new THREE.CircleGeometry(r, radialSeg);
         c.deleteAttribute('uv');
         const dir = curve.getTangentAt(t).multiplyScalar(s);
         const m = new THREE.Matrix4().makeRotationFromQuaternion(new THREE.Quaternion().setFromUnitVectors(Z, dir));
@@ -248,32 +275,47 @@
     const rootGroup = new THREE.Group();
     const groups = [];
     const stretch = [];
+    const instances = [];
 
-    function group(name, offset, delay) {
+    // An explode group: everything in it moves together by `offset` when the machine is taken apart.
+    function group(name, offset, delay, parent = rootGroup) {
       const g = new THREE.Group();
       g.name = name;
-      rootGroup.add(g);
+      parent.add(g);
       groups.push({ obj: g, offset, delay });
       return g;
     }
 
-    function add(parent, geometry, tone, part, o = {}) {
-      const m = paint(geometry, tone, { part, clip: !!o.clip });
-      parent.add(m);
+    // One physical piece of a part (one of the 8 TF coils, one viewport...). It moves on its own when inspected.
+    function piece(part, parent, o = {}) {
+      const g = new THREE.Group();
+      g.userData.part = part;
+      g.userData.label = o.label || null;
+      g.userData.detach = o.detach || null;
+      g.userData.clip = !!o.clip;
+      parent.add(g);
+      instances.push(g);
+      return g;
+    }
+
+    function add(pc, geometry, tone, o = {}) {
+      const m = paint(geometry, tone, { part: pc.userData.part, clip: o.clip ?? pc.userData.clip });
+      pc.add(m);
       return m;
     }
 
-    function addInst(parent, geometry, tone, matrices, part, o = {}) {
-      const m = paint.instanced(geometry, tone, matrices, { part, clip: !!o.clip });
-      parent.add(m);
+    function addInst(pc, geometry, tone, matrices, o = {}) {
+      const m = paint.instanced(geometry, tone, matrices, { part: pc.userData.part, clip: o.clip ?? pc.userData.clip });
+      pc.add(m);
       return m;
     }
 
-    // Bolt with its head at local y = 0..0.65 and the shank running down -y for `len`.
-    function boltGeom(len) {
-      return merge([at(hex(1.1, 0.65), new THREE.Matrix4().makeTranslation(0, 0.325, 0)), at(new THREE.CylinderGeometry(0.4, 0.4, len, 10).deleteAttribute('uv'), new THREE.Matrix4().makeTranslation(0, -len / 2, 0))]);
+    // Bolt with its head at local y = 0..h and the shank running down -y for `len`.
+    function boltGeom(len, af = 1.2, r = 0.4) {
+      const h = af * 0.48;
+      return merge([at(hex(af, h), T(0, h / 2, 0)), at(rod(r, len), T(0, -len / 2, 0))]);
     }
-    const nutGeom = () => at(hex(1.1, 0.7), new THREE.Matrix4().makeTranslation(0, 0.35, 0));
+    const nutGeom = (af = 1.2) => at(hex(af, af * 0.55), T(0, af * 0.275, 0));
 
     // Bolt-circle matrices on a flange face: `centre` on the face, `axis` out of the face, `u` and `v` span it.
     function circleMatrices(centre, axis, u, v, rad, n, phase = 0.5) {
@@ -286,446 +328,609 @@
       return out;
     }
 
-    // ---------- Vessel quarters, each with its flanges, coils and ports ----------
-    const J = D.joint, T = D.tf, L = D.lat, S = D.small;
+    // A CF flange pair's bolts: heads on the outer face, nuts on the back face of the welded flange.
+    function cfBolts(pc, cf, face, back, axis, u, v, o = {}) {
+      const len = cf.t * 2 + D.gap + 0.7;
+      addInst(pc, boltGeom(len, cf.af, cf.br), 'bolt', circleMatrices(face, axis, u, v, cf.bc / 2, cf.n, o.phase ?? 0.5), o);
+      addInst(pc, nutGeom(cf.af), 'bolt', circleMatrices(back, axis.clone().negate(), u, v, cf.bc / 2, cf.n, o.phase ?? 0.5), o);
+    }
+
+    // A thin weld bead where a tube meets a flange.
+    const bead = (r, at0, axis) => at(revolve([[r, -0.14], [r + 0.16, -0.05], [r + 0.16, 0.05], [r, 0.14]], 48), frame(at0, axis));
+
+    const J = CF[160], L = CF[100], S = CF[40], G = CF[63];
+    const TB = D.table;
     const quarters = [];
-    const qOffset = (k) => radial(45 + 90 * k).multiplyScalar(10);
 
+    // ---------- Vessel quarters: elbow, joint flanges, lateral port, TF coils ----------
     for (let k = 0; k < 4; k++) {
-      const q = group(`quarter${k}`, qOffset(k), 0.3 + k * 0.05);
+      const pk = 90 * k;
+      const q = group(`quarter${k}`, radial(pk).multiplyScalar(11), 0.3 + k * 0.05);
       quarters.push(q);
-      const p0 = 90 * k, p1 = 90 * (k + 1);
-      const inset = (J.gap / 2 + J.t * 0.5) / D.R0;
-      add(q, torusShell(D.R0, D.aIn, D.aOut, p0 * DEG + inset, p1 * DEG - inset), 'steel', 'vessel', { clip: true });
+      const p0 = pk - 45, p1 = pk + 45;
+      const inset = (D.gap / 2 + J.t * 0.5) / D.R0;
 
-      // Flange B (start of quarter, nuts) and flange A (end, bolts).
+      const shell = piece('vessel', q, { clip: true, label: ['Right quarter', 'Back quarter', 'Left quarter', 'Front quarter'][k] });
+      add(shell, torusShell(D.R0, D.aIn, D.aOut, p0 * DEG + inset, p1 * DEG - inset), 'steel');
+
+      // Joint flanges: B at the start of the quarter (nuts), A at the end (bolt heads).
       for (const [pj, side] of [[p0, 1], [p1, -1]]) {
         const tdir = toroidal(pj).multiplyScalar(side);
-        const centre = pol(D.R0, pj).add(tdir.clone().multiplyScalar(J.gap / 2 + J.t / 2));
-        add(q, at(flangeRing(D.aIn, J.R, J.t, 72), frame(centre, tdir)), 'steel2', 'joints', { clip: true });
-        const face = pol(D.R0, pj).add(tdir.clone().multiplyScalar(J.gap / 2 + J.t));
-        const mats = circleMatrices(face, tdir, radial(pj), Z, J.boltR, J.bolts);
-        if (side < 0) addInst(q, boltGeom(J.t * 2 + J.gap + 0.9), 'bolt', mats, 'joints', { clip: true });
-        else addInst(q, nutGeom(), 'bolt', mats, 'joints', { clip: true });
+        const fl = piece('joints', q, { clip: true, detach: tdir.clone().multiplyScalar(3.2).add(radial(pj).multiplyScalar(2)) });
+        const centre = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t / 2));
+        add(fl, at(flangeRing(D.aIn, J.od / 2, J.t, 80), frame(centre, tdir)), 'steel2');
+        add(fl, bead(D.aOut, pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t + 0.14)), tdir), 'steel2');
+        const face = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t));
+        const mats = circleMatrices(face, tdir, radial(pj), Z, J.bc / 2, J.n);
+        if (side < 0) addInst(fl, boltGeom(J.t * 2 + D.gap + 0.9), 'bolt', mats);
+        else addInst(fl, nutGeom(), 'bolt', mats);
       }
 
-      // Two TF coils per quarter.
-      for (const pc of [p0 + 22.5, p0 + 67.5]) {
-        const hw = T.halfW / D.R0, ct = T.cheekT / D.R0, c = pc * DEG;
-        const bits = [
-          torusShell(D.R0, T.rIn, T.rOut, c - hw + ct, c + hw - ct, { nT: 64 }),
-          torusShell(D.R0, T.rIn - 0.04, T.cheekR, c - hw, c - hw + ct, { nT: 64, nP: 2 }),
-          torusShell(D.R0, T.rIn - 0.04, T.cheekR, c + hw - ct, c + hw, { nT: 64, nP: 2 }),
-        ];
-        for (let i = 0; i < T.ribs; i++) {
-          const th = (i / T.ribs) * Math.PI * 2;
-          bits.push(torusShell(D.R0, T.rOut, T.rOut + 0.2, c - hw + ct, c + hw - ct, { t0: th - 0.012, t1: th + 0.012, nT: 1, nP: 8 }));
-        }
-        add(q, merge(bits), 'copper', 'tf', { clip: true });
-        const blockAt = pol(D.R0, pc, -(T.rOut + 0.6));
-        add(q, at(box(1.6, T.halfW * 1.5, 1.3), rtz(blockAt, pc)), 'black', 'tf', { clip: true });
+      // Lateral DN100CF port neck and its welded flange.
+      const lat = piece('lateral', q, { clip: true, label: ['Right (pump)', 'Back', 'Left', 'Front'][k] + ' port' });
+      const rdir = radial(pk);
+      const nR = L.tube / 2;
+      add(lat, saddleNeck(pol(D.R0, pk), rdir, nR - 0.2, nR, D.lat.flangeAt - D.R0, lateralStart(pk)), 'steel');
+      add(lat, at(flangeRing(nR - 0.2, L.od / 2, L.t), frame(pol(D.lat.flangeAt + L.t / 2, pk), rdir)), 'steel2');
+      add(lat, bead(nR, pol(D.lat.flangeAt - 0.14, pk), rdir.clone().negate()), 'steel2');
+
+      // Two TF coils per quarter, either side of the lateral port.
+      for (const [j, pc] of [[0, pk - 22.5], [1, pk + 22.5]]) {
+        const coil = piece('tf', q, { clip: true, label: `TF coil ${2 * k + j + 1}` });
+        const tf = D.tf, hw = tf.halfW / D.R0, c = pc * DEG;
+        add(coil, torusShell(D.R0, tf.rIn, tf.rOut, c - hw, c + hw, { nT: 72 }), 'cable');
+        add(coil, torusShell(D.R0, tf.rOut, tf.rOut + 0.12, c - hw + 0.004, c + hw - 0.004, { nT: 72 }), 'copper');
+        add(coil, torusShell(D.R0, D.aOut, D.aOut + 0.1, c - hw - 0.012, c + hw + 0.012, { nT: 72 }), 'copper');
+        // The former's cut tabs, folded out on both cheeks of the winding.
+        const tabs = [];
+        const r0 = D.aOut + 0.1, r1 = tf.tabR, rm = (r0 + r1) / 2, splay = Math.tan(16 * DEG);
         for (const s of [-1, 1]) {
-          const studAt = blockAt.clone().add(toroidal(pc).multiplyScalar(s * 1.1)).add(V(0, 0, -0.9));
-          add(q, at(new THREE.CylinderGeometry(0.28, 0.28, 0.6, 10).deleteAttribute('uv'), frame(studAt, Z)), 'bolt', 'tf', { clip: true });
+          const ps = pc + (s * tf.halfW / D.R0) / DEG;
+          const C = pol(D.R0, ps), tq = toroidal(ps);
+          for (let i = 0; i < tf.tabs; i++) {
+            const th = ((i + 0.5) / tf.tabs) * Math.PI * 2;
+            const u = radial(ps).multiplyScalar(Math.cos(th)).add(Z.clone().multiplyScalar(Math.sin(th)));
+            const w = radial(ps).multiplyScalar(-Math.sin(th)).add(Z.clone().multiplyScalar(Math.cos(th)));
+            const len = (r1 - r0) / Math.cos(16 * DEG);
+            const axis = u.clone().add(tq.clone().multiplyScalar(s * splay)).normalize();
+            const centre = C.clone().add(u.clone().multiplyScalar(rm)).add(tq.clone().multiplyScalar(s * (0.06 + (rm - r0) * splay)));
+            const width = ((2 * Math.PI * rm) / tf.tabs) * 0.74;
+            tabs.push(at(box(width, len, 0.08), frame(centre, axis, w)));
+          }
         }
-      }
-
-      // Lateral port neck and its welded flange.
-      const pp = p0 + 45;
-      const rdir = radial(pp);
-      add(q, saddleNeck(pol(D.R0, pp), rdir, L.neckR - 0.25, L.neckR, L.flangeAt - D.R0, lateralStart(pp)), 'steel', k === 3 ? 'vport' : 'viewport', { clip: true });
-      add(q, at(flangeRing(L.neckR - 0.25, L.flR, L.t), frame(pol(L.flangeAt + L.t / 2, pp), rdir)), 'steel2', k === 3 ? 'vport' : 'viewport', { clip: true });
-      const outer = L.flangeAt + L.t;
-      const portBolts = (part) => {
-        addInst(q, boltGeom(L.t * 2 + 0.8), 'bolt', circleMatrices(pol(outer + L.t, pp), rdir, Z, toroidal(pp), L.boltR, L.bolts), part, { clip: true });
-        addInst(q, nutGeom(), 'bolt', circleMatrices(pol(L.flangeAt, pp), rdir.clone().negate(), Z, toroidal(pp), L.boltR, L.bolts), part, { clip: true });
-      };
-
-      if (k < 3) {
-        add(q, at(flangeRing(L.glassR + 0.5, L.flR, L.t), frame(pol(outer + L.t / 2, pp), rdir)), 'steel2', 'viewport', { clip: true });
-        const glass = add(q, at(disc(L.glassR + 0.5, 0.6), frame(pol(outer + 0.45, pp), rdir)), 'glass', 'viewport', { clip: true });
-        glass.userData.window = true;
-        portBolts('viewport');
-      } else {
-        // Reducer flange, tee, gauge on top, needle valve below, KF end for the pump line.
-        add(q, at(flangeRing(2.0, L.flR, L.t), frame(pol(outer + L.t / 2, pp), rdir)), 'steel2', 'vport', { clip: true });
-        portBolts('vport');
-        const lineFrom = outer + L.t, lineTo = 47;
-        add(q, at(ring(1.75, 2.0, lineTo - lineFrom, 32), frame(pol((lineFrom + lineTo) / 2, pp), rdir)), 'steel', 'vport', { clip: true });
-        add(q, at(ring(1.75, 2.6, 0.6, 32), frame(pol(lineTo - 0.3, pp), rdir)), 'steel2', 'vport', { clip: true });
-        add(q, at(ring(2.0, 2.4, 0.9, 32), frame(pol(lineTo - 0.3, pp), rdir)), 'bolt', 'vport', { clip: true });
-        const teeR = 41;
-        add(q, at(ring(1.45, 1.7, 5.0, 28), frame(pol(teeR, pp, 4.0), Z)), 'steel', 'vport', { clip: true });
-        add(q, at(ring(1.45, 2.6, 0.7, 28), frame(pol(teeR, pp, 6.85), Z)), 'steel2', 'gauge', { clip: true });
-        add(q, at(disc(1.6, 4.0, 28), frame(pol(teeR, pp, 9.2), Z)), 'steel2', 'gauge', { clip: true });
-        const head = pol(teeR, pp, 13.2);
-        add(q, at(box(3.6, 5.0, 4.0), rtz(head, pp)), 'panel', 'gauge', { clip: true });
-        const lcd = add(q, at(box(0.2, 3.4, 1.4), rtz(head.clone().add(rdir.clone().multiplyScalar(1.85)).add(V(0, 0, 0.7)), pp)), 'lcd', 'gauge', { clip: true });
-        lcd.userData.lcd = true;
-        add(q, at(ring(1.45, 1.7, 3.8, 28), frame(pol(teeR, pp, -3.4), Z)), 'steel', 'needle', { clip: true });
-        const valve = pol(teeR, pp, -6.5);
-        add(q, at(box(2.6, 2.6, 2.6), rtz(valve, pp)), 'brass', 'needle', { clip: true });
-        const knobAxis = toroidal(pp);
-        add(q, at(new THREE.CylinderGeometry(0.35, 0.35, 1.6, 10).deleteAttribute('uv'), frame(valve.clone().add(knobAxis.clone().multiplyScalar(2.1)), knobAxis)), 'bolt', 'needle', { clip: true });
-        const knob = merge([disc(1.1, 1.4, 24)]);
-        add(q, at(knob, frame(valve.clone().add(knobAxis.clone().multiplyScalar(3.6)), knobAxis)), 'black', 'needle', { clip: true });
-        for (let i = 0; i < 16; i++) {
-          const a = (i / 16) * Math.PI * 2;
-          const ridgeAt = valve.clone().add(knobAxis.clone().multiplyScalar(3.6)).add(rdir.clone().multiplyScalar(1.12 * Math.cos(a))).add(V(0, 0, 1.12 * Math.sin(a)));
-          add(q, at(box(0.16, 1.3, 0.16), frame(ridgeAt, knobAxis, rdir)), 'black', 'needle', { clip: true });
-        }
+        add(coil, merge(tabs), 'copper');
+        // Terminal block under the coil, with the two lead studs.
+        const blockAt = pol(D.R0, pc, -(tf.rOut + 0.75));
+        add(coil, at(box(1.6, tf.halfW * 1.4, 1.2), rtz(blockAt, pc)), 'black');
+        for (const s of [-1, 1]) add(coil, at(rod(0.26, 0.7), frame(blockAt.clone().add(toroidal(pc).multiplyScalar(s * 1.2)).add(V(0, 0, -0.85)), Z)), 'bolt');
       }
     }
-    const [q0, q1, q2, q3] = quarters;
+    const [qR, qB, qL, qF] = quarters;
 
-    // Copper gaskets between the flange pairs, carried halfway between the two quarters when taken apart.
+    // Copper gaskets between the joint flanges, halfway between the two quarters when taken apart.
     for (let k = 0; k < 4; k++) {
-      const pj = 90 * k;
-      const off = qOffset(k).add(qOffset((k + 3) % 4)).multiplyScalar(0.5);
+      const pj = 45 + 90 * k;
+      const off = radial(90 * k).multiplyScalar(11).add(radial(90 * ((k + 1) % 4)).multiplyScalar(11)).multiplyScalar(0.5);
       const g = group(`gasket${k}`, off, 0.32 + k * 0.05);
-      add(g, at(ring(D.aIn + 0.05, D.aIn + 1.3, J.gap * 0.9, 64), frame(pol(D.R0, pj), toroidal(pj))), 'copper', 'joints', { clip: true });
+      const gk = piece('gaskets', g, { clip: true, detach: radial(pj).multiplyScalar(0) });
+      add(gk, at(ring(D.aOut, 8.57, D.gap * 0.9, 80), frame(pol(D.R0, pj), toroidal(pj))), 'copper');
     }
 
-    // ---------- Small vertical ports (two at q0, two at q2) ----------
-    function smallPort(q, deg, up, part) {
+    // ---------- Lateral port fittings ----------
+    const latFace = D.lat.flangeAt + L.t;
+    function windowFlange(pc, deg, glassR) {
+      const rdir = radial(deg);
+      add(pc, at(ring(L.tube / 2, 6.2, D.gap * 0.9, 48), frame(pol(latFace + D.gap / 2, deg), rdir)), 'copper');
+      add(pc, at(flangeRing(glassR + 0.4, L.od / 2, L.t), frame(pol(latFace + D.gap + L.t / 2, deg), rdir)), 'steel2');
+      const glass = add(pc, at(disc(glassR + 0.4, 0.6, 48), frame(pol(latFace + D.gap + 0.5, deg), rdir)), 'glass');
+      glass.userData.window = true;
+      cfBolts(pc, L, pol(latFace + D.gap + L.t, deg), pol(D.lat.flangeAt, deg), rdir, Z, toroidal(deg));
+    }
+    const vpB = piece('viewport', qB, { clip: true, label: 'Back viewport (spectrometer)' });
+    windowFlange(vpB, 90, 4.2);
+    const vpL = piece('viewport', qL, { clip: true, label: 'Left viewport (webcam)' });
+    windowFlange(vpL, 180, 4.2);
+    const vpF = piece('viewport', qF, { clip: true, label: 'Front viewport (eyes)' });
+    windowFlange(vpF, 270, 4.2);
+
+    // Right port: zero-length reducer to a KF40 stub for the bellows line.
+    let pumpLineFrom;
+    {
+      const pc = piece('pumpPort', qR, { clip: true });
+      const rdir = radial(0);
+      add(pc, at(ring(L.tube / 2, 6.2, D.gap * 0.9, 48), frame(pol(latFace + D.gap / 2, 0), rdir)), 'copper');
+      add(pc, at(flangeRing(2.05, L.od / 2, L.t), frame(pol(latFace + D.gap + L.t / 2, 0), rdir)), 'steel2');
+      cfBolts(pc, L, pol(latFace + D.gap + L.t, 0), pol(D.lat.flangeAt, 0), rdir, Z, toroidal(0));
+      const from = latFace + D.gap + L.t, to = from + 3.2;
+      add(pc, at(ring(1.85, 2.05, to - from, 32), frame(pol((from + to) / 2, 0), rdir)), 'steel');
+      add(pc, at(flangeRing(1.85, 3.25, 0.6, 40), frame(pol(to - 0.3, 0), rdir)), 'steel2');
+      add(pc, at(revolve([[2.1, -0.75], [3.6, -0.55], [3.6, 0.55], [2.1, 0.75]], 40), frame(pol(to, 0), rdir)), 'alu');
+      add(pc, at(rod(0.3, 3.4), frame(pol(to, 0, 3.85), toroidal(0))), 'bolt');
+      add(pc, at(box(0.9, 0.5, 2.6), frame(pol(to, 0, 3.85).add(toroidal(0).multiplyScalar(1.6)), toroidal(0), rdir)), 'alu');
+      pumpLineFrom = to + 0.6;
+    }
+
+    // ---------- Small DN40CF ports on the top and bottom of the front and left quarters ----------
+    function smallPort(q, deg, up, label) {
+      const pc = piece('diagPorts', q, { clip: true, label });
       const dir = up ? Z.clone() : Z.clone().negate();
       const zs = up ? 1 : -1;
-      add(q, saddleNeck(pol(D.R0, deg, 0), dir, S.neckR - 0.2, S.neckR, S.flangeAt, verticalStart(deg), 36), 'steel', 'diagPort', { clip: true });
-      add(q, at(flangeRing(S.neckR - 0.2, S.flR, S.t, 40), frame(pol(D.R0, deg, zs * (S.flangeAt + S.t / 2)), dir)), 'steel2', 'diagPort', { clip: true });
-      const face = S.flangeAt + S.t;
-      addInst(q, nutGeom(), 'bolt', circleMatrices(pol(D.R0, deg, zs * S.flangeAt), dir.clone().negate(), radial(deg), toroidal(deg), S.boltR, S.bolts), 'diagPort', { clip: true });
-      return { face, dir, zs, bolts: (tone) => addInst(q, boltGeom(S.t * 2 + 0.8), tone || 'bolt', circleMatrices(pol(D.R0, deg, zs * (face + S.t)), dir, radial(deg), toroidal(deg), S.boltR, S.bolts), part, { clip: true }) };
+      const nr = S.tube / 2;
+      add(pc, saddleNeck(pol(D.R0, deg, 0), dir, nr - 0.15, nr, D.small.flangeAt, verticalStart(deg), 36), 'steel');
+      add(pc, at(flangeRing(nr - 0.15, S.od / 2, S.t, 40), frame(pol(D.R0, deg, zs * (D.small.flangeAt + S.t / 2)), dir)), 'steel2');
+      add(pc, bead(nr, pol(D.R0, deg, zs * (D.small.flangeAt - 0.14)), dir.clone().negate()), 'steel2');
+      const face = D.small.flangeAt + S.t;
+      const mate = zs * (face + D.gap);
+      return {
+        pc, dir, zs, face, mate,
+        // The mating flange's bolts and nuts belong to whatever is mounted on the port.
+        bolts: (owner) => cfBolts(owner, S, pol(D.R0, deg, zs * (face + D.gap + S.t)), pol(D.R0, deg, zs * D.small.flangeAt), dir, radial(deg), toroidal(deg)),
+        gasket: (owner) => add(owner, at(ring(nr, 2.4, D.gap * 0.9, 32), frame(pol(D.R0, deg, zs * (face + D.gap / 2)), dir)), 'copper'),
+      };
     }
 
-    // q0 top: laser diagnostics window.
+    // Front top: laser diagnostics window.
     {
-      const sp = smallPort(q0, 45, true, 'diagPort');
-      add(q0, at(flangeRing(S.glassR + 0.4, S.flR, S.t, 40), frame(pol(D.R0, 45, sp.face + S.t / 2), Z)), 'steel2', 'diagPort', { clip: true });
-      const w = add(q0, at(disc(S.glassR + 0.4, 0.5, 28), frame(pol(D.R0, 45, sp.face + 0.4), Z)), 'glass', 'diagPort', { clip: true });
+      const sp = smallPort(qF, 270, true, 'Front top port');
+      const pc = piece('laser', qF, { clip: true });
+      sp.gasket(pc);
+      add(pc, at(flangeRing(1.6, S.od / 2, S.t, 40), frame(pol(D.R0, 270, sp.mate + S.t / 2), Z)), 'steel2');
+      const w = add(pc, at(disc(1.6, 0.45, 32), frame(pol(D.R0, 270, sp.mate + 0.4), Z)), 'glass');
       w.userData.window = true;
-      sp.bolts();
+      sp.bolts(pc);
     }
 
-    // q0 bottom: Langmuir probe on a linear feedthrough, tip up in the plasma.
-    {
-      const sp = smallPort(q0, 45, false, 'probe', { clip: true });
-      const base = -(sp.face);
-      add(q0, at(flangeRing(0.5, S.flR, S.t, 40), frame(pol(D.R0, 45, base - S.t / 2), Z)), 'steel2', 'probe', { clip: true });
-      sp.bolts();
-      const bellowsTop = base - S.t, bellowsBot = bellowsTop - 6;
-      const prof = [];
-      const folds = 12;
-      for (let i = 0; i <= folds * 2; i++) prof.push([i % 2 ? 1.55 : 1.15, bellowsBot + ((bellowsTop - bellowsBot) * i) / (folds * 2)]);
-      const bellowsOutline = [[0.6, bellowsBot], ...prof, [0.6, bellowsTop], [0.6, bellowsBot]];
-      add(q0, at(revolve(bellowsOutline, 36), frame(pol(D.R0, 45, 0), Z)), 'steel', 'probe', { clip: true });
-      add(q0, at(box(4.4, 4.4, 0.8), rtz(pol(D.R0, 45, bellowsBot - 0.4), 45)), 'alu', 'probe', { clip: true });
-      for (const s of [-1, 1]) add(q0, at(new THREE.CylinderGeometry(0.3, 0.3, 6.8, 10).deleteAttribute('uv'), frame(pol(D.R0, 45, bellowsTop - 3.4).add(toroidal(45).multiplyScalar(s * 2.0)), Z)), 'bolt', 'probe', { clip: true });
-      add(q0, at(disc(0.9, 3.2, 24), frame(pol(D.R0, 45, bellowsBot - 2.4), Z)), 'steel2', 'probe', { clip: true });
-      add(q0, at(disc(1.15, 1.6, 24), frame(pol(D.R0, 45, bellowsBot - 4.8), Z)), 'black', 'probe', { clip: true });
-      for (let i = 0; i < 6; i++) add(q0, at(ring(0.92, 0.97, 0.06, 24), frame(pol(D.R0, 45, bellowsBot - 1.2 - i * 0.45), Z)), 'ink', 'probe', { clip: true });
-      add(q0, at(new THREE.CylinderGeometry(0.32, 0.32, D.aIn - 1.6, 12).deleteAttribute('uv'), frame(pol(D.R0, 45, -(D.aIn + 1.6) / 2), Z)), 'ceramic', 'probe', { clip: true });
-      const tip = add(q0, at(new THREE.CylinderGeometry(0.09, 0.09, 1.2, 8).deleteAttribute('uv'), frame(pol(D.R0, 45, -1.0), Z)), 'tip', 'probe', { clip: true });
-      tip.userData.tip = true;
-      add(q0, at(new THREE.CylinderGeometry(0.15, 0.15, 7.0, 8).deleteAttribute('uv'), frame(pol(D.R0, 45, base + 0.5 - 4.3), Z)), 'bolt', 'probe', { clip: true });
-    }
-
-    // q2 top and bottom: HV glow electrodes with pink cables to a junction box on the table.
-    const hvBox = pol(50, 225, D.table.top + 2.5);
+    // Bottom ports: the two discharge electrodes. The anode rod stands up into the vessel.
     const hvEnds = [];
-    for (const up of [true, false]) {
-      const sp = smallPort(q2, 225, up, 'electrode');
-      const zs = sp.zs;
-      add(q2, at(flangeRing(0.6, S.flR, S.t, 40), frame(pol(D.R0, 225, zs * (sp.face + S.t / 2)), Z)), 'steel2', 'electrode');
-      sp.bolts();
-      const insFrom = sp.face + S.t;
-      const shedProfile = [[0.5, 0]];
-      for (let i = 0; i < 4; i++) shedProfile.push([1.25, i * 1.0 + 0.15], [1.25, i * 1.0 + 0.35], [0.9, i * 1.0 + 0.5], [0.9, i * 1.0 + 1.0]);
-      shedProfile.push([0.5, 4.0], [0.5, 0]);
-      const insulator = revolve(shedProfile.map(([r, y]) => [r, y]), 32);
-      const insM = up ? frame(pol(D.R0, 225, insFrom), Z) : frame(pol(D.R0, 225, -insFrom), Z.clone().negate());
-      add(q2, at(insulator, insM), 'ceramic', 'electrode');
-      const capAt = pol(D.R0, 225, zs * (insFrom + 4.6));
-      add(q2, at(disc(0.75, 1.2, 20), frame(capAt, Z)), 'bolt', 'electrode');
-      hvEnds.push({ from: capAt.clone().add(V(0, 0, zs * 0.6)), up });
+    for (const [q, deg, name] of [[qF, 270, 'Electrode A (front)'], [qL, 180, 'Electrode B (left)']]) {
+      const sp = smallPort(q, deg, false, `${deg === 270 ? 'Front' : 'Left'} bottom port`);
+      const pc = piece('electrode', q, { clip: true, label: name });
+      sp.gasket(pc);
+      const zf = sp.mate - S.t / 2;
+      add(pc, at(flangeRing(0.55, S.od / 2, S.t, 40), frame(pol(D.R0, deg, zf), Z)), 'steel2');
+      sp.bolts(pc);
+      const insFrom = -(sp.face + D.gap + S.t);
+      const prof = [[0.55, 0]];
+      for (let i = 0; i < 4; i++) prof.push([1.25, i + 0.15], [1.25, i + 0.35], [0.9, i + 0.5], [0.9, i + 1.0]);
+      prof.push([0.55, 4.0], [0.55, 0]);
+      add(pc, at(revolve(prof, 32), frame(pol(D.R0, deg, insFrom), Z.clone().negate())), 'ceramic');
+      const capAt = pol(D.R0, deg, insFrom - 4.6);
+      add(pc, at(disc(0.75, 1.2, 24), frame(capAt, Z)), 'bolt');
+      add(pc, at(rod(0.22, sp.face - (D.aIn - 2.6), 12), frame(pol(D.R0, deg, -(sp.face + D.aIn - 2.6) / 2), Z)), 'bolt');
+      add(pc, at(disc(0.9, 0.35, 28), frame(pol(D.R0, deg, -(D.aIn - 2.6)), Z)), 'steel2');
+      hvEnds.push({ from: capAt.clone().add(V(0, 0, -0.6)), deg });
     }
 
-    // ---------- Webcam on the q1 viewport ----------
+    // Left top: Langmuir probe on a bellows linear feedthrough.
     {
-      const deg = 135, rdir = radial(deg), tdir = toroidal(deg);
-      const face = L.flangeAt + L.t * 2;
-      const cam = pol(43.5, deg, 0);
-      add(q1, at(box(3, 7, 3), rtz(cam, deg)), 'black', 'camera');
-      add(q1, at(disc(1.2, 1.6, 24), frame(cam.clone().add(rdir.clone().multiplyScalar(-2.3)), rdir)), 'black', 'camera');
-      add(q1, at(disc(0.85, 0.12, 24), frame(cam.clone().add(rdir.clone().multiplyScalar(-3.15)), rdir)), 'glass', 'camera');
-      add(q1, at(disc(0.2, 0.1, 10), frame(cam.clone().add(rdir.clone().multiplyScalar(1.52)).add(tdir.clone().multiplyScalar(2.4)).add(V(0, 0, 0.8)), rdir)), 'led', 'camera');
+      const sp = smallPort(qL, 180, true, 'Left top port');
+      const pc = piece('probe', qL, { clip: true });
+      sp.gasket(pc);
+      const base = sp.mate + S.t;
+      add(pc, at(flangeRing(0.5, S.od / 2, S.t, 40), frame(pol(D.R0, 180, sp.mate + S.t / 2), Z)), 'steel2');
+      sp.bolts(pc);
+      const top = base + 6;
+      const prof = [[0.6, base]];
+      const folds = 12;
+      for (let i = 0; i <= folds * 2; i++) prof.push([i % 2 ? 1.55 : 1.15, base + ((top - base) * i) / (folds * 2)]);
+      prof.push([0.6, top], [0.6, base]);
+      add(pc, at(revolve(prof, 36), frame(pol(D.R0, 180, 0), Z)), 'steel');
+      add(pc, at(box(4.4, 4.4, 0.8), rtz(pol(D.R0, 180, top + 0.4), 180)), 'alu');
+      for (const s of [-1, 1]) add(pc, at(rod(0.3, 6.8), frame(pol(D.R0, 180, base + 3.4).add(toroidal(180).multiplyScalar(s * 2.0)), Z)), 'bolt');
+      add(pc, at(disc(0.9, 3.0, 24), frame(pol(D.R0, 180, top + 2.3), Z)), 'steel2');
+      add(pc, at(disc(1.15, 1.6, 24), frame(pol(D.R0, 180, top + 4.6), Z)), 'black');
+      for (let i = 0; i < 5; i++) add(pc, at(ring(0.92, 0.97, 0.06, 24), frame(pol(D.R0, 180, top + 1.2 + i * 0.45), Z)), 'ink');
+      add(pc, at(rod(0.15, base - 1.5 + 0.5), frame(pol(D.R0, 180, (base + 1.5) / 2 - 0.25), Z)), 'bolt');
+      add(pc, at(rod(0.32, D.aIn - 1.4, 12), frame(pol(D.R0, 180, 1.5 + (D.aIn - 1.4) / 2), Z)), 'ceramic');
+      const tip = add(pc, at(rod(0.09, 1.2, 8), frame(pol(D.R0, 180, 0.9), Z)), 'tip');
+      tip.userData.tip = true;
+    }
+
+    // Back top: the larger gauge port (DN63CF) with the gauge and gas-inlet stack.
+    let gaugeCableFrom, gasFrom;
+    {
+      const deg = 90;
+      const port = piece('diagPorts', qB, { clip: true, label: 'Back top gauge port (DN63)' });
+      const nr = G.tube / 2;
+      add(port, saddleNeck(pol(D.R0, deg, 0), Z, nr - 0.15, nr, D.gport.flangeAt, verticalStart(deg), 40), 'steel');
+      add(port, at(flangeRing(nr - 0.15, G.od / 2, G.t, 56), frame(pol(D.R0, deg, D.gport.flangeAt + G.t / 2), Z)), 'steel2');
+      add(port, bead(nr, pol(D.R0, deg, D.gport.flangeAt - 0.14), Z.clone().negate()), 'steel2');
+      const face = D.gport.flangeAt + G.t;
+
+      const st = piece('stack', qB, { clip: true });
+      add(st, at(ring(nr, 3.8, D.gap * 0.9, 40), frame(pol(D.R0, deg, face + D.gap / 2), Z)), 'copper');
+      const rz = face + D.gap;
+      add(st, at(flangeRing(1.75, G.od / 2, G.t, 56), frame(pol(D.R0, deg, rz + G.t / 2), Z)), 'bronze');
+      cfBolts(st, G, pol(D.R0, deg, rz + G.t), pol(D.R0, deg, D.gport.flangeAt), Z, radial(deg), toroidal(deg));
+      // DN40 four-way cross: vertical body, two side arms along the ring.
+      const c0 = rz + G.t, c1 = c0 + 8, cm = (c0 + c1) / 2;
+      const cr = S.tube / 2;
+      add(st, at(ring(cr - 0.15, cr, c1 - c0 - 2 * S.t, 32), frame(pol(D.R0, deg, cm), Z)), 'steel');
+      add(st, at(flangeRing(cr - 0.15, S.od / 2, S.t, 40), frame(pol(D.R0, deg, c0 + S.t / 2), Z)), 'steel2');
+      addInst(st, boltGeom(S.t + 0.8, S.af, S.br), 'bolt', circleMatrices(pol(D.R0, deg, c0 + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n));
+      add(st, at(flangeRing(cr - 0.15, S.od / 2, S.t, 40), frame(pol(D.R0, deg, c1 - S.t / 2), Z)), 'steel2');
+      const tq = toroidal(deg);
       for (const s of [-1, 1]) {
-        const len = 43.5 + 1.5 - face;
-        add(q1, at(box(len, 0.5, 1.6), rtz(pol(face + len / 2, deg, 0).add(tdir.clone().multiplyScalar(s * 3.75)), deg)), 'alu', 'camera');
+        const ax = tq.clone().multiplyScalar(s);
+        const centre = pol(D.R0, deg, cm);
+        add(st, at(ring(cr - 0.15, cr, 4 - S.t, 32), frame(centre.clone().add(ax.clone().multiplyScalar(cr + (4 - S.t) / 2 - 0.2)), ax)), 'steel');
+        add(st, at(flangeRing(cr - 0.15, S.od / 2, S.t, 40), frame(centre.clone().add(ax.clone().multiplyScalar(cr + 4 - S.t / 2 - 0.2)), ax)), 'steel2');
+        if (s > 0) {
+          // Blank on the +toroidal arm.
+          add(st, at(disc(S.od / 2, S.t, 40), frame(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t / 2 - 0.2 + D.gap)), ax)), 'steel2');
+          addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br), 'bolt', circleMatrices(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t - 0.2 + D.gap)), ax, Z, radial(deg), S.bc / 2, S.n));
+        }
       }
+      // Top: DN40 to KF16 adaptor flange with a short KF16 stub.
+      add(st, at(flangeRing(0.8, S.od / 2, S.t, 40), frame(pol(D.R0, deg, c1 + D.gap + S.t / 2), Z)), 'steel2');
+      addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br), 'bolt', circleMatrices(pol(D.R0, deg, c1 + D.gap + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n));
+      const kfFrom = c1 + D.gap + S.t;
+
+      const gg = piece('gauge', qB, { clip: true });
+      const kfTo = kfFrom + 9;
+      add(gg, at(ring(0.75, 0.95, kfTo - kfFrom, 24), frame(pol(D.R0, deg, (kfFrom + kfTo) / 2), Z)), 'steel');
+      add(gg, at(flangeRing(0.75, 1.5, 0.45, 32), frame(pol(D.R0, deg, kfFrom + 3), Z)), 'steel2');
+      add(gg, at(revolve([[1.0, -0.5], [1.8, -0.35], [1.8, 0.35], [1.0, 0.5]], 32), frame(pol(D.R0, deg, kfFrom + 3), Z)), 'alu');
+      add(gg, at(hex(1.7, 1.0), frame(pol(D.R0, deg, kfTo - 0.5), Z)), 'steel2');
+      const head = pol(D.R0, deg, kfTo + 2.6);
+      add(gg, at(box(3.2, 8.4, 5.0), rtz(head, deg)), 'gaugeblue');
+      // Display window and two buttons on the face toward the centre of the ring.
+      const lcd = add(gg, at(box(0.12, 4.2, 1.5), rtz(head.clone().add(radial(deg).multiplyScalar(-1.62)).add(V(0, 0, 0.8)), deg)), 'lcd');
+      lcd.userData.lcd = true;
+      for (const s of [-1, 1]) add(gg, at(disc(0.25, 0.14, 12), frame(head.clone().add(radial(deg).multiplyScalar(-1.65)).add(tq.clone().multiplyScalar(s * 0.9)).add(V(0, 0, -1.1)), radial(deg).negate())), 'ink');
+      add(gg, at(disc(0.5, 1.2, 16), frame(head.clone().add(tq.clone().multiplyScalar(-4.8)), tq)), 'bolt');
+      gaugeCableFrom = head.clone().add(tq.clone().multiplyScalar(-5.4));
+
+      // Needle valve on the -toroidal arm, with its gas line down to the table.
+      const nv = piece('needle', qB, { clip: true });
+      const ax = tq.clone().negate();
+      const armEnd = pol(D.R0, deg, cm).add(ax.clone().multiplyScalar(cr + 4 - 0.2 + D.gap));
+      add(nv, at(flangeRing(0.4, S.od / 2, S.t, 40), frame(armEnd.clone().add(ax.clone().multiplyScalar(S.t / 2)), ax)), 'steel2');
+      addInst(nv, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br), 'bolt', circleMatrices(armEnd.clone().add(ax.clone().multiplyScalar(S.t)), ax, Z, radial(deg), S.bc / 2, S.n));
+      const vb = armEnd.clone().add(ax.clone().multiplyScalar(S.t + 1.2));
+      add(nv, at(box(2.4, 2.6, 2.4), frame(vb, ax, Z)), 'brass');
+      add(nv, at(rod(0.35, 1.8), frame(vb.clone().add(V(0, 0, 2.1)), Z)), 'bolt');
+      add(nv, at(disc(1.05, 1.3, 24), frame(vb.clone().add(V(0, 0, 3.6)), Z)), 'black');
+      const ridges = [];
+      for (let i = 0; i < 18; i++) {
+        const a = (i / 18) * Math.PI * 2;
+        const o = radial(0).multiplyScalar(1.07 * Math.cos(a)).add(V(0, 1.07 * Math.sin(a), 0));
+        ridges.push(at(box(0.14, 1.2, 0.14), frame(vb.clone().add(V(0, 0, 3.6)).add(o), Z, o)));
+      }
+      add(nv, merge(ridges), 'black');
+      add(nv, at(rod(0.4, 1.0), frame(vb.clone().add(ax.clone().multiplyScalar(1.7)), ax)), 'brass');
+      add(nv, at(hex(1.1, 0.7), frame(vb.clone().add(ax.clone().multiplyScalar(2.3)), ax)), 'brass');
+      gasFrom = vb.clone().add(ax.clone().multiplyScalar(2.7));
     }
 
-    // Spectrometer fibre adaptor on the q2 viewport.
-    const fibreFrom = pol(L.flangeAt + L.t * 2 + 0.9, 225, 0);
-    add(q2, at(disc(0.7, 1.4, 20), frame(pol(L.flangeAt + L.t * 2 + 0.3, 225, 0), radial(225))), 'bolt', 'spectro');
+    // ---------- Central former with PF1, PF2 and the solenoid ----------
+    {
+      const g = group('centre', V(0, 0, 0), 0);
+      const F = D.former, top = TB.top;
+      const fm = piece('former', g);
+      const h = F.top - top;
+      add(fm, at(ring(F.r - F.t, F.r, h - 0.45, 72), frame(V(0, 0, top + (h - 0.45) / 2), Z)), 'white');
+      add(fm, at(flangeRing(F.r - F.t - 0.2, F.r + 0.25, 0.5, 72), frame(V(0, 0, F.top - 0.2), Z)), 'white');
+      add(fm, at(flangeRing(F.r - F.t, F.r + 2.2, 0.6, 72), frame(V(0, 0, top + 0.3), Z)), 'alu');
+      addInst(fm, hex(0.9, 0.5), 'bolt', circleMatrices(V(0, 0, top + 0.6 + 0.25), Z, V(1, 0, 0), V(0, 1, 0), F.r + 1.2, 8), {});
+      const screws = [];
+      for (let i = 0; i < 8; i++) {
+        const a = ((i + 0.5) / 8) * 360;
+        screws.push(frame(pol(F.r + 0.05, a, F.top - 1.1), radial(a), Z));
+      }
+      addInst(fm, disc(0.3, 0.12, 12), 'black', screws);
+      // Leads from the coils run up inside the former and out over its rim.
+      for (const a of [130, 150]) {
+        add(fm, tube([pol(F.r - F.t - 0.3, a, top + 0.5), pol(F.r - F.t - 0.5, a, 0), pol(F.r - F.t - 0.6, a - 4, F.top - 2), pol(F.r - F.t - 0.25, a - 6, F.top - 0.5)], 0.22, { seg: 24, radial: 8 }), 'cable');
+      }
 
-    // ---------- Inner PF coils on hubs that slide on the solenoid column ----------
-    function uChannel(R, webOuter) {
+      for (const up of [true, false]) {
+        const zs = up ? 1 : -1;
+        const pg = group(up ? 'pf1' : 'pf2', V(0, 0, zs * 7), 0.18);
+        const pc = piece('pfInner', pg, { label: up ? 'PF1 (upper)' : 'PF2 (lower)' });
+        const zc = zs * D.pfIn.z;
+        add(pc, at(ring(F.r, D.pfIn.rOut, D.pfIn.h, 96), frame(V(0, 0, zc), Z)), 'copper');
+        for (const dz of [-0.55, 0.55]) add(pc, at(ring(D.pfIn.rOut - 0.02, D.pfIn.rOut + 0.06, 0.12, 96), frame(V(0, 0, zc + dz), Z)), 'tapeline');
+        for (let i = 0; i < 6; i++) add(pc, at(box(0.5, 0.24, D.pfIn.h + 0.25), rtz(pol(D.pfIn.rOut + 0.04, i * 60 + 15, zc), i * 60 + 15)), 'black');
+      }
+      const sg = piece('solenoid', g);
+      add(sg, at(ring(F.r, D.sol.rOut, D.sol.h, 96), frame(V(0, 0, 0), Z)), 'cable');
+      for (let i = 1; i < 6; i++) add(sg, at(ring(D.sol.rOut - 0.02, D.sol.rOut + 0.05, 0.1, 96), frame(V(0, 0, -D.sol.h / 2 + i), Z)), 'tapeline');
+      add(sg, at(ring(F.r, D.sol.rOut + 0.1, 0.25, 96), frame(V(0, 0, D.sol.h / 2), Z)), 'black');
+      add(sg, at(ring(F.r, D.sol.rOut + 0.1, 0.25, 96), frame(V(0, 0, -D.sol.h / 2), Z)), 'black');
+    }
+
+    // ---------- Outer PF coils on aluminium channels, braced to the posts ----------
+    function uChannel(R) {
       const w = 1.5, h = 1.3, web = 0.3, ch = 0.3;
-      let pts = [[-w, -h], [w, -h], [w, -h + ch], [-w + web, -h + ch], [-w + web, h - ch], [w, h - ch], [w, h], [-w, h], [-w, -h]];
-      if (webOuter) pts = pts.map(([r, y]) => [-r, -y]);
-      return revolve(pts.map(([r, y]) => [R + r, y]), 96);
-    }
-    function pfCoil(g, R, z, webOuter, part, tone) {
-      const m = new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 0, z);
-      add(g, at(uChannel(R, webOuter), m.clone()), 'alu', part);
-      const wIn = webOuter ? R - 1.25 : R - 1.2, wOut = webOuter ? R + 1.2 : R + 1.25;
-      add(g, at(ring(wIn, wOut, 2.0, 96), m.clone()), tone, part);
+      const pts = [[-w, -h], [w, -h], [w, -h + ch], [-w + web, -h + ch], [-w + web, h - ch], [w, h - ch], [w, h], [-w, h], [-w, -h]].map(([r, y]) => [-r, -y]);
+      return revolve(pts.map(([r, y]) => [R + r, y]), 120);
     }
     for (const up of [true, false]) {
       const zs = up ? 1 : -1;
-      const g = group(up ? 'pfInnerUp' : 'pfInnerDown', V(0, 0, zs * 8.5), 0.18);
-      pfCoil(g, D.pfIn.R, zs * D.pfIn.z, false, 'pfInner', 'tape');
-      add(g, at(ring(D.sol.col, D.sol.col + 1.0, 1.4, 32), frame(V(0, 0, zs * D.pfIn.z), Z)), 'alu', 'pfInner');
+      const g = group(up ? 'pf3' : 'pf4', V(0, 0, zs * (up ? 14 : 6)), 0.1);
+      const pc = piece('pfOuter', g, { label: up ? 'PF3 (upper)' : 'PF4 (lower)' });
+      const m = new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 0, zs * D.pfOut.z);
+      add(pc, at(uChannel(D.pfOut.R), m.clone()), 'alu');
+      add(pc, at(ring(D.pfOut.R - 1.25, D.pfOut.R + 1.2, 2.0, 120), m.clone()), 'tape');
       for (let i = 0; i < 4; i++) {
         const deg = 45 + i * 90;
-        const len = D.pfIn.R - 1.5 - (D.sol.col + 1.0);
-        add(g, at(box(len, 1.2, 0.8), rtz(pol(D.sol.col + 1.0 + len / 2, deg, zs * D.pfIn.z), deg)), 'alu', 'pfInner');
+        const from = D.pfOut.R + 1.5, to = D.post.R - D.post.half;
+        add(pc, at(box(to - from, 2.0, 1.2), rtz(pol((from + to) / 2, deg, zs * D.pfOut.z), deg)), 'alu');
+        for (const s of [-1, 1]) add(pc, at(hex(0.9, 0.4), frame(pol((from + to) / 2 + s * 1.1, deg, zs * D.pfOut.z + zs * 0.8), Z.clone().multiplyScalar(zs))), 'bolt');
       }
     }
 
-    // ---------- Outer PF coils and satellites, clamped to the posts ----------
+    // ---------- Satellite PF coils: hose-wound rings, the top one on brackets, the bottom one on pads ----------
     for (const up of [true, false]) {
-      const zs = up ? 1 : -1;
-      const g = group(up ? 'pfOuterUp' : 'pfOuterDown', V(0, 0, zs * (up ? 16 : 8)), 0.1);
-      pfCoil(g, D.pfOut.R, zs * D.pfOut.z, true, 'pfOuter', 'tape');
-      for (let i = 0; i < 4; i++) add(g, at(box(1.2, 2.4, 3.0), rtz(pol(D.pfOut.R + 1.5 + 0.6, i * 90, zs * D.pfOut.z), i * 90)), 'alu', 'pfOuter');
-    }
-    for (const up of [true, false]) {
-      const zs = up ? 1 : -1;
-      const g = group(up ? 'satUp' : 'satDown', V(0, 0, up ? 12 : -5), 0);
-      const tor = new THREE.TorusGeometry(D.sat.R, D.sat.r, 20, 220);
+      const S2 = up ? D.satTop : D.satBot;
+      const g = group(up ? 'satTop' : 'satBot', V(0, 0, up ? 22 : 0), 0);
+      const pc = piece('satellite', g, { label: up ? 'Upper satellite coil' : 'Lower satellite coil' });
+      const tor = new THREE.TorusGeometry(S2.R, S2.r, 22, 240);
       tor.deleteAttribute('uv');
-      add(g, at(tor, new THREE.Matrix4().makeTranslation(0, 0, zs * D.sat.z)), 'hose', 'satellite');
+      add(pc, at(tor, T(0, 0, S2.z)), 'hose');
       const tapes = [];
-      for (let i = 0; i < 24; i++) {
-        const c = ((i + 0.5) / 24) * Math.PI * 2;
-        tapes.push(at(torusShell(D.sat.R, D.sat.r - 0.05, D.sat.r + 0.12, c - 0.012, c + 0.012, { nT: 24, nP: 2 }), new THREE.Matrix4().makeTranslation(0, 0, zs * D.sat.z)));
+      for (let i = 0; i < 28; i++) {
+        const c = ((i + 0.5) / 28) * Math.PI * 2;
+        tapes.push(at(torusShell(S2.R, S2.r - 0.05, S2.r + 0.1, c - 0.011, c + 0.011, { nT: 24, nP: 2 }), T(0, 0, S2.z)));
       }
-      add(g, merge(tapes), 'tape', 'satellite');
-      const clampFrom = D.sat.R + D.sat.r, clampTo = D.postR - 2;
-      for (let i = 0; i < 4; i++) add(g, at(box(clampTo - clampFrom + 0.4, 2.8, 3.6), rtz(pol((clampFrom + clampTo) / 2 - 0.2, i * 90, zs * D.sat.z), i * 90)), 'alu', 'satellite');
-    }
-
-    // ---------- Solenoid column (stays put) ----------
-    {
-      const g = group('solenoid', V(0, 0, 0), 0);
-      const Sd = D.sol, top = D.table.top;
-      add(g, at(box(14, 14, 1), new THREE.Matrix4().makeTranslation(0, 0, top + 0.5)), 'alu', 'solenoid');
-      for (const sx of [-1, 1]) for (const sy of [-1, 1]) add(g, at(hex(0.9, 0.5), frame(V(sx * 5.8, sy * 5.8, top + 1.25), Z)), 'bolt', 'solenoid');
-      const lower = -Sd.half - 0.8 - (top + 1);
-      add(g, at(disc(Sd.col, lower, 28), frame(V(0, 0, top + 1 + lower / 2), Z)), 'alu', 'solenoid');
-      add(g, at(flangeRing(Sd.col, Sd.rw + 0.4, 0.8, 48), frame(V(0, 0, -Sd.half - 0.4), Z)), 'alu', 'solenoid');
-      add(g, at(flangeRing(Sd.col, Sd.rw + 0.4, 0.8, 48), frame(V(0, 0, Sd.half + 0.4), Z)), 'alu', 'solenoid');
-      add(g, at(ring(Sd.col, Sd.rw, Sd.half * 2, 64), frame(V(0, 0, 0), Z)), 'tape', 'solenoid');
-      for (let i = 1; i < 8; i++) add(g, at(ring(Sd.rw - 0.05, Sd.rw + 0.06, 0.18, 64), frame(V(0, 0, -Sd.half + (i * Sd.half * 2) / 8), Z)), 'copper', 'solenoid');
-      const upperLen = Sd.top - (Sd.half + 0.8);
-      add(g, at(disc(Sd.col, upperLen, 28), frame(V(0, 0, Sd.half + 0.8 + upperLen / 2), Z)), 'alu', 'solenoid');
-      add(g, at(flangeRing(0.5, 3.5, 1.2, 40), frame(V(0, 0, Sd.top + 0.6), Z)), 'steel2', 'solenoid');
-      addInst(g, hex(0.9, 0.55), 'bolt', circleMatrices(V(0, 0, Sd.top + 1.2 + 0.27), Z, V(1, 0, 0), V(0, 1, 0), 2.9, 6), 'solenoid');
-      for (const s of [-1, 1]) {
-        const x = s * 1.0;
-        add(g, tube([V(x, Sd.rw - 0.1, Sd.half - 1.2), V(x, 7.0, Sd.half - 2.2), V(x, 7.3, 0), V(x, 7.3, -20), V(x, 6.6, top + 2.5), V(x, 6.6, top + 1)], 0.22, { seg: 48, radial: 8 }), 'black', 'solenoid');
+      add(pc, merge(tapes), 'tape');
+      for (let i = 0; i < 4; i++) {
+        if (up) {
+          const deg = 45 + i * 90;
+          const from = S2.R + S2.r - 0.2, to = D.post.R - D.post.half;
+          add(pc, at(box(to - from + 0.6, 3.2, 0.6), rtz(pol((from + to) / 2 + 0.3, deg, S2.z - S2.r - 0.3), deg)), 'alu');
+          add(pc, at(box(0.5, 3.2, 3.6), rtz(pol(to - 0.25, deg, S2.z - S2.r + 1.2), deg)), 'alu');
+          add(pc, at(box(1.2, 3.4, 0.5), rtz(pol(S2.R, deg, S2.z + S2.r + 0.25), deg)), 'black');
+        } else {
+          const deg = i * 90 + 45;
+          const h = S2.z - S2.r - TB.top;
+          add(pc, at(box(3.2, 3.2, h), rtz(pol(S2.R, deg, TB.top + h / 2), deg)), 'black');
+        }
       }
     }
 
-    // ---------- Table, stands and posts ----------
-    const TB = D.table;
+    // ---------- Table (Thorlabs Nexus), legs, shelf, posts ----------
+    const tableG = group('table', V(0, 0, 0), 0);
     {
-      const g = group('table', V(0, 0, 0), 0);
-      add(g, at(box(TB.half * 2, TB.half * 2, TB.thick), new THREE.Matrix4().makeTranslation(0, 0, TB.top - TB.thick / 2)), 'table', 'table');
-      add(g, at(box(TB.half * 2 - 1, TB.half * 2 - 1, 0.6), new THREE.Matrix4().makeTranslation(0, 0, TB.top - TB.thick - 0.3)), 'black', 'table');
+      const g = tableG;
+      const tb = piece('table', g);
+      add(tb, at(box(TB.half * 2, TB.half * 2, 1), T(0, 0, TB.top - 0.5)), 'table');
+      add(tb, at(box(TB.half * 2 - 0.2, TB.half * 2 - 0.2, TB.thick - 1), T(0, 0, TB.top - 1 - (TB.thick - 1) / 2)), 'black');
       const holes = [];
       const pitch = 2.5;
-      for (let i = -17; i <= 17; i++) for (let j = -17; j <= 17; j++) holes.push(new THREE.Matrix4().makeTranslation(i * pitch, j * pitch, TB.top + 0.01));
-      const holeGeom = at(new THREE.CircleGeometry(0.32, 10).deleteAttribute('uv'), new THREE.Matrix4());
-      const holeMesh = addInst(g, holeGeom, 'hole', holes, 'table');
+      for (let i = -17; i <= 17; i++) for (let j = -17; j <= 17; j++) holes.push(T(i * pitch, j * pitch, TB.top + 0.01));
+      const holeMesh = addInst(tb, at(new THREE.CircleGeometry(0.3, 10).deleteAttribute('uv'), new THREE.Matrix4()), 'hole', holes);
       holeMesh.userData.sameInkAs = 'table';
+      // Engraved name plates on the front band.
+      for (const [x, w] of [[-24, 12], [26, 10]]) add(tb, at(box(w, 0.08, 1.6), T(x, -TB.half - 0.1, TB.top - TB.thick / 2)), 'alu');
+      const legTop = TB.top - TB.thick;
       for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
         const lx = sx * TB.legAt, ly = sy * TB.legAt;
-        const h = TB.top - TB.thick - 0.6 - (TB.floor + 2);
-        add(g, at(box(TB.leg, TB.leg, h), new THREE.Matrix4().makeTranslation(lx, ly, TB.floor + 2 + h / 2)), 'black', 'table');
-        add(g, at(disc(3.2, 2, 24), frame(V(lx, ly, TB.floor + 1), Z)), 'ink', 'table');
-        add(g, at(box(TB.leg + 1.2, TB.leg + 1.2, 1.2), new THREE.Matrix4().makeTranslation(lx, ly, TB.top - TB.thick - 1.2)), 'black', 'table');
+        const h = legTop - 1.6 - (TB.floor + 2.5);
+        add(tb, at(box(TB.leg, TB.leg, h), T(lx, ly, TB.floor + 2.5 + h / 2)), 'black');
+        add(tb, at(disc(2.2, 1.6, 24), frame(V(lx, ly, legTop - 0.8), Z)), 'steel2');
+        add(tb, at(rod(0.9, 2.6, 16), frame(V(lx, ly, TB.floor + 2.0), Z)), 'bolt');
+        add(tb, at(disc(3.0, 1.2, 28), frame(V(lx, ly, TB.floor + 0.6), Z)), 'ink');
       }
       const inner = TB.legAt - TB.leg / 2;
       for (const s of [-1, 1]) {
-        add(g, at(box(inner * 2, 4, 5), new THREE.Matrix4().makeTranslation(0, s * TB.legAt, TB.shelf - 2.5)), 'black', 'table');
-        add(g, at(box(4, inner * 2, 5), new THREE.Matrix4().makeTranslation(s * TB.legAt, 0, TB.shelf - 2.5)), 'black', 'table');
+        add(tb, at(box(inner * 2, 5, 7), T(0, s * TB.legAt, TB.shelf - 3.5)), 'black');
+        add(tb, at(box(5, inner * 2, 7), T(s * TB.legAt, 0, TB.shelf - 3.5)), 'black');
+        add(tb, at(box(5, inner * 2, 6), T(s * TB.legAt, 0, legTop - 1.6 - 3)), 'black');
       }
-      add(g, at(box(inner * 2, inner * 2, 1.2), new THREE.Matrix4().makeTranslation(0, 0, TB.shelf + 0.6)), 'panel', 'table');
-      const plate = V(TB.half + 0.06, 0, TB.top - TB.thick / 2);
-      add(g, at(box(0.12, 14, 3.4), new THREE.Matrix4().makeTranslation(plate.x, plate.y, plate.z)), 'brass', 'table');
-      for (let i = 0; i < 3; i++) add(g, at(box(0.06, i === 0 ? 10 : 7, 0.18), new THREE.Matrix4().makeTranslation(plate.x + 0.08, i === 0 ? 0 : -1.5, plate.z + 0.9 - i * 0.9)), 'ink', 'table');
-      for (const sy of [-1, 1]) for (const sz of [-1, 1]) add(g, at(disc(0.22, 0.06, 10), frame(V(plate.x + 0.07, sy * 6.3, plate.z + sz * 1.2), V(1, 0, 0))), 'ink', 'table');
-
-      for (let i = 0; i < 4; i++) {
-        const deg = i * 90;
-        const h = -J.R - TB.top;
-        add(g, at(box(4, 4, h - 0.8), rtz(pol(D.R0, deg, TB.top + (h - 0.8) / 2), deg)), 'alu', 'stand');
-        add(g, at(box(5.4, 5.4, 0.8), rtz(pol(D.R0, deg, -J.R - 0.4), deg)), 'alu', 'stand');
-        add(g, at(box(6, 6, 0.6), rtz(pol(D.R0, deg, TB.top + 0.3), deg)), 'alu', 'stand');
-        for (const s of [-1, 1]) add(g, at(box(0.7, 0.1, h - 1.6), rtz(pol(D.R0, deg, TB.top + (h - 0.8) / 2).add(toroidal(deg).multiplyScalar(s * 2.03)), deg)), 'slot', 'stand');
-      }
-
-      for (let i = 0; i < 4; i++) {
-        const deg = i * 90;
-        const h = 24 - TB.top;
-        const c = pol(D.postR, deg, TB.top + h / 2);
-        add(g, at(box(4, 4, h), rtz(c, deg)), 'alu', 'posts');
-        add(g, at(box(4.2, 4.2, 0.5), rtz(pol(D.postR, deg, 24.25), deg)), 'black', 'posts');
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-          const o = radial(deg).multiplyScalar(dx * 2.03).add(toroidal(deg).multiplyScalar(dy * 2.03));
-          add(g, at(box(dx ? 0.1 : 0.7, dy ? 0.1 : 0.7, h - 1.2), rtz(c.clone().add(o), deg)), 'slot', 'posts');
-        }
-        add(g, at(box(4.5, 0.5, 4), rtz(pol(D.postR - 4.25, deg, TB.top + 2), deg)), 'alu', 'posts');
-        add(g, at(box(4.5, 3, 0.5), rtz(pol(D.postR - 4.25, deg, TB.top + 0.25), deg)), 'alu', 'posts');
-        for (const z of [-D.pfOut.z, D.pfOut.z]) {
-          const from = D.pfOut.R + 1.5 + 1.2, to = D.postR - 2;
-          add(g, at(box(to - from, 2.0, 2.0), rtz(pol((from + to) / 2, deg, z), deg)), 'alu', 'posts');
-        }
-      }
+      add(tb, at(box(inner * 2, inner * 2, 1.0), T(0, 0, TB.shelf + 0.5)), 'panel');
     }
 
-    // ---------- Supplies on the shelf, HV supply, PLC and E-stop ----------
-    let spectroIn;
+    for (let i = 0; i < 4; i++) {
+      const deg = 45 + i * 90;
+      const P = D.post;
+      const pc = piece('posts', tableG, { label: `Post ${i + 1}` });
+      const h = P.top - TB.top;
+      const c = pol(P.R, deg, TB.top + h / 2);
+      add(pc, at(box(P.half * 2, P.half * 2, h), rtz(c, deg)), 'alu');
+      add(pc, at(box(P.half * 2 + 0.1, P.half * 2 + 0.1, 0.4), rtz(pol(P.R, deg, P.top + 0.2), deg)), 'black');
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const o = radial(deg).multiplyScalar(dx * (P.half + 0.03)).add(toroidal(deg).multiplyScalar(dy * (P.half + 0.03)));
+        add(pc, at(box(dx ? 0.1 : 0.8, dy ? 0.1 : 0.8, h - 1.2), rtz(c.clone().add(o), deg)), 'slot');
+      }
+      // Angle bracket at the foot, outboard of the post.
+      const foot = pol(P.R + P.half + 2.1, deg, TB.top);
+      add(pc, at(box(4.2, 4.0, 0.5), rtz(foot.clone().add(V(0, 0, 0.25)), deg)), 'alu');
+      add(pc, at(box(0.5, 4.0, 4.2), rtz(pol(P.R + P.half + 0.25, deg, TB.top + 2.1), deg)), 'alu');
+      for (const s of [-1, 1]) add(pc, at(hex(1.0, 0.45), frame(foot.clone().add(toroidal(deg).multiplyScalar(s * 1.2)).add(radial(deg).multiplyScalar(0.9)).add(V(0, 0, 0.5)), Z)), 'bolt');
+      // Clamp block that holds the joint flange pair.
+      const from = D.R0 + J.od / 2, to = P.R - P.half;
+      const blockAt = pol((from + to) / 2, deg, 0);
+      add(pc, at(box(to - from, J.t * 2 + D.gap + 2.4, 4.4), rtz(blockAt, deg)), 'steel2');
+      for (const s of [-1, 1]) add(pc, at(hex(1.0, 0.45), frame(blockAt.clone().add(toroidal(deg).multiplyScalar(s * 0.6)).add(V(0, 0, 2.2 + 0.22)), Z)), 'bolt');
+    }
+
+    // ---------- Under the table: coil supply chassis, control drawer, pump ----------
+    let pumpInlet, spectroIn;
     {
       const g = group('rack', V(0, 0, 0), 0);
-      const base = TB.shelf + 1.2;
-      const front = 26;
-      const chassis = (zFrom, h, y0, y1, part) => {
-        const depth = 30;
-        add(g, at(box(depth, y1 - y0, h), new THREE.Matrix4().makeTranslation(front - depth / 2, (y0 + y1) / 2, zFrom + h / 2)), 'black', part);
+      const base = TB.shelf + 1.0;
+      const front = -20, depth = 38;
+      const x0 = -31, x1 = 16;
+      const pc = piece('psu', g);
+      const chassis = (zFrom, h) => {
+        add(pc, at(box(x1 - x0, depth, h), T((x0 + x1) / 2, front + depth / 2, zFrom + h / 2)), 'black');
+        for (const s of [-1, 1]) add(pc, at(box(1.6, 0.6, h - 0.4), T(s < 0 ? x0 - 0.8 : x1 + 0.8, front - 0.3, zFrom + h / 2)), 'alu');
       };
-      chassis(base, 13, -28, 28, 'supplies');
-      const mod = (y, w, zFrom, h, part, label) => {
-        const cx = front + 0.2;
-        add(g, at(box(0.4, w - 0.3, h - 0.6), new THREE.Matrix4().makeTranslation(cx, y, zFrom + h / 2)), 'panel', part);
-        const lcd = add(g, at(box(0.15, w - 2.2, 1.6), new THREE.Matrix4().makeTranslation(cx + 0.27, y, zFrom + h - 2.6)), 'lcd', part);
+      const mod = (x, w, zFrom, h, label) => {
+        const cy = front - 0.2;
+        add(pc, at(box(w - 0.3, 0.4, h - 0.6), T(x, cy, zFrom + h / 2)), 'panel');
+        const lcd = add(pc, at(box(w - 2.0, 0.15, 1.5), T(x, cy - 0.27, zFrom + h - 2.4)), 'lcd');
         lcd.userData.lcd = true;
-        add(g, at(disc(0.85, 0.9, 20), frame(V(cx + 0.65, y, zFrom + h / 2 - 0.6), V(1, 0, 0))), 'ink', part);
-        add(g, at(disc(0.18, 0.12, 8), frame(V(cx + 1.15, y, zFrom + h / 2 + 0.25), V(1, 0, 0))), 'bolt', part);
-        for (const s of [-1, 1]) add(g, at(disc(0.38, 0.9, 12), frame(V(cx + 0.65, y + s * (w / 2 - 1.3), zFrom + 1.5), V(1, 0, 0))), s < 0 ? 'red' : 'ink', part);
-        if (label) add(g, at(box(0.06, w - 1.6, 0.9), new THREE.Matrix4().makeTranslation(cx + 0.23, y, zFrom + h - 0.9)), label, part);
+        add(pc, at(disc(0.8, 0.9, 20), frame(V(x, cy - 0.65, zFrom + h / 2 - 0.4), V(0, -1, 0))), 'ink');
+        for (const s of [-1, 1]) add(pc, at(disc(0.36, 0.9, 12), frame(V(x + s * (w / 2 - 1.2), cy - 0.65, zFrom + 1.5), V(0, -1, 0))), s < 0 ? 'red' : 'ink');
+        if (label) add(pc, at(box(w - 1.6, 0.06, 0.8), T(x, cy - 0.23, zFrom + h - 0.8)), label);
       };
-      for (let i = 0; i < 8; i++) mod(-28 + 3.5 + i * 7, 7, base, 13, 'supplies');
-      const top2 = base + 13;
-      chassis(top2, 11, -28, 14, 'supplies');
-      for (let i = 0; i < 6; i++) mod(-28 + 3.5 + i * 7, 7, top2, 11, 'supplies');
-      add(g, at(box(28, 14, 11), new THREE.Matrix4().makeTranslation(front - 14, 21, top2 + 5.5)), 'black', 'hv');
-      mod(21, 14, top2, 11, 'hv', 'yellow');
-      add(g, at(disc(0.9, 1.4, 20), frame(V(front + 0.9, 25, top2 + 3.2), V(1, 0, 0))), 'red', 'hv');
+      chassis(base, 13.3);
+      const wm = (x1 - x0) / 8;
+      for (let i = 0; i < 8; i++) mod(x0 + wm / 2 + i * wm, wm, base, 13.3);
+      const top2 = base + 13.3;
+      chassis(top2, 13.3);
+      for (let i = 0; i < 7; i++) mod(x0 + wm / 2 + i * wm, wm, top2, 13.3, i < 4 ? null : 'yellowtag');
 
-      const plc = V(36, 12, TB.top + 3);
-      add(g, at(box(12, 8, 6), new THREE.Matrix4().makeTranslation(plc.x, plc.y, plc.z)), 'panel', 'plc');
-      for (let i = 0; i < 6; i++) add(g, at(box(1.4, 7.2, 1.0), new THREE.Matrix4().makeTranslation(plc.x - 4.0 + i * 1.6, plc.y, plc.z + 3.5)), 'alu', 'plc');
-      for (let i = 0; i < 4; i++) {
-        const led = add(g, at(box(0.1, 0.5, 0.5), new THREE.Matrix4().makeTranslation(plc.x + 6.06, plc.y - 2.4 + i * 1.3, plc.z + 1.2)), 'led', 'plc');
-        led.userData.led = true;
+      // Pull-out control drawer under the table top, with the DIN rail inside.
+      const dz = TB.top - TB.thick - 7.2;
+      const dr = piece('drawer', g, { detach: V(0, -34, 0) });
+      const dx0 = -24, dx1 = 24, dy0 = -30, dy1 = 10;
+      add(dr, at(box(dx1 - dx0, dy1 - dy0, 0.4), T(0, (dy0 + dy1) / 2, dz - 4.8)), 'panel');
+      for (const s of [-1, 1]) add(dr, at(box(0.4, dy1 - dy0, 9.6), T(s * ((dx1 - dx0) / 2 - 0.2), (dy0 + dy1) / 2, dz)), 'panel');
+      add(dr, at(box(dx1 - dx0, 0.4, 9.6), T(0, dy1 - 0.2, dz)), 'panel');
+      add(dr, at(box(dx1 - dx0 + 2, 0.6, 11), T(0, dy0 - 0.3, dz + 0.3)), 'alu');
+      for (const s of [-1, 1]) {
+        add(dr, at(box(0.8, 1.6, 0.8), T(s * 16, dy0 - 1.4, dz + 3.4)), 'alu');
+        add(dr, at(box(0.8, 1.6, 0.8), T(s * 16, dy0 - 1.4, dz - 2.8)), 'alu');
+        add(dr, at(box(0.8, 0.8, 7.0), T(s * 16, dy0 - 2.2, dz + 0.3)), 'alu');
       }
-      const es = V(37, 27, TB.top + 2.5);
-      add(g, at(box(8, 8, 5), new THREE.Matrix4().makeTranslation(es.x, es.y, es.z)), 'yellow', 'plc');
-      add(g, at(disc(1.0, 1.4, 20), frame(V(es.x, es.y, es.z + 3.2), Z)), 'ink', 'plc');
-      add(g, at(revolve([[0, 0], [2.0, 0], [2.0, 0.7], [1.6, 1.3], [0, 1.4]], 40), frame(V(es.x, es.y, es.z + 3.9), Z)), 'red', 'plc');
-      add(g, tube([V(plc.x + 1, plc.y + 4, plc.z + 1), V(plc.x + 1.5, plc.y + 8, plc.z + 0.5), V(es.x - 1, es.y - 4, es.z - 1)], 0.3, { seg: 20, radial: 8 }), 'black', 'plc');
+      const rail = (y) => add(dr, at(box(dx1 - dx0 - 3, 3.5, 0.3), T(0, y, dz - 4.45)), 'steel2');
+      rail(-20);
+      rail(-6);
+      // PLC, relays and terminal blocks on the front rail; switch-mode supply and DAQ on the back rail.
+      add(dr, at(box(9, 4.2, 6.5), T(-14, -20, dz - 1.0)), 'panel');
+      const plcLeds = [];
+      for (let i = 0; i < 6; i++) plcLeds.push(T(-17 + i * 1.2, -22.15, dz + 0.8));
+      const led = addInst(dr, box(0.5, 0.1, 0.5), 'led', plcLeds);
+      led.userData.led = true;
+      for (let i = 0; i < 4; i++) add(dr, at(box(1.6, 4.0, 5.5), T(-6.5 + i * 2.0, -20, dz - 1.5)), 'black');
+      for (let i = 0; i < 12; i++) add(dr, at(box(0.7, 4.4, 4.2), T(2.5 + i * 0.85, -20, dz - 2.1)), i % 3 === 2 ? 'red' : 'grey');
+      add(dr, at(box(16, 9, 4.2), T(-10, -6, dz - 2.2)), 'steel2');
+      for (let i = 0; i < 10; i++) add(dr, at(box(0.25, 9.1, 3.4), T(-17 + i * 1.5, -6, dz - 2.1)), 'slot');
+      add(dr, at(box(10, 6, 2.5), T(10, -6, dz - 3)), 'pcb');
 
-      add(g, at(box(8, 6, 5), rtz(hvBox, 225)), 'panel', 'hv');
-      add(g, at(box(3, 4, 0.06), rtz(pol(52, 225, hvBox.z + 2.53), 225)), 'yellow', 'hv');
-      add(g, at(disc(0.7, 0.8, 16), frame(pol(45.6, 225, hvBox.z - 1.2), radial(225).negate())), 'bolt', 'hv');
-      add(g, at(disc(0.7, 0.8, 16), frame(pol(48.5, 225, hvBox.z + 2.9), Z)), 'bolt', 'hv');
-
-      const spec = V(-36, -10, TB.top + 2.5);
-      add(g, at(box(9, 14, 5), new THREE.Matrix4().makeTranslation(spec.x, spec.y, spec.z)), 'panel', 'spectro');
-      add(g, at(box(9.2, 0.15, 1.4), new THREE.Matrix4().makeTranslation(spec.x, spec.y + 7.06, spec.z + 1.2)), 'ink', 'spectro');
-      add(g, at(disc(0.6, 1.0, 16), frame(V(spec.x, spec.y - 7.4, spec.z - 0.6), V(0, -1, 0))), 'bolt', 'spectro');
-      spectroIn = V(spec.x, spec.y - 7.9, spec.z - 0.6);
+      // Rotary vane pump on the shelf, right of the chassis.
+      const pp = piece('pump', g);
+      const px = 24.5, py = 0, pz = base;
+      add(pp, at(box(12.5, 32, 0.8), T(px, py, pz + 0.4)), 'black');
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) add(pp, at(disc(1.1, 0.8, 16), frame(V(px + sx * 5, py + sy * 13.5, pz + 0.4), Z)), 'ink');
+      const mz = pz + 0.8 + 6.4;
+      add(pp, at(disc(6.2, 15, 48), frame(V(px, py - 7.5, mz), V(0, 1, 0))), 'pumpgrey');
+      for (let i = 0; i < 14; i++) {
+        const a = Math.PI * (0.06 + (0.88 * i) / 13);
+        add(pp, at(box(0.8, 13.5, 0.3), frame(V(px + 6.5 * Math.cos(a), py - 7.5, mz + 6.5 * Math.sin(a)), V(0, 1, 0), V(Math.cos(a), 0, Math.sin(a)))), 'pumpgrey');
+      }
+      add(pp, at(disc(6.6, 2.4, 48), frame(V(px, py - 16.2, mz), V(0, 1, 0))), 'white');
+      for (let i = 0; i < 5; i++) add(pp, at(ring(1.0 + i * 1.1, 1.35 + i * 1.1, 0.3, 40), frame(V(px, py - 17.5, mz), V(0, 1, 0))), 'ink');
+      add(pp, at(box(11.5, 14, 13.5), T(px, py + 7.5, pz + 0.8 + 6.75)), 'pumpgrey');
+      add(pp, at(disc(1.3, 0.5, 24), frame(V(px - 5.95, py + 7.5, pz + 5), V(-1, 0, 0))), 'oil');
+      add(pp, at(ring(1.3, 1.8, 0.5, 24), frame(V(px - 5.95, py + 7.5, pz + 5), V(-1, 0, 0))), 'bolt');
+      add(pp, at(box(5, 6, 4), T(px, py - 6, mz + 7.2)), 'black');
+      const inletZ = pz + 0.8 + 13.5;
+      add(pp, at(ring(1.85, 2.05, 3.4, 28), frame(V(px, py + 8, inletZ + 1.7), Z)), 'steel');
+      add(pp, at(flangeRing(1.85, 3.25, 0.6, 32), frame(V(px, py + 8, inletZ + 3.1), Z)), 'steel2');
+      add(pp, at(revolve([[2.1, -0.75], [3.6, -0.55], [3.6, 0.55], [2.1, 0.75]], 32), frame(V(px, py + 8, inletZ + 3.4), Z)), 'alu');
+      add(pp, at(disc(1.6, 3.0, 24), frame(V(px + 3.6, py + 12, inletZ + 1.5), Z)), 'black');
+      pumpInlet = V(px, py + 8, inletZ + 4.0);
     }
 
-    // ---------- Rotary vane pump on the floor ----------
-    const pumpGroup = group('pump', radial(D.pump.phi).multiplyScalar(12), 0.12);
-    let pumpInlet;
+    // ---------- On the table: HV supply, E-stop, spectrometer, webcam ----------
+    const hvBox = V(14, -38.5, TB.top + 2.8);
     {
-      const g = new THREE.Group();
-      g.position.copy(pol(D.pump.R, D.pump.phi, TB.floor));
-      g.rotation.z = D.pump.phi * DEG;
-      pumpGroup.add(g);
-      add(g, at(box(16, 34, 1.2), new THREE.Matrix4().makeTranslation(0, -1, 1.6)), 'black', 'pump');
-      for (const sx of [-1, 1]) for (const sy of [-1, 1]) add(g, at(disc(1.3, 1.0, 16), frame(V(sx * 6, -1 + sy * 14, 0.5), Z)), 'ink', 'pump');
-      const mz = 2.2 + 7.2;
-      add(g, at(disc(7, 18, 48), frame(V(0, -7, mz), V(0, 1, 0))), 'pumpblue', 'pump');
-      for (let i = 0; i < 14; i++) {
-        const a = Math.PI * (0.08 + (0.84 * i) / 13);
-        add(g, at(box(0.9, 16, 0.3), frame(V(7.4 * Math.cos(a), -7, mz + 7.4 * Math.sin(a)), V(0, 1, 0), V(Math.cos(a), 0, Math.sin(a)))), 'pumpblue', 'pump');
-      }
-      add(g, at(disc(7.4, 3, 48), frame(V(0, -17.5, mz), V(0, 1, 0))), 'black', 'pump');
-      for (let i = 0; i < 4; i++) add(g, at(ring(1.5 + i * 1.5, 1.9 + i * 1.5, 0.3, 40), frame(V(0, -19.1, mz), V(0, 1, 0))), 'ink', 'pump');
-      add(g, at(box(13, 12, 16), new THREE.Matrix4().makeTranslation(0, 8, 2.2 + 8)), 'pumpblue', 'pump');
-      add(g, at(disc(1.4, 0.5, 24), frame(V(6.7, 8, 6.5), V(1, 0, 0))), 'oil', 'pump');
-      add(g, at(ring(1.4, 1.9, 0.5, 24), frame(V(6.7, 8, 6.5), V(1, 0, 0))), 'bolt', 'pump');
-      add(g, at(ring(1.4, 1.65, 6, 28), frame(V(0, 8, 18.2 + 3), Z)), 'steel', 'pump');
-      add(g, at(ring(1.4, 2.6, 0.6, 28), frame(V(0, 8, 24.5), Z)), 'steel2', 'pump');
-      add(g, at(ring(1.9, 2.3, 0.9, 28), frame(V(0, 8, 24.5), Z)), 'bolt', 'pump');
-      add(g, at(disc(2.6, 7.8, 32), frame(V(-4.5, 4.5, 18.2 + 3.9), Z)), 'black', 'pump');
-      add(g, at(disc(2.8, 0.8, 32), frame(V(-4.5, 4.5, 26.4), Z)), 'panel', 'pump');
-      for (const y of [3, 13]) add(g, at(box(1, 1, 3), new THREE.Matrix4().makeTranslation(4.5, y, 19.7)), 'black', 'pump');
-      add(g, at(disc(0.5, 11, 12), frame(V(4.5, 8, 21.3), V(0, 1, 0))), 'black', 'pump');
-      g.updateMatrix();
-      pumpInlet = V(0, 8, 24.8).applyMatrix4(g.matrix);
+      const g = group('bench', V(0, 0, 0), 0);
+      const hv = piece('hv', g);
+      add(hv, at(box(11, 7, 5.6), T(hvBox.x, hvBox.y, hvBox.z)), 'white');
+      const lcd = add(hv, at(box(5.5, 0.12, 1.8), T(hvBox.x - 1.5, hvBox.y - 3.56, hvBox.z + 1.0)), 'hvlcd');
+      lcd.userData.lcd = true;
+      add(hv, at(box(2.2, 0.12, 1.8), T(hvBox.x + 3.2, hvBox.y - 3.56, hvBox.z + 1.0)), 'red');
+      for (const s of [-1, 1]) add(hv, at(disc(0.5, 0.8, 16), frame(V(hvBox.x + s * 3.5, hvBox.y + 3.9, TB.top + 0.75), V(0, 1, 0))), 'bolt');
+      for (const s of [-1, 1]) add(hv, at(box(1.4, 1.4, 0.4), T(hvBox.x + s * 6.2, hvBox.y, TB.top + 0.2)), 'white');
+      for (const s of [-1, 1]) add(hv, at(hex(0.9, 0.5), frame(V(hvBox.x + s * 6.2, hvBox.y, TB.top + 0.65), Z)), 'bolt');
+
+      const es = piece('estop', g);
+      const ep = V(35, -37, TB.top + 3);
+      add(es, at(box(7.5, 7.5, 6), T(ep.x, ep.y, ep.z)), 'yellow');
+      add(es, at(disc(1.2, 1.0, 24), frame(V(ep.x, ep.y, ep.z + 3.5), Z)), 'ink');
+      add(es, at(revolve([[0, 0], [2.1, 0], [2.1, 0.7], [1.6, 1.4], [0, 1.5]], 40), frame(V(ep.x, ep.y, ep.z + 4.0), Z)), 'red');
+      add(es, at(disc(0.7, 1.4, 16), frame(V(ep.x + 4.2, ep.y, ep.z - 1.5), V(1, 0, 0))), 'grey');
+
+      const sp = piece('spectro', g);
+      const sx = -20, sy = 40, sz = TB.top + 2.6;
+      add(sp, at(box(12, 7, 5.2), T(sx, sy, sz)), 'panel');
+      add(sp, at(box(12.1, 0.14, 1.2), T(sx, sy - 3.55, sz + 1.4)), 'ink');
+      add(sp, at(disc(0.55, 1.0, 16), frame(V(sx + 6.5, sy, sz - 0.6), V(1, 0, 0))), 'bolt');
+      add(sp, at(box(2.2, 0.1, 0.6), T(sx - 3, sy - 3.55, sz - 0.9)), 'led');
+      for (const s of [-1, 1]) for (const t of [-1, 1]) add(sp, at(disc(0.25, 0.1, 10), frame(V(sx + s * 5.4, sy + t * 2.9, sz + 2.62), Z)), 'ink');
+      spectroIn = V(sx + 7.0, sy, sz - 0.6);
+
+      // Webcam on an optical post in front of the left viewport, looking in along +x.
+      const cam = piece('camera', g);
+      const cx = -43, cz = 0;
+      add(cam, at(disc(1.6, 0.6, 24), frame(V(cx, 0, TB.top + 0.3), Z)), 'black');
+      add(cam, at(rod(1.0, 7, 20), frame(V(cx, 0, TB.top + 4.1), Z)), 'black');
+      add(cam, at(rod(0.6, cz - 3.5 - (TB.top + 7.6), 16), frame(V(cx, 0, (cz - 3.5 + TB.top + 7.6) / 2), Z)), 'steel2');
+      add(cam, at(box(2.4, 2.4, 1.6), T(cx, 0, cz - 2.7)), 'black');
+      add(cam, at(box(3.2, 7.4, 3.0), T(cx, 0, cz)), 'black');
+      add(cam, at(disc(1.25, 1.4, 28), frame(V(cx + 2.2, 0, cz), V(1, 0, 0))), 'black');
+      add(cam, at(disc(0.85, 0.12, 28), frame(V(cx + 2.95, 0, cz), V(1, 0, 0))), 'glass');
+      add(cam, at(disc(0.2, 0.1, 10), frame(V(cx + 1.65, 2.6, cz + 0.9), V(1, 0, 0))), 'led');
     }
 
     // ---------- Lines that span two groups, rebuilt as the machine comes apart ----------
-    function stretchLine(parentName, points, r, tone, part, o, ends) {
-      const holder = group(parentName, V(0, 0, 0), 0);
-      const mesh = add(holder, tube(points, r, o), tone, part);
+    function stretchLine(part, points, r, tone, o, ends, label) {
+      const holder = piece(part, rootGroup, { label });
+      const mesh = add(holder, tube(points, r, o), tone);
       stretch.push({ mesh, points: points.map((p) => p.clone()), r, o, ends });
       return mesh;
     }
 
-    const hoseFrom = pol(46.95, 315, 0);
-    const pd = toroidal(315);
+    const hf = pumpLineFrom;
     stretchLine('hose', [
-      hoseFrom, pol(53, 315, -0.3), pol(60, 315, -4), pol(66, 315, -16),
-      pol(70, 315, -40).add(pd.clone().multiplyScalar(4)), pol(76, 315, -62).add(pd.clone().multiplyScalar(7)),
-      pumpInlet.clone().add(V(0, 0, 6)), pumpInlet.clone(),
-    ], 1.75, 'steel', 'hose', { seg: 420, radial: 14, corrugate: 0.22, pitch: 1.1 }, ['quarter3', 'pump']);
+      V(hf, 0, 0), V(hf + 3, 0, -0.4), V(hf + 6.5, 0, -3.5), V(hf + 8.2, 0, -12), V(hf + 8.2, -1, -38),
+      V(hf + 6, -2, -60), V(38, 4, -66), pumpInlet.clone().add(V(4, 0, 6)), pumpInlet.clone().add(V(0, 0, 1.6)), pumpInlet.clone(),
+    ], 2.0, 'steel', { seg: 420, radial: 14, corrugate: 0.24, pitch: 1.15 }, ['quarter0', 'rack']);
 
-    const gasTo = pol(58, 315, TB.top + 0.5);
-    stretchLine('gasline', [pol(41, 315, -7.8), pol(41, 315, -18), pol(42, 315, -28.8), pol(48, 315, TB.top + 0.5), gasTo], 0.28, 'brass', 'needle', { seg: 40, radial: 8 }, ['quarter3', 'table']);
-    add(groups.find((x) => x.obj.name === 'table').obj, at(box(2.4, 2.4, 1.6), rtz(gasTo.clone().add(radial(315).multiplyScalar(1.2)).add(V(0, 0, 0.3)), 315)), 'brass', 'needle');
+    const gasTo = V(13, 43.6, TB.top + 0.9);
+    stretchLine('needle', [gasFrom, gasFrom.clone().add(V(1.4, 0.4, 1.4)), V(14, 30, 21.5), V(13.5, 37, 20.8), V(13, 40.6, 15), V(13, 41.2, 0), V(13, 41.4, -16), V(13, 42.4, TB.top + 1.6), gasTo], 0.26, 'brass', { seg: 70, radial: 8 }, ['quarter1', 'table'], 'Gas line');
+    {
+      const gb = piece('needle', tableG, { label: 'Gas inlet fitting' });
+      add(gb, at(box(2.4, 2.4, 1.8), T(gasTo.x, gasTo.y + 1.2, TB.top + 0.9)), 'brass');
+      add(gb, at(hex(1.4, 0.8), frame(V(gasTo.x, gasTo.y + 2.8, TB.top + 0.9), V(0, 1, 0))), 'brass');
+    }
+
+    const gc = gaugeCableFrom;
+    const gaugeTo = V(20, 37.6, TB.top + 2.0);
+    stretchLine('gauge', [gc, gc.clone().add(V(0.8, 0, 0)), V(10, 26, 33), V(16, 32, 25), V(19.5, 36.5, 19), V(20, 37.6, 6), V(20, 37.6, -14), gaugeTo], 0.28, 'black', { seg: 70, radial: 8 }, ['quarter1', 'table'], 'Gauge cable');
+    {
+      const cc = piece('gauge', tableG, { label: 'Gauge cable clamp' });
+      add(cc, at(box(2.6, 2.6, 2.0), T(gaugeTo.x, gaugeTo.y, TB.top + 1.0)), 'black');
+    }
 
     for (const e of hvEnds) {
       const f = e.from;
-      const hz = hvBox.z;
-      const pts = e.up
-        ? [f, f.clone().add(V(0, 0, 1.6)), pol(26.5, 225, 21.6), pol(33, 225, 19.2), pol(42, 225, 13), pol(46.5, 225, 0), pol(48.5, 225, -16), pol(48.5, 225, hz + 6), pol(48.5, 225, hz + 3.3)]
-        : [f, f.clone().add(V(0, 0, -3)), pol(25, 225, hz - 1.2), pol(36, 225, hz - 1.2), pol(43, 225, hz - 1.2), pol(45.2, 225, hz - 1.2)];
-      stretchLine('hvcable', pts, 0.42, 'pink', 'electrode', { seg: 60, radial: 10 }, ['quarter2', 'rack']);
+      const z0 = TB.top + 0.45;
+      const ty = hvBox.y + 4.3, tz = TB.top + 0.75;
+      const pts = e.deg === 270
+        ? [f, f.clone().add(V(0, 0, -1.2)), V(f.x + 0.6, f.y - 0.8, z0 + 0.4), V(3, -27, z0), V(7, -30.5, z0), V(hvBox.x - 3.5, ty + 1.8, z0 + 0.1), V(hvBox.x - 3.5, ty, tz)]
+        : [f, f.clone().add(V(0, 0, -1.2)), V(f.x + 0.6, f.y - 0.8, z0 + 0.4), V(-14, -10, z0), V(-4, -17, z0), V(6, -20, z0), V(14, -26, z0), V(hvBox.x + 3.5, ty + 1.8, z0 + 0.1), V(hvBox.x + 3.5, ty, tz)];
+      stretchLine('hv', pts, 0.36, 'pink', { seg: 70, radial: 10 }, [e.deg === 270 ? 'quarter3' : 'quarter2', 'bench'], e.deg === 270 ? 'HV lead A' : 'HV lead B');
     }
 
-    stretchLine('fibre', [fibreFrom, pol(41.5, 225, 0), pol(44, 222, -6), pol(44.6, 214, -16), V(-36, -22, TB.top + 1.9), spectroIn.clone().add(V(0, -1.8, 0)), spectroIn], 0.3, 'yellow', 'spectro', { seg: 60, radial: 8 }, ['quarter2', 'rack']);
+    // Spectrometer fibre: an SMA adaptor on the back viewport, a yellow jacketed fibre down to the spectrometer.
+    const fibreAt = pol(latFace + D.gap + L.t + 0.6, 90, 0);
+    {
+      const fa = piece('spectro', qB, { clip: true, label: 'Fibre adaptor' });
+      add(fa, at(box(9.0, 0.5, 1.6), rtz(pol(latFace + D.gap + L.t + 0.25, 90, 0), 90)), 'alu');
+      add(fa, at(disc(0.6, 1.4, 20), frame(pol(latFace + D.gap + L.t + 1.0, 90, 0), radial(90))), 'bolt');
+    }
+    const ff = pol(latFace + D.gap + L.t + 1.7, 90, 0);
+    stretchLine('spectro', [ff, ff.clone().add(V(0, 1.2, -0.5)), V(-0.8, 43.4, -6), V(-2, 43.8, -15), V(-4, 43.6, TB.top + 0.8), V(-8, 42, TB.top + 0.75), V(-11.4, 40.2, TB.top + 1.4), V(spectroIn.x + 0.6, spectroIn.y, spectroIn.z), spectroIn.clone()], 0.26, 'yellow', { seg: 70, radial: 8 }, ['quarter1', 'bench'], 'Optical fibre');
 
-    // Points the home view frames: the machine and the table top. Zooming out shows the stand, rack and pump.
-    const fit = [
-      V(TB.half, TB.half, TB.top - TB.thick), V(-TB.half, -TB.half, TB.top - TB.thick), V(TB.half, -TB.half, TB.top - TB.thick), V(-TB.half, TB.half, TB.top - TB.thick),
-      V(TB.half, TB.half, 26), V(-TB.half, -TB.half, 26), V(TB.half, -TB.half, 26), V(-TB.half, TB.half, 26),
-    ];
-    const fitAll = [
-      ...fit,
-      V(TB.half, TB.half, TB.floor), V(-TB.half, -TB.half, TB.floor), V(TB.half, -TB.half, TB.floor), V(-TB.half, TB.half, TB.floor),
-      pol(D.pump.R + 10, D.pump.phi, TB.floor), pol(D.pump.R + 10, D.pump.phi, TB.floor + 28),
-    ];
+    // Points the home view frames: the machine and the table top. "Fit all" adds the stand, rack and pump.
+    const fit = [];
+    for (const [x, y] of [[1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      fit.push(V(x * TB.half, y * TB.half, TB.top - TB.thick), V(x * 38, y * 38, 21));
+    }
+    fit.push(pol(D.R0, 90, 40));
+    const fitAll = [...fit];
+    for (const [x, y] of [[1, 1], [-1, -1], [1, -1], [-1, 1]]) fitAll.push(V(x * TB.half, y * TB.half, TB.floor));
+    fitAll.push(V(TB.half + 12, 0, -40), V(0, -TB.half - 4, TB.top + 8));
 
-    return { root: rootGroup, groups, stretch, fit, fitAll, dims: D, tube, frames: { pol, radial, toroidal } };
+    return { root: rootGroup, groups, stretch, instances, fit, fitAll, dims: D, detach: DETACH, tube, frames: { pol, radial, toroidal } };
   }
 
-  root.SPM1Device = { build, dims: D };
+  root.SPM1Device = { build, dims: D, detach: DETACH };
 })(typeof window !== 'undefined' ? window : globalThis);
