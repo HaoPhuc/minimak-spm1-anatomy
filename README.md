@@ -11,7 +11,9 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | **Assembly** (left) | The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec or description. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. |
 | **Viewer** (centre) | The model. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The scale bar is true at every zoom, because the view is orthographic. |
 | **Inspector** (right) | **Part**: what the part does, its specification with a source tag on every row, its pieces, what it connects to, and practical notes. **Sources**: every reference, what was taken from it, and which parts cite it. **Controls**: every mouse, touch and key binding. |
-| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, and the theme: the light drawing or the hologram. |
+| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, **Panels**, and the theme: the light drawing or the hologram. |
+
+Either side panel folds to a thin rail with the arrow in its header, and **Panels** (or `F`) folds or unfolds both, giving the model and its screens the full width. The page remembers the choice. On a narrow screen the panels stack under the model instead.
 
 ### Explode
 
@@ -35,10 +37,9 @@ Double-click a part, or press **Inspect on its own**. The part lifts out of the 
   - The pump's motor and fan cover come off its block.
 
   Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest.
-- The inspector lists what the part is **made of**. Hover a name to light that sub-part in the view, or hover the view to name the sub-part under the pointer.
+- A part with several pieces (three viewports, eight TF coils) starts with all of them. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time, and the camera frames each. Clicking **All** picks the nearest piece, or goes back to every piece. A double-click on a piece, or the pieces list in the inspector, does the same.
 - **Context** turns the ghost of the rest of the machine on or off.
-- The **pieces** list in the inspector, or a double-click on one piece, zooms to a single piece (one of the eight TF coils, one joint flange). **All** goes back to every piece.
-- **Esc** steps back one level: sheet, piece, part, then selection.
+- **Esc** steps back one level: the last pinned sheet, then the piece, the part and the selection.
 - **Done** or **Back to assembly** reverses the inspect at the pace of an explode, so you can see where the part goes:
   1. A part that was taken apart goes back together.
   2. The part flies home while the camera glides back to the view you had before.
@@ -46,9 +47,16 @@ Double-click a part, or press **Inspect on its own**. The part lifts out of the 
 
   Any drag, zoom or view button during the move takes over the camera. With reduced motion turned on, it goes back at once.
 
-### Technical sheets for sub-parts
+### Information screens
 
-While inspecting, click a sub-part in the view, or its name under "Taken apart into". Its technical sheet opens on a frosted glass board beside the model, with an arrow to the part. The arrow follows the part as you turn, and on a phone the sheet docks at the bottom. A sheet gives the material, the dimensions and notes, with a source tag on every row.
+While inspecting, the part is described on screens floating beside it, after the displays around Tony Stark's holograms. The camera frames the part in the room between them. **Screens** in the inspect bar, or `S`, turns them off and on.
+
+- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part to pin its sheet, or a connected part to inspect that instead. With both panels open the inspector already shows this, so these two appear once the inspector is folded or the view is wide.
+- **Sub-part sheets.** Point at a sub-part and its technical sheet appears on a live screen (dashed edge). It follows the pointer and lingers a moment after the pointer leaves. To keep a sheet, click the sub-part or the pin on the live screen. Up to four pinned sheets stay until you close them with ×, or with `Esc` for the last one.
+- **Linking.** Hovering a screen lights its sub-part in the model. There are no arrows to follow as you turn.
+- **On a phone** the last pinned sheet docks under the model.
+
+A sheet gives the material, the dimensions and notes, with a source tag on every row.
 
 - **Vacuum hardware** is drawn to the standard and documented from it:
   - ConFlat flanges, port tubes and copper gaskets for DN40, DN63, DN100 and DN160 come from the MBE-Komponenten table: OD, thickness, bolt circle, holes, knife edge and seal recess.
@@ -63,16 +71,17 @@ The theme button switches between the light drawing and a hologram. A dark syste
 
 - Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
 - The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
-- Structure is cyan. Copper and the other warm parts are amber. The selected part turns white and stays visible through whatever is in front of it.
-- Edges glow in the colour of their part.
+- The whole machine is one cyan, the colour of the optical table, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (pink, white at its core).
+- The selection is the same cyan, filled in more strongly, and stays visible through whatever is in front of it.
+- Edges glow cyan.
 - Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
-- The panels, the sheet board and the arrow are drawn as a HUD, with cyan corner brackets.
+- The panels and the information screens are drawn as a HUD, with cyan corner brackets and a slow scan passing down each screen.
 
 The animation runs at 30 frames a second while the page is idle, and stands still with reduced motion.
 
 ### Keys
 
-Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `G` ghost, `H` hide.
+Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `,` `.` previous and next piece, `G` ghost, `S` screens, `F` panels, `H` hide.
 
 ## Files
 
