@@ -88,8 +88,8 @@ The theme button switches between the light drawing and a hologram. A dark syste
 
 - Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
 - The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
-- The whole machine is one blue, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (violet, pale at its core).
-- The selection is the same blue, filled in more strongly, and stays visible through whatever is in front of it.
+- The whole machine is one blue, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (violet, pale at its core), and the selection in amber.
+- The selection glows amber, so it stands apart from the blue machine, and stays visible through whatever is in front of it. So do a hovered part and the sub-parts whose sheets you keep, more faintly.
 - Edges glow softly in the same blue.
 - Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
 - The panels and the information screens are drawn as a HUD, with blue corner brackets and a slow scan passing down each screen.

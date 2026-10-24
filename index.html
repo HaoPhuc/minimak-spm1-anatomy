@@ -524,10 +524,11 @@ const TONES = {
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 const THEME = {
   light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#78bff0', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
+  dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff9a3c', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 // The hologram is one soft ice blue, like the displays in Tony Stark's workshop, a little brighter for parts
-// that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour.
+// that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
+// selection glows amber (THEME.dark.lit) so it stands apart from the blue.
 const HOLO = new THREE.Color('#4f9fd6');
 let holo = false;
 function toneColor(name, theme) {
@@ -719,7 +720,7 @@ const FRAG_HOLO = /* glsl */`
     float band = pow(fract(vWp.z * uScan - uTime * 0.35), 3.0);
     float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
     vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
-    // The selection is the same blue, filled in more strongly, never white.
+    // The selection fills in amber, so it stands apart from the blue, and never goes white.
     float lit = clamp(uLit * 1.5, 0.0, 0.75);
     c = mix(c, uLitColor * (0.15 + 0.24 * rim) * (0.8 + 0.2 * band), lit);
     float vis = max(mix(1.0, 0.12, behind), lit * 0.45);
