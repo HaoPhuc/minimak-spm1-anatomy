@@ -67,15 +67,15 @@ A sheet gives the material, the dimensions and notes, with a source tag on every
 
 ### Hologram
 
-The theme button switches between the light drawing and a hologram. A dark system theme opens the hologram. The colours follow [holographic-shader-visualizer-three.Js](https://github.com/YasirAwan4831/holographic-shader-visualizer-three.Js): cyan `#00d5ff` on a dark blue grid.
+The theme button switches between the light drawing and a hologram. A dark system theme opens the hologram. The palette is the soft ice blue of the displays in Tony Stark's workshop: `#4f9fd6` on deep navy, kept dim so it is easy on the eyes. The shading follows [holographic-shader-visualizer-three.Js](https://github.com/YasirAwan4831/holographic-shader-visualizer-three.Js) (fresnel rims and scan lines).
 
 - Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
 - The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
-- The whole machine is one cyan, the colour of the optical table, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (pink, white at its core).
-- The selection is the same cyan, filled in more strongly, and stays visible through whatever is in front of it.
-- Edges glow cyan.
+- The whole machine is one blue, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (violet, pale at its core).
+- The selection is the same blue, filled in more strongly, and stays visible through whatever is in front of it.
+- Edges glow softly in the same blue.
 - Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
-- The panels and the information screens are drawn as a HUD, with cyan corner brackets and a slow scan passing down each screen.
+- The panels and the information screens are drawn as a HUD, with blue corner brackets and a slow scan passing down each screen.
 
 The animation runs at 30 frames a second while the page is idle, and stands still with reduced motion.
 

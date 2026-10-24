@@ -22,20 +22,20 @@
   }
   /* The dark theme is a hologram. The class is set before first paint (script below) and by applyTheme. */
   :root.holo {
-    --paper: #02070c;
-    --card: #04121c;
-    --ink: #c8f5ff;
-    --muted: #5f98ab;
-    --rule: #123a4b;
-    --soft: #08202d;
-    --chip: #0c2b3b;
-    --accent: #00d5ff;
+    --paper: #03080f;
+    --card: #06121e;
+    --ink: #cfe3f2;
+    --muted: #6a8ea8;
+    --rule: #16314a;
+    --soft: #0a1b2a;
+    --chip: #0e2436;
+    --accent: #6fb8e8;
     --spec: #3cf0b4;
     --photo: #ffb54d;
-    --assumed: #5f98ab;
-    --glow: rgb(0 213 255 / 0.5);
+    --assumed: #6a8ea8;
+    --glow: rgb(90 170 225 / 0.35);
     color-scheme: dark;
-    scrollbar-color: #164556 transparent;
+    scrollbar-color: #1b3a55 transparent;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -284,21 +284,21 @@
   /* ---------- Hologram: glass panels on a dark grid, cyan rules and corner brackets, glowing pressed states ---------- */
   .holo body {
     background:
-      radial-gradient(ellipse 80% 60% at 50% 30%, rgb(0 150 210 / 0.14), transparent 70%),
-      linear-gradient(rgb(0 213 255 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
-      linear-gradient(90deg, rgb(0 213 255 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+      radial-gradient(ellipse 80% 60% at 50% 30%, rgb(50 115 180 / 0.12), transparent 70%),
+      linear-gradient(rgb(90 170 225 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgb(90 170 225 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
       var(--paper);
   }
   .holo .panel, .holo .view, .holo .mb, .holo .isobar {
     background: color-mix(in srgb, var(--card) 80%, transparent);
-    border-color: rgb(0 213 255 / 0.3);
-    box-shadow: 0 0 18px rgb(0 213 255 / 0.08), inset 0 0 28px rgb(0 213 255 / 0.05);
+    border-color: rgb(90 170 225 / 0.3);
+    box-shadow: 0 0 18px rgb(90 170 225 / 0.08), inset 0 0 28px rgb(90 170 225 / 0.05);
   }
   .holo .panel, .holo .view { border-radius: 4px; position: relative; }
   .holo .mb, .holo .isobar { border-radius: 4px; }
   .holo .panel::after, .holo .view::after, .holo .screen::after {
     content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-    --c: rgb(0 213 255 / 0.95);
+    --c: rgb(90 170 225 / 0.95);
     background:
       linear-gradient(var(--c), var(--c)) left top / 14px 2px, linear-gradient(var(--c), var(--c)) left top / 2px 14px,
       linear-gradient(var(--c), var(--c)) right top / 14px 2px, linear-gradient(var(--c), var(--c)) right top / 2px 14px,
@@ -306,36 +306,36 @@
       linear-gradient(var(--c), var(--c)) right bottom / 14px 2px, linear-gradient(var(--c), var(--c)) right bottom / 2px 14px;
     background-repeat: no-repeat;
   }
-  .holo .brand b, .holo .doc h2, .holo .screen h4 { color: #e6fbff; text-shadow: 0 0 10px var(--glow); }
+  .holo .brand b, .holo .doc h2, .holo .screen h4 { color: #dcecf8; text-shadow: 0 0 10px var(--glow); }
   .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"], .holo .isobar button[aria-pressed="true"], .holo .isobar button.done,
   .holo .actions button.primary, .holo .pieces button.on {
-    background: rgb(0 213 255 / 0.16); color: #e6fbff; border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px rgb(0 213 255 / 0.6), 0 0 12px rgb(0 213 255 / 0.3);
+    background: rgb(90 170 225 / 0.16); color: #dcecf8; border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgb(90 170 225 / 0.6), 0 0 12px rgb(90 170 225 / 0.3);
   }
-  .holo .ti.sel { background: rgb(0 213 255 / 0.14); box-shadow: inset 2px 0 0 var(--accent); }
-  .holo .tabs button[aria-selected="true"] { background: rgb(0 213 255 / 0.14); color: #e6fbff; box-shadow: inset 0 -2px 0 var(--accent); }
+  .holo .ti.sel { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--accent); }
+  .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--accent); }
   .holo .know { border-left-color: var(--accent); }
-  .holo .tip { background: rgb(4 30 44 / 0.88); color: var(--ink); border: 1px solid rgb(0 213 255 / 0.6); box-shadow: 0 0 12px rgb(0 213 255 / 0.25); }
+  .holo .tip { background: rgb(6 22 38 / 0.9); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.6); box-shadow: 0 0 12px rgb(90 170 225 / 0.25); }
   /* Screens: tinted glass with corner brackets and a slow scan passing down them. */
   .holo .screen {
     overflow: hidden; border-radius: 3px;
-    background: rgb(3 22 34 / 0.62);
-    border-color: rgb(0 213 255 / 0.42);
-    box-shadow: 0 0 22px rgb(0 213 255 / 0.14), inset 0 0 24px rgb(0 213 255 / 0.06);
+    background: rgb(5 18 32 / 0.62);
+    border-color: rgb(90 170 225 / 0.42);
+    box-shadow: 0 0 22px rgb(90 170 225 / 0.14), inset 0 0 24px rgb(90 170 225 / 0.06);
   }
-  .holo .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 26px rgb(0 213 255 / 0.3), inset 0 0 24px rgb(0 213 255 / 0.1); }
+  .holo .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 26px rgb(90 170 225 / 0.3), inset 0 0 24px rgb(90 170 225 / 0.1); }
   .holo .screen::before {
     content: ""; position: absolute; left: 0; right: 0; top: -60px; height: 60px; pointer-events: none;
-    background: linear-gradient(transparent, rgb(0 213 255 / 0.07), transparent);
+    background: linear-gradient(transparent, rgb(90 170 225 / 0.07), transparent);
     animation: screen-scan 6s linear infinite;
   }
   @keyframes screen-scan { to { top: 100%; } }
-  .holo .screen .bar { border-bottom: 1px solid rgb(0 213 255 / 0.2); padding-bottom: 4px; margin-bottom: 8px; }
+  .holo .screen .bar { border-bottom: 1px solid rgb(90 170 225 / 0.2); padding-bottom: 4px; margin-bottom: 8px; }
   @media (prefers-reduced-motion: reduce) { .holo .screen::before { animation: none; display: none; } }
-  .holo .triad .ring { fill: rgb(4 18 28 / 0.7); stroke: rgb(0 213 255 / 0.35); }
+  .holo .triad .ring { fill: rgb(5 15 27 / 0.7); stroke: rgb(90 170 225 / 0.35); }
 </style>
 <script>
   // Pick the hologram before first paint, so a dark-theme viewer never sees the light page flash.
@@ -480,11 +480,11 @@ const TONES = {
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 const THEME = {
   light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  dark: { paper: '#000000', cut: '#000000', ink: '#00d5ff', lit: '#19e3ff', shadow: 1, shadowInk: '#00b8e6', inkAlpha: 0.8, ghost: 0.14, glass: 0.3 },
+  dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#78bff0', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
-// The hologram is one cyan, after YasirAwan4831/holographic-shader-visualizer-three.Js, a little brighter for parts
+// The hologram is one soft ice blue, like the displays in Tony Stark's workshop, a little brighter for parts
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour.
-const HOLO = new THREE.Color('#00d5ff');
+const HOLO = new THREE.Color('#4f9fd6');
 let holo = false;
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
@@ -645,7 +645,7 @@ const FRAG_GHOST = /* glsl */`
   }
 `;
 
-// The hologram: every surface adds cyan light, brightest at grazing angles, crossed by scan lines and a slow sweep.
+// The hologram: every surface adds a little blue light, brightest at grazing angles, crossed by scan lines and a slow sweep.
 // Surfaces behind the nearest one (tFront is the ink pass's depth) are drawn faint, so the front reads first.
 const FRAG_HOLO = /* glsl */`
   #include <clipping_planes_pars_fragment>
@@ -674,11 +674,11 @@ const FRAG_HOLO = /* glsl */`
     float behind = smoothstep(0.0003, 0.0015, gl_FragCoord.z - texture2D(tFront, gl_FragCoord.xy / uRes).x);
     float band = pow(fract(vWp.z * uScan - uTime * 0.35), 3.0);
     float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
-    vec3 c = uColor * ((0.08 + 0.05 * w + 0.3 * rim) * (0.7 + 0.3 * band) + 0.2 * sweep);
-    // The selection is the same cyan, filled in more strongly, never white.
+    vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
+    // The selection is the same blue, filled in more strongly, never white.
     float lit = clamp(uLit * 1.5, 0.0, 0.75);
-    c = mix(c, uLitColor * (0.3 + 0.35 * rim) * (0.8 + 0.2 * band), lit);
-    float vis = max(mix(1.0, 0.12, behind), lit * 0.8);
+    c = mix(c, uLitColor * (0.15 + 0.24 * rim) * (0.8 + 0.2 * band), lit);
+    float vis = max(mix(1.0, 0.12, behind), lit * 0.45);
     gl_FragColor = vec4((c * vis + uEmit) * uDim, 1.0);
   }
 `;
@@ -1002,14 +1002,14 @@ const post = (() => {
         // glow in the colour of the part they belong to, with a soft halo.
         vec2 p = (vUv - 0.5) * vec2(uTexel.y / uTexel.x, 1.0);
         float r = length(p);
-        vec3 bg = mix(vec3(0.016, 0.07, 0.11), vec3(0.003, 0.013, 0.024), smoothstep(0.05, 0.85, r));
+        vec3 bg = mix(vec3(0.018, 0.045, 0.085), vec3(0.004, 0.01, 0.022), smoothstep(0.05, 0.85, r));
         vec2 cell = mod(gl_FragCoord.xy, 32.0 * uDpr);
-        bg += vec3(0.0, 0.5, 0.75) * 0.03 * max(step(cell.x, uDpr), step(cell.y, uDpr));
+        bg += vec3(0.35, 0.62, 0.88) * 0.022 * max(step(cell.x, uDpr), step(cell.y, uDpr));
         float halo = edge(uThick * 3.5);
         float m = max(max(col.r, col.g), col.b);
         vec3 ec = m > 0.03 ? col / m : uInk;
-        vec3 c = bg + (1.0 - exp(-col * 1.3));
-        c += ec * (e * uInkAlpha + halo * 0.15);
+        vec3 c = bg + (1.0 - exp(-col * 1.1));
+        c += ec * 0.85 * (e * uInkAlpha + halo * 0.18);
         c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
         gl_FragColor = vec4(c, 1.0);
