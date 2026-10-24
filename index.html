@@ -111,6 +111,9 @@
   .ti .name span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ti .n { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); min-width: 1.6em; }
   .ti .cnt { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
+  .ti-hit button { width: 100%; border: 0; background: none; text-align: left; padding: 3px 4px 3px 52px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ti-hit button:hover { background: var(--soft); }
+  .ti-hit.more { padding: 2px 4px 4px 52px; font-size: 11.5px; color: var(--muted); }
   .eye { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
   .eye:hover { color: var(--ink); background: var(--chip); }
   .eye svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
@@ -169,7 +172,7 @@
   .screen.links { max-height: 36%; }
   .screen.dragging { opacity: 0.9; }
   /* A folded sheet keeps only its top bar; a click on the bar opens it again. */
-  .screen.folded { padding-bottom: 6px; }
+  .screen.folded { padding-bottom: 6px; overflow: hidden; }
   .screen.folded > :not(.bar) { display: none; }
   .screen.folded .bar { margin-bottom: 0; cursor: pointer; }
   .screen .bar .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -217,6 +220,15 @@
   .isobar .step button:first-child { border-radius: 7px 0 0 7px; margin-left: 0; }
   .isobar .step button:last-child { border-radius: 0 7px 7px 0; }
   .isobar .step #bAll { min-width: 4.6em; font-variant-numeric: tabular-nums; }
+  .isobar .sheets { position: relative; display: inline-flex; }
+  .isobar .sheets[hidden] { display: none; }
+  .isobar .sheets b { font: 600 11px ui-monospace, Menlo, Consolas, monospace; margin-left: 2px; }
+  .isobar .sheets .menu { position: absolute; top: calc(100% + 6px); right: 0; display: flex; flex-direction: column; gap: 3px; padding: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 9px; box-shadow: 0 6px 20px rgb(0 0 0 / 0.14); z-index: 3; }
+  .isobar .sheets .menu[hidden] { display: none; }
+  .isobar .sheets .menu button { text-align: left; }
+  .isobar button.flash { animation: flash-btn 0.5s ease-in-out 3; }
+  @keyframes flash-btn { 50% { background: var(--accent); color: var(--card); border-color: var(--accent); } }
+  @media (prefers-reduced-motion: reduce) { .isobar button.flash { animation: none; outline: 2px solid var(--accent); } }
   .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
   .slide[hidden] { display: none; }
   .slide input { width: 92px; accent-color: var(--accent); }
@@ -428,6 +440,14 @@
       <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
       <button type="button" id="bScreens" aria-pressed="true" title="Information screens beside the part (S)">Screens</button>
+      <span class="sheets" id="sheetsWrap" hidden>
+        <button type="button" id="bSheets" aria-haspopup="menu" aria-expanded="false" aria-controls="sheetsMenu" title="Organise the open sheets (L tidies them)">Sheets <b id="nSheets">0</b></button>
+        <span class="menu" id="sheetsMenu" role="menu" hidden>
+          <button type="button" role="menuitem" id="bTidy" title="Put every screen back in place, the sheets in one column in piece order, all open (L)">Tidy</button>
+          <button type="button" role="menuitem" id="bFoldAll" title="Fold every screen to its top bar">Fold all</button>
+          <button type="button" role="menuitem" id="bCloseAll" title="Close every sheet">Close all</button>
+        </span>
+      </span>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
     <div class="hud" id="hud" hidden aria-label="Information screens" aria-live="polite"></div>
@@ -1236,7 +1256,7 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0 }) {
 }
 
 // ---------- State ----------
-const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
+const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
 const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null };
 const hidden = new Set();
 
@@ -1299,6 +1319,7 @@ function refreshLit() {
     if (sameSheet(state.hotSheet, here)) lit = 0.55;
     else if (here && isPinned(here)) lit = 0.42;
     else if (state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) lit = 0.45;
+    else if (state.rowPiece && pc === state.rowPiece) lit = 0.32; // a piece named in a list under the pointer
     else if (iso.part) lit = pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub ? 0.32 : 0;
     else lit = p === state.select ? 0.42 : p === state.hover || p === state.legendHot ? 0.26 : 0;
     m.userData.lit = lit;
@@ -1550,7 +1571,7 @@ for (const g of document.querySelectorAll('.grip')) {
 // previews its technical sheet in the column on the right; a click on the sub-part, the pin, or dropping the dragged
 // preview keeps it. Every screen moves by dragging its top bar, and hovering one lights its part in the model.
 const hud = $('hud');
-const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [] };
+const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [], folded: new Set(), opened: null, justOpened: null, flashTimer: 0 };
 const PIN = '<svg viewBox="0 0 16 16"><path d="M5.5 1.5h5l-.7 4.3 2.7 2.4v1.3h-9V8.2l2.7-2.4zM8 9.5v5"/></svg>';
 const BASIS_SHORT = { spec: 'Spec', photo: 'Photo', assumed: 'Assumed' };
 const SCREEN_W = 280;
@@ -1585,11 +1606,12 @@ function setScreens(on) {
   if (iso.part) frameIsolated(false, MOVE.piece);
 }
 $('bScreens').addEventListener('click', () => setScreens(!HUD.on));
-// From a list of sub-parts: inspect the part, take it apart, and preview the sheet of the nearest piece that has it.
-function showSubOf(part, sub) {
+// From a list of sub-parts: inspect the part, take it apart, and preview the sheet of the given piece, or else of the
+// nearest piece that has it.
+function showSubOf(part, sub, piece = null) {
   const list = (piecesOf.get(part) || []).filter((pc) => subMeshes(pc, sub).length);
   if (!list.length) return;
-  const pc = iso.part === part && iso.focus && list.includes(iso.focus) ? iso.focus : nearestPiece(list);
+  const pc = piece && list.includes(piece) ? piece : iso.part === part && iso.focus && list.includes(iso.focus) ? iso.focus : nearestPiece(list);
   if (iso.part !== part) inspect(part, (piecesOf.get(part) || []).length > 1 ? pc : null);
   else if ((piecesOf.get(part) || []).length > 1 && iso.focus !== pc) setFocus(pc);
   if (!iso.apart) setApart(true);
@@ -1605,7 +1627,17 @@ function pinSheet(pc, sub) {
   if (sameSheet(state.live, x) && live && placed) HUD.pos.set(sheetKey(x), { x: live.offsetLeft, y: live.offsetTop });
   HUD.pos.delete('live');
   state.pins.push(x);
-  if (state.pins.length > 6) { HUD.pos.delete(sheetKey(state.pins[0])); state.pins.shift(); }
+  // Past six open sheets the oldest open one folds to its bar; none is dropped.
+  const open = state.pins.filter((y) => !HUD.folded.has(sheetKey(y)));
+  if (open.length > 6) HUD.folded.add(sheetKey(open[0]));
+  // Past what the column can show as bars (with room left for a preview), the oldest folded sheet closes.
+  const most = Math.max(7, Math.floor((height - hudTop() - 8 - 160) / 60)); // a folded bar and its gap take about 60 px
+  while (state.pins.length > most) {
+    const old = state.pins.find((y) => HUD.folded.has(sheetKey(y))) || state.pins[0];
+    state.pins = state.pins.filter((y) => y !== old);
+    HUD.pos.delete(sheetKey(old));
+    HUD.folded.delete(sheetKey(old));
+  }
   if (sameSheet(state.live, x)) state.live = null;
   state.hotSheet = null;
   if (!HUD.on) setScreens(true);
@@ -1617,6 +1649,7 @@ function pinSheet(pc, sub) {
 function unpinSheet(x) {
   state.pins = state.pins.filter((y) => y !== x);
   HUD.pos.delete(sheetKey(x));
+  HUD.folded.delete(sheetKey(x));
   state.hotSheet = null;
   renderHud();
   refreshLit();
@@ -1624,7 +1657,7 @@ function unpinSheet(x) {
   dirty = true;
 }
 function clearSheets() {
-  for (const x of state.pins) HUD.pos.delete(sheetKey(x));
+  for (const x of state.pins) { HUD.pos.delete(sheetKey(x)); HUD.folded.delete(sheetKey(x)); }
   state.pins = [];
   state.live = null;
   state.hotSheet = null;
@@ -1633,7 +1666,7 @@ function clearSheets() {
 // Sheets of pieces now ghosted go, the preview too.
 function keepSheetsOnFocus() {
   if (!iso.focus) return;
-  for (const x of state.pins) if (x.pc !== iso.focus) HUD.pos.delete(sheetKey(x));
+  for (const x of state.pins) if (x.pc !== iso.focus) { HUD.pos.delete(sheetKey(x)); HUD.folded.delete(sheetKey(x)); }
   state.pins = state.pins.filter((x) => x.pc === iso.focus);
   if (state.live && state.live.pc !== iso.focus) state.live = null;
 }
@@ -1695,7 +1728,7 @@ function specTable(rows) {
 // The sub-parts of a part (or of the piece in view), each previewing its sheet; hovering one lights it in the model.
 function subsList(p) {
   const subs = subsOf(p.id, iso.part === p.id ? iso.focus : null);
-  if (subs.size < 2) return null;
+  if (!subs.size) return null;
   const ul = el('ul', 'subs');
   const n = iso.part === p.id && iso.focus ? 1 : (piecesOf.get(p.id) || []).length;
   for (const [name, count] of subs) {
@@ -1792,7 +1825,7 @@ function placeScreen(sc) {
   if (phoneHud()) { sc.style.left = sc.style.top = ''; return; }
   const key = sc.dataset.key;
   if (inColumn(key)) return;
-  sc.classList.remove('folded');
+  sc.classList.toggle('folded', HUD.folded.has(key));
   const w = sc.offsetWidth, h = sc.offsetHeight;
   const top = hudTop();
   let p = HUD.pos.get(key);
@@ -1810,8 +1843,8 @@ function placeScreen(sc) {
   sc.style.left = `${clamp(p.x, 4, Math.max(4, width - w - 4))}px`;
   sc.style.top = `${clamp(p.y, 4, Math.max(4, height - Math.min(h, height - 8) - 4))}px`;
 }
-// The sheets in the column stack top-down: pinned ones in the order they were pinned, the preview last. When they do
-// not all fit, the oldest fold to their top bar, sparing the preview and the sheet last opened from its title.
+// The sheets in the column stack top-down: pinned ones in the order they were pinned, the preview last. Sheets you
+// folded stay folded. When the rest do not all fit, the oldest fold to their top bar too.
 const SHEET_GAP = 8;
 function layoutColumn() {
   if (!sheetColumn()) return;
@@ -1823,18 +1856,20 @@ function layoutColumn() {
     sc.classList.add('folded'); fs.push(sc.offsetHeight);
     sc.classList.remove('folded'); hs.push(sc.offsetHeight);
   }
-  const open = els.map(() => true);
+  const open = keys.map((k) => !HUD.folded.has(k));
   const top = hudTop();
   const room = height - top - 8;
   const used = () => els.reduce((s, _, i) => s + (open[i] ? hs[i] : fs[i]) + SHEET_GAP, -SHEET_GAP);
-  for (let i = 0; i < els.length && used() > room; i++) if (keys[i] !== 'live' && keys[i] !== HUD.unfold) open[i] = false;
+  // The sheet opened from its bar is spared, or else the newest kept sheet, which then scrolls if it is still too tall.
+  const spare = keys.includes(HUD.unfold) && !HUD.folded.has(HUD.unfold) ? HUD.unfold : keys.filter((k) => k !== 'live' && !HUD.folded.has(k)).pop();
+  for (let i = 0; i < els.length && used() > room; i++) if (keys[i] !== 'live' && keys[i] !== spare) open[i] = false;
   let y = top;
   els.forEach((sc, i) => {
     sc.classList.toggle('folded', !open[i]);
     sc.style.left = `${width - SCREEN_W - 12}px`;
     sc.style.top = `${y}px`;
     // A sheet that still does not fit scrolls inside the room that is left.
-    const left = Math.max(3 * fs[i], height - y - 8);
+    const left = Math.max(fs[i], height - y - 8);
     if (open[i] && hs[i] > left) sc.style.maxHeight = `${left}px`;
     y += (open[i] ? Math.min(hs[i], left) : fs[i]) + SHEET_GAP;
   });
@@ -1872,11 +1907,14 @@ function renderHud() {
     HUD.els.set(key, sc);
   }
   for (const [key, sc] of HUD.els) if (!keep.has(key)) { sc.remove(); HUD.els.delete(key); }
+  // The Sheets button can wrap the inspect bar, which moves the top of the column, so it goes first.
+  updateSheetsButton();
   for (const sc of HUD.els.values()) placeScreen(sc);
   layoutColumn();
 }
 // Drag a screen by its top bar; a click anywhere on one brings it to the front. A sheet dragged out of the column stays
-// where it is dropped, and a preview dropped anywhere is kept. A click on a folded bar opens that sheet.
+// where it is dropped, and a preview dropped anywhere is kept; if it lands on the part, the part moves into the largest
+// free space. A click on a folded bar opens that sheet, a double-click on an open bar folds it.
 hud.addEventListener('pointerdown', (e) => {
   const sc = e.target.closest('.screen');
   if (!sc) return;
@@ -1890,7 +1928,7 @@ hud.addEventListener('pointerdown', (e) => {
   let moved = false;
   const move = (ev) => {
     if (!moved && Math.abs(ev.clientX - start.cx) + Math.abs(ev.clientY - start.cy) < 4) return;
-    if (!moved) { moved = true; sc.classList.remove('folded'); sc.style.maxHeight = ''; }
+    if (!moved) { moved = true; if (!HUD.folded.has(sc.dataset.key)) sc.classList.remove('folded'); sc.style.maxHeight = ''; }
     const x = clamp(start.x + ev.clientX - start.cx, 4, width - sc.offsetWidth - 4);
     const y = clamp(start.y + ev.clientY - start.cy, 4, height - 36);
     sc.style.left = `${x}px`;
@@ -1904,16 +1942,152 @@ hud.addEventListener('pointerdown', (e) => {
     sc.classList.remove('dragging');
     const key = sc.dataset.key;
     if (!moved) {
-      if (sc.classList.contains('folded')) { HUD.unfold = key; layoutColumn(); }
+      HUD.justOpened = null;
+      if (sc.classList.contains('folded')) {
+        HUD.folded.delete(key);
+        HUD.unfold = key;
+        HUD.justOpened = key;
+        renderHud();
+      }
       return;
     }
-    if (key === 'live' && state.live) pinSheet(state.live.pc, state.live.sub);
-    else layoutColumn();
+    let dropped = sc;
+    if (key === 'live' && state.live) {
+      const x = state.live;
+      pinSheet(x.pc, x.sub);
+      dropped = HUD.els.get(sheetKey(x)) || sc;
+    } else { updateSheetsButton(); layoutColumn(); }
+    nudgeIntoGap(dropped);
   };
   bar.addEventListener('pointermove', move);
   bar.addEventListener('pointerup', up);
   bar.addEventListener('pointercancel', up);
 });
+// The first click of a double-click (detail 1) says whether it opened a folded bar, whatever the double-click speed.
+hud.addEventListener('click', (e) => { if (e.detail === 1) HUD.opened = HUD.justOpened; });
+hud.addEventListener('dblclick', (e) => {
+  const sc = e.target.closest('.screen');
+  if (!sc || !e.target.closest('.bar') || e.target.closest('button') || phoneHud()) return;
+  const key = sc.dataset.key;
+  // The first click of this double-click may just have opened the sheet; leave it open.
+  if (key === 'live' || HUD.opened === key) return;
+  HUD.folded.add(key);
+  if (HUD.unfold === key) HUD.unfold = null;
+  renderHud();
+});
+
+// ---------- Organising the sheets: Tidy, Fold all, Close all ----------
+// Tidy puts every screen back where it starts, the sheets in the column in piece order and then in build order, opens
+// them all and frames the part again.
+function tidySheets() {
+  if (!iso.part) return;
+  const list = piecesOf.get(iso.part) || [];
+  const order = (x) => [...subsOf(iso.part, x.pc).keys()].indexOf(x.sub);
+  state.pins.sort((a, b) => list.indexOf(a.pc) - list.indexOf(b.pc) || order(a) - order(b));
+  HUD.pos.clear();
+  HUD.folded.clear();
+  HUD.unfold = null;
+  closeSheetsMenu();
+  renderHud();
+  frameIsolated(false, MOVE.piece);
+}
+function foldAllSheets() {
+  for (const key of HUD.els.keys()) if (key !== 'live') HUD.folded.add(key);
+  HUD.unfold = null;
+  closeSheetsMenu();
+  renderHud();
+}
+function closeAllSheets() {
+  for (const x of state.pins) { HUD.pos.delete(sheetKey(x)); HUD.folded.delete(sheetKey(x)); }
+  state.pins = [];
+  state.hotSheet = null;
+  closeSheetsMenu();
+  setLive(null, true);
+  renderHud();
+  refreshLit();
+  renderInspector();
+  dirty = true;
+}
+// The Sheets button shows once there is something to organise: a kept sheet, or a screen moved or folded by hand.
+function updateSheetsButton() {
+  const n = state.pins.length;
+  $('sheetsWrap').hidden = !iso.part || !HUD.on || phoneHud() || !(n || HUD.pos.size || HUD.folded.size);
+  $('nSheets').textContent = String(n);
+  if ($('sheetsWrap').hidden) closeSheetsMenu();
+}
+function closeSheetsMenu() { $('sheetsMenu').hidden = true; $('bSheets').setAttribute('aria-expanded', 'false'); }
+$('bSheets').addEventListener('click', () => {
+  const open = $('sheetsMenu').hidden;
+  $('sheetsMenu').hidden = !open;
+  $('bSheets').setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+$('bTidy').addEventListener('click', tidySheets);
+$('bFoldAll').addEventListener('click', foldAllSheets);
+$('bCloseAll').addEventListener('click', closeAllSheets);
+document.addEventListener('pointerdown', (e) => { if (!e.target.closest('#sheetsWrap')) closeSheetsMenu(); });
+
+// A screen dropped on the part moves the part into the largest free rectangle of the view, keeping the zoom unless
+// the part would not fit there. If no free space is at least 160 px each way, the camera stays and Tidy is offered.
+function relRect(node, s) { const r = node.getBoundingClientRect(); return { x0: r.left - s.left, y0: r.top - s.top, x1: r.right - s.left, y1: r.bottom - s.top }; }
+const overlaps = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+// Where a world box lands on screen once the camera settles at `goal` (the camera is orthographic).
+function screenBoxOf(box) {
+  const { right, up } = basis(goal.az, goal.el);
+  const k = (2 * fit.half) / goal.zoom / height;
+  const r = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+    const d = new V3(x, y, z).sub(goal.target);
+    const px = width / 2 + d.dot(right) / k, py = height / 2 - d.dot(up) / k;
+    r.x0 = Math.min(r.x0, px); r.x1 = Math.max(r.x1, px); r.y0 = Math.min(r.y0, py); r.y1 = Math.max(r.y1, py);
+  }
+  return r;
+}
+// The largest rectangle of the view that no screen and no inspect bar covers, with an 8 px margin round each.
+function largestFreeRect() {
+  const s = stage.getBoundingClientRect();
+  const m = 8;
+  const blocks = [...HUD.els.values(), $('isobar')].map((n) => relRect(n, s)).map((r) => ({ x0: r.x0 - m, y0: r.y0 - m, x1: r.x1 + m, y1: r.y1 + m }));
+  // The sheet column is kept for sheets even where it is empty.
+  if (sheetColumn()) blocks.push({ x0: width - hudInsets().r, y0: 0, x1: width, y1: height });
+  const xs = [...new Set([0, width, ...blocks.flatMap((b) => [b.x0, b.x1])].map((v) => clamp(v, 0, width)))].sort((a, b) => a - b);
+  const ys = [...new Set([0, height, ...blocks.flatMap((b) => [b.y0, b.y1])].map((v) => clamp(v, 0, height)))].sort((a, b) => a - b);
+  let best = null;
+  for (let i = 0; i < xs.length; i++) for (let j = i + 1; j < xs.length; j++) {
+    const w = xs[j] - xs[i];
+    if (best && w * height <= best.w * best.h) continue;
+    for (let a = 0; a < ys.length; a++) for (let b = ys.length - 1; b > a; b--) {
+      const h = ys[b] - ys[a];
+      if (best && w * h <= best.w * best.h) break;
+      const r = { x0: xs[i], y0: ys[a], x1: xs[j], y1: ys[b] };
+      if (!blocks.some((k) => overlaps(k, r))) { best = { x: r.x0, y: r.y0, w, h }; break; }
+    }
+  }
+  return best;
+}
+function nudgeIntoGap(sc) {
+  if (!iso.part || !sc || phoneHud()) return;
+  const b = iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
+  if (b.isEmpty()) return;
+  const part = screenBoxOf(b);
+  if (!overlaps(part, relRect(sc, stage.getBoundingClientRect()))) return;
+  const g = largestFreeRect();
+  if (!g || g.w < 160 || g.h < 160) {
+    const t = $('bSheets');
+    t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
+    clearTimeout(HUD.flashTimer);
+    HUD.flashTimer = setTimeout(() => t.classList.remove('flash'), 1600);
+    return;
+  }
+  glide = null; // not stopGlide(): goal is the view `part` was measured in, and the camera eases to the new goal
+  const f = Math.min(1, (0.9 * g.w) / Math.max(1, part.x1 - part.x0), (0.9 * g.h) / Math.max(1, part.y1 - part.y0));
+  goal.zoom = clamp(goal.zoom * f, ZOOM_MIN, ZOOM_MAX);
+  const k = (2 * fit.half) / goal.zoom / height;
+  const { right, up } = basis(goal.az, goal.el);
+  goal.target.copy(b.getCenter(new V3()))
+    .addScaledVector(right, -(g.x + g.w / 2 - width / 2) * k)
+    .addScaledVector(up, (g.y + g.h / 2 - height / 2) * k);
+  dirty = true;
+}
 
 // ---------- Selection ----------
 function select(id, o = {}) {
@@ -1966,7 +2140,7 @@ function buildTree() {
     for (const p of DOCS.PARTS.filter((x) => x.group === g.id)) {
       const li = el('li', 'ti');
       li.dataset.part = p.id;
-      li.dataset.text = `${p.name} ${p.id} ${p.what} ${p.specs.map((s) => s.join(' ')).join(' ')}`.toLowerCase();
+      li.dataset.text = norm(`${p.name} ${p.id} ${p.what} ${p.specs.map((s) => s.join(' ')).join(' ')}`);
       const eye = eyeButton(`Show or hide ${p.name}`);
       eye.addEventListener('click', () => setHidden([p.id], !hidden.has(p.id)));
       const name = el('button', 'name');
@@ -2013,9 +2187,60 @@ function buildTree() {
   host.append(lg);
 }
 const BASIS = { spec: 'Geometry from the published spec', photo: 'Scaled or placed from photos', assumed: 'Placed where plausible (guess)' };
+// Search: every typed word must appear. Under a part, rows name its pieces and sub-parts ("Left viewport (webcam) ·
+// 16 bolts"), each opening that sheet. They show when a word names a piece or a sub-part rather than only the part.
+// Labels use en dashes (Right–back); a typed hyphen or dash matches any of them.
+const norm = (t) => t.toLowerCase().replace(/[‐-―−]/g, '-');
+let searchRows = null;
+function buildSearchRows() {
+  searchRows = new Map();
+  for (const p of DOCS.PARTS) {
+    const rows = [];
+    for (const pc of piecesOf.get(p.id) || []) {
+      for (const sub of subsOf(p.id, pc).keys()) {
+        const own = norm(`${pc.userData.label} ${sub} ${subDocOf(p.id, sub)?.title || ''}`);
+        rows.push({ pc, sub, own, text: norm(`${p.name} ${p.id} ${own}`) });
+      }
+    }
+    searchRows.set(p.id, rows);
+  }
+}
+const MAX_ROWS = 6;
 $('search').addEventListener('input', (e) => {
-  const q = e.target.value.trim().toLowerCase();
-  for (const li of document.querySelectorAll('.ti')) li.style.display = !q || li.dataset.text.includes(q) ? '' : 'none';
+  const q = norm(e.target.value.trim());
+  const words = q.split(/\s+/).filter(Boolean);
+  const has = (text) => words.every((w) => text.includes(w));
+  if (words.length && !searchRows) buildSearchRows();
+  for (const old of document.querySelectorAll('.ti-hit')) old.remove();
+  for (const li of document.querySelectorAll('.ti')) {
+    if (!words.length) { li.style.display = ''; continue; }
+    const id = li.dataset.part;
+    const p = partById.get(id);
+    const name = norm(`${p.name} ${id}`);
+    // A row counts when one of the words is found in its piece or sub-part, not only in the part's name.
+    const hits = searchRows.get(id).filter((r) => has(r.text) && words.some((w) => r.own.includes(w) && !name.includes(w)));
+    li.style.display = has(li.dataset.text) || hits.length ? '' : 'none';
+    let after = li;
+    for (const r of hits.slice(0, MAX_ROWS)) {
+      const row = el('li', 'ti-hit');
+      const b = el('button', null, `${r.pc.userData.label} · ${r.sub}`);
+      b.type = 'button';
+      b.title = 'Inspect this piece and keep this sheet open';
+      b.addEventListener('click', () => {
+        showSubOf(id, r.sub, r.pc);
+        pinSheet(r.pc, r.sub);
+        // A sheet already kept but folded opens.
+        const k = sheetKey(r);
+        if (HUD.folded.delete(k)) { HUD.unfold = k; renderHud(); }
+      });
+      b.addEventListener('mouseenter', () => { state.rowPiece = r.pc; refreshLit(); });
+      b.addEventListener('mouseleave', () => { state.rowPiece = null; refreshLit(); });
+      row.append(b);
+      after.after(row);
+      after = row;
+    }
+    if (hits.length > MAX_ROWS) { const more = el('li', 'ti-hit more', `${hits.length - MAX_ROWS} more: add a word`); after.after(more); }
+  }
   for (const g of document.querySelectorAll('.tg[data-group]')) {
     const any = [...g.querySelectorAll('.ti')].some((li) => li.style.display !== 'none');
     g.style.display = any ? '' : 'none';
@@ -2100,8 +2325,8 @@ function renderInspector() {
       const b = el('button', iso.focus === pc ? 'on' : null, pc.userData.label);
       b.type = 'button';
       b.addEventListener('click', () => focusPiece(pc));
-      b.addEventListener('mouseenter', () => { state.hoverPiece = pc; refreshLit(); });
-      b.addEventListener('mouseleave', () => { state.hoverPiece = null; refreshLit(); });
+      b.addEventListener('mouseenter', () => { state.rowPiece = pc; refreshLit(); });
+      b.addEventListener('mouseleave', () => { state.rowPiece = null; refreshLit(); });
       wrap.append(b);
     }
     box.append(wrap);
@@ -2109,6 +2334,10 @@ function renderInspector() {
   const subs = subsList(p);
   if (subs) box.append(el('h3', null, iso.part === p.id && iso.apart ? 'Taken apart into' : 'Made of'), subs);
   box.append(el('h3', null, 'Specification'), specTable(p.specs));
+  // A part made of one sub-part (a gasket) shows that sheet's numbers here, so they need no second click.
+  const only = [...subsOf(p.id).keys()];
+  const doc = only.length === 1 ? subDocOf(p.id, only[0]) : null;
+  if (doc?.rows.length) box.append(el('h3', null, doc.title), specTable(doc.rows));
   if (p.connects?.length) {
     box.append(el('h3', null, 'Connects to'));
     const cc = el('div', 'chips');
@@ -2219,9 +2448,11 @@ function renderHelp(box) {
       ['Wheel', 'zoom toward the pointer'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own; again on one piece to zoom to it'],
-      ['Point at a sub-part (inspecting)', 'preview its technical sheet beside the pointer'],
-      ['Pin on a preview', 'keep the sheet open until × closes it'],
-      ['Drag a screen’s top bar', 'move the screen'],
+      ['Point at a sub-part (inspecting)', 'preview its technical sheet in the column on the right'],
+      ['Click a sub-part (inspecting)', 'keep its sheet open; click again to close it'],
+      ['Drag a preview out', 'keep it where you drop it'],
+      ['Drag a screen’s top bar', 'move the screen; dropped on the part, the part moves into free space'],
+      ['Double-click a screen’s top bar', 'fold it; a click opens it again'],
       ['Hover a screen', 'light its part in the model'],
       ['Drag a panel’s edge', 'size the panel; double-click the edge for the default'],
       ['Double-click empty space', 'reset the view'],
@@ -2248,9 +2479,10 @@ function renderHelp(box) {
       [', .', 'previous or next piece of the inspected part'],
       ['G', 'ghost context on or off'],
       ['S', 'information screens on or off'],
+      ['L', 'tidy the screens: sheets back in one column, all open'],
       ['F', 'fold or unfold the side panels'],
       ['H', 'hide the selected part'],
-      ['Esc', 'step back: the preview, the last pinned sheet, one piece, the part, then the selection'],
+      ['Esc', 'step back: the Sheets menu, the preview, the last pinned sheet, one piece, the part, then the selection'],
     ]],
   ];
   for (const [title, rows] of groups) {
@@ -2483,7 +2715,7 @@ function endPointer(e) {
       const x = m && m.userData.sub ? { pc: m.userData.piece, sub: m.userData.sub } : null;
       if (coarse || phoneHud()) setLive(x && { ...x, at: pointAt(e) }, true);
       else {
-        HUD.undo = [...HUD.undo, state.pins.slice()].slice(-2);
+        HUD.undo = [...HUD.undo, { pins: state.pins.slice(), folded: new Set(HUD.folded), pos: new Map(HUD.pos) }].slice(-2);
         const pinned = x && state.pins.find((y) => sameSheet(x, y));
         if (pinned) unpinSheet(pinned);
         else if (x) pinSheet(x.pc, x.sub);
@@ -2499,11 +2731,13 @@ stage.addEventListener('pointercancel', endPointer);
 stage.addEventListener('pointerleave', () => { if (!drag) { hoverPending = null; setHover(null); } });
 stage.addEventListener('contextmenu', (e) => e.preventDefault());
 stage.addEventListener('dblclick', (e) => {
-  // The two clicks of a double-click each pinned or closed a sheet; put the pins back as they were before the first.
+  // The two clicks of a double-click each pinned or closed a sheet; put the sheets back as they were before the first,
+  // folds and places included.
   if (iso.part && HUD.undo.length === 2) {
-    const before = HUD.undo[0].filter((x) => x.pc.userData.part === iso.part);
-    for (const x of state.pins) if (!before.includes(x)) HUD.pos.delete(sheetKey(x));
-    state.pins = before;
+    const u = HUD.undo[0];
+    state.pins = u.pins.filter((x) => x.pc.userData.part === iso.part);
+    HUD.folded = new Set(u.folded);
+    HUD.pos = new Map(u.pos);
     renderHud();
     refreshLit();
   }
@@ -2574,10 +2808,12 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'g' && iso.part) { iso.context = !iso.context; refreshPieces(); updateIsoBar(); }
   else if (k === 'h' && state.select) { setHidden([state.select], !hidden.has(state.select)); renderInspector(); }
   else if (k === 's' && iso.part) setScreens(!HUD.on);
+  else if (k === 'l' && iso.part) tidySheets();
   else if (k === 'f') togglePanels();
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
   else if (k === 'escape') {
-    if (state.live) setLive(null, true);
+    if (!$('sheetsMenu').hidden) closeSheetsMenu();
+    else if (state.live) setLive(null, true);
     else if (state.pins.length) unpinSheet(state.pins[state.pins.length - 1]);
     else if (iso.focus) setFocus(null);
     else if (iso.part) endInspect();

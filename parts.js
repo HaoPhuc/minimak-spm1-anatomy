@@ -115,6 +115,7 @@
       specs: [
         ['Material', 'Oxygen-free copper', 'S6'],
         ['Fits', 'DN160CF joints (one per joint)', 'S5'],
+        ['Where', 'one in each of the four joints, on the diagonals between the quarters', 'photo'],
       ],
       connects: ['joints'],
       know: 'Inspect the knife edges before fitting a new gasket: a nicked edge leaks whatever you do to the bolts.',
@@ -507,10 +508,11 @@
     note: 'Welded into a hole cut in the elbow, with the flange welded on its outer end. The drawn tube follows this standard size; the SPM1’s own tube size is not published.',
     sources: ['S9', 'S4'],
   });
-  const bolts = (dn, hole, grip, metric, imperial) => ({
+  const bolts = (dn, n, hole, grip, metric, imperial) => ({
     title: `DN${dn}CF flange bolts`,
     material: 'Stainless steel (grade not published)',
     rows: [
+      ['Count', `${n}, one per hole`, 'S9'],
       ['Holes they pass', `Ø${hole} mm`, 'S9'],
       ['Thread', `${metric} or ${imperial} (the hole takes either; not published)`, 'std'],
       ['Grip', `${grip} mm: two flanges and a 2 mm gasket`, 'derived'],
@@ -518,10 +520,10 @@
     note: 'Draw them up in a star pattern in small steps until the flange faces meet evenly. Bolts that see bake-out are often silver-plated so they do not gall.',
     sources: ['S9'],
   });
-  const nuts = (dn, metric, imperial) => ({
+  const nuts = (dn, n, metric, imperial) => ({
     title: `DN${dn}CF nuts`,
     material: 'Stainless steel (grade not published)',
-    rows: [['Thread', `${metric} or ${imperial} (not published)`, 'std'], ['Seat', 'back face of the welded flange', 'std']],
+    rows: [['Count', `${n}, one per bolt`, 'S9'], ['Thread', `${metric} or ${imperial} (not published)`, 'std'], ['Seat', 'back face of the welded flange', 'std']],
     note: 'Each nut carries the bolt from the far side, so a joint can be opened without reaching inside.',
     sources: ['S9'],
   });
@@ -551,14 +553,14 @@
     'tube-100': tube(100, '104.0', '2.0', '100.0'),
     'tube-63': tube(63, '63.5', '1.8', '59.9'),
     'tube-40': tube(40, '38.0', '1.5', '35.0'),
-    'bolts-160': bolts(160, '8.4', '44.0', 'M8', '5/16-24 UNF'),
-    'bolts-100': bolts(100, '8.4', '41.0', 'M8', '5/16-24 UNF'),
-    'bolts-63': bolts(63, '8.4', '36.0', 'M8', '5/16-24 UNF'),
-    'bolts-40': bolts(40, '6.8', '27.0', 'M6', '1/4-28 UNF'),
-    'nuts-160': nuts(160, 'M8', '5/16-24 UNF'),
-    'nuts-100': nuts(100, 'M8', '5/16-24 UNF'),
-    'nuts-63': nuts(63, 'M8', '5/16-24 UNF'),
-    'nuts-40': nuts(40, 'M6', '1/4-28 UNF'),
+    'bolts-160': bolts(160, 20, '8.4', '44.0', 'M8', '5/16-24 UNF'),
+    'bolts-100': bolts(100, 16, '8.4', '41.0', 'M8', '5/16-24 UNF'),
+    'bolts-63': bolts(63, 8, '8.4', '36.0', 'M8', '5/16-24 UNF'),
+    'bolts-40': bolts(40, 6, '6.8', '27.0', 'M6', '1/4-28 UNF'),
+    'nuts-160': nuts(160, 20, 'M8', '5/16-24 UNF'),
+    'nuts-100': nuts(100, 16, 'M8', '5/16-24 UNF'),
+    'nuts-63': nuts(63, 8, 'M8', '5/16-24 UNF'),
+    'nuts-40': nuts(40, 6, 'M6', '1/4-28 UNF'),
     'bolts-tapped': {
       title: 'DN40CF bolts into the reducer',
       material: 'Stainless steel (grade not published)',

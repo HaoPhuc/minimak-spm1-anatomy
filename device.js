@@ -434,6 +434,9 @@
     const J = CF[160], L = CF[100], S = CF[40], G = CF[63];
     const TB = D.table;
     const quarters = [];
+    // Quarter k is centred on 90k°; joint k sits at 45 + 90k°, between quarter k and the next one round.
+    const QUARTER = ['Right', 'Back', 'Left', 'Front'];
+    const JOINT = ['Right–back', 'Back–left', 'Left–front', 'Front–right'];
 
     // ---------- Vessel quarters: elbow, joint flanges, lateral port, TF coils ----------
     for (let k = 0; k < 4; k++) {
@@ -443,13 +446,14 @@
       const p0 = pk - 45, p1 = pk + 45;
       const inset = (D.gap / 2 + J.t * 0.5) / D.R0;
 
-      const shell = piece('vessel', q, { clip: true, sub: 'Elbow, 150 mm stainless tube', label: ['Right quarter', 'Back quarter', 'Left quarter', 'Front quarter'][k] });
+      const shell = piece('vessel', q, { clip: true, sub: 'Elbow, 150 mm stainless tube', label: `${QUARTER[k]} quarter` });
       add(shell, torusShell(D.R0, D.aIn, D.aOut, p0 * DEG + inset, p1 * DEG - inset), 'vessel');
 
-      // Joint flanges: B at the start of the quarter (nuts), A at the end (bolt heads).
-      for (const [pj, side] of [[p0, 1], [p1, -1]]) {
+      // Joint flanges: B at the start of the quarter (nuts), A at the end (bolt heads). Each is named by its joint and
+      // the quarter it is welded to, so the eight read apart.
+      for (const [pj, side, jt] of [[p0, 1, (k + 3) % 4], [p1, -1, k]]) {
         const tdir = toroidal(pj).multiplyScalar(side);
-        const fl = piece('joints', q, { clip: true, sub: 'DN160CF flange', detach: tdir.clone().multiplyScalar(3.2).add(radial(pj).multiplyScalar(2)) });
+        const fl = piece('joints', q, { clip: true, sub: 'DN160CF flange', label: `${JOINT[jt]} joint, ${QUARTER[k].toLowerCase()} side`, detach: tdir.clone().multiplyScalar(3.2).add(radial(pj).multiplyScalar(2)) });
         const centre = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t / 2));
         add(fl, cfRing(centre, tdir, D.aIn, J.od / 2, J.t, [drilled(radial(pj), Z, J)], 80), 'steel2');
         add(fl, bead(D.aOut, pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t + 0.14)), tdir), 'steel2', { sub: 'TIG weld to the elbow', ex: along(tdir, 3) });
@@ -461,7 +465,7 @@
 
       // Lateral DN100CF port: a tube welded into the elbow, with a flange welded on its end.
       const rdir = radial(pk);
-      const lat = piece('lateral', q, { clip: true, sub: 'Port tube, 104 mm', label: ['Right (pump)', 'Back', 'Left', 'Front'][k] + ' port' });
+      const lat = piece('lateral', q, { clip: true, sub: 'Port tube, 104 mm', label: `${k ? QUARTER[k] : 'Right (pump)'} port` });
       const nR = L.tube / 2;
       add(lat, saddleNeck(pol(D.R0, pk), rdir, nR - L.wall, nR, D.lat.flangeAt - D.R0, lateralStart(pk)), 'steel');
       add(lat, cfRing(pol(D.lat.flangeAt + L.t / 2, pk), rdir, nR - L.wall, L.od / 2, L.t, [drilled(Z, toroidal(pk), L)]), 'steel2', { sub: 'DN100CF flange', ex: along(rdir, 7) });
@@ -509,7 +513,7 @@
       const pj = 45 + 90 * k;
       const off = radial(90 * k).multiplyScalar(16).add(radial(90 * ((k + 1) % 4)).multiplyScalar(16)).multiplyScalar(0.5);
       const g = group(`gasket${k}`, off, 0.32 + k * 0.05);
-      const gk = piece('gaskets', g, { clip: true, sub: 'OFHC copper gasket', detach: V(0, 0, 0) });
+      const gk = piece('gaskets', g, { clip: true, sub: 'OFHC copper gasket', label: `${JOINT[k]} joint`, detach: V(0, 0, 0) });
       add(gk, at(ring(J.gasket[0], J.gasket[1], D.gap * 0.9, 80), frame(pol(D.R0, pj), toroidal(pj))), 'copper');
     }
 
