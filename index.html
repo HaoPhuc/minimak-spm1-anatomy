@@ -168,6 +168,12 @@
   .screen.comp { max-height: 52%; }
   .screen.links { max-height: 36%; }
   .screen.dragging { opacity: 0.9; }
+  /* A folded sheet keeps only its top bar; a click on the bar opens it again. */
+  .screen.folded { padding-bottom: 6px; }
+  .screen.folded > :not(.bar) { display: none; }
+  .screen.folded .bar { margin-bottom: 0; cursor: pointer; }
+  .screen .bar .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .screen .keep { margin: 0 0 6px; font-size: 11.5px; color: var(--accent); }
   .screen .bar { cursor: grab; touch-action: none; user-select: none; }
   .screen.dragging .bar { cursor: grabbing; }
   .screen .bar { display: flex; align-items: center; gap: 6px; margin: 0 -6px 4px 0; font: 600 10.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
@@ -249,7 +255,10 @@
   table.specs .ref { white-space: nowrap; margin-left: 2px; }
   .ref { font: 11px ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
   .ref:hover { border-color: var(--muted); }
-  .ref.derived, .ref.photo { cursor: default; color: var(--muted); }
+  .ref.derived, .ref.photo, .ref.assumed, .ref.none { cursor: default; color: var(--muted); }
+  .ref.assumed, .ref.std { border-style: dashed; }
+  .tagkey { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
+  .tagkey b { font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; }
   .know { border-left: 3px solid var(--accent); padding-left: 10px; }
   .pieces { display: flex; flex-wrap: wrap; gap: 5px; }
   .pieces button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
@@ -1538,10 +1547,10 @@ for (const g of document.querySelectorAll('.grip')) {
 
 // ---------- Information screens beside the part ----------
 // While inspecting, the component is described on screens floating in the view, Stark-style. Pointing at a sub-part
-// previews its technical sheet next to the pointer; only the pin keeps it. Every screen moves by dragging its top
-// bar, and hovering one lights its part in the model.
+// previews its technical sheet in the column on the right; a click on the sub-part, the pin, or dropping the dragged
+// preview keeps it. Every screen moves by dragging its top bar, and hovering one lights its part in the model.
 const hud = $('hud');
-const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1 };
+const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [] };
 const PIN = '<svg viewBox="0 0 16 16"><path d="M5.5 1.5h5l-.7 4.3 2.7 2.4v1.3h-9V8.2l2.7-2.4zM8 9.5v5"/></svg>';
 const BASIS_SHORT = { spec: 'Spec', photo: 'Photo', assumed: 'Assumed' };
 const SCREEN_W = 280;
@@ -1560,8 +1569,13 @@ function nearestPiece(list) {
 }
 // The component's own screens show unless the inspector beside a narrow view already says the same.
 const compShown = () => HUD.on && !phoneHud() && width >= 640 && (!panels.insp || width >= 1000);
-// The component screens start at the left, so the camera frames the part to their right.
-function hudInsets() { return iso.part && compShown() ? { l: SCREEN_W + 20, r: 0 } : { l: 0, r: 0 }; }
+// The component screens start at the left and the sheets stack in a column on the right, so the camera frames the part
+// in the room between. The column is kept free even with no sheet open, so a preview never moves the camera.
+const sheetColumn = () => !!iso.part && HUD.on && !phoneHud() && width >= 640;
+function hudInsets() {
+  if (!iso.part) return { l: 0, r: 0 };
+  return { l: compShown() ? SCREEN_W + 20 : 0, r: sheetColumn() ? SCREEN_W + 20 : 0 };
+}
 function setScreens(on) {
   HUD.on = on;
   store.set('spm1-screens', on ? 'on' : 'off');
@@ -1582,12 +1596,14 @@ function showSubOf(part, sub) {
   if (!HUD.on) setScreens(true);
   setLive({ pc, sub, at: null }, true);
 }
-// Pinning keeps a sheet where its preview was, until it is closed.
+// Pinning keeps a sheet until it is closed: in the column, or where its preview was dropped if it was dragged out.
 function pinSheet(pc, sub) {
   if (!pc || !sub || isPinned({ pc, sub })) return;
   const x = { pc, sub };
   const live = HUD.els.get('live');
-  if (sameSheet(state.live, x) && live) HUD.pos.set(sheetKey(x), { x: live.offsetLeft, y: live.offsetTop });
+  const placed = !sheetColumn() || HUD.pos.has('live');
+  if (sameSheet(state.live, x) && live && placed) HUD.pos.set(sheetKey(x), { x: live.offsetLeft, y: live.offsetTop });
+  HUD.pos.delete('live');
   state.pins.push(x);
   if (state.pins.length > 6) { HUD.pos.delete(sheetKey(state.pins[0])); state.pins.shift(); }
   if (sameSheet(state.live, x)) state.live = null;
@@ -1651,7 +1667,7 @@ function screen(key, sig, code, title, status) {
   const bar = el('div', 'bar');
   bar.title = 'Drag to move';
   bar.append(el('span', 'code', code));
-  if (title) bar.append(el('span', null, title));
+  if (title) bar.append(el('span', 'ttl', title));
   bar.append(el('span', 'state', status || ''));
   sc.append(bar);
   return sc;
@@ -1667,7 +1683,14 @@ function specTable(rows) {
     tb.append(tr);
   }
   t.append(tb);
-  return t;
+  // Under the table, what each tag that is not a source means, so the reader need not hover each one.
+  const used = Object.keys(TAGS).filter((k) => rows.some((r) => r[2] === k));
+  if (!used.length) return t;
+  const f = document.createDocumentFragment();
+  const key = el('p', 'tagkey');
+  used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', null, k), ` ${TAGS[k]}`));
+  f.append(t, key);
+  return f;
 }
 // The sub-parts of a part (or of the piece in view), each previewing its sheet; hovering one lights it in the model.
 function subsList(p) {
@@ -1695,7 +1718,7 @@ function componentScreens() {
   const grp = DOCS.GROUPS.find((g) => g.id === p.group);
   const list = piecesOf.get(p.id) || [];
   const sig = `${p.id}|${iso.focus ? iso.focus.id : ''}|${iso.apart}|${state.pins.map(sheetKey).join(',')}`;
-  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, BASIS_SHORT[p.basis]);
+  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, `Shape: ${BASIS_SHORT[p.basis]}`);
   a.classList.add('comp');
   const h = el('h4', null, iso.focus ? iso.focus.userData.label : p.name);
   if (!iso.focus && p.count > 1) h.append(' ', el('span', 'count', `×${p.count}`));
@@ -1725,8 +1748,10 @@ function componentScreens() {
 function sheetScreen(x, live) {
   const part = partById.get(x.pc.userData.part);
   const doc = subDocOf(part.id, x.sub);
-  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}`, `${String(part.n).padStart(2, '0')}·S`, 'Sub-part', live ? 'Preview' : 'Pinned');
+  // The bar names the sub-part, so a sheet folded to its bar still says what it is.
+  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}`, `${String(part.n).padStart(2, '0')}·S`, x.sub, live ? 'Preview' : 'Pinned');
   sc.classList.toggle('live', live);
+  sc.firstChild.title = `${x.sub}. Drag to move${live ? ', drop to keep' : ''}`;
   const btn = el('button');
   btn.type = 'button';
   if (live) {
@@ -1741,6 +1766,7 @@ function sheetScreen(x, live) {
     btn.addEventListener('click', () => unpinSheet(x));
   }
   sc.firstChild.append(btn);
+  if (live && !coarse && !phoneHud()) sc.append(el('p', 'keep', 'Click the part to keep this sheet, or drag it out.'));
   sc.append(el('h4', null, doc?.title || x.sub));
   sc.append(el('div', 'from', [part.name, doc && doc.title !== x.sub ? x.sub : null, x.pc.userData.label !== part.name ? x.pc.userData.label : null].filter(Boolean).join(' · ')));
   if (doc?.material) { const m = el('p', 'mat'); m.append(el('b', null, 'Material: '), doc.material); sc.append(m); }
@@ -1757,14 +1783,18 @@ function sheetScreen(x, live) {
   sc.addEventListener('mouseleave', () => { if (state.hotSheet === x) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); if (live) setLive(null); });
   return sc;
 }
-// Where a screen goes the first time: the component on the left under the inspect bar, its structure below it, a
-// preview beside the pointer (or on the right), a pinned sheet where its preview was. After a drag it stays put.
+const hudTop = () => { const bar = $('isobar'); return Math.max(56, bar.offsetTop + bar.offsetHeight + 12); };
+const inColumn = (key) => sheetColumn() && (key === 'live' || key.startsWith('pin|')) && !HUD.pos.has(key);
+// Where a screen goes the first time: the component on the left under the inspect bar, its structure below it, and the
+// sheets in the column on the right (see layoutColumn). After a drag it stays put. A view too narrow for the column
+// puts a preview beside the pointer and cascades the pinned sheets down the right edge.
 function placeScreen(sc) {
   if (phoneHud()) { sc.style.left = sc.style.top = ''; return; }
   const key = sc.dataset.key;
+  if (inColumn(key)) return;
+  sc.classList.remove('folded');
   const w = sc.offsetWidth, h = sc.offsetHeight;
-  const bar = $('isobar');
-  const top = Math.max(56, bar.offsetTop + bar.offsetHeight + 12);
+  const top = hudTop();
   let p = HUD.pos.get(key);
   if (!p) {
     if (key === 'comp') p = { x: 12, y: top };
@@ -1779,6 +1809,35 @@ function placeScreen(sc) {
   }
   sc.style.left = `${clamp(p.x, 4, Math.max(4, width - w - 4))}px`;
   sc.style.top = `${clamp(p.y, 4, Math.max(4, height - Math.min(h, height - 8) - 4))}px`;
+}
+// The sheets in the column stack top-down: pinned ones in the order they were pinned, the preview last. When they do
+// not all fit, the oldest fold to their top bar, sparing the preview and the sheet last opened from its title.
+const SHEET_GAP = 8;
+function layoutColumn() {
+  if (!sheetColumn()) return;
+  const keys = [...state.pins.map(sheetKey), 'live'].filter((k) => HUD.els.has(k) && inColumn(k));
+  const els = keys.map((k) => HUD.els.get(k));
+  const hs = [], fs = [];
+  for (const sc of els) {
+    sc.style.maxHeight = '';
+    sc.classList.add('folded'); fs.push(sc.offsetHeight);
+    sc.classList.remove('folded'); hs.push(sc.offsetHeight);
+  }
+  const open = els.map(() => true);
+  const top = hudTop();
+  const room = height - top - 8;
+  const used = () => els.reduce((s, _, i) => s + (open[i] ? hs[i] : fs[i]) + SHEET_GAP, -SHEET_GAP);
+  for (let i = 0; i < els.length && used() > room; i++) if (keys[i] !== 'live' && keys[i] !== HUD.unfold) open[i] = false;
+  let y = top;
+  els.forEach((sc, i) => {
+    sc.classList.toggle('folded', !open[i]);
+    sc.style.left = `${width - SCREEN_W - 12}px`;
+    sc.style.top = `${y}px`;
+    // A sheet that still does not fit scrolls inside the room that is left.
+    const left = Math.max(3 * fs[i], height - y - 8);
+    if (open[i] && hs[i] > left) sc.style.maxHeight = `${left}px`;
+    y += (open[i] ? Math.min(hs[i], left) : fs[i]) + SHEET_GAP;
+  });
 }
 // Screens are kept by key and rebuilt only when their content changes, so one being dragged is never replaced.
 function renderHud() {
@@ -1814,8 +1873,10 @@ function renderHud() {
   }
   for (const [key, sc] of HUD.els) if (!keep.has(key)) { sc.remove(); HUD.els.delete(key); }
   for (const sc of HUD.els.values()) placeScreen(sc);
+  layoutColumn();
 }
-// Drag a screen by its top bar; a click anywhere on one brings it to the front.
+// Drag a screen by its top bar; a click anywhere on one brings it to the front. A sheet dragged out of the column stays
+// where it is dropped, and a preview dropped anywhere is kept. A click on a folded bar opens that sheet.
 hud.addEventListener('pointerdown', (e) => {
   const sc = e.target.closest('.screen');
   if (!sc) return;
@@ -1826,7 +1887,10 @@ hud.addEventListener('pointerdown', (e) => {
   bar.setPointerCapture(e.pointerId);
   sc.classList.add('dragging');
   const start = { x: sc.offsetLeft, y: sc.offsetTop, cx: e.clientX, cy: e.clientY };
+  let moved = false;
   const move = (ev) => {
+    if (!moved && Math.abs(ev.clientX - start.cx) + Math.abs(ev.clientY - start.cy) < 4) return;
+    if (!moved) { moved = true; sc.classList.remove('folded'); sc.style.maxHeight = ''; }
     const x = clamp(start.x + ev.clientX - start.cx, 4, width - sc.offsetWidth - 4);
     const y = clamp(start.y + ev.clientY - start.cy, 4, height - 36);
     sc.style.left = `${x}px`;
@@ -1838,6 +1902,13 @@ hud.addEventListener('pointerdown', (e) => {
     bar.removeEventListener('pointerup', up);
     bar.removeEventListener('pointercancel', up);
     sc.classList.remove('dragging');
+    const key = sc.dataset.key;
+    if (!moved) {
+      if (sc.classList.contains('folded')) { HUD.unfold = key; layoutColumn(); }
+      return;
+    }
+    if (key === 'live' && state.live) pinSheet(state.live.pc, state.live.sub);
+    else layoutColumn();
   };
   bar.addEventListener('pointermove', move);
   bar.addEventListener('pointerup', up);
@@ -1963,16 +2034,30 @@ $('tPart').addEventListener('click', () => setTab('part'));
 $('tSources').addEventListener('click', () => setTab('sources'));
 $('tHelp').addEventListener('click', () => setTab('help'));
 
+// A row's tag: a source id when the number is published, otherwise how it was arrived at. `std` follows from the CF
+// standard (S9) but the SPM1's own part is not published, so it opens S9 like a source does.
+const TAGS = {
+  photo: 'scaled from the webinar photos',
+  std: 'CF standard; the SPM1’s own part is not published',
+  derived: 'worked out from tagged numbers',
+  assumed: 'not published; picked for the drawing',
+};
+const tagTitle = (k) => TAGS[k].charAt(0).toUpperCase() + TAGS[k].slice(1);
+function showSource(id) {
+  if (!panels.insp) setPanel('insp', true);
+  setTab('sources');
+  requestAnimationFrame(() => { const li = document.getElementById(`src-${id}`); li?.scrollIntoView({ block: 'center' }); li?.classList.remove('flash'); void li?.offsetWidth; li?.classList.add('flash'); });
+}
 function refButton(id) {
-  if (!id || id === 'photo') {
-    const s = el('span', `ref ${id ? 'photo' : 'derived'}`, id ? 'photo' : 'derived');
-    s.title = id ? 'Estimated from the webinar photos' : 'Worked out from published numbers';
+  if (!id || (id in TAGS && id !== 'std')) {
+    const s = el('span', `ref ${id || 'none'}`, id || 'no source');
+    s.title = id ? tagTitle(id) : 'No source';
     return s;
   }
-  const b = el('button', 'ref', id);
+  const b = el('button', `ref ${id === 'std' ? 'std' : ''}`, id);
   b.type = 'button';
-  b.title = srcById.get(id)?.title || id;
-  b.addEventListener('click', () => { if (!panels.insp) setPanel('insp', true); setTab('sources'); requestAnimationFrame(() => { const li = document.getElementById(`src-${id}`); li?.scrollIntoView({ block: 'center' }); li?.classList.remove('flash'); void li?.offsetWidth; li?.classList.add('flash'); }); });
+  b.title = id === 'std' ? `${TAGS.std} (S9)` : srcById.get(id)?.title || id;
+  b.addEventListener('click', () => showSource(id === 'std' ? 'S9' : id));
   return b;
 }
 function action(label, fn, primary) {
@@ -2094,13 +2179,13 @@ function renderOverview(box) {
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
-    'While inspecting, the part is described on screens beside it. Point at a sub-part to preview its technical sheet (material, dimensions and sources); the pin keeps it open. Drag any screen by its top bar. The arrows by “All” step through the pieces of a part one at a time. Drag the edge of either side panel to size it, or fold it away to give the screens room.',
+    'While inspecting, the part is described on screens beside it. Point at a sub-part to preview its technical sheet (material, dimensions and sources); click the sub-part to keep it open, and click again to close it. Drag any screen by its top bar. The arrows by “All” step through the pieces of a part one at a time. Drag the edge of either side panel to size it, or fold it away to give the screens room.',
     'The coloured dot next to each part says how far to trust its drawn shape and position.',
   ]) box.append(el('p', null, s));
 }
 function renderSources(box) {
   box.append(el('div', 'eyebrow', 'Where the numbers come from'));
-  box.append(el('p', null, 'Every row in a part’s specification names one of these. “photo” means it was estimated from the webinar photos, “derived” that it was worked out from published numbers.'));
+  box.append(el('p', null, 'A row that names one of these is published there. Otherwise its tag says how it was arrived at: “photo” scaled from the webinar photos, “std” the CF standard (S9) where the SPM1’s own part is not published, “derived” worked out from tagged numbers, “assumed” not published and picked for the drawing.'));
   const ul = el('ul', 'srclist');
   for (const s of DOCS.SOURCES) {
     const li = el('li');
@@ -2392,9 +2477,18 @@ function endPointer(e) {
     const id = pc?.userData.part || null;
     if (!iso.part) select(id && id === state.select ? null : id);
     else {
+      // With a pointer, a click on a sub-part keeps its sheet and a second click closes it. The pins before each of
+      // the last two clicks are saved, so a double-click can put them back (see dblclick). A tap only previews.
       const m = pickMesh(ndcOf(e));
-      if (m && m.userData.sub) setLive({ pc: m.userData.piece, sub: m.userData.sub, at: pointAt(e) }, true);
-      else setLive(null, true);
+      const x = m && m.userData.sub ? { pc: m.userData.piece, sub: m.userData.sub } : null;
+      if (coarse || phoneHud()) setLive(x && { ...x, at: pointAt(e) }, true);
+      else {
+        HUD.undo = [...HUD.undo, state.pins.slice()].slice(-2);
+        const pinned = x && state.pins.find((y) => sameSheet(x, y));
+        if (pinned) unpinSheet(pinned);
+        else if (x) pinSheet(x.pc, x.sub);
+        else setLive(null, true);
+      }
     }
   }
   if (pointers.size === 0) { drag = null; stage.classList.remove('dragging'); }
@@ -2405,6 +2499,15 @@ stage.addEventListener('pointercancel', endPointer);
 stage.addEventListener('pointerleave', () => { if (!drag) { hoverPending = null; setHover(null); } });
 stage.addEventListener('contextmenu', (e) => e.preventDefault());
 stage.addEventListener('dblclick', (e) => {
+  // The two clicks of a double-click each pinned or closed a sheet; put the pins back as they were before the first.
+  if (iso.part && HUD.undo.length === 2) {
+    const before = HUD.undo[0].filter((x) => x.pc.userData.part === iso.part);
+    for (const x of state.pins) if (!before.includes(x)) HUD.pos.delete(sheetKey(x));
+    state.pins = before;
+    renderHud();
+    refreshLit();
+  }
+  HUD.undo = [];
   const pc = pick(ndcOf(e));
   if (!pc) return resetView();
   if (iso.part) focusPiece(pc);

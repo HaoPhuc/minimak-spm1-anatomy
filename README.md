@@ -51,13 +51,22 @@ Double-click a part, or press **Inspect on its own**. The rest of the machine fa
 
 While inspecting, the part is described on screens floating in the view, after the displays around Tony Stark's holograms. Drag any screen by its top bar to put it where you like; it stays there. **Screens** in the inspect bar, or `S`, turns them off and on.
 
-- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part there to preview its sheet, or a connected part to inspect that instead. They start on the left, and the camera frames the part to their right. With the inspector open beside a narrow view, it already shows the same, so these two appear once the inspector is folded or the view is wide.
-- **Previews.** Point at a sub-part and its technical sheet appears beside the pointer, on a screen with a dashed edge. It follows the pointer to the next sub-part after a moment, and lingers a little after the pointer leaves, long enough to reach it. A click shows it at once and never pins it.
-- **Pinned sheets.** Only the pin on a preview keeps a sheet. It stays where the preview was, until you close it with ×. Pointing at a pinned sub-part in the model lights its sheet.
+- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part there to preview its sheet, or a connected part to inspect that instead. They start on the left. With the inspector open beside a narrow view, it already shows the same, so these two appear once the inspector is folded or the view is wide.
+- **The sheet column.** Sub-part sheets stack in a column on the right. The camera frames the part in the room between the screens, and the column is kept free even when it is empty, so a preview opening never moves the camera and never covers the part. Pinning or closing a sheet doesn't move it either. When the sheets don't all fit, the oldest fold to their top bar, which names the sub-part. Click a folded bar to open it; the next oldest folds instead.
+- **Previews.** Point at a sub-part and its technical sheet appears at the bottom of the column, on a screen with a dashed edge. It follows the pointer to the next sub-part after a moment, and lingers a little after the pointer leaves, long enough to reach it.
+- **Keeping a sheet.** Click the sub-part in the model and its sheet stays; click it again to close it. A double-click still zooms to the piece and leaves your sheets as they were. You can also drag a preview by its bar and drop it anywhere: it stays where you dropped it. The pin on a preview does the same as a click. Pointing at a kept sub-part in the model lights its sheet. A sheet dragged out of the column stays where you put it.
+- **Narrow views.** Below 640 px there is no column: a preview opens beside the pointer, and kept sheets cascade down the right edge.
 - **Linking.** Hovering a screen lights its sub-part in the model. There are no arrows to follow as you turn.
 - **On a phone** a tap previews a sub-part, and the sheet docks under the model.
 
-A sheet gives the material, the dimensions and notes, with a source tag on every row.
+A sheet gives the material, the dimensions and notes, with a tag on every row. A source id (S1–S10) means the number is published there; a click opens the source. The other tags say how a number was arrived at, and a key under each table explains the ones it uses:
+
+- **photo**: scaled from the webinar photos.
+- **std**: follows from the CF standard (S9), but the SPM1's own part is not published. Bolt and nut threads are tagged this way. A click opens S9.
+- **derived**: worked out from tagged numbers (vessel volume, field on axis, cable per coil, bolt grip).
+- **assumed**: not published, picked for the drawing (outer PF radius, KF40 reducer outlet, probe placement, TF winding layout).
+
+The component screen's bar shows the part's basis as "Shape: Spec / Photo / Assumed". That is how far to trust its drawn shape and position, not the numbers in its rows.
 
 - **Vacuum hardware** is drawn to the standard and documented from it:
   - ConFlat flanges, port tubes and copper gaskets for DN40, DN63, DN100 and DN160 come from the MBE-Komponenten table: OD, thickness, bolt circle, holes, knife edge and seal recess.
@@ -115,6 +124,6 @@ Every part has a basis, shown as the dot in the tree:
 - **Photo** (half dot): scaled or placed from the webinar photos. The joints sit on the diagonals, clamped to four aluminium corner posts. The TF formers have fold-out copper tabs. The PF1/PF2 windings and leads are on a white central former. The satellite coils are hose-wound rings. The gauge and gas stack is on top of the back quarter. The table is a Thorlabs Nexus. The control drawer, the coil-supply chassis and the pump are under the table.
 - **Assumed** (ring): placed where plausible. These are the outer PF coils (PF3, PF4), the solenoid's position, the HV supply, the gas valve, the Langmuir probe, the webcam and the spectrometer.
 
-The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) are drawn to the MBE-Komponenten CF table (S9) and match the bolt counts in the photos. The vessel is drawn as a 154 × 2 mm DN160CF tube, so its 150 mm bore gives the published 75 mm minor radius. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived".
+The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) are drawn to the MBE-Komponenten CF table (S9) and match the bolt counts in the photos. The vessel is drawn as a 154 × 2 mm DN160CF tube, so its 150 mm bore gives the published 75 mm minor radius. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived", and numbers picked for the drawing are marked "assumed".
 
 To correct the model at the kickoff, change `D` at the top of `device.js` and the `basis` and spec rows in `parts.js`.
