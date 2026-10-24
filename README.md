@@ -38,7 +38,7 @@ Double-click a part, or press **Inspect on its own**. The rest of the machine fa
 
   Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest.
 - Pieces are named by where they sit. The gaskets are named by their joint (*Right–back joint*: joint k sits on the diagonal between two quarters). The eight joint flanges are named by their joint and the quarter they are welded to (*Right–back joint, right side*).
-- A part with several pieces (three viewports, eight TF coils) starts with all of them. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time. The other pieces fade to ghosts and the camera glides to the one you picked. Clicking **All** picks the nearest piece, or goes back to every piece. A double-click on a piece, or the pieces list in the inspector, does the same.
+- A part with several pieces (three viewports, eight TF coils) starts with all of them. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time. The other pieces fade to ghosts and the camera glides to the one you picked. Sheets you kept on other pieces stay open, dimmed, so two pieces can be compared side by side; each sheet's bar names its piece. Clicking **All** picks the nearest piece, or goes back to every piece. A double-click on a piece, or the pieces list in the inspector, does the same.
 - **Context** turns the ghost of the rest of the machine on or off.
 - **Esc** steps back one level: the Sheets menu, the preview, the last pinned sheet, then the piece, the part and the selection.
 - **Done** or **Back to assembly** reverses the inspect at the pace of an explode, so you can see where the part goes:
@@ -52,7 +52,7 @@ Double-click a part, or press **Inspect on its own**. The rest of the machine fa
 
 While inspecting, the part is described on screens floating in the view, after the displays around Tony Stark's holograms. Drag any screen by its top bar to put it where you like; it stays there. **Screens** in the inspect bar, or `S`, turns them off and on.
 
-- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part there to preview its sheet, or a connected part to inspect that instead. They start on the left. With the inspector open beside a narrow view, it already shows the same, so these two appear once the inspector is folded or the view is wide.
+- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part there to preview its sheet, or a connected part to inspect that instead. A link lands on the connected part's piece nearest the one you were looking at (from the webcam, *Viewports* opens on the left viewport); from a view of every piece it opens on every piece too. Every link goes both ways. **← name** in the inspect bar, or `Backspace`, goes back to the part and piece you came from. Each part keeps its sheets, folds and places, so going back, or inspecting it again later, brings them back. They start on the left. With the inspector open beside a narrow view, it already shows the same, so these two appear once the inspector is folded or the view is wide.
 - **The sheet column.** Sub-part sheets stack in a column on the right. The camera frames the part in the room between the screens, and the column is kept free even when it is empty, so a preview opening never moves the camera and never covers the part. Pinning or closing a sheet doesn't move it either. When the sheets don't all fit, the oldest fold to their top bar, which names the sub-part. Click a folded bar to open it; the next oldest folds instead.
 - **Previews.** Point at a sub-part and its technical sheet appears at the bottom of the column, on a screen with a dashed edge. It follows the pointer to the next sub-part after a moment, and lingers a little after the pointer leaves, long enough to reach it.
 - **Keeping a sheet.** Click the sub-part in the model and its sheet stays; click it again to close it. A double-click still zooms to the piece and leaves your sheets as they were. You can also drag a preview by its bar and drop it anywhere: it stays where you dropped it. The pin on a preview does the same as a click. Pointing at a kept sub-part in the model lights its sheet. A sheet dragged out of the column stays where you put it. If you drop it on the part, the part moves into the largest free space in the view and keeps its zoom unless it wouldn't fit there. If no free space is at least 160 px each way, the part stays put and **Sheets** flashes to suggest Tidy.
@@ -66,7 +66,7 @@ While inspecting, the part is described on screens floating in the view, after t
 - **Linking.** Hovering a screen lights its sub-part in the model. There are no arrows to follow as you turn.
 - **On a phone** a tap previews a sub-part, and the sheet docks under the model.
 
-A sheet gives the material, the dimensions and notes, with a tag on every row. A source id (S1–S10) means the number is published there; a click opens the source. The other tags say how a number was arrived at, and a key under each table explains the ones it uses:
+A sheet gives the material, the dimensions and notes, with a tag on every row. Sheets are kept per sub-part, so all pieces with that sub-part share one; the sheet says so ("same on all 8 pieces"). Where the sources do tell the pieces apart, an **On this piece** section adds it: which port carries the pump line, the laser window or an electrode. Which port carries the probe, and which viewport serves the webcam, the spectrometer or the eye, is not published, so those rows are tagged assumed. A source id (S1–S10) means the number is published there; a click opens the source. The other tags say how a number was arrived at, and a key under each table explains the ones it uses:
 
 - **photo**: scaled from the webinar photos.
 - **std**: follows from the CF standard (S9), but the SPM1's own part is not published. Bolt and nut threads are tagged this way. A click opens S9.
@@ -98,7 +98,7 @@ The animation runs at 30 frames a second while the page is idle, and stands stil
 
 ### Keys
 
-Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `,` `.` previous and next piece, `G` ghost, `S` screens, `L` tidy the screens, `F` panels, `H` hide.
+Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `,` `.` previous and next piece, `G` ghost, `S` screens, `L` tidy the screens, `Backspace` back to the previous part, `F` panels, `H` hide.
 
 ## Files
 

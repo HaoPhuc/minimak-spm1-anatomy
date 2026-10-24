@@ -164,13 +164,15 @@
     border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
     box-shadow: 0 8px 26px rgb(0 0 0 / 0.14);
   }
-  .screen.enter { animation: screen-in .32s ease-out both; }
+  .screen.enter { animation: screen-in .32s ease-out backwards; }
   @keyframes screen-in { from { opacity: 0; transform: translateY(8px); clip-path: inset(0 0 85% 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
   .screen.live { border-style: dashed; }
   .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 8px 26px rgb(0 0 0 / 0.14); }
   .screen.comp { max-height: 52%; }
   .screen.links { max-height: 36%; }
   .screen.dragging { opacity: 0.9; }
+  .screen.other { opacity: 0.62; }
+  .screen.other:hover, .screen.other.hot { opacity: 1; }
   /* A folded sheet keeps only its top bar; a click on the bar opens it again. */
   .screen.folded { padding-bottom: 6px; overflow: hidden; }
   .screen.folded > :not(.bar) { display: none; }
@@ -214,6 +216,7 @@
   .isobar button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 4px 9px; font-size: 12px; cursor: pointer; white-space: nowrap; }
   .isobar button[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
   .isobar button.done { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .isobar #bBack { max-width: 13em; overflow: hidden; text-overflow: ellipsis; }
   .isobar .step { display: inline-flex; }
   .isobar .step[hidden] { display: none; }
   .isobar .step button { border-radius: 0; margin-left: -1px; }
@@ -430,6 +433,7 @@
     <div class="corner tl">Fig 1 <span>· SPM1, Rideo Systems</span></div>
     <svg class="triad" id="triad" viewBox="-42 -42 84 84" aria-label="Orientation. Click an axis to look along it." role="group"></svg>
     <div class="isobar" id="isobar">
+      <button type="button" id="bBack" hidden title="Back to the part you came from (Backspace)"></button>
       <span class="lbl" id="isoLabel"></span>
       <span class="step" id="pieceStep" role="group" aria-label="Which piece">
         <button type="button" id="bPrev" title="Previous piece (,)" aria-label="Previous piece">‹</button>
@@ -1116,8 +1120,11 @@ function draw() {
     const g = m.userData.piece ? ease(m.userData.piece.userData.gNow) : 0;
     m.userData.dim = 1;
     m.visible = true;
+    const lit = m.userData.lit > 0;
     if (g <= 0) m.material = m.userData.colorMat;
-    else if (holo) { m.material = m.userData.colorMat; m.userData.dim = 1 - (1 - pal.ghost) * g; m.visible = !(g >= 1 && FINE.has(m.userData.tone)); }
+    else if (holo) { m.material = m.userData.colorMat; m.userData.dim = lit ? Math.max(0.6, 1 - (1 - pal.ghost) * g) : 1 - (1 - pal.ghost) * g; m.visible = lit || !(g >= 1 && FINE.has(m.userData.tone)); }
+    // A ghosted sub-part that is lit (its sheet kept or under the pointer) fills in partly, so it can still be found.
+    else if (g >= 1 && lit) { m.material = GHOST_FADE; m.userData.solid = 0.55; }
     else if (g >= 1) { m.material = GHOST; m.visible = !FINE.has(m.userData.tone); }
     else { m.material = GHOST_FADE; m.userData.solid = 1 - g; }
   }
@@ -1257,7 +1264,7 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0 }) {
 
 // ---------- State ----------
 const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
-const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null };
+const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [] };
 const hidden = new Set();
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
@@ -1372,13 +1379,16 @@ function frameIsolated(reset, glideFor = 0, delay = 0) {
   frameBox(b, iso.focus ? 1.6 : 1.3, hudInsets());
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000 + delay, dur: glideFor, from: null };
 }
-function inspect(id, focusPiece = null) {
+// Moving from one inspected part to another remembers where you came from (o.back goes the other way), and each
+// part keeps its sheets for when you come back to it.
+function inspect(id, focusPiece = null, o = {}) {
   if (!id || !partById.has(id)) return;
   const now = performance.now() / 1000;
   const slow = !reduceMotion.matches;
   if (!iso.part) iso.saved = snapshot();
   if (hidden.has(id)) hidden.delete(id);
-  if (iso.part !== id) { iso.apart = false; clearSheets(); }
+  if (iso.part && iso.part !== id && !o.back) iso.history = [...iso.history, { part: iso.part, focus: iso.focus }].slice(-20);
+  if (iso.part !== id) { iso.apart = false; clearSheets(); restoreSheets(id); }
   for (const pc of pieces) {
     pc.userData.dHold = slow && pc.userData.part === id && pc.userData.dp < 0.5 ? now + MOVE.lift : 0;
     pc.userData.gHold = 0;
@@ -1391,9 +1401,9 @@ function inspect(id, focusPiece = null) {
   touched = true;
   refreshPieces();
   applyClip();
+  updateIsoBar(); // the bar (back button, piece step) settles before the screens measure where it ends
   renderHud();
   frameIsolated(!focusPiece, MOVE.fly, MOVE.lift);
-  updateIsoBar();
   renderInspector();
 }
 // Back to the assembly at the pace of an explode, in the reverse order: the sub-parts go back together, then the part
@@ -1413,6 +1423,7 @@ function endInspect() {
   iso.part = null;
   iso.focus = null;
   iso.apart = false;
+  iso.history = [];
   renderHud();
   refreshPieces();
   applyClip();
@@ -1459,6 +1470,9 @@ function updateIsoBar() {
   lbl.replaceChildren(el('b', null, iso.focus ? iso.focus.userData.label : p.name), p.count > 1 && !iso.focus ? ` ×${p.count}` : '');
   lbl.title = `Inspecting ${lbl.textContent}`;
   $('pieceStep').hidden = list.length < 2;
+  const back = iso.history.at(-1);
+  $('bBack').hidden = !back;
+  if (back) $('bBack').textContent = `← ${back.focus ? back.focus.userData.label : partById.get(back.part).name}`;
   $('bAll').textContent = iso.focus ? `${list.indexOf(iso.focus) + 1} / ${list.length}` : `All ${list.length}`;
   $('bAll').title = iso.focus ? 'Back to every piece (Esc)' : 'Every piece is shown: click for the nearest one, or step through them with the arrows';
   $('bApart').setAttribute('aria-pressed', iso.apart ? 'true' : 'false');
@@ -1469,6 +1483,7 @@ function updateIsoBar() {
   $('bApart').disabled = iso.part === 'plasma';
 }
 $('bDone').addEventListener('click', endInspect);
+$('bBack').addEventListener('click', goBack);
 $('bAll').addEventListener('click', () => setFocus(iso.focus ? null : nearestPiece(piecesOf.get(iso.part) || [])));
 $('bPrev').addEventListener('click', () => stepPiece(-1));
 $('bNext').addEventListener('click', () => stepPiece(1));
@@ -1571,7 +1586,7 @@ for (const g of document.querySelectorAll('.grip')) {
 // previews its technical sheet in the column on the right; a click on the sub-part, the pin, or dropping the dragged
 // preview keeps it. Every screen moves by dragging its top bar, and hovering one lights its part in the model.
 const hud = $('hud');
-const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [], folded: new Set(), opened: null, justOpened: null, flashTimer: 0 };
+const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [], folded: new Set(), opened: null, justOpened: null, flashTimer: 0, kept: new Map() };
 const PIN = '<svg viewBox="0 0 16 16"><path d="M5.5 1.5h5l-.7 4.3 2.7 2.4v1.3h-9V8.2l2.7-2.4zM8 9.5v5"/></svg>';
 const BASIS_SHORT = { spec: 'Spec', photo: 'Photo', assumed: 'Assumed' };
 const SCREEN_W = 280;
@@ -1657,17 +1672,52 @@ function unpinSheet(x) {
   dirty = true;
 }
 function clearSheets() {
+  if (iso.part) {
+    const keys = state.pins.map(sheetKey);
+    if (keys.length) HUD.kept.set(iso.part, { pins: state.pins.slice(), folded: keys.filter((k) => HUD.folded.has(k)), pos: keys.filter((k) => HUD.pos.has(k)).map((k) => [k, HUD.pos.get(k)]) });
+    else HUD.kept.delete(iso.part);
+  }
   for (const x of state.pins) { HUD.pos.delete(sheetKey(x)); HUD.folded.delete(sheetKey(x)); }
   state.pins = [];
   state.live = null;
   state.hotSheet = null;
   clearTimeout(HUD.liveTimer);
 }
-// Sheets of pieces now ghosted go, the preview too.
+function restoreSheets(id) {
+  const k = HUD.kept.get(id);
+  if (!k) return;
+  HUD.kept.delete(id);
+  state.pins = k.pins.slice();
+  for (const key of k.folded) HUD.folded.add(key);
+  for (const [key, p] of k.pos) HUD.pos.set(key, p);
+}
+// Back to the part you came from, with the piece you had and its sheets.
+function goBack() {
+  const h = iso.history.at(-1);
+  if (!h) return;
+  iso.history = iso.history.slice(0, -1);
+  inspect(h.part, h.focus, { back: true });
+}
+// A "connects to" link: while inspecting, inspect that part at its piece nearest the one in view (with every piece
+// shown there is no one piece to be near, so it opens on every piece too); otherwise read it.
+function followLink(id) {
+  if (!iso.part) return select(id);
+  const list = piecesOf.get(id) || [];
+  let pc = null;
+  const one = iso.focus || (piecesOf.get(iso.part) || []).length === 1;
+  if (list.length > 1 && one) {
+    const ref = (iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part)).getCenter(new V3());
+    const d = (x) => boxOfPiece(x).getCenter(new V3()).distanceTo(ref);
+    pc = list.reduce((a, b) => (d(b) < d(a) ? b : a));
+  }
+  inspect(id, pc);
+  if (tab !== 'part') setTab('part');
+  document.querySelector(`.ti[data-part="${id}"]`)?.scrollIntoView({ block: 'nearest' });
+}
+// Focusing one piece keeps the sheets of the others (dimmed), so two pieces can be compared; only the preview of a
+// piece now ghosted goes.
 function keepSheetsOnFocus() {
   if (!iso.focus) return;
-  for (const x of state.pins) if (x.pc !== iso.focus) { HUD.pos.delete(sheetKey(x)); HUD.folded.delete(sheetKey(x)); }
-  state.pins = state.pins.filter((x) => x.pc === iso.focus);
   if (state.live && state.live.pc !== iso.focus) state.live = null;
 }
 // The preview waits a moment before it follows the pointer to another sub-part and lingers after the pointer leaves,
@@ -1733,7 +1783,7 @@ function subsList(p) {
   const n = iso.part === p.id && iso.focus ? 1 : (piecesOf.get(p.id) || []).length;
   for (const [name, count] of subs) {
     const li = el('li');
-    const b = el('button', state.pins.some((x) => x.sub === name && x.pc.userData.part === p.id) ? 'on' : null);
+    const b = el('button', state.pins.some((x) => x.sub === name && (iso.part === p.id && iso.focus ? x.pc === iso.focus : x.pc.userData.part === p.id)) ? 'on' : null);
     b.type = 'button';
     b.title = 'Show its technical sheet';
     b.append(el('span', null, name));
@@ -1758,6 +1808,8 @@ function componentScreens() {
   a.append(h);
   if (iso.focus) a.append(el('div', 'from', `${p.name} · piece ${list.indexOf(iso.focus) + 1} of ${list.length}`));
   a.append(el('p', null, p.what), el('h5', null, 'Specification'), specTable(p.specs));
+  const own = iso.focus && p.pieces?.[iso.focus.userData.label];
+  if (own) a.append(el('h5', null, 'On this piece'), specTable(own));
   const b = screen('links', sig, 'Structure', null, iso.apart ? 'Apart' : 'Assembled');
   b.classList.add('links');
   const ul = subsList(p);
@@ -1770,7 +1822,7 @@ function componentScreens() {
       const c = el('button', 'chip', q.name);
       c.type = 'button';
       c.title = `Inspect the ${q.name.toLowerCase()}`;
-      c.addEventListener('click', () => select(id));
+      c.addEventListener('click', () => followLink(id));
       cc.append(c);
     }
     b.append(el('h5', null, 'Connects to'), cc);
@@ -1781,10 +1833,15 @@ function componentScreens() {
 function sheetScreen(x, live) {
   const part = partById.get(x.pc.userData.part);
   const doc = subDocOf(part.id, x.sub);
-  // The bar names the sub-part, so a sheet folded to its bar still says what it is.
-  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}`, `${String(part.n).padStart(2, '0')}·S`, x.sub, live ? 'Preview' : 'Pinned');
+  // The bar names the sub-part, and the piece when the part has several, so a sheet folded to its bar still says what
+  // it is and two pieces' sheets read apart. A sheet of a piece other than the one in focus is dimmed, not closed.
+  const many = (piecesOf.get(part.id) || []).length > 1;
+  const name = many ? `${x.pc.userData.label} · ${x.sub}` : x.sub;
+  const other = !live && !!iso.focus && x.pc !== iso.focus;
+  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}|${other}`, `${String(part.n).padStart(2, '0')}·S`, name, live ? 'Preview' : 'Pinned');
   sc.classList.toggle('live', live);
-  sc.firstChild.title = `${x.sub}. Drag to move${live ? ', drop to keep' : ''}`;
+  sc.classList.toggle('other', other);
+  sc.firstChild.title = `${name}. Drag to move${live ? ', drop to keep' : ''}`;
   const btn = el('button');
   btn.type = 'button';
   if (live) {
@@ -1801,7 +1858,12 @@ function sheetScreen(x, live) {
   sc.firstChild.append(btn);
   if (live && !coarse && !phoneHud()) sc.append(el('p', 'keep', 'Click the part to keep this sheet, or drag it out.'));
   sc.append(el('h4', null, doc?.title || x.sub));
-  sc.append(el('div', 'from', [part.name, doc && doc.title !== x.sub ? x.sub : null, x.pc.userData.label !== part.name ? x.pc.userData.label : null].filter(Boolean).join(' · ')));
+  // Sheets are kept per sub-part, so every piece that has this sub-part shows the same sheet: say so, and add what the
+  // sources do tell apart for this piece.
+  const n = subsOf(part.id).get(x.sub) || 1, total = (piecesOf.get(part.id) || []).length || 1;
+  sc.append(el('div', 'from', [part.name, doc && doc.title !== x.sub ? x.sub : null, x.pc.userData.label !== part.name ? x.pc.userData.label : null, n > 1 ? (n === total ? `same on all ${n} pieces` : `same on these ${n} of ${total} pieces`) : null].filter(Boolean).join(' · ')));
+  const own = part.pieces?.[x.pc.userData.label];
+  if (own) sc.append(el('h5', null, 'On this piece'), specTable(own));
   if (doc?.material) { const m = el('p', 'mat'); m.append(el('b', null, 'Material: '), doc.material); sc.append(m); }
   if (doc?.rows.length) sc.append(specTable(doc.rows));
   if (doc?.note) sc.append(el('p', 'note', doc.note));
@@ -1883,7 +1945,7 @@ function renderHud() {
   const list = [];
   if (show) {
     if (compShown()) list.push(...componentScreens());
-    if (phone) { if (state.live) list.push(sheetScreen(state.live, true)); else if (state.pins.length) list.push(sheetScreen(state.pins[state.pins.length - 1], false)); }
+    if (phone) { if (state.live) list.push(sheetScreen(state.live, true)); else { const x = state.pins.filter((y) => !iso.focus || y.pc === iso.focus).at(-1); if (x) list.push(sheetScreen(x, false)); } }
     else {
       for (const x of state.pins) list.push(sheetScreen(x, false));
       if (state.live) list.push(sheetScreen(state.live, true));
@@ -2334,6 +2396,8 @@ function renderInspector() {
   const subs = subsList(p);
   if (subs) box.append(el('h3', null, iso.part === p.id && iso.apart ? 'Taken apart into' : 'Made of'), subs);
   box.append(el('h3', null, 'Specification'), specTable(p.specs));
+  const own = iso.part === p.id && iso.focus && p.pieces?.[iso.focus.userData.label];
+  if (own) box.append(el('h3', null, `On this piece: ${iso.focus.userData.label}`), specTable(own));
   // A part made of one sub-part (a gasket) shows that sheet's numbers here, so they need no second click.
   const only = [...subsOf(p.id).keys()];
   const doc = only.length === 1 ? subDocOf(p.id, only[0]) : null;
@@ -2346,7 +2410,7 @@ function renderInspector() {
       if (!q) continue;
       const b = el('button', 'chip', q.name);
       b.type = 'button';
-      b.addEventListener('click', () => select(id));
+      b.addEventListener('click', () => followLink(id));
       b.addEventListener('mouseenter', () => { state.legendHot = id; refreshLit(); });
       b.addEventListener('mouseleave', () => { state.legendHot = null; refreshLit(); });
       cc.append(b);
@@ -2454,6 +2518,7 @@ function renderHelp(box) {
       ['Drag a screen’s top bar', 'move the screen; dropped on the part, the part moves into free space'],
       ['Double-click a screen’s top bar', 'fold it; a click opens it again'],
       ['Hover a screen', 'light its part in the model'],
+      ['Click a connected part', 'inspect it at the piece nearest this one; ← in the inspect bar goes back'],
       ['Drag a panel’s edge', 'size the panel; double-click the edge for the default'],
       ['Double-click empty space', 'reset the view'],
     ]],
@@ -2480,6 +2545,7 @@ function renderHelp(box) {
       ['G', 'ghost context on or off'],
       ['S', 'information screens on or off'],
       ['L', 'tidy the screens: sheets back in one column, all open'],
+      ['Backspace', 'back to the part you came from by a link'],
       ['F', 'fold or unfold the side panels'],
       ['H', 'hide the selected part'],
       ['Esc', 'step back: the Sheets menu, the preview, the last pinned sheet, one piece, the part, then the selection'],
@@ -2809,6 +2875,7 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'h' && state.select) { setHidden([state.select], !hidden.has(state.select)); renderInspector(); }
   else if (k === 's' && iso.part) setScreens(!HUD.on);
   else if (k === 'l' && iso.part) tidySheets();
+  else if (k === 'backspace' && iso.history.length) goBack();
   else if (k === 'f') togglePanels();
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
   else if (k === 'escape') {
