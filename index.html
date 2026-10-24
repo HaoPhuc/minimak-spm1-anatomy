@@ -20,35 +20,22 @@
     --assumed: #8a8882;
     color-scheme: light;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --paper: #111110;
-      --card: #191917;
-      --ink: #ebe9e1;
-      --muted: #9c9a91;
-      --rule: #34332e;
-      --soft: #22211e;
-      --chip: #2a2925;
-      --accent: #3fcfc3;
-      --spec: #5fd3a8;
-      --photo: #e9b44c;
-      --assumed: #9c9a91;
-      color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
-    --paper: #111110;
-    --card: #191917;
-    --ink: #ebe9e1;
-    --muted: #9c9a91;
-    --rule: #34332e;
-    --soft: #22211e;
-    --chip: #2a2925;
-    --accent: #3fcfc3;
-    --spec: #5fd3a8;
-    --photo: #e9b44c;
-    --assumed: #9c9a91;
+  /* The dark theme is a hologram. The class is set before first paint (script below) and by applyTheme. */
+  :root.holo {
+    --paper: #02070c;
+    --card: #04121c;
+    --ink: #c8f5ff;
+    --muted: #5f98ab;
+    --rule: #123a4b;
+    --soft: #08202d;
+    --chip: #0c2b3b;
+    --accent: #00d5ff;
+    --spec: #3cf0b4;
+    --photo: #ffb54d;
+    --assumed: #5f98ab;
+    --glow: rgb(0 213 255 / 0.5);
     color-scheme: dark;
+    scrollbar-color: #164556 transparent;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -260,7 +247,60 @@
     .corner.bl { max-width: 52%; }
     .corner.bl .hint { display: none; }
   }
+
+  /* ---------- Hologram: glass panels on a dark grid, cyan rules and corner brackets, glowing pressed states ---------- */
+  .holo body {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 30%, rgb(0 150 210 / 0.14), transparent 70%),
+      linear-gradient(rgb(0 213 255 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgb(0 213 255 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--paper);
+  }
+  .holo .panel, .holo .view, .holo .mb, .holo .isobar {
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+    border-color: rgb(0 213 255 / 0.3);
+    box-shadow: 0 0 18px rgb(0 213 255 / 0.08), inset 0 0 28px rgb(0 213 255 / 0.05);
+  }
+  .holo .panel, .holo .view { border-radius: 4px; position: relative; }
+  .holo .mb, .holo .isobar, .holo .board { border-radius: 4px; }
+  .holo .panel::after, .holo .view::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    --c: rgb(0 213 255 / 0.95);
+    background:
+      linear-gradient(var(--c), var(--c)) left top / 14px 2px, linear-gradient(var(--c), var(--c)) left top / 2px 14px,
+      linear-gradient(var(--c), var(--c)) right top / 14px 2px, linear-gradient(var(--c), var(--c)) right top / 2px 14px,
+      linear-gradient(var(--c), var(--c)) left bottom / 14px 2px, linear-gradient(var(--c), var(--c)) left bottom / 2px 14px,
+      linear-gradient(var(--c), var(--c)) right bottom / 14px 2px, linear-gradient(var(--c), var(--c)) right bottom / 2px 14px;
+    background-repeat: no-repeat;
+  }
+  .holo .brand b, .holo .doc h2, .holo .board h4 { color: #e6fbff; text-shadow: 0 0 10px var(--glow); }
+  .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
+  .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
+  .holo .scale i { border-color: var(--accent); }
+  .holo .mb button[aria-pressed="true"], .holo .isobar button[aria-pressed="true"], .holo .isobar button.done,
+  .holo .actions button.primary, .holo .pieces button.on {
+    background: rgb(0 213 255 / 0.16); color: #e6fbff; border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgb(0 213 255 / 0.6), 0 0 12px rgb(0 213 255 / 0.3);
+  }
+  .holo .ti.sel { background: rgb(0 213 255 / 0.14); box-shadow: inset 2px 0 0 var(--accent); }
+  .holo .tabs button[aria-selected="true"] { background: rgb(0 213 255 / 0.14); color: #e6fbff; box-shadow: inset 0 -2px 0 var(--accent); }
+  .holo .know { border-left-color: var(--accent); }
+  .holo .tip { background: rgb(4 30 44 / 0.88); color: var(--ink); border: 1px solid rgb(0 213 255 / 0.6); box-shadow: 0 0 12px rgb(0 213 255 / 0.25); }
+  .holo .board {
+    background: rgb(3 22 34 / 0.62);
+    border-color: rgb(0 213 255 / 0.45);
+    box-shadow: 0 0 26px rgb(0 213 255 / 0.16), inset 0 0 26px rgb(0 213 255 / 0.07);
+  }
+  .holo .leader { filter: drop-shadow(0 0 3px var(--accent)); }
+  .holo .triad .ring { fill: rgb(4 18 28 / 0.7); stroke: rgb(0 213 255 / 0.35); }
 </style>
+<script>
+  // Pick the hologram before first paint, so a dark-theme viewer never sees the light page flash.
+  try {
+    const t = localStorage.getItem('spm1-theme');
+    if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('holo');
+  } catch { if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('holo'); }
+</script>
 <script type="importmap">
   { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
 </script>
@@ -380,18 +420,22 @@ const TONES = {
   cable: '#86b4d4', white: '#efeee9', bronze: '#c79f70', gaugeblue: '#3c77c2', tapeline: '#a8714a', yellowtag: '#e4bd3d',
   grey: '#a3a5a1', pcb: '#3f7a52', hvlcd: '#3a2f2f',
 };
+// The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
+// `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 const THEME = {
   light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  dark: { paper: '#191917', cut: '#2b2a25', ink: '#e7e5dc', lit: '#3fd6c9', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.78, ghost: 0.08, glass: 0.34 },
+  dark: { paper: '#000000', cut: '#000000', ink: '#9ff4ff', lit: '#ffffff', shadow: 1, shadowInk: '#00b8e6', inkAlpha: 0.85, ghost: 0.14, glass: 0.3 },
 };
+// Hologram tints, after the cyan of YasirAwan4831/holographic-shader-visualizer-three.Js: structure in cyan,
+// copper and other warm parts in amber, each as bright as its light-theme colour.
+const HOLO_COOL = new THREE.Color('#00d5ff'), HOLO_WARM = new THREE.Color('#ffa040');
+const WARM = new Set(['copper', 'brass', 'bronze', 'tapeline', 'yellow', 'yellowtag', 'oil', 'red', 'pink']);
+let holo = false;
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
-  if (theme === 'dark') {
-    c.multiplyScalar(0.6);
-    const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
-    if (l < 0.13) c.lerp(new THREE.Color('#2e2e2c'), 0.5);
-  }
-  return c;
+  if (theme !== 'dark') return c;
+  const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  return (WARM.has(name) ? HOLO_WARM : HOLO_COOL).clone().multiplyScalar(0.45 + 0.7 * l);
 }
 
 // ---------- Renderer ----------
@@ -421,6 +465,12 @@ const shared = {
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
   uGlass: { value: 0.28 },
+  // Hologram: the nearest surface's depth, the target size, time, scan-line density (per cm) and the sweep's height.
+  tFront: { value: null },
+  uRes: { value: new THREE.Vector2(1, 1) },
+  uTime: { value: 0 },
+  uScan: { value: 0.6 },
+  uSweep: { value: -200 },
   // Port openings in the vessel wall (filled once the machine is built): axis + radius, base + length.
   uHoleA: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
   uHoleP: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
@@ -449,6 +499,7 @@ const VERT = /* glsl */`
   varying vec3 vNv;
   varying vec3 vNw;
   varying vec3 vObj;
+  varying vec3 vWp;
   void main() {
     vObj = position;
     vec4 p = vec4(position, 1.0);
@@ -457,6 +508,7 @@ const VERT = /* glsl */`
       p = instanceMatrix * p;
       n = mat3(instanceMatrix) * n;
     #endif
+    vWp = (modelMatrix * p).xyz;
     vec4 mvPosition = modelViewMatrix * p;
     vNv = normalize(normalMatrix * n);
     vNw = normalize(mat3(modelMatrix) * n);
@@ -516,16 +568,62 @@ const FRAG_INK = /* glsl */`
 `;
 
 // The ghost is ink at a low alpha that thickens toward silhouettes, so the context reads as an x-ray outline.
+// uSolid fills it back in with the part's own shading when the machine is put back together.
 const FRAG_GHOST = /* glsl */`
   #include <clipping_planes_pars_fragment>
   uniform vec3 uInk;
   uniform float uGhost;
+  uniform float uSolid;
+  uniform vec3 uColor;
+  uniform vec3 uLight;
   varying vec3 vNv;
   varying vec3 vNw;
   void main() {
     #include <clipping_planes_fragment>
-    float rim = 1.0 - abs(normalize(vNv).z);
-    gl_FragColor = vec4(uInk, uGhost * (0.22 + 0.78 * pow(rim, 1.6)));
+    vec3 n = normalize(vNv);
+    float rim = 1.0 - abs(n.z);
+    float a = uGhost * (0.22 + 0.78 * pow(rim, 1.6));
+    if (uSolid <= 0.0) { gl_FragColor = vec4(uInk, a); return; }
+    float w = smoothstep(-0.4, 1.0, dot(n, uLight));
+    vec3 c = uColor * (mix(0.66, 1.05, w) + 0.06 * smoothstep(0.6, 1.0, vNw.z));
+    gl_FragColor = vec4(mix(uInk, c, uSolid), mix(a, 1.0, uSolid));
+  }
+`;
+
+// The hologram: every surface adds cyan light, brightest at grazing angles, crossed by scan lines and a slow sweep.
+// Surfaces behind the nearest one (tFront is the ink pass's depth) are drawn faint, so the front reads first.
+const FRAG_HOLO = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  ${HOLES}
+  uniform vec3 uColor;
+  uniform vec3 uLitColor;
+  uniform float uLit;
+  uniform vec3 uEmit;
+  uniform vec3 uLight;
+  uniform float uDim;
+  uniform sampler2D tFront;
+  uniform vec2 uRes;
+  uniform float uTime;
+  uniform float uScan;
+  uniform float uSweep;
+  varying vec3 vNv;
+  varying vec3 vWp;
+  void main() {
+    #include <clipping_planes_fragment>
+    #ifdef HOLES
+      holes();
+    #endif
+    vec3 n = normalize(vNv);
+    float rim = pow(1.0 - abs(n.z), 2.0);
+    float w = smoothstep(-0.4, 1.0, abs(dot(n, uLight)));
+    float behind = smoothstep(0.0003, 0.0015, gl_FragCoord.z - texture2D(tFront, gl_FragCoord.xy / uRes).x);
+    float band = pow(fract(vWp.z * uScan - uTime * 0.35), 3.0);
+    float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
+    vec3 c = uColor * ((0.07 + 0.05 * w + 0.6 * rim) * (0.7 + 0.3 * band) + 0.25 * sweep);
+    float lit = clamp(uLit * 1.5, 0.0, 0.75);
+    c = mix(c, uLitColor * (0.1 + 0.5 * rim), lit);
+    float vis = max(mix(1.0, 0.18, behind), lit * 0.8);
+    gl_FragColor = vec4((c * vis + uEmit) * uDim, 1.0);
   }
 `;
 
@@ -559,8 +657,9 @@ function colorMat(tone, clip) {
   const glass = tone === 'glass';
   const m = new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) },
+      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
       uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
+      tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
     },
     vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
     transparent: glass, depthWrite: !glass, clipping: true,
@@ -579,11 +678,17 @@ function inkMat(clip, holes) {
   return m;
 }
 const INK = { clip: inkMat(true), free: inkMat(false), clipHoles: inkMat(true, true), freeHoles: inkMat(false, true) };
-const GHOST = new THREE.ShaderMaterial({
-  uniforms: { uInk: shared.uInk, uGhost: shared.uGhost },
-  vertexShader: VERT, fragmentShader: FRAG_GHOST, transparent: true, depthWrite: false, side: THREE.FrontSide,
-});
-GHOST.userData.ghost = true;
+// GHOST is the x-ray; GHOST_FADE is the same turning solid again, so it writes depth and takes each mesh's colour.
+function ghostMat(fade) {
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uInk: shared.uInk, uGhost: shared.uGhost, uLight: shared.uLight, uSolid: { value: 0 }, uColor: { value: new THREE.Color() } },
+    vertexShader: VERT, fragmentShader: FRAG_GHOST, transparent: true, depthWrite: fade, side: THREE.FrontSide,
+  });
+  m.userData.ghost = true;
+  m.userData.fade = fade;
+  return m;
+}
+const GHOST = ghostMat(false), GHOST_FADE = ghostMat(true);
 
 const solids = [];
 // Small detail that only clutters the ghost of the context: holes, bolts, slots, rules, LEDs.
@@ -592,12 +697,16 @@ let nextInk = 0;
 const ZERO = new THREE.Color(0, 0, 0);
 
 function perMesh(r, s, c, g, material) {
-  if (material.userData.ghost) return;
   const u = material.uniforms;
-  if (material.userData.ink) u.uId.value = this.userData.inkId;
+  if (material.userData.ghost) {
+    if (!material.userData.fade) return;
+    u.uColor.value.copy(this.userData.colorMat.uniforms.uColor.value);
+    u.uSolid.value = this.userData.solid;
+  } else if (material.userData.ink) u.uId.value = this.userData.inkId;
   else {
     u.uLit.value = this.userData.lit;
     u.uEmit.value.copy(this.userData.emit);
+    u.uDim.value = this.userData.dim;
     // A window taken out of its flange is drawn more solid, so it reads as a part of its own.
     if (material.userData.tone === 'glass') u.uLoose.value = Math.min(1, this.position.length() / 3);
   }
@@ -607,6 +716,8 @@ function register(mesh, tone, o) {
   mesh.userData.part = o.part;
   mesh.userData.tone = tone;
   mesh.userData.lit = 0;
+  mesh.userData.dim = 1;
+  mesh.userData.solid = 0;
   mesh.userData.emit = ZERO.clone();
   mesh.userData.clip = !!o.clip;
   mesh.userData.colorMat = mesh.material;
@@ -686,6 +797,10 @@ for (const pc of pieces) {
   pc.userData.dp = 0;
   pc.userData.tp = 0;
   pc.userData.ghost = false;
+  // How ghosted it is drawn (1 x-ray, 0 solid), and when it may start home and turn solid after an inspect.
+  pc.userData.gNow = 0;
+  pc.userData.dHold = 0;
+  pc.userData.gHold = 0;
 }
 // The named sub-parts of a part (or of one piece), in build order, with how many pieces carry each.
 function subsOf(part, only) {
@@ -742,14 +857,28 @@ const glow = [[1, 5.0], [1.38, 5.0]].map(([sc, minor], i) => {
   return mesh;
 });
 
+// In the hologram the shadow becomes the projector's floor: rings every 10 cm, spokes, and a pulse running outward.
 const shadow = (() => {
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uInk: { value: new THREE.Color(0, 0, 0) }, uA: { value: 0.12 } },
+    uniforms: { uInk: { value: new THREE.Color(0, 0, 0) }, uA: { value: 0.12 }, uHolo: { value: 0 }, uTime: shared.uTime },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: /* glsl */`
-      uniform vec3 uInk; uniform float uA; varying vec2 vUv;
+      uniform vec3 uInk; uniform float uA; uniform float uHolo; uniform float uTime; varying vec2 vUv;
       void main() {
         vec2 q = (vUv - 0.5) * 2.0;
+        if (uHolo > 0.5) {
+          vec2 x = q * 120.0;
+          float d = length(x);
+          float px = fwidth(d) * 1.2;
+          float ring = 1.0 - smoothstep(0.0, px, abs(fract(d / 10.0 + 0.5) - 0.5) * 10.0);
+          float arc = abs(fract(atan(x.y, x.x) / 6.2831853 * 24.0 + 0.5) - 0.5) / 24.0 * 6.2831853 * d;
+          float spoke = (1.0 - smoothstep(0.0, px, arc)) * smoothstep(12.0, 22.0, d);
+          float fade = 1.0 - smoothstep(25.0, 105.0, d);
+          float pulse = exp(-pow(d - mod(uTime * 14.0, 130.0), 2.0) / 18.0);
+          float glow = exp(-d / 34.0);
+          gl_FragColor = vec4(uInk * (fade * (0.32 * ring + 0.14 * spoke + 0.35 * pulse * ring) + 0.09 * glow) * uA, 1.0);
+          return;
+        }
         float t = 1.0 - smoothstep(0.22, 0.62, max(abs(q.x), abs(q.y)) * 0.75 + length(q) * 0.25);
         gl_FragColor = vec4(uInk, uA * t);
       }
@@ -770,6 +899,7 @@ const post = (() => {
       tColor: { value: null }, tNid: { value: null }, tDepth: { value: null },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
+      uHolo: { value: 0 }, uDpr: shared.uDpr,
     },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: /* glsl */`
@@ -782,6 +912,8 @@ const post = (() => {
       uniform float uRange;
       uniform float uDepthT;
       uniform float uInkAlpha;
+      uniform float uHolo;
+      uniform float uDpr;
       varying vec2 vUv;
       float dep(vec2 uv) { return texture2D(tDepth, uv).x * uRange; }
       vec3 nrm(vec4 t) { return t.a > 0.0 ? normalize(t.xyz * 2.0 - 1.0) : vec3(0.0); }
@@ -791,9 +923,9 @@ const post = (() => {
         if (c.a > 0.0 && t.a > 0.0) ne = max(ne, 1.0 - dot(nc, nrm(t)));
         ide = max(ide, step(0.0015, abs(t.a - c.a)));
       }
-      void main() {
-        vec2 ox = vec2(uTexel.x * uThick, 0.0);
-        vec2 oy = vec2(0.0, uTexel.y * uThick);
+      float edge(float s) {
+        vec2 ox = vec2(uTexel.x * s, 0.0);
+        vec2 oy = vec2(0.0, uTexel.y * s);
         vec4 c = texture2D(tNid, vUv);
         vec3 nc = nrm(c);
         float lap = 0.0, ne = 0.0, ide = 0.0;
@@ -804,9 +936,28 @@ const post = (() => {
         lap = abs(lap - 4.0 * dep(vUv));
         float eD = smoothstep(uDepthT, uDepthT * 3.0, lap);
         float eN = smoothstep(0.2, 0.55, ne) * 0.72;
-        float e = clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
+        return clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
+      }
+      void main() {
+        float e = edge(uThick);
         vec3 col = texture2D(tColor, vUv).rgb;
-        gl_FragColor = vec4(mix(col, uInk, e * uInkAlpha), 1.0);
+        if (uHolo < 0.5) { gl_FragColor = vec4(mix(col, uInk, e * uInkAlpha), 1.0); return; }
+        // Hologram: a dark blue field with a faint grid, the added light toned down so it never clips, and edges that
+        // glow in the colour of the part they belong to, with a soft halo.
+        vec2 p = (vUv - 0.5) * vec2(uTexel.y / uTexel.x, 1.0);
+        float r = length(p);
+        vec3 bg = mix(vec3(0.016, 0.07, 0.11), vec3(0.003, 0.013, 0.024), smoothstep(0.05, 0.85, r));
+        vec2 cell = mod(gl_FragCoord.xy, 32.0 * uDpr);
+        bg += vec3(0.0, 0.5, 0.75) * 0.03 * max(step(cell.x, uDpr), step(cell.y, uDpr));
+        float halo = edge(uThick * 3.5);
+        float m = max(max(col.r, col.g), col.b);
+        vec3 hue = m > 0.03 ? col / m : vec3(0.55, 0.95, 1.0);
+        vec3 ec = mix(hue, vec3(1.0), 0.4);
+        vec3 c = bg + (1.0 - exp(-col * 1.3));
+        c += ec * (e * uInkAlpha + halo * 0.2);
+        c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
+        c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
+        gl_FragColor = vec4(c, 1.0);
       }
     `,
     depthTest: false, depthWrite: false,
@@ -840,33 +991,41 @@ function resize() {
   post.mat.uniforms.tNid.value = rtInk.texture;
   post.mat.uniforms.tDepth.value = rtInk.depthTexture;
   post.mat.uniforms.uTexel.value.set(1 / w, 1 / h);
+  shared.tFront.value = rtInk.depthTexture;
+  shared.uRes.value.set(w, h);
   post.mat.uniforms.uThick.value = Math.max(1, dpr * 0.75);
   shared.uDpr.value = dpr;
   fitView();
   dirty = true;
 }
 
+// The ink pass goes first: the hologram's colour pass reads its depth to tell the nearest surface from the ones behind.
 function draw() {
   const pal = THEME[themeName()];
-  for (const m of solids) {
-    const ghost = m.userData.piece?.userData.ghost;
-    m.material = ghost ? GHOST : m.userData.colorMat;
-    m.visible = !(ghost && FINE.has(m.userData.tone));
-  }
-  camera.layers.set(0);
-  camera.layers.enable(1);
-  renderer.setRenderTarget(rtColor);
-  renderer.setClearColor(pal.paper, 1);
-  renderer.clear();
-  renderer.render(scene, camera);
-
   camera.layers.set(0);
   for (const m of solids) {
+    const g = m.userData.piece ? m.userData.piece.userData.gNow : 0;
     m.material = m.userData.inkMat;
-    if (m.userData.piece?.userData.ghost || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4)) m.visible = false;
+    // A ghost turning solid gets its outline first, then its fill.
+    m.visible = !(g >= 1 || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4));
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
+  renderer.clear();
+  renderer.render(scene, camera);
+
+  for (const m of solids) {
+    const g = m.userData.piece ? m.userData.piece.userData.gNow : 0;
+    m.userData.dim = 1;
+    m.visible = true;
+    if (g <= 0) m.material = m.userData.colorMat;
+    else if (holo) { m.material = m.userData.colorMat; m.userData.dim = 1 - (1 - pal.ghost) * g; m.visible = !(g >= 1 && FINE.has(m.userData.tone)); }
+    else if (g >= 1) { m.material = GHOST; m.visible = !FINE.has(m.userData.tone); }
+    else { m.material = GHOST_FADE; m.userData.solid = 1 - g; }
+  }
+  camera.layers.enable(1);
+  renderer.setRenderTarget(rtColor);
+  renderer.setClearColor(pal.paper, 1);
   renderer.clear();
   renderer.render(scene, camera);
   for (const m of solids) { m.material = m.userData.colorMat; m.visible = true; }
@@ -884,6 +1043,14 @@ const goal = { az: HOME.az, el: HOME.el, zoom: 1, target: new V3() };
 let fit = { half: 100, centre: new V3() };
 let dragMode = store.get('spm1-drag') === 'pan' ? 'pan' : 'orbit';
 let touched = false;
+// A timed camera move to `goal` that starts at `at` (seconds), used to fly slowly back to the assembly.
+// Any other camera move ends it where it is.
+let glide = null;
+function stopGlide() {
+  if (!glide) return;
+  glide = null;
+  goal.az = view.az; goal.el = view.el; goal.zoom = view.zoom; goal.target.copy(view.target);
+}
 
 function basis(az, elv) {
   const a = az * DEG, e = elv * DEG;
@@ -928,6 +1095,7 @@ function placeCamera() {
 }
 function nearestAz(target) { return goal.az + ((((target - goal.az) % 360) + 540) % 360) - 180; }
 function lookFrom(az, elv, o = {}) {
+  stopGlide();
   goal.az = nearestAz(az);
   goal.el = elv;
   if (o.zoom != null) goal.zoom = o.zoom;
@@ -953,6 +1121,7 @@ const VIEWS = {
   bottom: [-90, -89],
 };
 function zoomBy(f, ndc) {
+  stopGlide();
   const before = fit.half / goal.zoom;
   goal.zoom = clamp(goal.zoom * f, ZOOM_MIN, ZOOM_MAX);
   const after = fit.half / goal.zoom;
@@ -963,18 +1132,21 @@ function zoomBy(f, ndc) {
   dirty = true;
 }
 function panBy(dx, dy) {
+  stopGlide();
   const { right, up } = basis(goal.az, goal.el);
   const k = (2 * fit.half) / goal.zoom / height;
   goal.target.addScaledVector(right, -dx * k).addScaledVector(up, dy * k);
   dirty = true;
 }
 function orbitBy(dx, dy) {
+  stopGlide();
   goal.az -= dx * 0.38;
   goal.el = clamp(goal.el + dy * 0.3, -89, 89);
   dirty = true;
 }
 // Frame a world box, keeping the current turn.
 function frameBox(box, pad = 1.35) {
+  stopGlide();
   const pts = [];
   for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) pts.push(new V3(x, y, z));
   const f = frameOf(pts, goal.az, goal.el, pad);
@@ -984,7 +1156,7 @@ function frameBox(box, pad = 1.35) {
 }
 
 // ---------- State ----------
-const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, legendHot: null };
+const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, legendHot: null, leaveUntil: 0 };
 const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null };
 const hidden = new Set();
 
@@ -1071,7 +1243,9 @@ function applyLook() {
   const t = themeName();
   const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
   const apart = Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p));
-  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * boost * (t === 'dark' ? 0.42 : 1);
+  // Back from an inspect, the plasma lights again as the vessel turns solid, not before.
+  const ghosted = iso.part === 'plasma' ? 0 : Math.max(0, ...(piecesOf.get('vessel') || []).map((pc) => pc.userData.gNow));
+  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart) * (1 - ghosted)) * boost * (t === 'dark' ? 0.3 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
     u.uI.value = sc > 1 ? I * 0.32 : I;
@@ -1097,6 +1271,8 @@ function inspect(id, focusPiece = null) {
   if (!iso.part) iso.saved = snapshot();
   if (hidden.has(id)) hidden.delete(id);
   if (iso.part !== id) { iso.apart = false; state.subSel = null; hideBoard(); }
+  for (const pc of pieces) pc.userData.dHold = pc.userData.gHold = 0;
+  state.leaveUntil = 0;
   iso.part = id;
   iso.focus = focusPiece;
   state.select = id;
@@ -1107,8 +1283,18 @@ function inspect(id, focusPiece = null) {
   updateIsoBar();
   renderInspector();
 }
+// Back to the assembly at the pace of an explode, in the reverse order: the sub-parts go back together, then the part
+// flies home while the camera glides back to where it was, and only then does the rest of the machine turn solid.
+const BACK = { together: 0.6, fly: 1.3, solid: 0.95 };
 function endInspect() {
   if (!iso.part) return;
+  const now = performance.now() / 1000;
+  const slow = !reduceMotion.matches;
+  const mine = piecesOf.get(iso.part) || [];
+  const start = slow && mine.some((pc) => pc.userData.tp > 0.02) ? BACK.together : 0;
+  for (const pc of mine) pc.userData.dHold = slow ? now + start : 0;
+  for (const pc of pieces) if (pc.userData.ghost) pc.userData.gHold = slow ? now + start + BACK.solid : 0;
+  state.leaveUntil = slow ? now + start + BACK.fly : 0;
   state.subSel = null;
   hideBoard();
   iso.part = null;
@@ -1116,7 +1302,10 @@ function endInspect() {
   iso.apart = false;
   refreshPieces();
   applyClip();
-  if (iso.saved) { goal.az = nearestAz(iso.saved.az); goal.el = iso.saved.el; goal.zoom = iso.saved.zoom; goal.target.copy(iso.saved.target); }
+  if (iso.saved) {
+    goal.az = nearestAz(iso.saved.az); goal.el = iso.saved.el; goal.zoom = iso.saved.zoom; goal.target.copy(iso.saved.target);
+    glide = slow ? { at: now + start, dur: BACK.fly, from: null } : null;
+  }
   updateIsoBar();
   renderInspector();
   dirty = true;
@@ -1714,7 +1903,21 @@ systemDark.addEventListener('change', applyTheme);
 function applyTheme() {
   const t = themeName();
   const pal = THEME[t];
-  for (const m of colorMats.values()) m.uniforms.uColor.value.copy(toneColor(m.userData.tone, t));
+  holo = t === 'dark';
+  document.documentElement.classList.toggle('holo', holo);
+  for (const m of colorMats.values()) {
+    const glass = m.userData.tone === 'glass';
+    m.uniforms.uColor.value.copy(toneColor(m.userData.tone, t));
+    m.fragmentShader = holo ? FRAG_HOLO : glass ? FRAG_GLASS : FRAG_COLOR;
+    m.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
+    m.transparent = holo || glass;
+    m.depthWrite = !holo && !glass;
+    m.needsUpdate = true;
+  }
+  post.mat.uniforms.uHolo.value = holo ? 1 : 0;
+  shadow.uniforms.uHolo.value = holo ? 1 : 0;
+  shadow.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
+  shadow.needsUpdate = true;
   shared.uCut.value.set(pal.cut);
   shared.uInk.value.set(pal.ink);
   shared.uLitColor.value.set(pal.lit);
@@ -1723,8 +1926,15 @@ function applyTheme() {
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
   shadow.uniforms.uA.value = pal.shadow;
   shadow.uniforms.uInk.value.set(pal.shadowInk);
-  for (const g of glow) { g.material.blending = t === 'dark' ? THREE.AdditiveBlending : THREE.NormalBlending; g.material.needsUpdate = true; }
-  $('themeLbl').textContent = t === 'dark' ? 'Light' : 'Dark';
+  for (const g of glow) {
+    const u = g.material.uniforms;
+    u.uCore.value.set(holo ? '#ff8fe8' : '#ffe2f6');
+    u.uRim.value.set(holo ? '#b03cff' : '#b84ad6');
+    g.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
+    g.material.needsUpdate = true;
+  }
+  $('themeLbl').textContent = holo ? 'Light' : 'Hologram';
+  $('themeBtn').title = holo ? 'Switch to the light drawing' : 'Switch to the hologram';
   applyLook();
   dirty = true;
 }
@@ -1939,7 +2149,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 // ---------- Animation ----------
-let visible = true, lastT = performance.now() / 1000, idleSince = lastT;
+let visible = true, lastT = performance.now() / 1000, idleSince = lastT, lastDraw = 0;
 // How far an object has moved from rest: the sum of its own and its parents' offsets.
 function offsetOf(o) { const v = new V3(); for (let x = o; x && x !== dev.root; x = x.parent) v.add(x.position); return v; }
 // A cable or hose follows the two things it plugs into, wherever explode, inspect or take-apart sends them.
@@ -1971,7 +2181,19 @@ function frame() {
 
   const k = reduceMotion.matches ? 1 : 1 - Math.exp(-dt * 16);
   const d = Math.abs(goal.az - view.az) + Math.abs(goal.el - view.el) + Math.abs(Math.log(goal.zoom / view.zoom)) * 50 + goal.target.distanceTo(view.target);
-  if (d > 1e-3) {
+  if (glide) {
+    // Hold still until the glide starts, then ease all the way there over its duration.
+    if (now >= glide.at) {
+      const f = glide.from || (glide.from = { az: view.az, el: view.el, zoom: view.zoom, target: view.target.clone() });
+      const s = ease(clamp01((now - glide.at) / glide.dur));
+      view.az = f.az + (goal.az - f.az) * s;
+      view.el = f.el + (goal.el - f.el) * s;
+      view.zoom = Math.exp(Math.log(f.zoom) + (Math.log(goal.zoom) - Math.log(f.zoom)) * s);
+      view.target.lerpVectors(f.target, goal.target, s);
+      if (s >= 1) glide = null;
+    }
+    active = true;
+  } else if (d > 1e-3) {
     view.az += (goal.az - view.az) * k;
     view.el += (goal.el - view.el) * k;
     view.zoom = Math.exp(Math.log(view.zoom) + (Math.log(goal.zoom) - Math.log(view.zoom)) * k);
@@ -1999,12 +2221,18 @@ function frame() {
   state.ep = follow(state.ep, target, 4.2);
   if (state.ep !== ep0) moving = true;
 
-  // Inspect lifts a part out; take-apart moves each of its sub-parts along its own direction.
+  // Inspect lifts a part out; take-apart moves each of its sub-parts along its own direction. Going back, a part waits
+  // for its sub-parts before it flies home, and the ghosts wait for it before they turn solid.
   for (const pc of pieces) {
     const u = pc.userData;
-    const d0 = u.dp, t0 = u.tp;
-    u.dp = follow(u.dp, iso.part === u.part ? 1 : 0, 5);
+    const d0 = u.dp, t0 = u.tp, g0 = u.gNow;
+    const out = iso.part === u.part ? 1 : 0;
+    if (out || now >= u.dHold) u.dp = follow(u.dp, out, out ? 5 : 3.2);
+    else active = true;
     u.tp = follow(u.tp, iso.part === u.part && iso.apart && (!iso.focus || iso.focus === pc) ? 1 : 0, 4.5);
+    if (u.ghost) u.gNow = 1;
+    else if (u.gNow > 0) { if (now >= u.gHold) u.gNow = follow(u.gNow, 0, 3.5); active = true; }
+    if (u.gNow !== g0) moving = true;
     const p = u.egroup ? u.egroup.p : state.ep;
     if (u.dp !== d0 || moving) {
       pc.position.copy(u.detachVec).multiplyScalar(ease(u.dp)).addScaledVector(u.apart, ease(p) * state.spreadNow);
@@ -2018,7 +2246,9 @@ function frame() {
   }
   if (moving) { rebuildStretch(); applyLook(); active = true; }
 
-  const cutTarget = state.cut && !iso.part && !state.explode ? 0 : 45;
+  const leaving = now < state.leaveUntil;
+  if (leaving) active = true;
+  const cutTarget = state.cut && !iso.part && !state.explode && !leaving ? 0 : 45;
   if (Math.abs(state.cutZ - cutTarget) > 0.01) {
     state.cutZ = reduceMotion.matches ? cutTarget : state.cutZ + (cutTarget - state.cutZ) * (1 - Math.exp(-dt * 6));
     if (Math.abs(state.cutZ - cutTarget) < 0.05) state.cutZ = cutTarget;
@@ -2031,9 +2261,17 @@ function frame() {
     hoverPending = null;
   }
 
+  // The hologram's scan lines and sweep keep moving, at 30 frames a second when nothing else does.
+  if (holo && !reduceMotion.matches && now - lastDraw > 1 / 30) active = true;
+
   if (!active && !dirty) return;
   dirty = false;
+  lastDraw = now;
   placeCamera();
+  const still = reduceMotion.matches;
+  shared.uTime.value = still ? 0 : now % 1000;
+  shared.uSweep.value = still ? -1e3 : DIMS.table.floor - 8 + (40 - DIMS.table.floor) * ((now % 7) / 7);
+  shared.uScan.value = height / (5 * 2 * halfNow());
   draw();
   drawTriad();
   drawScale();

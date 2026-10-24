@@ -11,7 +11,7 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | **Assembly** (left) | The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec or description. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. |
 | **Viewer** (centre) | The model. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The scale bar is true at every zoom, because the view is orthographic. |
 | **Inspector** (right) | **Part**: what the part does, its specification with a source tag on every row, its pieces, what it connects to, and practical notes. **Sources**: every reference, what was taken from it, and which parts cite it. **Controls**: every mouse, touch and key binding. |
-| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, theme. |
+| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, and the theme: the light drawing or the hologram. |
 
 ### Explode
 
@@ -39,6 +39,12 @@ Double-click a part, or press **Inspect on its own**. The part lifts out of the 
 - **Context** turns the ghost of the rest of the machine on or off.
 - The **pieces** list in the inspector, or a double-click on one piece, zooms to a single piece (one of the eight TF coils, one joint flange). **All** goes back to every piece.
 - **Esc** steps back one level: sheet, piece, part, then selection.
+- **Done** or **Back to assembly** reverses the inspect at the pace of an explode, so you can see where the part goes:
+  1. A part that was taken apart goes back together.
+  2. The part flies home while the camera glides back to the view you had before.
+  3. The rest of the machine gets its outlines, then turns solid, and the plasma lights again.
+
+  Any drag, zoom or view button during the move takes over the camera. With reduced motion turned on, it goes back at once.
 
 ### Technical sheets for sub-parts
 
@@ -51,7 +57,22 @@ While inspecting, click a sub-part in the view, or its name under "Taken apart i
   - Each sheet says when the SPM1's own part is not published.
 - **Coils, electrodes, the gauge and the control parts** carry what the sources and photos show. Where nothing is published, the sheet says so rather than guessing.
 
-Keys: arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `G` ghost, `H` hide.
+### Hologram
+
+The theme button switches between the light drawing and a hologram. A dark system theme opens the hologram. The colours follow [holographic-shader-visualizer-three.Js](https://github.com/YasirAwan4831/holographic-shader-visualizer-three.Js): cyan `#00d5ff` on a dark blue grid.
+
+- Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
+- The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
+- Structure is cyan. Copper and the other warm parts are amber. The selected part turns white and stays visible through whatever is in front of it.
+- Edges glow in the colour of their part.
+- Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
+- The panels, the sheet board and the arrow are drawn as a HUD, with cyan corner brackets.
+
+The animation runs at 30 frames a second while the page is idle, and stands still with reduced motion.
+
+### Keys
+
+Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `G` ghost, `H` hide.
 
 ## Files
 
