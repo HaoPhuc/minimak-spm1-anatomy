@@ -52,10 +52,10 @@
   /* ---------- App shell: tree | viewer | inspector, each scrolls on its own ---------- */
   .app {
     --tw: 260px; --iw: 360px;
-    display: grid; height: 100vh; height: 100dvh; gap: 10px; padding: 10px;
-    grid-template-columns: var(--tw) minmax(0, 1fr) var(--iw);
+    display: grid; height: 100vh; height: 100dvh; row-gap: 10px; padding: 10px;
+    grid-template-columns: var(--tw) 10px minmax(0, 1fr) 10px var(--iw);
     grid-template-rows: auto minmax(0, 1fr);
-    grid-template-areas: "top top top" "tree view insp";
+    grid-template-areas: "top top top top top" "tree gl view gr insp";
   }
   .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
   .brand { flex: none; line-height: 1.2; }
@@ -77,6 +77,14 @@
   .fold { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 17px; line-height: 1; }
   .fold:hover { background: var(--chip); color: var(--ink); }
   .rail { display: none; }
+  /* The grip between a panel and the view sizes the panel; a line shows while it is hovered or dragged. */
+  .grip { position: relative; cursor: col-resize; touch-action: none; outline: none; }
+  .grip.left { grid-area: gl; }
+  .grip.right { grid-area: gr; }
+  .grip::after { content: ""; position: absolute; top: 8px; bottom: 8px; left: 4px; width: 2px; border-radius: 1px; background: var(--accent); opacity: 0; transition: opacity .15s; }
+  .grip:hover::after, .grip.on::after, .grip:focus-visible::after { opacity: 0.7; }
+  body.resizing { cursor: col-resize; user-select: none; }
+  body.resizing .stage { pointer-events: none; }
   .app.fold-tree { --tw: 34px; }
   .app.fold-insp { --iw: 34px; }
   .panel.folded > :not(.rail) { display: none; }
@@ -138,18 +146,16 @@
   .triad .ax { cursor: pointer; }
   .triad .ax:hover circle { stroke-width: 2.4; }
   .triad .ring { fill: color-mix(in srgb, var(--card) 70%, transparent); stroke: var(--rule); }
-  .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--card); font-size: 12px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; transform: translate(12px, 14px); opacity: 0; transition: opacity .12s; }
+  .tip { position: absolute; z-index: 3; pointer-events: none; background: var(--ink); color: var(--card); font-size: 12px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; transform: translate(12px, 14px); opacity: 0; transition: opacity .12s; }
   .tip.on { opacity: 0.94; }
   .tip small { opacity: 0.7; margin-left: 6px; }
   /* Information screens float beside the inspected part. The left column describes the component; the right one holds
      sub-part sheets: a live one for the sub-part under the pointer, and the ones you pinned, which stay until closed. */
+  .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
   .hud[hidden] { display: none; }
-  .hud-col { position: absolute; top: 100px; width: 280px; max-height: calc(100% - 158px); overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 10px; padding: 2px; scrollbar-width: thin; }
-  .hud-col:empty { display: none; }
-  .hud-col.left { left: 10px; }
-  .hud-col.right { right: 10px; }
   .screen {
-    position: relative; flex: none; padding: 8px 12px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
+    position: absolute; width: 280px; max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; pointer-events: auto;
+    padding: 8px 12px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
     background: color-mix(in srgb, var(--card) 72%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
     border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
@@ -159,6 +165,11 @@
   @keyframes screen-in { from { opacity: 0; transform: translateY(8px); clip-path: inset(0 0 85% 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
   .screen.live { border-style: dashed; }
   .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 8px 26px rgb(0 0 0 / 0.14); }
+  .screen.comp { max-height: 52%; }
+  .screen.links { max-height: 36%; }
+  .screen.dragging { opacity: 0.9; }
+  .screen .bar { cursor: grab; touch-action: none; user-select: none; }
+  .screen.dragging .bar { cursor: grabbing; }
   .screen .bar { display: flex; align-items: center; gap: 6px; margin: 0 -6px 4px 0; font: 600 10.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
   .screen .bar .code { color: var(--accent); }
   .screen .bar .state { margin-left: auto; }
@@ -182,12 +193,13 @@
   .screen .subs button { font-size: 12.5px; padding: 3px 6px; }
   .screen .chips { margin: 0; }
   /* On a phone there is one screen, docked under the model. */
-  .hud.phone .hud-col.left { display: none; }
-  .hud.phone .hud-col.right { top: auto; bottom: 8px; left: 8px; right: 8px; width: auto; max-height: 42%; }
+  .hud.phone .screen { top: auto; bottom: 8px; left: 8px; right: 8px; width: auto; max-height: 42%; }
+  .hud.phone .screen .bar { cursor: default; }
   .view.sheet .corner.bl, .view.sheet .corner.br { display: none; }
   @media (prefers-reduced-motion: reduce) { .screen.enter { animation: none; } }
-  .isobar { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 4px 4px 4px 12px; box-shadow: 0 4px 18px rgb(0 0 0 / 0.08); max-width: calc(100% - 200px); }
+  .isobar { position: absolute; top: 36px; left: 0; right: 0; width: fit-content; margin-inline: auto; display: none; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 4px 4px 4px 12px; box-shadow: 0 4px 18px rgb(0 0 0 / 0.08); max-width: calc(100% - 200px); flex-wrap: wrap; justify-content: center; row-gap: 4px; z-index: 2; }
   .isobar.on { display: flex; }
+  .isobar > :not(.lbl) { flex: none; }
   .isobar .lbl { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 6px; }
   .isobar .lbl b { font-weight: 600; }
   .isobar button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 4px 9px; font-size: 12px; cursor: pointer; white-space: nowrap; }
@@ -264,14 +276,14 @@
     html, body { height: auto; }
     .app, .app.fold-tree, .app.fold-insp { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "top" "view" "insp" "tree"; }
     .panel.folded > :not(.rail) { display: revert; }
-    .panel.folded .rail, .fold, #bPanels { display: none; }
+    .panel.folded .rail, .fold, #bPanels, .grip { display: none; }
     .mb:has(#bPanels) { display: none; }
     .top { flex-wrap: wrap; }
     .modebar { margin-left: 0; width: 100%; }
     .view { height: 64vh; min-height: 360px; }
     .panel { max-height: none; }
     .panel-body { overflow: visible; }
-    .isobar { max-width: calc(100% - 100px); left: 10px; transform: none; flex-wrap: wrap; }
+    .isobar { max-width: calc(100% - 100px); left: 10px; right: auto; margin: 0; justify-content: flex-start; }
     .corner.br { max-width: 50%; }
     .mb .lbl { display: none; }
   }
@@ -321,7 +333,7 @@
   .holo .tip { background: rgb(6 22 38 / 0.9); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.6); box-shadow: 0 0 12px rgb(90 170 225 / 0.25); }
   /* Screens: tinted glass with corner brackets and a slow scan passing down them. */
   .holo .screen {
-    overflow: hidden; border-radius: 3px;
+    border-radius: 3px;
     background: rgb(5 18 32 / 0.62);
     border-color: rgb(90 170 225 / 0.42);
     box-shadow: 0 0 22px rgb(90 170 225 / 0.14), inset 0 0 24px rgb(90 170 225 / 0.06);
@@ -387,6 +399,7 @@
     </div>
     <div class="panel-body" id="tree"></div>
   </aside>
+  <div class="grip left" data-panel="tree" role="separator" aria-orientation="vertical" aria-label="Width of the assembly list" tabindex="0" title="Drag to size the assembly list · double-click for the default"></div>
 
   <figure class="view" id="card">
     <div class="stage" id="stage" tabindex="0" role="application" aria-label="3D model of the MinimaK SPM1. Drag to turn, right-drag to pan, scroll to zoom, double-click a part to inspect it on its own.">
@@ -408,15 +421,13 @@
       <button type="button" id="bScreens" aria-pressed="true" title="Information screens beside the part (S)">Screens</button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
-    <div class="hud" id="hud" hidden aria-label="Information screens">
-      <div class="hud-col left" id="hudLeft"></div>
-      <div class="hud-col right" id="hudRight" aria-live="polite"></div>
-    </div>
+    <div class="hud" id="hud" hidden aria-label="Information screens" aria-live="polite"></div>
     <div class="tip" id="tip"></div>
     <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><div class="hint" id="hint"></div></div>
     <div class="corner br" id="readout"></div>
   </figure>
 
+  <div class="grip right" data-panel="insp" role="separator" aria-orientation="vertical" aria-label="Width of the inspector" tabindex="0" title="Drag to size the inspector · double-click for the default"></div>
   <aside class="panel insp" id="inspPanel" aria-label="Inspector">
     <button type="button" class="rail" data-panel="insp" title="Show the inspector">Inspector</button>
     <div class="panel-head">
@@ -1061,10 +1072,11 @@ function draw() {
   const pal = THEME[themeName()];
   camera.layers.set(0);
   for (const m of solids) {
-    const g = m.userData.piece ? m.userData.piece.userData.gNow : 0;
+    const u = m.userData.piece?.userData;
+    const g = u ? ease(u.gNow) : 0;
     m.material = m.userData.inkMat;
-    // A ghost turning solid gets its outline first, then its fill.
-    m.visible = !(g >= 1 || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4));
+    // A part fading to a ghost loses its outline halfway; one turning solid gets its outline first, then its fill.
+    m.visible = !((u && (u.ghost ? g > 0.5 : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4));
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
@@ -1072,7 +1084,7 @@ function draw() {
   renderer.render(scene, camera);
 
   for (const m of solids) {
-    const g = m.userData.piece ? m.userData.piece.userData.gNow : 0;
+    const g = m.userData.piece ? ease(m.userData.piece.userData.gNow) : 0;
     m.userData.dim = 1;
     m.visible = true;
     if (g <= 0) m.material = m.userData.colorMat;
@@ -1215,7 +1227,7 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0 }) {
 }
 
 // ---------- State ----------
-const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null };
+const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
 const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null };
 const hidden = new Set();
 
@@ -1304,13 +1316,11 @@ function applyLook() {
   const t = themeName();
   const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
   const apart = Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p));
-  // Back from an inspect, the plasma lights again as the vessel turns solid, not before.
-  const ghosted = iso.part === 'plasma' ? 0 : Math.max(0, ...(piecesOf.get('vessel') || []).map((pc) => pc.userData.gNow));
-  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart) * (1 - ghosted)) * boost * (t === 'dark' ? 0.3 : 1);
+  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost * (t === 'dark' ? 0.3 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
     u.uI.value = sc > 1 ? I * 0.32 : I;
-    g.visible = plasmaShown();
+    g.visible = state.pNow > 0;
   }
   const lcdOn = new THREE.Color(t === 'dark' ? '#3f9a5c' : '#5fbf78').multiplyScalar(0.5);
   for (const m of solids) {
@@ -1321,19 +1331,30 @@ function applyLook() {
 }
 
 // ---------- Inspect: the part detaches, the rest becomes a ghost, the camera frames it ----------
+// Going in mirrors coming back: the rest of the machine fades to an x-ray, then the part lifts out while the camera
+// glides round to frame it. Picking another piece, or taking the part apart, glides the same way.
+const MOVE = { lift: 0.3, fly: 1.2, piece: 0.9, apart: 0.8 };
 function snapshot() { return { az: goal.az, el: goal.el, zoom: goal.zoom, target: goal.target.clone() }; }
-function frameIsolated(reset) {
+function frameIsolated(reset, glideFor = 0, delay = 0) {
+  stopGlide();
   const b = iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
   if (reset) goal.el = clamp(goal.el, 14, 40);
   frameBox(b, iso.focus ? 1.6 : 1.3, hudInsets());
+  if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000 + delay, dur: glideFor, from: null };
 }
 function inspect(id, focusPiece = null) {
   if (!id || !partById.has(id)) return;
+  const now = performance.now() / 1000;
+  const slow = !reduceMotion.matches;
   if (!iso.part) iso.saved = snapshot();
   if (hidden.has(id)) hidden.delete(id);
   if (iso.part !== id) { iso.apart = false; clearSheets(); }
-  for (const pc of pieces) pc.userData.dHold = pc.userData.gHold = 0;
+  for (const pc of pieces) {
+    pc.userData.dHold = slow && pc.userData.part === id && pc.userData.dp < 0.5 ? now + MOVE.lift : 0;
+    pc.userData.gHold = 0;
+  }
   state.leaveUntil = 0;
+  state.plasmaHold = 0;
   iso.part = id;
   iso.focus = focusPiece;
   state.select = id;
@@ -1341,7 +1362,7 @@ function inspect(id, focusPiece = null) {
   refreshPieces();
   applyClip();
   renderHud();
-  frameIsolated(!focusPiece);
+  frameIsolated(!focusPiece, MOVE.fly, MOVE.lift);
   updateIsoBar();
   renderInspector();
 }
@@ -1357,6 +1378,7 @@ function endInspect() {
   for (const pc of mine) pc.userData.dHold = slow ? now + start : 0;
   for (const pc of pieces) if (pc.userData.ghost) pc.userData.gHold = slow ? now + start + BACK.solid : 0;
   state.leaveUntil = slow ? now + start + BACK.fly : 0;
+  state.plasmaHold = slow ? now + start + BACK.solid : 0;
   clearSheets();
   iso.part = null;
   iso.focus = null;
@@ -1364,6 +1386,7 @@ function endInspect() {
   renderHud();
   refreshPieces();
   applyClip();
+  stopGlide();
   if (iso.saved) {
     goal.az = nearestAz(iso.saved.az); goal.el = iso.saved.el; goal.zoom = iso.saved.zoom; goal.target.copy(iso.saved.target);
     glide = slow ? { at: now + start, dur: BACK.fly, from: null } : null;
@@ -1372,13 +1395,13 @@ function endInspect() {
   renderInspector();
   dirty = true;
 }
-// Show one piece of the inspected part (the rest of it turns to ghosts), or all of them with null.
+// Show one piece of the inspected part (the rest of it fades to ghosts), or all of them with null.
 function setFocus(pc) {
   iso.focus = pc;
   if (!pc) iso.apart = false;
   keepSheetsOnFocus();
   refreshPieces();
-  frameIsolated(false);
+  frameIsolated(false, MOVE.piece);
   updateIsoBar();
   renderInspector();
   renderHud();
@@ -1429,7 +1452,7 @@ function setApart(on) {
     keepSheetsOnFocus();
     refreshPieces();
   }
-  frameIsolated(false);
+  frameIsolated(false, MOVE.apart);
   updateIsoBar();
   renderInspector();
   renderHud();
@@ -1441,20 +1464,29 @@ $('sApart').addEventListener('input', (e) => { iso.apartSpread = +e.target.value
 $('sApart').addEventListener('change', () => frameIsolated(false));
 $('bContext').addEventListener('click', () => { iso.context = !iso.context; refreshPieces(); updateIsoBar(); });
 
-// ---------- Side panels: either folds to a rail, to give the model and its screens the room ----------
-const panels = { tree: true, insp: true };
+// ---------- Side panels: drag the edge between a panel and the view to size it, or fold it to a rail ----------
+const PANEL = { tree: { min: 180, max: 520, w: 'tw' }, insp: { min: 240, max: 640, w: 'iw' } };
+const panels = { tree: true, insp: true, tw: 0, iw: 0 }; // a width of 0 keeps the default from the CSS
 {
   const folded = (store.get('spm1-panels') || '').split(',');
   panels.tree = !folded.includes('tree');
   panels.insp = !folded.includes('insp');
+  panels.tw = +store.get('spm1-tw') || 0;
+  panels.iw = +store.get('spm1-iw') || 0;
 }
 function applyPanels() {
-  document.querySelector('.app').classList.toggle('fold-tree', !panels.tree);
-  document.querySelector('.app').classList.toggle('fold-insp', !panels.insp);
+  const app = document.querySelector('.app');
+  app.classList.toggle('fold-tree', !panels.tree);
+  app.classList.toggle('fold-insp', !panels.insp);
+  for (const [k, v] of [['--tw', panels.tree && panels.tw], ['--iw', panels.insp && panels.iw]]) {
+    if (v) app.style.setProperty(k, `${v}px`); else app.style.removeProperty(k);
+  }
   $('treePanel').classList.toggle('folded', !panels.tree);
   $('inspPanel').classList.toggle('folded', !panels.insp);
   $('bPanels').setAttribute('aria-pressed', panels.tree || panels.insp ? 'true' : 'false');
   store.set('spm1-panels', [!panels.tree && 'tree', !panels.insp && 'insp'].filter(Boolean).join(','));
+  store.set('spm1-tw', String(panels.tw));
+  store.set('spm1-iw', String(panels.iw));
   renderHud();
 }
 function setPanel(which, show) { panels[which] = show; applyPanels(); }
@@ -1462,19 +1494,61 @@ function togglePanels() { const show = !(panels.tree || panels.insp); panels.tre
 for (const b of document.querySelectorAll('.fold')) b.addEventListener('click', () => setPanel(b.dataset.panel, false));
 for (const b of document.querySelectorAll('.rail')) b.addEventListener('click', () => setPanel(b.dataset.panel, true));
 $('bPanels').addEventListener('click', togglePanels);
+// Size a panel to `w` px, leaving the view at least 360 px; well under its minimum it folds to its rail.
+function sizePanel(which, w) {
+  const P = PANEL[which];
+  const app = document.querySelector('.app').getBoundingClientRect();
+  const other = $(which === 'tree' ? 'inspPanel' : 'treePanel').getBoundingClientRect().width;
+  if (w < P.min * 0.6) { if (panels[which]) setPanel(which, false); return; }
+  panels[which] = true;
+  panels[P.w] = Math.round(clamp(w, P.min, Math.max(P.min, Math.min(P.max, app.width - 40 - other - 360))));
+  applyPanels();
+}
+for (const g of document.querySelectorAll('.grip')) {
+  const which = g.dataset.panel;
+  g.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    g.setPointerCapture(e.pointerId);
+    g.classList.add('on');
+    document.body.classList.add('resizing');
+    const app = document.querySelector('.app').getBoundingClientRect();
+    const move = (ev) => sizePanel(which, which === 'tree' ? ev.clientX - app.left - 15 : app.right - 15 - ev.clientX);
+    const up = () => {
+      g.removeEventListener('pointermove', move);
+      g.removeEventListener('pointerup', up);
+      g.removeEventListener('pointercancel', up);
+      g.classList.remove('on');
+      document.body.classList.remove('resizing');
+    };
+    g.addEventListener('pointermove', move);
+    g.addEventListener('pointerup', up);
+    g.addEventListener('pointercancel', up);
+  });
+  // Double-click puts the default width back; the arrow keys nudge it.
+  g.addEventListener('dblclick', () => { panels[which] = true; panels[PANEL[which].w] = 0; applyPanels(); });
+  g.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const now = $(which === 'tree' ? 'treePanel' : 'inspPanel').getBoundingClientRect().width;
+    const grow = (e.key === 'ArrowRight') === (which === 'tree');
+    sizePanel(which, now + (grow ? 24 : -24));
+  });
+}
 
 // ---------- Information screens beside the part ----------
-// While inspecting, the component is described on screens in the view, Stark-style. A sub-part's technical sheet shows
-// live while the pointer is on it; a click, or the pin, keeps it until it is closed. Hovering a screen lights its part.
-const hud = $('hud'), hudLeft = $('hudLeft'), hudRight = $('hudRight');
-const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, shown: new Set() };
-const HUD_W = 300; // one column of screens and its margin, in CSS px
+// While inspecting, the component is described on screens floating in the view, Stark-style. Pointing at a sub-part
+// previews its technical sheet next to the pointer; only the pin keeps it. Every screen moves by dragging its top
+// bar, and hovering one lights its part in the model.
+const hud = $('hud');
+const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1 };
 const PIN = '<svg viewBox="0 0 16 16"><path d="M5.5 1.5h5l-.7 4.3 2.7 2.4v1.3h-9V8.2l2.7-2.4zM8 9.5v5"/></svg>';
 const BASIS_SHORT = { spec: 'Spec', photo: 'Photo', assumed: 'Assumed' };
-const phoneHud = () => width < 640;
-const twoCols = () => width >= 1000;
+const SCREEN_W = 280;
+const phoneHud = () => width < 520;
 const sameSheet = (a, b) => !!a && !!b && a.pc === b.pc && a.sub === b.sub;
 const isPinned = (x) => state.pins.some((y) => sameSheet(x, y));
+const sheetKey = (x) => `pin|${x.pc.id}|${x.sub}`;
 function subDocOf(part, sub) {
   const key = DOCS.SUBMAP[`${part}|${sub}`] || DOCS.SUBMAP[`*|${sub}`];
   return key ? DOCS.SUBDOCS[key] : null;
@@ -1484,21 +1558,20 @@ function nearestPiece(list) {
   const { dir } = basis(view.az, view.el);
   return list.reduce((a, b) => (boxOfPiece(b).getCenter(new V3()).dot(dir) > boxOfPiece(a).getCenter(new V3()).dot(dir) ? b : a));
 }
-// What the screens cover, so the camera frames the part in the room between them.
-function hudInsets() {
-  if (!iso.part || !HUD.on || phoneHud()) return { l: 0, r: 0 };
-  return twoCols() ? { l: HUD_W, r: HUD_W } : { l: 0, r: HUD_W };
-}
+// The component's own screens show unless the inspector beside a narrow view already says the same.
+const compShown = () => HUD.on && !phoneHud() && width >= 640 && (!panels.insp || width >= 1000);
+// The component screens start at the left, so the camera frames the part to their right.
+function hudInsets() { return iso.part && compShown() ? { l: SCREEN_W + 20, r: 0 } : { l: 0, r: 0 }; }
 function setScreens(on) {
   HUD.on = on;
   store.set('spm1-screens', on ? 'on' : 'off');
   if (!on) { state.live = null; clearTimeout(HUD.liveTimer); }
   renderHud();
   updateIsoBar();
-  if (iso.part) frameIsolated(false);
+  if (iso.part) frameIsolated(false, MOVE.piece);
 }
 $('bScreens').addEventListener('click', () => setScreens(!HUD.on));
-// From the inspector or a screen: inspect the part, take it apart, and pin the sheet of the nearest piece that has it.
+// From a list of sub-parts: inspect the part, take it apart, and preview the sheet of the nearest piece that has it.
 function showSubOf(part, sub) {
   const list = (piecesOf.get(part) || []).filter((pc) => subMeshes(pc, sub).length);
   if (!list.length) return;
@@ -1506,30 +1579,28 @@ function showSubOf(part, sub) {
   if (iso.part !== part) inspect(part, (piecesOf.get(part) || []).length > 1 ? pc : null);
   else if ((piecesOf.get(part) || []).length > 1 && iso.focus !== pc) setFocus(pc);
   if (!iso.apart) setApart(true);
-  pinSheet(pc, sub);
+  if (!HUD.on) setScreens(true);
+  setLive({ pc, sub, at: null }, true);
 }
+// Pinning keeps a sheet where its preview was, until it is closed.
 function pinSheet(pc, sub) {
-  if (!pc || !sub) return;
-  const had = state.pins.find((x) => x.pc === pc && x.sub === sub);
-  if (!had) { state.pins.push({ pc, sub }); if (state.pins.length > 4) state.pins.shift(); }
-  if (sameSheet(state.live, { pc, sub })) state.live = null;
+  if (!pc || !sub || isPinned({ pc, sub })) return;
+  const x = { pc, sub };
+  const live = HUD.els.get('live');
+  if (sameSheet(state.live, x) && live) HUD.pos.set(sheetKey(x), { x: live.offsetLeft, y: live.offsetTop });
+  state.pins.push(x);
+  if (state.pins.length > 6) { HUD.pos.delete(sheetKey(state.pins[0])); state.pins.shift(); }
+  if (sameSheet(state.live, x)) state.live = null;
   state.hotSheet = null;
   if (!HUD.on) setScreens(true);
-  // On a phone the sheet docks under the model, so bring the sub-part to the middle, above it.
-  if (phoneHud()) {
-    const box = new THREE.Box3();
-    for (const m of subMeshes(pc, sub)) box.union(m.userData.restBox.clone().translate(offsetOf(m)).translate(m.userData.ex.clone().multiplyScalar(iso.apart && iso.part === pc.userData.part ? iso.apartSpread : 0).sub(m.position)));
-    const { up } = basis(goal.az, goal.el);
-    goal.target.copy(box.getCenter(new V3())).addScaledVector(up, -0.25 * fit.half / goal.zoom);
-  }
   renderHud();
   refreshLit();
   renderInspector();
-  if (had) flashSheet(had);
   dirty = true;
 }
 function unpinSheet(x) {
   state.pins = state.pins.filter((y) => y !== x);
+  HUD.pos.delete(sheetKey(x));
   state.hotSheet = null;
   renderHud();
   refreshLit();
@@ -1537,36 +1608,48 @@ function unpinSheet(x) {
   dirty = true;
 }
 function clearSheets() {
+  for (const x of state.pins) HUD.pos.delete(sheetKey(x));
   state.pins = [];
   state.live = null;
   state.hotSheet = null;
   clearTimeout(HUD.liveTimer);
 }
-// Sheets of pieces now ghosted go; the live one too.
+// Sheets of pieces now ghosted go, the preview too.
 function keepSheetsOnFocus() {
   if (!iso.focus) return;
+  for (const x of state.pins) if (x.pc !== iso.focus) HUD.pos.delete(sheetKey(x));
   state.pins = state.pins.filter((x) => x.pc === iso.focus);
   if (state.live && state.live.pc !== iso.focus) state.live = null;
 }
-// The live sheet waits a moment before it follows the pointer to another sub-part, and lingers after it leaves.
-function setLive(t) {
+// The preview waits a moment before it follows the pointer to another sub-part and lingers after the pointer leaves,
+// so it can be reached to pin it. `now` shows or hides it at once (a click or a tap).
+function setLive(t, now) {
   clearTimeout(HUD.liveTimer);
   if (sameSheet(t, state.live) || (!t && !state.live)) return;
-  HUD.liveTimer = setTimeout(() => { state.live = t && !isPinned(t) ? t : null; renderHud(); }, t ? (state.live ? 120 : 260) : 1500);
+  const go = () => {
+    state.live = t && !isPinned(t) ? t : null;
+    HUD.pos.delete('live');
+    if (state.live && phoneHud()) centreAboveDock(t.pc, t.sub);
+    renderHud();
+    refreshLit();
+  };
+  if (now) go(); else HUD.liveTimer = setTimeout(go, t ? (state.live ? 150 : 250) : 1200);
 }
-function flashSheet(x) {
-  for (const sc of hudRight.children) {
-    if (sc.dataset.key !== sheetKey(x)) continue;
-    sc.classList.add('hot');
-    sc.scrollIntoView({ block: 'nearest' });
-    setTimeout(() => sc.classList.remove('hot'), 900);
-  }
+// On a phone the sheet docks under the model, so bring the sub-part to the middle, above it.
+function centreAboveDock(pc, sub) {
+  const box = new THREE.Box3();
+  for (const m of subMeshes(pc, sub)) box.union(m.userData.restBox.clone().translate(offsetOf(m)).translate(m.userData.ex.clone().multiplyScalar(iso.apart && iso.part === pc.userData.part ? iso.apartSpread : 0).sub(m.position)));
+  stopGlide();
+  const { up } = basis(goal.az, goal.el);
+  goal.target.copy(box.getCenter(new V3())).addScaledVector(up, -0.25 * fit.half / goal.zoom);
+  dirty = true;
 }
-const sheetKey = (x) => `pin|${x.pc.id}|${x.sub}`;
-function screen(key, code, title, status) {
+function screen(key, sig, code, title, status) {
   const sc = el('section', 'screen');
   sc.dataset.key = key;
+  sc.dataset.sig = sig;
   const bar = el('div', 'bar');
+  bar.title = 'Drag to move';
   bar.append(el('span', 'code', code));
   if (title) bar.append(el('span', null, title));
   bar.append(el('span', 'state', status || ''));
@@ -1586,7 +1669,7 @@ function specTable(rows) {
   t.append(tb);
   return t;
 }
-// The sub-parts of a part (or of the piece in view), each opening its sheet; hovering one lights it in the model.
+// The sub-parts of a part (or of the piece in view), each previewing its sheet; hovering one lights it in the model.
 function subsList(p) {
   const subs = subsOf(p.id, iso.part === p.id ? iso.focus : null);
   if (subs.size < 2) return null;
@@ -1596,7 +1679,7 @@ function subsList(p) {
     const li = el('li');
     const b = el('button', state.pins.some((x) => x.sub === name && x.pc.userData.part === p.id) ? 'on' : null);
     b.type = 'button';
-    b.title = 'Pin its technical sheet';
+    b.title = 'Show its technical sheet';
     b.append(el('span', null, name));
     if (n > 1) b.append(el('span', 'k', count === n ? `on all ${n}` : `on ${count} of ${n}`));
     b.addEventListener('click', () => showSubOf(p.id, name));
@@ -1611,13 +1694,16 @@ function componentScreens() {
   const p = partById.get(iso.part);
   const grp = DOCS.GROUPS.find((g) => g.id === p.group);
   const list = piecesOf.get(p.id) || [];
-  const a = screen(`comp|${p.id}`, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, BASIS_SHORT[p.basis]);
+  const sig = `${p.id}|${iso.focus ? iso.focus.id : ''}|${iso.apart}|${state.pins.map(sheetKey).join(',')}`;
+  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, BASIS_SHORT[p.basis]);
+  a.classList.add('comp');
   const h = el('h4', null, iso.focus ? iso.focus.userData.label : p.name);
   if (!iso.focus && p.count > 1) h.append(' ', el('span', 'count', `×${p.count}`));
   a.append(h);
   if (iso.focus) a.append(el('div', 'from', `${p.name} · piece ${list.indexOf(iso.focus) + 1} of ${list.length}`));
   a.append(el('p', null, p.what), el('h5', null, 'Specification'), specTable(p.specs));
-  const b = screen(`links|${p.id}`, 'Structure', null, iso.apart ? 'Apart' : 'Assembled');
+  const b = screen('links', sig, 'Structure', null, iso.apart ? 'Apart' : 'Assembled');
+  b.classList.add('links');
   const ul = subsList(p);
   if (ul) b.append(el('h5', null, iso.apart ? 'Taken apart into' : 'Made of'), ul);
   if (p.connects?.length) {
@@ -1639,18 +1725,18 @@ function componentScreens() {
 function sheetScreen(x, live) {
   const part = partById.get(x.pc.userData.part);
   const doc = subDocOf(part.id, x.sub);
-  const sc = screen(live ? 'live' : sheetKey(x), `${String(part.n).padStart(2, '0')}·S`, 'Sub-part', live ? 'Live' : 'Pinned');
+  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}`, `${String(part.n).padStart(2, '0')}·S`, 'Sub-part', live ? 'Preview' : 'Pinned');
   sc.classList.toggle('live', live);
   const btn = el('button');
   btn.type = 'button';
   if (live) {
     btn.innerHTML = PIN;
-    btn.title = 'Pin this sheet so it stays (or click the part)';
+    btn.title = 'Pin: keep this sheet open';
     btn.setAttribute('aria-label', 'Pin this sheet');
     btn.addEventListener('click', () => pinSheet(x.pc, x.sub));
   } else {
     btn.textContent = '×';
-    btn.title = 'Close this sheet (Esc closes the last one)';
+    btn.title = 'Close this sheet';
     btn.setAttribute('aria-label', 'Close this sheet');
     btn.addEventListener('click', () => unpinSheet(x));
   }
@@ -1671,27 +1757,92 @@ function sheetScreen(x, live) {
   sc.addEventListener('mouseleave', () => { if (state.hotSheet === x) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); if (live) setLive(null); });
   return sc;
 }
+// Where a screen goes the first time: the component on the left under the inspect bar, its structure below it, a
+// preview beside the pointer (or on the right), a pinned sheet where its preview was. After a drag it stays put.
+function placeScreen(sc) {
+  if (phoneHud()) { sc.style.left = sc.style.top = ''; return; }
+  const key = sc.dataset.key;
+  const w = sc.offsetWidth, h = sc.offsetHeight;
+  const bar = $('isobar');
+  const top = Math.max(56, bar.offsetTop + bar.offsetHeight + 12);
+  let p = HUD.pos.get(key);
+  if (!p) {
+    if (key === 'comp') p = { x: 12, y: top };
+    else if (key === 'links') { const c = HUD.els.get('comp'); p = c ? { x: c.offsetLeft, y: c.offsetTop + c.offsetHeight + 10 } : { x: 12, y: top }; }
+    else if (key === 'live' && state.live?.at) {
+      const a = state.live.at;
+      p = { x: a.x + 24 + w > width - 8 ? a.x - 24 - w : a.x + 24, y: a.y - 28 };
+    } else {
+      const n = [...HUD.els.keys()].filter((k) => k.startsWith('pin|')).indexOf(key);
+      p = { x: width - w - 12, y: top + Math.max(0, n) * 28 };
+    }
+  }
+  sc.style.left = `${clamp(p.x, 4, Math.max(4, width - w - 4))}px`;
+  sc.style.top = `${clamp(p.y, 4, Math.max(4, height - Math.min(h, height - 8) - 4))}px`;
+}
+// Screens are kept by key and rebuilt only when their content changes, so one being dragged is never replaced.
 function renderHud() {
   const show = !!iso.part && HUD.on;
   const phone = phoneHud();
   hud.hidden = !show;
   hud.classList.toggle('phone', phone);
-  $('card').classList.toggle('sheet', show && phone && state.pins.length > 0);
-  if (!show) { hudLeft.replaceChildren(); hudRight.replaceChildren(); HUD.shown.clear(); return; }
-  const left = [], right = [];
-  if (!phone && state.live) right.push(sheetScreen(state.live, true));
-  for (const x of (phone ? state.pins.slice(-1) : state.pins).slice().reverse()) right.push(sheetScreen(x, false));
-  // The component's own screens, unless the inspector beside the view is open and already says the same.
-  if (!phone && (twoCols() || !panels.insp)) (twoCols() ? left : right).push(...componentScreens());
-  const keys = new Set();
-  for (const [col, list] of [[hudLeft, left], [hudRight, right]]) {
-    const top = col.scrollTop;
-    for (const sc of list) { keys.add(sc.dataset.key); if (!HUD.shown.has(sc.dataset.key)) sc.classList.add('enter'); }
-    col.replaceChildren(...list);
-    col.scrollTop = top;
+  const list = [];
+  if (show) {
+    if (compShown()) list.push(...componentScreens());
+    if (phone) { if (state.live) list.push(sheetScreen(state.live, true)); else if (state.pins.length) list.push(sheetScreen(state.pins[state.pins.length - 1], false)); }
+    else {
+      for (const x of state.pins) list.push(sheetScreen(x, false));
+      if (state.live) list.push(sheetScreen(state.live, true));
+    }
   }
-  HUD.shown = keys;
+  $('card').classList.toggle('sheet', phone && list.length > 0);
+  const keep = new Set();
+  for (const sc of list) {
+    const key = sc.dataset.key, old = HUD.els.get(key);
+    keep.add(key);
+    if (old && old.dataset.sig === sc.dataset.sig) continue;
+    if (old) {
+      sc.style.zIndex = old.style.zIndex;
+      if (key === 'live') sc.classList.add('enter');
+      old.replaceWith(sc);
+    } else {
+      sc.classList.add('enter');
+      sc.style.zIndex = String(++HUD.z);
+      hud.append(sc);
+    }
+    HUD.els.set(key, sc);
+  }
+  for (const [key, sc] of HUD.els) if (!keep.has(key)) { sc.remove(); HUD.els.delete(key); }
+  for (const sc of HUD.els.values()) placeScreen(sc);
 }
+// Drag a screen by its top bar; a click anywhere on one brings it to the front.
+hud.addEventListener('pointerdown', (e) => {
+  const sc = e.target.closest('.screen');
+  if (!sc) return;
+  sc.style.zIndex = String(++HUD.z);
+  const bar = e.target.closest('.bar');
+  if (!bar || e.target.closest('button') || phoneHud() || e.button !== 0) return;
+  e.preventDefault();
+  bar.setPointerCapture(e.pointerId);
+  sc.classList.add('dragging');
+  const start = { x: sc.offsetLeft, y: sc.offsetTop, cx: e.clientX, cy: e.clientY };
+  const move = (ev) => {
+    const x = clamp(start.x + ev.clientX - start.cx, 4, width - sc.offsetWidth - 4);
+    const y = clamp(start.y + ev.clientY - start.cy, 4, height - 36);
+    sc.style.left = `${x}px`;
+    sc.style.top = `${y}px`;
+    HUD.pos.set(sc.dataset.key, { x, y });
+  };
+  const up = () => {
+    bar.removeEventListener('pointermove', move);
+    bar.removeEventListener('pointerup', up);
+    bar.removeEventListener('pointercancel', up);
+    sc.classList.remove('dragging');
+  };
+  bar.addEventListener('pointermove', move);
+  bar.addEventListener('pointerup', up);
+  bar.addEventListener('pointercancel', up);
+});
 
 // ---------- Selection ----------
 function select(id, o = {}) {
@@ -1943,7 +2094,7 @@ function renderOverview(box) {
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
-    'While inspecting, the part is described on screens beside it. Point at a sub-part to see its technical sheet (material, dimensions and sources); click it, or the pin, to keep the sheet. The arrows by “All” step through the pieces of a part one at a time, and the panels on either side fold away to give the screens room.',
+    'While inspecting, the part is described on screens beside it. Point at a sub-part to preview its technical sheet (material, dimensions and sources); the pin keeps it open. Drag any screen by its top bar. The arrows by “All” step through the pieces of a part one at a time. Drag the edge of either side panel to size it, or fold it away to give the screens room.',
     'The coloured dot next to each part says how far to trust its drawn shape and position.',
   ]) box.append(el('p', null, s));
 }
@@ -1983,9 +2134,11 @@ function renderHelp(box) {
       ['Wheel', 'zoom toward the pointer'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own; again on one piece to zoom to it'],
-      ['Point at a sub-part (inspecting)', 'its technical sheet shows live on a screen'],
-      ['Click a sub-part (inspecting)', 'pin its sheet so it stays; × closes it'],
+      ['Point at a sub-part (inspecting)', 'preview its technical sheet beside the pointer'],
+      ['Pin on a preview', 'keep the sheet open until × closes it'],
+      ['Drag a screen’s top bar', 'move the screen'],
       ['Hover a screen', 'light its part in the model'],
+      ['Drag a panel’s edge', 'size the panel; double-click the edge for the default'],
       ['Double-click empty space', 'reset the view'],
     ]],
     ['Touch', [
@@ -2012,7 +2165,7 @@ function renderHelp(box) {
       ['S', 'information screens on or off'],
       ['F', 'fold or unfold the side panels'],
       ['H', 'hide the selected part'],
-      ['Esc', 'step back: the last pinned sheet, one piece, the part, then the selection'],
+      ['Esc', 'step back: the preview, the last pinned sheet, one piece, the part, then the selection'],
     ]],
   ];
   for (const [title, rows] of groups) {
@@ -2240,7 +2393,8 @@ function endPointer(e) {
     if (!iso.part) select(id && id === state.select ? null : id);
     else {
       const m = pickMesh(ndcOf(e));
-      if (m && m.userData.sub) pinSheet(m.userData.piece, m.userData.sub);
+      if (m && m.userData.sub) setLive({ pc: m.userData.piece, sub: m.userData.sub, at: pointAt(e) }, true);
+      else setLive(null, true);
     }
   }
   if (pointers.size === 0) { drag = null; stage.classList.remove('dragging'); }
@@ -2263,6 +2417,7 @@ stage.addEventListener('wheel', (e) => {
   zoomBy(Math.exp(-clamp(dy, -240, 240) * 0.0016), ndcOf(e));
 }, { passive: false });
 
+const pointAt = (e) => { const r = stage.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
 function setHover(mesh) {
   const pc = mesh?.userData.piece || null;
   const id = pc?.userData.part || null;
@@ -2273,13 +2428,16 @@ function setHover(mesh) {
   state.hoverMesh = mesh;
   stage.classList.toggle('pointing', !!pc);
   refreshLit();
-  // While inspecting, the live screen names the sub-part, so the tooltip only shows without screens.
+  // While inspecting, the preview names the sub-part, so the tooltip only shows without screens. A pinned sheet
+  // lights up while its sub-part is under the pointer.
   const screens = iso.part && HUD.on && !phoneHud();
-  if (screens && !coarse) setLive(sub ? { pc, sub } : null);
+  if (screens && !coarse) setLive(sub ? { pc, sub, at: lastPointer ? pointAt(lastPointer) : null } : null);
+  const hotKey = pc && sub ? sheetKey({ pc, sub }) : '';
+  for (const [k, sc] of HUD.els) if (k.startsWith('pin|')) sc.classList.toggle('hot', k === hotKey);
   if (pc && lastPointer && !coarse && !screens) {
     const r = stage.getBoundingClientRect();
     const p = partById.get(id);
-    if (iso.part) tip.replaceChildren(sub || pc.userData.label, el('small', null, sub ? 'click to pin its sheet' : 'double-click to zoom'));
+    if (iso.part) tip.replaceChildren(sub || pc.userData.label, el('small', null, sub ? 'click for its sheet' : 'double-click to zoom'));
     else tip.replaceChildren(p.name, el('small', null, 'double-click to inspect'));
     tip.style.left = `${lastPointer.clientX - r.left}px`;
     tip.style.top = `${lastPointer.clientY - r.top}px`;
@@ -2316,8 +2474,8 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'f') togglePanels();
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
   else if (k === 'escape') {
-    if (state.pins.length) unpinSheet(state.pins[state.pins.length - 1]);
-    else if (state.live) { state.live = null; renderHud(); }
+    if (state.live) setLive(null, true);
+    else if (state.pins.length) unpinSheet(state.pins[state.pins.length - 1]);
     else if (iso.focus) setFocus(null);
     else if (iso.part) endInspect();
     else select(null);
@@ -2411,11 +2569,17 @@ function frame() {
     const u = pc.userData;
     const d0 = u.dp, t0 = u.tp, g0 = u.gNow;
     const out = iso.part === u.part ? 1 : 0;
-    if (out || now >= u.dHold) u.dp = follow(u.dp, out, out ? 5 : 3.2);
+    if (now >= u.dHold) u.dp = follow(u.dp, out, 3.2);
     else active = true;
     u.tp = follow(u.tp, iso.part === u.part && iso.apart && (!iso.focus || iso.focus === pc) ? 1 : 0, 4.5);
-    if (u.ghost) u.gNow = 1;
-    else if (u.gNow > 0) { if (now >= u.gHold) u.gNow = follow(u.gNow, 0, 3.5); active = true; }
+    // Half a second to fade to a ghost, a little longer back to solid (after its hold), eased where it is drawn.
+    const gT = u.ghost ? 1 : 0;
+    if (u.gNow !== gT) {
+      if (reduceMotion.matches) u.gNow = gT;
+      else if (gT) u.gNow = Math.min(1, u.gNow + dt / 0.5);
+      else if (now >= u.gHold) u.gNow = Math.max(0, u.gNow - dt / 0.8);
+      active = true;
+    }
     if (u.gNow !== g0) moving = true;
     const p = u.egroup ? u.egroup.p : state.ep;
     if (u.dp !== d0 || moving) {
@@ -2427,6 +2591,14 @@ function frame() {
       pc.traverse((m) => { if (m.isMesh) m.position.copy(m.userData.ex).multiplyScalar(k); });
       moving = true;
     }
+  }
+  // The plasma fades out with the ghosts and lights again with them.
+  const pT = plasmaShown() ? 1 : 0;
+  if (state.pNow !== pT) {
+    if (reduceMotion.matches) state.pNow = pT;
+    else if (!pT) state.pNow = Math.max(0, state.pNow - dt / 0.5);
+    else if (now >= state.plasmaHold) state.pNow = Math.min(1, state.pNow + dt / 0.8);
+    moving = true;
   }
   if (moving) { rebuildStretch(); applyLook(); active = true; }
 
@@ -2471,14 +2643,15 @@ renderInspector();
 refreshPieces();
 applyClip();
 if (renderer) {
-  new ResizeObserver(resize).observe(stage);
+  let resizeQueued = false;
+  new ResizeObserver(() => { if (!resizeQueued) { resizeQueued = true; requestAnimationFrame(() => { resizeQueued = false; resize(); }); } }).observe(stage);
   new IntersectionObserver((entries) => { visible = entries[0].isIntersecting; dirty = true; }).observe(stage);
   document.addEventListener('visibilitychange', () => { lastT = performance.now() / 1000; dirty = true; });
   resize();
 }
 applyTheme();
 requestAnimationFrame(frame);
-window.__spm1 = { view, goal, iso, state, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, showSubOf, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels };
+window.__spm1 = { view, goal, iso, state, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, showSubOf, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels };
 </script>
 </body>
 </html>

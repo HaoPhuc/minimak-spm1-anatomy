@@ -13,7 +13,7 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | **Inspector** (right) | **Part**: what the part does, its specification with a source tag on every row, its pieces, what it connects to, and practical notes. **Sources**: every reference, what was taken from it, and which parts cite it. **Controls**: every mouse, touch and key binding. |
 | **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, **Panels**, and the theme: the light drawing or the hologram. |
 
-Either side panel folds to a thin rail with the arrow in its header, and **Panels** (or `F`) folds or unfolds both, giving the model and its screens the full width. The page remembers the choice. On a narrow screen the panels stack under the model instead.
+Drag the edge between a side panel and the view to size the panel. Double-click the edge for the default width, or focus it and use the arrow keys. Dragged nearly shut, a panel folds to a thin rail; the arrow in its header does the same, and a click on the rail opens it again. **Panels** (or `F`) folds or unfolds both, giving the model and its screens the full width. The page remembers the sizes. On a narrow screen the panels stack under the model instead.
 
 ### Explode
 
@@ -28,7 +28,7 @@ The **Spread** slider next to the button, or `[` and `]`, sets how far apart the
 
 ### Inspecting one component
 
-Double-click a part, or press **Inspect on its own**. The part lifts out of the machine, everything else turns into an x-ray ghost, and the camera frames the part and turns around it. Then:
+Double-click a part, or press **Inspect on its own**. The rest of the machine fades to an x-ray ghost, then the part lifts out while the camera glides round to frame it, so you can see where it comes from. Then:
 
 - **Take apart** separates the part into its sub-parts along the directions they come off:
   - Bolts slide out of their holes and nuts come off the back.
@@ -37,9 +37,9 @@ Double-click a part, or press **Inspect on its own**. The part lifts out of the 
   - The pump's motor and fan cover come off its block.
 
   Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest.
-- A part with several pieces (three viewports, eight TF coils) starts with all of them. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time, and the camera frames each. Clicking **All** picks the nearest piece, or goes back to every piece. A double-click on a piece, or the pieces list in the inspector, does the same.
+- A part with several pieces (three viewports, eight TF coils) starts with all of them. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time. The other pieces fade to ghosts and the camera glides to the one you picked. Clicking **All** picks the nearest piece, or goes back to every piece. A double-click on a piece, or the pieces list in the inspector, does the same.
 - **Context** turns the ghost of the rest of the machine on or off.
-- **Esc** steps back one level: the last pinned sheet, then the piece, the part and the selection.
+- **Esc** steps back one level: the preview, the last pinned sheet, then the piece, the part and the selection.
 - **Done** or **Back to assembly** reverses the inspect at the pace of an explode, so you can see where the part goes:
   1. A part that was taken apart goes back together.
   2. The part flies home while the camera glides back to the view you had before.
@@ -49,12 +49,13 @@ Double-click a part, or press **Inspect on its own**. The part lifts out of the 
 
 ### Information screens
 
-While inspecting, the part is described on screens floating beside it, after the displays around Tony Stark's holograms. The camera frames the part in the room between them. **Screens** in the inspect bar, or `S`, turns them off and on.
+While inspecting, the part is described on screens floating in the view, after the displays around Tony Stark's holograms. Drag any screen by its top bar to put it where you like; it stays there. **Screens** in the inspect bar, or `S`, turns them off and on.
 
-- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part to pin its sheet, or a connected part to inspect that instead. With both panels open the inspector already shows this, so these two appear once the inspector is folded or the view is wide.
-- **Sub-part sheets.** Point at a sub-part and its technical sheet appears on a live screen (dashed edge). It follows the pointer and lingers a moment after the pointer leaves. To keep a sheet, click the sub-part or the pin on the live screen. Up to four pinned sheets stay until you close them with ×, or with `Esc` for the last one.
+- **The component.** Its name and piece, what it does, and its specification. A second screen lists what it is made of, what it connects to and a practical note. Click a sub-part there to preview its sheet, or a connected part to inspect that instead. They start on the left, and the camera frames the part to their right. With the inspector open beside a narrow view, it already shows the same, so these two appear once the inspector is folded or the view is wide.
+- **Previews.** Point at a sub-part and its technical sheet appears beside the pointer, on a screen with a dashed edge. It follows the pointer to the next sub-part after a moment, and lingers a little after the pointer leaves, long enough to reach it. A click shows it at once and never pins it.
+- **Pinned sheets.** Only the pin on a preview keeps a sheet. It stays where the preview was, until you close it with ×. Pointing at a pinned sub-part in the model lights its sheet.
 - **Linking.** Hovering a screen lights its sub-part in the model. There are no arrows to follow as you turn.
-- **On a phone** the last pinned sheet docks under the model.
+- **On a phone** a tap previews a sub-part, and the sheet docks under the model.
 
 A sheet gives the material, the dimensions and notes, with a source tag on every row.
 
