@@ -177,14 +177,19 @@
   .screen.folded { padding-bottom: 6px; overflow: hidden; }
   .screen.folded > :not(.bar) { display: none; }
   .screen.folded .bar { margin-bottom: 0; cursor: pointer; }
-  .screen .bar .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .screen .keep { margin: 0 0 6px; font-size: 11.5px; color: var(--accent); }
   .screen .bar { cursor: grab; touch-action: none; user-select: none; }
   .screen.dragging .bar { cursor: grabbing; }
-  .screen .bar { display: flex; align-items: center; gap: 6px; margin: 0 -6px 4px 0; font: 600 10.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .screen .bar .code { color: var(--accent); }
-  .screen .bar .state { margin-left: auto; }
-  .screen .bar button { flex: none; width: 24px; height: 22px; border: 0; background: none; border-radius: 5px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
+  /* A sheet's bar names the sub-part in full, wrapping rather than cut off, so a folded sheet still says what it holds.
+     The piece goes on its own line under it; the Preview label and the button stay on the first line, at the right.
+     A component bar keeps its code, title and state; its state drops to a second line when it does not fit. */
+  .screen .bar { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 6px; margin: 0 -6px 4px 0; font: 600 12px/18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--muted); }
+  .screen .bar .code { flex: none; font: 600 12px/18px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .screen .bar .ttl { flex: 1 1 0; min-width: 0; font-weight: 600; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
+  .screen.comp .bar .ttl { flex-basis: auto; }
+  .screen .bar .piece { order: 1; flex: 1 0 100%; min-width: 0; font-weight: 400; line-height: 16px; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
+  .screen .bar .state { flex: none; margin-left: auto; display: inline-flex; align-items: center; }
+  .screen .bar button { flex: none; width: 24px; height: 22px; margin: -2px 0; border: 0; background: none; border-radius: 5px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
   .screen .bar button:hover { background: var(--chip); color: var(--ink); }
   .screen .bar button svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
   .screen .bar button[aria-pressed="true"] { color: var(--accent); }
