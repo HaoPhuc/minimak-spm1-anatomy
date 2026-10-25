@@ -1406,6 +1406,7 @@ function inspect(id, focusPiece = null, o = {}) {
   renderHud();
   frameIsolated(!focusPiece, MOVE.fly, MOVE.lift);
   renderInspector();
+  setHint();
 }
 // Back to the assembly at the pace of an explode, in the reverse order: the sub-parts go back together, then the part
 // flies home while the camera glides back to where it was, and only then does the rest of the machine turn solid.
@@ -1435,6 +1436,7 @@ function endInspect() {
   }
   updateIsoBar();
   renderInspector();
+  setHint();
   dirty = true;
 }
 // Show one piece of the inspected part (the rest of it fades to ghosts), or all of them with null.
@@ -2709,9 +2711,11 @@ function updateReadout() {
   r.dataset.l1 = line1; r.dataset.l2 = line2;
   r.replaceChildren(el('div', null, line1), el('div', null, line2));
 }
-const HINT = () => (coarse ? 'Drag to turn · two fingers to pan and zoom · double-tap to inspect'
-  : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect'
-    : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect');
+// While inspecting, the hint says what the pointer does to sub-parts; outside, how to move and how to inspect.
+const HINT = () => (coarse ? (iso.part ? 'Tap a sub-part to preview its sheet' : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+  : iso.part ? 'Point at a sub-part to preview · click to keep · Esc steps back'
+    : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
+      : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
 function setHint(text) { $('hint').textContent = text || HINT(); }
 
 // ---------- Pointer, wheel and keys ----------
