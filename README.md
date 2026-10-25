@@ -114,12 +114,12 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 | --- | --- | --- |
 | S1 | [minitmak.com](https://www.minitmak.com/) | Vessel quarters and ring, port counts, TF turns, cable and current, PF and satellite coils, supplies, discharge, diagnostics, software |
 | S2 | [minitmak.com/specification](https://www.minitmak.com/specification) | R₀ and a, TF field, PF control, solenoid drive, gases, plasma temperature, envelope |
-| S3 | [rideosystems.biz/technology](https://www.rideosystems.biz/technology) | The same headline specification |
+| S3 | [rideosystems.biz/technology](https://www.rideosystems.biz/technology) | Confirms S2's headline numbers on the overview: R₀ and a, the TF field, the plasma, the envelope |
 | S4 | [P. Apte, "The Minimak. Design, Build and Operation", Univ. of Manchester webinar, Oct 2025 (PDF)](https://www.minitmak.com/_files/ugd/5de522_5cee74b6dc514f1eb1a3fee4cb50b9e4.pdf) | Construction (TIG welds, ConFlat, leak test, copper TF formers, metal PF formers), pump and gauge, 40 A supplies, 4 kV glow supply, PLC, software, operating fields, upgrades. Its photos set most of the proportions |
 | S5 | [Kurt J. Lesker, ConFlat technical notes](https://www.lesker.com/newweb/flanges/flanges_technicalnotes_conflat_1.cfm) | CF flange sizes |
 | S6 | [Wikipedia, Vacuum flange](https://en.wikipedia.org/wiki/Vacuum_flange) | How CF and KF joints seal |
 | S7 | [MKS, Mini-Convectron gauge](https://www.mks.com/p/275600-0-GD-T) | The Convectron gauge family and its range |
-| S8 | [minimak-groundwork](https://github.com/HaoPhuc/minimak-groundwork) | TU/e context and the Langmuir fit script |
+| S8 | [minimak-groundwork](https://github.com/HaoPhuc/minimak-groundwork) | Background, not cited by any row: TU/e context and the Langmuir fit script |
 | S9 | [MBE-Komponenten, flange, gasket and tube dimensions](https://www.mbe-komponenten.de/service/flange-gasket/) | Every CF flange, port tube, gasket and bolt hole in the model and on the sheets |
 | S10 | [Kurt J. Lesker, Kodial CF viewports](https://www.lesker.com/viewports/viewports-cf-flanged-kodial-glass.cfm) | Viewport glass, view diameter, thickness, Kovar seal, bake-out |
 
