@@ -10,14 +10,14 @@
     --paper: #f2f0e9;
     --card: #fbfaf6;
     --ink: #1c1c1a;
-    --muted: #6a6962;
+    --muted: #5e5d57;
     --rule: #dad7cd;
     --soft: #efede5;
     --chip: #e8e5da;
-    --accent: #0f8f88;
+    --accent: #0a736e;
     --spec: #2b8a6e;
-    --photo: #b07a12;
-    --assumed: #8a8882;
+    --photo: #9a6a0f;
+    --assumed: #7c7a74;
     color-scheme: light;
   }
   /* The dark theme is a hologram. The class is set before first paint (script below) and by applyTheme. */
@@ -25,7 +25,7 @@
     --paper: #03080f;
     --card: #06121e;
     --ink: #cfe3f2;
-    --muted: #6a8ea8;
+    --muted: #7a9fb9;
     --rule: #16314a;
     --soft: #0a1b2a;
     --chip: #0e2436;
@@ -159,7 +159,7 @@
   .screen {
     position: absolute; width: 280px; max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; pointer-events: auto;
     padding: 8px 12px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
-    background: color-mix(in srgb, var(--card) 72%, transparent);
+    background: color-mix(in srgb, var(--card) 90%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
     border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
     box-shadow: 0 8px 26px rgb(0 0 0 / 0.14);
@@ -171,8 +171,8 @@
   .screen.comp { max-height: 52%; }
   .screen.links { max-height: 36%; }
   .screen.dragging { opacity: 0.9; }
-  .screen.other { opacity: 0.62; }
-  .screen.other:hover, .screen.other.hot { opacity: 1; }
+  /* Another piece's sheet is marked by a rule down its left edge, not dimmed, so its text keeps its contrast. */
+  .screen.other, .holo .screen.other { border-left: 3px solid var(--muted); }
   /* A folded sheet keeps only its top bar; a click on the bar opens it again. */
   .screen.folded { padding-bottom: 6px; overflow: hidden; }
   .screen.folded > :not(.bar) { display: none; }
@@ -363,7 +363,7 @@
   /* Screens: tinted glass with corner brackets and a slow scan passing down them. */
   .holo .screen {
     border-radius: 3px;
-    background: rgb(5 18 32 / 0.62);
+    background: rgb(5 18 32 / 0.85);
     border-color: rgb(90 170 225 / 0.42);
     box-shadow: 0 0 22px rgb(90 170 225 / 0.14), inset 0 0 24px rgb(90 170 225 / 0.06);
   }
