@@ -473,8 +473,11 @@
 
       // Two TF coils per quarter, either side of the lateral port. Taken apart along the coil axis:
       // the copper former one way, the cover band the other, the winding in the middle.
+      // Each coil is named by the neighbouring quarter it faces: j = 0 (pk − 22.5°) leans towards
+      // quarter k − 1, j = 1 (pk + 22.5°) towards quarter k + 1.
       for (const [j, pc] of [[0, pk - 22.5], [1, pk + 22.5]]) {
-        const coil = piece('tf', q, { clip: true, apart: V(0, 0, 20), label: `TF coil ${2 * k + j + 1}` });
+        const side = QUARTER[(k + (j ? 1 : 3)) % 4].toLowerCase();
+        const coil = piece('tf', q, { clip: true, apart: V(0, 0, 20), label: `${QUARTER[k]} quarter, ${side}-side coil` });
         const tf = D.tf, hw = tf.halfW / D.R0, c = pc * DEG;
         const axis = toroidal(pc);
         const FORMER = { sub: 'Copper former with fold-out tabs', ex: along(axis, -11) };
@@ -671,7 +674,7 @@
       addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br, S.k), 'bolt', circleMatrices(pol(D.R0, deg, c1 + D.gap + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), { sub: '6 bolts on the adaptor', ex: V(0, 0, 21) });
       const kfFrom = c1 + D.gap + S.t;
 
-      const gg = piece('gauge', qB, { clip: true, apart: V(0, 0, 22), sub: 'Convectron ATM display module' });
+      const gg = piece('gauge', qB, { clip: true, apart: V(0, 0, 22), label: 'Vacuum gauge', sub: 'Convectron ATM display module' });
       const kfTo = kfFrom + 9;
       add(gg, at(ring(0.75, 0.95, kfTo - kfFrom, 24), frame(pol(D.R0, deg, (kfFrom + kfTo) / 2), Z)), 'steel', { sub: 'KF16 tube' });
       const KF = { sub: 'KF16 clamp and centring ring', ex: along(radial(deg), 6) };
@@ -842,10 +845,12 @@
       add(tb, at(box(inner * 2, inner * 2, 1.0), T(0, 0, TB.shelf + 0.5)), 'panel', { sub: 'Lower shelf', ex: V(0, 0, -3) });
     }
 
+    // Post i stands at 45 + 90i°: +x is right, +y is back, so 45° is the back-right corner.
+    const CORNER = ['Back-right', 'Back-left', 'Front-left', 'Front-right'];
     for (let i = 0; i < 4; i++) {
       const deg = 45 + i * 90;
       const P = D.post;
-      const pc = piece('posts', tableG, { sub: 'Slotted aluminium extrusion', apart: along(radial(deg), 10), label: `Post ${i + 1}` });
+      const pc = piece('posts', tableG, { sub: 'Slotted aluminium extrusion', apart: along(radial(deg), 10), label: `${CORNER[i]} post` });
       const h = P.top - TB.top;
       const c = pol(P.R, deg, TB.top + h / 2);
       add(pc, at(box(P.half * 2, P.half * 2, h), rtz(c, deg)), 'alu');
