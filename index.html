@@ -48,6 +48,9 @@
   .mono, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   button { font: inherit; color: inherit; }
   a { color: inherit; }
+  /* Read by screen readers, never seen: the one status line. Pinned to the top-left corner of its containing block, so
+     wherever it sits (even last in the body) it adds no scrollable overflow. */
+  .sr-only { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
   /* ---------- App shell: tree | viewer | inspector, each scrolls on its own ---------- */
   .app {
