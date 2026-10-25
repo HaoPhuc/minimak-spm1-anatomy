@@ -1591,7 +1591,10 @@ for (const g of document.querySelectorAll('.grip')) {
 const hud = $('hud');
 const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [], folded: new Set(), opened: null, justOpened: null, flashTimer: 0, kept: new Map() };
 const PIN = '<svg viewBox="0 0 16 16"><path d="M5.5 1.5h5l-.7 4.3 2.7 2.4v1.3h-9V8.2l2.7-2.4zM8 9.5v5"/></svg>';
-const BASIS_SHORT = { spec: 'Spec', photo: 'Photo', assumed: 'Assumed' };
+// What the drawn shape and position of a part rest on: the same words on the component's bar, the inspector's chip,
+// the tree's dots and its legend.
+const BASIS_SHORT = { spec: 'published spec', photo: 'photos', assumed: 'a guess' };
+const BASIS_TIP = 'How far to trust the drawn shape and position. Each number carries its own tag.';
 const SCREEN_W = 280;
 const phoneHud = () => width < 520;
 const sameSheet = (a, b) => !!a && !!b && a.pc === b.pc && a.sub === b.sub;
@@ -1806,8 +1809,11 @@ function componentScreens() {
   const grp = DOCS.GROUPS.find((g) => g.id === p.group);
   const list = piecesOf.get(p.id) || [];
   const sig = `${p.id}|${iso.focus ? iso.focus.id : ''}|${iso.apart}|${state.pins.map(sheetKey).join(',')}`;
-  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, `Shape: ${BASIS_SHORT[p.basis]}`);
+  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, BASIS[p.basis]);
   a.classList.add('comp');
+  const st = a.firstChild.querySelector('.state');
+  st.prepend(el('span', `basis ${p.basis}`));
+  st.title = BASIS_TIP;
   const h = el('h4', null, iso.focus ? iso.focus.userData.label : p.name);
   if (!iso.focus && p.count > 1) h.append(' ', el('span', 'count', `×${p.count}`));
   a.append(h);
@@ -2248,6 +2254,7 @@ function buildTree() {
   nd.append(ndHead, ndList);
   host.append(nd);
   const lg = el('div', 'legend-basis');
+  lg.title = BASIS_TIP;
   for (const k of ['spec', 'photo', 'assumed']) {
     const d = el('div');
     d.append(el('span', `basis ${k}`), BASIS[k]);
@@ -2255,7 +2262,7 @@ function buildTree() {
   }
   host.append(lg);
 }
-const BASIS = { spec: 'Geometry from the published spec', photo: 'Scaled or placed from photos', assumed: 'Placed where plausible (guess)' };
+const BASIS = Object.fromEntries(Object.entries(BASIS_SHORT).map(([k, v]) => [k, `Drawn from: ${v}`]));
 // Search: every typed word must appear. Under a part, rows name its pieces and sub-parts ("Left viewport (webcam) ·
 // 16 bolts"), each opening that sheet. They show when a word names a piece or a sub-part rather than only the part.
 // Labels use en dashes (Right–back); a typed hyphen or dash matches any of them.
@@ -2378,6 +2385,7 @@ function renderInspector() {
   box.append(h);
   const chips = el('div', 'chips');
   const c = el('span', 'chip');
+  c.title = BASIS_TIP;
   c.append(el('span', `basis ${p.basis}`), BASIS[p.basis]);
   chips.append(c);
   box.append(chips);
