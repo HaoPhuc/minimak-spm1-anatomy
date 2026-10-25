@@ -657,14 +657,15 @@ const FRAG_COLOR = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
     vec3 c = uColor * tone;
-    // A lit part keeps its own material: it only lightens toward the paper, and an accent rim, strongest at grazing
-    // angles, rings its silhouette. The levels (hover 0.26-0.32, kept 0.42, hot 0.55) are spread over 0-1 so each
-    // reads apart: a higher one lightens more and widens the rim. Stripes stay reserved for cut faces.
+    // A lit part keeps its own material: it only lightens toward the paper, and a thin accent rim, only at near-grazing
+    // angles, outlines its silhouette (faces seen at a slant, like a former's fold-out tabs, stay copper). The levels
+    // (hover 0.26-0.32, kept 0.42, hot 0.55) are spread over 0-1 so each reads apart: a higher one lightens more and
+    // widens the rim a little. Stripes stay reserved for cut faces.
     if (uLit > 0.0) {
       float s = clamp((uLit - 0.2) / 0.3, 0.0, 1.0);
-      float rim = smoothstep(0.85 - 0.75 * s, 1.0, 1.0 - abs(n.z));
-      c = mix(c, uPaper, 0.08 + 0.3 * s);
-      c = mix(c, uLitColor, rim * (0.5 + 0.5 * s));
+      float rim = smoothstep(0.85 - 0.2 * s, 1.0, 1.0 - abs(n.z));
+      c = mix(c, uPaper, 0.04 + 0.4 * s);
+      c = mix(c, uLitColor, rim * (0.6 + 0.4 * s));
     }
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
