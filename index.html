@@ -923,7 +923,13 @@ function subsOf(part, only) {
   }
   return out;
 }
-for (const [part, list] of piecesOf) list.forEach((pc, i) => { if (!pc.userData.label) pc.userData.label = list.length > 1 ? `${partById.get(part)?.name || part} ${i + 1}` : partById.get(part)?.name || part; });
+// Pieces are named by where they sit (device.js), never numbered. One without a label takes the part's name; one of
+// several then cannot be told from the rest, so say so in development.
+for (const [part, list] of piecesOf) for (const pc of list) {
+  if (pc.userData.label) continue;
+  pc.userData.label = partById.get(part)?.name || part;
+  if (list.length > 1) console.warn(`Missing piece label: a piece of "${pc.userData.label}" (${part}) takes the part's name.`);
+}
 
 // ---------- Plasma glow (layer 1, no ink) and a soft floor shadow ----------
 const GLOW_VERT = /* glsl */`
