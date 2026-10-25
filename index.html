@@ -1744,15 +1744,17 @@ function centreAboveDock(pc, sub) {
   goal.target.copy(box.getCenter(new V3())).addScaledVector(up, -0.25 * fit.half / goal.zoom);
   dirty = true;
 }
+// A screen's top bar: a code and a state for the component's screens; a sheet's bar has no code, and a state only
+// while it is a preview.
 function screen(key, sig, code, title, status) {
   const sc = el('section', 'screen');
   sc.dataset.key = key;
   sc.dataset.sig = sig;
   const bar = el('div', 'bar');
   bar.title = 'Drag to move';
-  bar.append(el('span', 'code', code));
+  if (code) bar.append(el('span', 'code', code));
   if (title) bar.append(el('span', 'ttl', title));
-  bar.append(el('span', 'state', status || ''));
+  if (status) bar.append(el('span', 'state', status));
   sc.append(bar);
   return sc;
 }
@@ -1834,12 +1836,14 @@ function componentScreens() {
 function sheetScreen(x, live) {
   const part = partById.get(x.pc.userData.part);
   const doc = subDocOf(part.id, x.sub);
-  // The bar names the sub-part, and the piece when the part has several, so a sheet folded to its bar still says what
-  // it is and two pieces' sheets read apart. A sheet of a piece other than the one in focus is dimmed, not closed.
+  // The bar names the sub-part in full, and under it the piece when the part has several, so a sheet folded to its bar
+  // still says what it is and two pieces' sheets read apart. Kept is the default; only a preview says so. A sheet of a
+  // piece other than the one in focus is dimmed, not closed.
   const many = (piecesOf.get(part.id) || []).length > 1;
   const name = many ? `${x.pc.userData.label} · ${x.sub}` : x.sub;
   const other = !live && !!iso.focus && x.pc !== iso.focus;
-  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}|${other}`, `${String(part.n).padStart(2, '0')}·S`, name, live ? 'Preview' : 'Pinned');
+  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}|${other}`, null, x.sub, live ? 'Preview' : null);
+  if (many) sc.firstChild.querySelector('.ttl').after(el('span', 'piece', x.pc.userData.label));
   sc.classList.toggle('live', live);
   sc.classList.toggle('other', other);
   sc.firstChild.title = `${name}. Drag to move${live ? ', drop to keep' : ''}`;
