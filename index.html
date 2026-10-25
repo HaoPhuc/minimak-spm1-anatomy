@@ -10,14 +10,14 @@
     --paper: #f2f0e9;
     --card: #fbfaf6;
     --ink: #1c1c1a;
-    --muted: #6a6962;
+    --muted: #5e5d57;
     --rule: #dad7cd;
     --soft: #efede5;
     --chip: #e8e5da;
-    --accent: #0f8f88;
+    --accent: #0a736e;
     --spec: #2b8a6e;
-    --photo: #b07a12;
-    --assumed: #8a8882;
+    --photo: #9a6a0f;
+    --assumed: #7c7a74;
     color-scheme: light;
   }
   /* The dark theme is a hologram. The class is set before first paint (script below) and by applyTheme. */
@@ -25,7 +25,7 @@
     --paper: #03080f;
     --card: #06121e;
     --ink: #cfe3f2;
-    --muted: #6a8ea8;
+    --muted: #7a9fb9;
     --rule: #16314a;
     --soft: #0a1b2a;
     --chip: #0e2436;
@@ -48,6 +48,9 @@
   .mono, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   button { font: inherit; color: inherit; }
   a { color: inherit; }
+  /* Read by screen readers, never seen: the one status line. Pinned to the top-left corner of its containing block, so
+     wherever it sits (even last in the body) it adds no scrollable overflow. */
+  .sr-only { position: absolute; top: 0; left: 0; width: 1px; height: 1px; margin: 0; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 
   /* ---------- App shell: tree | viewer | inspector, each scrolls on its own ---------- */
   .app {
@@ -61,8 +64,8 @@
   .brand { flex: none; line-height: 1.2; }
   .brand b { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
   .brand span { display: block; color: var(--muted); font-size: 12px; }
-  .modebar { display: flex; gap: 8px; align-items: center; margin-left: auto; overflow-x: auto; scrollbar-width: none; padding: 2px; }
-  .modebar::-webkit-scrollbar { display: none; }
+  /* The tools wrap to a second row rather than scroll out of sight. */
+  .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
   .mb { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); overflow: hidden; flex: none; }
   .mb button { border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1; white-space: nowrap; }
   .mb button + button { border-left: 1px solid var(--rule); }
@@ -92,7 +95,7 @@
   .panel.folded .rail:hover { color: var(--ink); background: var(--soft); }
   .panel-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--rule); }
   .panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 8px 12px 14px; flex: 1; min-height: 0; }
-  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 
   /* ---------- Assembly tree ---------- */
   .tree { grid-area: tree; }
@@ -159,7 +162,7 @@
   .screen {
     position: absolute; width: 280px; max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; pointer-events: auto;
     padding: 8px 12px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
-    background: color-mix(in srgb, var(--card) 72%, transparent);
+    background: color-mix(in srgb, var(--card) 90%, transparent);
     -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
     border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
     box-shadow: 0 8px 26px rgb(0 0 0 / 0.14);
@@ -171,28 +174,33 @@
   .screen.comp { max-height: 52%; }
   .screen.links { max-height: 36%; }
   .screen.dragging { opacity: 0.9; }
-  .screen.other { opacity: 0.62; }
-  .screen.other:hover, .screen.other.hot { opacity: 1; }
+  /* Another piece's sheet is marked by a rule down its left edge, not dimmed, so its text keeps its contrast. */
+  .screen.other, .holo .screen.other { border-left: 3px solid var(--muted); }
   /* A folded sheet keeps only its top bar; a click on the bar opens it again. */
   .screen.folded { padding-bottom: 6px; overflow: hidden; }
   .screen.folded > :not(.bar) { display: none; }
   .screen.folded .bar { margin-bottom: 0; cursor: pointer; }
-  .screen .bar .ttl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .screen .keep { margin: 0 0 6px; font-size: 11.5px; color: var(--accent); }
+  .screen .keep { margin: 0 0 6px; font-size: 12px; color: var(--accent); }
   .screen .bar { cursor: grab; touch-action: none; user-select: none; }
   .screen.dragging .bar { cursor: grabbing; }
-  .screen .bar { display: flex; align-items: center; gap: 6px; margin: 0 -6px 4px 0; font: 600 10.5px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .screen .bar .code { color: var(--accent); }
-  .screen .bar .state { margin-left: auto; }
-  .screen .bar button { flex: none; width: 24px; height: 22px; border: 0; background: none; border-radius: 5px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
+  /* A sheet's bar names the sub-part in full, wrapping rather than cut off, so a folded sheet still says what it holds.
+     The piece goes on its own line under it; the Preview label and the button stay on the first line, at the right.
+     A component bar keeps its code, title and state; its state drops to a second line when it does not fit. */
+  .screen .bar { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 6px; margin: 0 -6px 4px 0; font: 600 12px/18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--muted); }
+  .screen .bar .code { flex: none; font: 600 12px/18px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .screen .bar .ttl { flex: 1 1 0; min-width: 0; font-weight: 600; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
+  .screen.comp .bar .ttl { flex-basis: auto; }
+  .screen .bar .piece { order: 1; flex: 1 0 100%; min-width: 0; font-weight: 400; line-height: 16px; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
+  .screen .bar .state { flex: none; margin-left: auto; display: inline-flex; align-items: center; }
+  .screen .bar button { flex: none; width: 24px; height: 22px; margin: -2px 0; border: 0; background: none; border-radius: 5px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
   .screen .bar button:hover { background: var(--chip); color: var(--ink); }
   .screen .bar button svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
   .screen .bar button[aria-pressed="true"] { color: var(--accent); }
   .screen .bar button[aria-pressed="true"] svg { fill: currentColor; }
   .screen h4 { margin: 0 0 2px; font-size: 15px; font-weight: 650; line-height: 1.25; }
   .screen h4 .count { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); font-weight: 400; }
-  .screen h5 { margin: 10px 0 4px; font: 600 10.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-  .screen .from { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+  .screen h5 { margin: 10px 0 4px; font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .screen .from { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
   .screen p { margin: 6px 0 0; }
   .screen .mat { margin: 0 0 6px; }
   .screen .mat b { font-weight: 600; }
@@ -200,7 +208,7 @@
   .screen table.specs { font-size: 12.5px; }
   .screen table.specs td { padding: 4px 0; }
   .screen table.specs td:first-child { width: 42%; }
-  .screen .srcs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; align-items: center; font-size: 11.5px; color: var(--muted); }
+  .screen .srcs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; align-items: center; font-size: 12px; color: var(--muted); }
   .screen .subs button { font-size: 12.5px; padding: 3px 6px; }
   .screen .chips { margin: 0; }
   /* On a phone there is one screen, docked under the model. */
@@ -244,7 +252,7 @@
   .subs button { cursor: pointer; }
   .subs button.on { background: var(--chip); }
   .subs button.on span:first-child { font-weight: 600; }
-  .subs .k { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); white-space: nowrap; }
+  .subs .k { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); white-space: nowrap; }
   .fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
 
   /* ---------- Inspector ---------- */
@@ -254,10 +262,10 @@
   .tabs button[aria-selected="true"] { background: var(--chip); color: var(--ink); }
   .doc h2 { font-size: 19px; line-height: 1.25; margin: 2px 0 8px; font-weight: 650; }
   .doc h2 .count { font: 13px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); font-weight: 400; }
-  .doc h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
+  .doc h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
   .doc p { margin: 0 0 10px; }
   .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .chip { font-size: 11.5px; background: var(--chip); border-radius: 999px; padding: 2px 9px; color: var(--muted); display: inline-flex; align-items: center; border: 0; }
+  .chip { font-size: 12px; background: var(--chip); border-radius: 999px; padding: 2px 9px; color: var(--muted); display: inline-flex; align-items: center; border: 0; }
   button.chip { cursor: pointer; color: var(--ink); }
   button.chip:hover { background: var(--rule); }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; }
@@ -268,12 +276,12 @@
   table.specs td:first-child { color: var(--muted); padding-right: 10px; width: 38%; }
   table.specs td:last-child { text-align: right; padding-left: 8px; overflow-wrap: anywhere; }
   table.specs .ref { white-space: nowrap; margin-left: 2px; }
-  .ref { font: 11px ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
+  .ref { font: 11.5px ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
   .ref:hover { border-color: var(--muted); }
   .ref.derived, .ref.photo, .ref.assumed, .ref.none { cursor: default; color: var(--muted); }
   .ref.assumed, .ref.std { border-style: dashed; }
-  .tagkey { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
-  .tagkey b { font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; }
+  .tagkey { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
+  .tagkey b { font: 600 12px ui-monospace, Menlo, Consolas, monospace; }
   .know { border-left: 3px solid var(--accent); padding-left: 10px; }
   .pieces { display: flex; flex-wrap: wrap; gap: 5px; }
   .pieces button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
@@ -289,11 +297,11 @@
   table.keys { width: 100%; border-collapse: collapse; font-size: 13px; }
   table.keys td { padding: 5px 0; border-top: 1px solid var(--rule); vertical-align: top; }
   table.keys td:first-child { white-space: nowrap; padding-right: 12px; color: var(--muted); }
-  kbd { font-size: 11px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--soft); }
+  kbd { font-size: 12px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--soft); }
   .stat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 12px; }
   .stat div { background: var(--soft); border-radius: 8px; padding: 8px; }
   .stat b { display: block; font-size: 18px; font-weight: 650; }
-  .stat span { font-size: 11.5px; color: var(--muted); }
+  .stat span { font-size: 12px; color: var(--muted); }
 
   @media (max-width: 1180px) { .app { --tw: 230px; --iw: 320px; } }
   @media (max-width: 960px) {
@@ -303,7 +311,7 @@
     .panel.folded .rail, .fold, #bPanels, .grip { display: none; }
     .mb:has(#bPanels) { display: none; }
     .top { flex-wrap: wrap; }
-    .modebar { margin-left: 0; width: 100%; }
+    .modebar { margin-left: 0; width: 100%; justify-content: flex-start; }
     .view { height: 64vh; min-height: 360px; }
     .panel { max-height: none; }
     .panel-body { overflow: visible; }
@@ -358,7 +366,7 @@
   /* Screens: tinted glass with corner brackets and a slow scan passing down them. */
   .holo .screen {
     border-radius: 3px;
-    background: rgb(5 18 32 / 0.62);
+    background: rgb(5 18 32 / 0.85);
     border-color: rgb(90 170 225 / 0.42);
     box-shadow: 0 0 22px rgb(90 170 225 / 0.14), inset 0 0 24px rgb(90 170 225 / 0.06);
   }
