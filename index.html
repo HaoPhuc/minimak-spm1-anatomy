@@ -61,8 +61,8 @@
   .brand { flex: none; line-height: 1.2; }
   .brand b { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
   .brand span { display: block; color: var(--muted); font-size: 12px; }
-  .modebar { display: flex; gap: 8px; align-items: center; margin-left: auto; overflow-x: auto; scrollbar-width: none; padding: 2px; }
-  .modebar::-webkit-scrollbar { display: none; }
+  /* The tools wrap to a second row rather than scroll out of sight. */
+  .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
   .mb { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); overflow: hidden; flex: none; }
   .mb button { border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1; white-space: nowrap; }
   .mb button + button { border-left: 1px solid var(--rule); }
@@ -308,7 +308,7 @@
     .panel.folded .rail, .fold, #bPanels, .grip { display: none; }
     .mb:has(#bPanels) { display: none; }
     .top { flex-wrap: wrap; }
-    .modebar { margin-left: 0; width: 100%; }
+    .modebar { margin-left: 0; width: 100%; justify-content: flex-start; }
     .view { height: 64vh; min-height: 360px; }
     .panel { max-height: none; }
     .panel-body { overflow: visible; }
