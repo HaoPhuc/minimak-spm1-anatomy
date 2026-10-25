@@ -1774,14 +1774,16 @@ function specTable(rows) {
     tb.append(tr);
   }
   t.append(tb);
-  // Under the table, what each tag that is not a source means, so the reader need not hover each one.
-  const used = Object.keys(TAGS).filter((k) => rows.some((r) => r[2] === k));
-  if (!used.length) return t;
-  const f = document.createDocumentFragment();
+  return t;
+}
+// At the foot of a screen or an inspector page, one key to what each tag on it that is not a source means, so the
+// reader need not hover each one.
+function tagKey(host) {
+  const used = Object.keys(TAGS).filter((k) => host.querySelector(`.ref.${k}`));
+  if (!used.length) return;
   const key = el('p', 'tagkey');
   used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', null, k), ` ${TAGS[k]}`));
-  f.append(t, key);
-  return f;
+  host.append(key);
 }
 // The sub-parts of a part (or of the piece in view), each previewing its sheet; hovering one lights it in the model.
 function subsList(p) {
@@ -1839,6 +1841,8 @@ function componentScreens() {
     b.append(el('h5', null, 'Connects to'), cc);
   }
   if (p.know) b.append(el('h5', null, 'Good to know'), el('p', null, p.know));
+  tagKey(a);
+  tagKey(b);
   return b.children.length > 1 ? [a, b] : [a];
 }
 function sheetScreen(x, live) {
@@ -1887,6 +1891,7 @@ function sheetScreen(x, live) {
     for (const id of doc.sources) sr.append(refButton(id));
     sc.append(sr);
   }
+  tagKey(sc);
   sc.addEventListener('mouseenter', () => { state.hotSheet = x; sc.classList.add('hot'); refreshLit(); if (live) clearTimeout(HUD.liveTimer); });
   sc.addEventListener('mouseleave', () => { if (state.hotSheet === x) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); if (live) setLive(null); });
   return sc;
@@ -2452,6 +2457,7 @@ function renderInspector() {
     ul.append(li);
   }
   box.append(ul);
+  tagKey(box);
 }
 function renderOverview(box) {
   box.append(el('div', 'eyebrow', 'Overview'));
