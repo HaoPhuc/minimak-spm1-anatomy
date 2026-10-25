@@ -462,7 +462,8 @@
       </span>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
-    <div class="hud" id="hud" hidden aria-label="Information screens" aria-live="polite"></div>
+    <div class="hud" id="hud" hidden aria-label="Information screens"></div>
+    <p id="status" class="sr-only" aria-live="polite"></p>
     <div class="tip" id="tip"></div>
     <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><div class="hint" id="hint"></div></div>
     <div class="corner br" id="readout"></div>
@@ -481,7 +482,7 @@
         <button type="button" class="fold" data-panel="insp" title="Hide the inspector to make room (F hides both)" aria-label="Hide the inspector">›</button>
       </div>
     </div>
-    <div class="panel-body doc" id="inspBody" role="tabpanel" aria-live="polite"></div>
+    <div class="panel-body doc" id="inspBody" role="tabpanel"></div>
   </aside>
 </div>
 
@@ -570,6 +571,7 @@ const shared = {
   uCut: { value: new THREE.Color() },
   uInk: { value: new THREE.Color() },
   uLitColor: { value: new THREE.Color() },
+  uPaper: { value: new THREE.Color() },
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
   uGlass: { value: 0.28 },
@@ -635,6 +637,7 @@ const FRAG_COLOR = /* glsl */`
   uniform vec3 uLight;
   uniform vec3 uCut;
   uniform vec3 uInk;
+  uniform vec3 uPaper;
   uniform float uDpr;
   varying vec3 vNv;
   varying vec3 vNw;
@@ -654,7 +657,15 @@ const FRAG_COLOR = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
     vec3 c = uColor * tone;
-    c = mix(c, uLitColor, uLit);
+    // A lit part keeps its own material: it only lightens toward the paper, and an accent rim, strongest at grazing
+    // angles, rings its silhouette. The levels (hover 0.26-0.32, kept 0.42, hot 0.55) are spread over 0-1 so each
+    // reads apart: a higher one lightens more and widens the rim. Stripes stay reserved for cut faces.
+    if (uLit > 0.0) {
+      float s = clamp((uLit - 0.2) / 0.3, 0.0, 1.0);
+      float rim = smoothstep(0.85 - 0.75 * s, 1.0, 1.0 - abs(n.z));
+      c = mix(c, uPaper, 0.08 + 0.3 * s);
+      c = mix(c, uLitColor, rim * (0.5 + 0.5 * s));
+    }
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -767,7 +778,7 @@ function colorMat(tone, clip) {
   const m = new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
-      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
     },
     vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
@@ -920,7 +931,13 @@ function subsOf(part, only) {
   }
   return out;
 }
-for (const [part, list] of piecesOf) list.forEach((pc, i) => { if (!pc.userData.label) pc.userData.label = list.length > 1 ? `${partById.get(part)?.name || part} ${i + 1}` : partById.get(part)?.name || part; });
+// Pieces are named by where they sit (device.js), never numbered. One without a label takes the part's name; one of
+// several then cannot be told from the rest, so say so in development.
+for (const [part, list] of piecesOf) for (const pc of list) {
+  if (pc.userData.label) continue;
+  pc.userData.label = partById.get(part)?.name || part;
+  if (list.length > 1) console.warn(`Missing piece label: a piece of "${pc.userData.label}" (${part}) takes the part's name.`);
+}
 
 // ---------- Plasma glow (layer 1, no ink) and a soft floor shadow ----------
 const GLOW_VERT = /* glsl */`
@@ -1388,6 +1405,15 @@ function frameIsolated(reset, glideFor = 0, delay = 0) {
   frameBox(b, iso.focus ? 1.6 : 1.3, hudInsets());
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000 + delay, dur: glideFor, from: null };
 }
+// The one live region: a line for a screen reader when a sheet is kept or closed, a part inspected or a piece picked.
+// Hovering says nothing.
+function announce(text) { $('status').textContent = text; }
+const sheetCount = () => `${state.pins.length} sheet${state.pins.length === 1 ? '' : 's'}`;
+function announceInspect() {
+  const list = piecesOf.get(iso.part) || [];
+  if (iso.focus) announce(`Inspecting ${iso.focus.userData.label}, ${list.indexOf(iso.focus) + 1} of ${list.length}`);
+  else announce(`Inspecting ${partById.get(iso.part).name}${list.length > 1 ? `, all ${list.length}` : ''}`);
+}
 // Moving from one inspected part to another remembers where you came from (o.back goes the other way), and each
 // part keeps its sheets for when you come back to it.
 function inspect(id, focusPiece = null, o = {}) {
@@ -1414,6 +1440,8 @@ function inspect(id, focusPiece = null, o = {}) {
   renderHud();
   frameIsolated(!focusPiece, MOVE.fly, MOVE.lift);
   renderInspector();
+  setHint();
+  announceInspect();
 }
 // Back to the assembly at the pace of an explode, in the reverse order: the sub-parts go back together, then the part
 // flies home while the camera glides back to where it was, and only then does the rest of the machine turn solid.
@@ -1443,6 +1471,7 @@ function endInspect() {
   }
   updateIsoBar();
   renderInspector();
+  setHint();
   dirty = true;
 }
 // Show one piece of the inspected part (the rest of it fades to ghosts), or all of them with null.
@@ -1455,6 +1484,7 @@ function setFocus(pc) {
   updateIsoBar();
   renderInspector();
   renderHud();
+  announceInspect();
 }
 function focusPiece(pc) {
   if (!pc) return;
@@ -1505,6 +1535,7 @@ function setApart(on) {
     iso.focus = nearestPiece(list);
     keepSheetsOnFocus();
     refreshPieces();
+    announceInspect();
   }
   frameIsolated(false, MOVE.apart);
   updateIsoBar();
@@ -1597,7 +1628,10 @@ for (const g of document.querySelectorAll('.grip')) {
 const hud = $('hud');
 const HUD = { on: store.get('spm1-screens') !== 'off', liveTimer: 0, els: new Map(), pos: new Map(), z: 1, unfold: null, undo: [], folded: new Set(), opened: null, justOpened: null, flashTimer: 0, kept: new Map() };
 const PIN = '<svg viewBox="0 0 16 16"><path d="M5.5 1.5h5l-.7 4.3 2.7 2.4v1.3h-9V8.2l2.7-2.4zM8 9.5v5"/></svg>';
-const BASIS_SHORT = { spec: 'Spec', photo: 'Photo', assumed: 'Assumed' };
+// What the drawn shape and position of a part rest on: the same words on the component's bar, the inspector's chip,
+// the tree's dots and its legend.
+const BASIS_SHORT = { spec: 'published spec', photo: 'photos', assumed: 'a guess' };
+const BASIS_TIP = 'How far to trust the drawn shape and position. Each number carries its own tag.';
 const SCREEN_W = 280;
 const phoneHud = () => width < 520;
 const sameSheet = (a, b) => !!a && !!b && a.pc === b.pc && a.sub === b.sub;
@@ -1668,6 +1702,7 @@ function pinSheet(pc, sub) {
   renderHud();
   refreshLit();
   renderInspector();
+  announce(`Kept: ${sub}. ${sheetCount()}.`);
   dirty = true;
 }
 function unpinSheet(x) {
@@ -1678,6 +1713,7 @@ function unpinSheet(x) {
   renderHud();
   refreshLit();
   renderInspector();
+  announce(`Closed: ${x.sub}. ${sheetCount()}.`);
   dirty = true;
 }
 function clearSheets() {
@@ -1752,15 +1788,17 @@ function centreAboveDock(pc, sub) {
   goal.target.copy(box.getCenter(new V3())).addScaledVector(up, -0.25 * fit.half / goal.zoom);
   dirty = true;
 }
+// A screen's top bar: a code and a state for the component's screens; a sheet's bar has no code, and a state only
+// while it is a preview.
 function screen(key, sig, code, title, status) {
   const sc = el('section', 'screen');
   sc.dataset.key = key;
   sc.dataset.sig = sig;
   const bar = el('div', 'bar');
   bar.title = 'Drag to move';
-  bar.append(el('span', 'code', code));
+  if (code) bar.append(el('span', 'code', code));
   if (title) bar.append(el('span', 'ttl', title));
-  bar.append(el('span', 'state', status || ''));
+  if (status) bar.append(el('span', 'state', status));
   sc.append(bar);
   return sc;
 }
@@ -1775,14 +1813,16 @@ function specTable(rows) {
     tb.append(tr);
   }
   t.append(tb);
-  // Under the table, what each tag that is not a source means, so the reader need not hover each one.
-  const used = Object.keys(TAGS).filter((k) => rows.some((r) => r[2] === k));
-  if (!used.length) return t;
-  const f = document.createDocumentFragment();
+  return t;
+}
+// At the foot of a screen or an inspector page, one key to what each tag on it that is not a source means, so the
+// reader need not hover each one.
+function tagKey(host) {
+  const used = Object.keys(TAGS).filter((k) => host.querySelector(`.ref.${k}`));
+  if (!used.length) return;
   const key = el('p', 'tagkey');
   used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', null, k), ` ${TAGS[k]}`));
-  f.append(t, key);
-  return f;
+  host.append(key);
 }
 // The sub-parts of a part (or of the piece in view), each previewing its sheet; hovering one lights it in the model.
 function subsList(p) {
@@ -1810,9 +1850,13 @@ function componentScreens() {
   const grp = DOCS.GROUPS.find((g) => g.id === p.group);
   const list = piecesOf.get(p.id) || [];
   const sig = `${p.id}|${iso.focus ? iso.focus.id : ''}|${iso.apart}|${state.pins.map(sheetKey).join(',')}`;
-  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, `Shape: ${BASIS_SHORT[p.basis]}`);
+  const a = screen('comp', sig, `${String(p.n).padStart(2, '0')}/${DOCS.PARTS.length}`, grp.name, BASIS[p.basis]);
   a.classList.add('comp');
+  const st = a.firstChild.querySelector('.state');
+  st.prepend(el('span', `basis ${p.basis}`));
+  st.title = BASIS_TIP;
   const h = el('h4', null, iso.focus ? iso.focus.userData.label : p.name);
+  a.setAttribute('aria-label', h.textContent);
   if (!iso.focus && p.count > 1) h.append(' ', el('span', 'count', `×${p.count}`));
   a.append(h);
   if (iso.focus) a.append(el('div', 'from', `${p.name} · piece ${list.indexOf(iso.focus) + 1} of ${list.length}`));
@@ -1820,6 +1864,7 @@ function componentScreens() {
   const own = iso.focus && p.pieces?.[iso.focus.userData.label];
   if (own) a.append(el('h5', null, 'On this piece'), specTable(own));
   const b = screen('links', sig, 'Structure', null, iso.apart ? 'Apart' : 'Assembled');
+  b.setAttribute('aria-label', 'Structure');
   b.classList.add('links');
   const ul = subsList(p);
   if (ul) b.append(el('h5', null, iso.apart ? 'Taken apart into' : 'Made of'), ul);
@@ -1837,17 +1882,22 @@ function componentScreens() {
     b.append(el('h5', null, 'Connects to'), cc);
   }
   if (p.know) b.append(el('h5', null, 'Good to know'), el('p', null, p.know));
+  tagKey(a);
+  tagKey(b);
   return b.children.length > 1 ? [a, b] : [a];
 }
 function sheetScreen(x, live) {
   const part = partById.get(x.pc.userData.part);
   const doc = subDocOf(part.id, x.sub);
-  // The bar names the sub-part, and the piece when the part has several, so a sheet folded to its bar still says what
-  // it is and two pieces' sheets read apart. A sheet of a piece other than the one in focus is dimmed, not closed.
+  // The bar names the sub-part in full, and under it the piece when the part has several, so a sheet folded to its bar
+  // still says what it is and two pieces' sheets read apart. Kept is the default; only a preview says so. A sheet of a
+  // piece other than the one in focus is dimmed, not closed.
   const many = (piecesOf.get(part.id) || []).length > 1;
   const name = many ? `${x.pc.userData.label} · ${x.sub}` : x.sub;
   const other = !live && !!iso.focus && x.pc !== iso.focus;
-  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}|${other}`, `${String(part.n).padStart(2, '0')}·S`, name, live ? 'Preview' : 'Pinned');
+  const sc = screen(live ? 'live' : sheetKey(x), `${x.pc.id}|${x.sub}|${other}`, null, x.sub, live ? 'Preview' : null);
+  if (many) sc.firstChild.querySelector('.ttl').after(el('span', 'piece', x.pc.userData.label));
+  sc.setAttribute('aria-label', doc?.title || x.sub);
   sc.classList.toggle('live', live);
   sc.classList.toggle('other', other);
   sc.firstChild.title = `${name}. Drag to move${live ? ', drop to keep' : ''}`;
@@ -1883,6 +1933,7 @@ function sheetScreen(x, live) {
     for (const id of doc.sources) sr.append(refButton(id));
     sc.append(sr);
   }
+  tagKey(sc);
   sc.addEventListener('mouseenter', () => { state.hotSheet = x; sc.classList.add('hot'); refreshLit(); if (live) clearTimeout(HUD.liveTimer); });
   sc.addEventListener('mouseleave', () => { if (state.hotSheet === x) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); if (live) setLive(null); });
   return sc;
@@ -2250,6 +2301,7 @@ function buildTree() {
   nd.append(ndHead, ndList);
   host.append(nd);
   const lg = el('div', 'legend-basis');
+  lg.title = BASIS_TIP;
   for (const k of ['spec', 'photo', 'assumed']) {
     const d = el('div');
     d.append(el('span', `basis ${k}`), BASIS[k]);
@@ -2257,7 +2309,7 @@ function buildTree() {
   }
   host.append(lg);
 }
-const BASIS = { spec: 'Geometry from the published spec', photo: 'Scaled or placed from photos', assumed: 'Placed where plausible (guess)' };
+const BASIS = Object.fromEntries(Object.entries(BASIS_SHORT).map(([k, v]) => [k, `Drawn from: ${v}`]));
 // Search: every typed word must appear. Under a part, rows name its pieces and sub-parts ("Left viewport (webcam) ·
 // 16 bolts"), each opening that sheet. They show when a word names a piece or a sub-part rather than only the part.
 // Labels use en dashes (Right–back); a typed hyphen or dash matches any of them.
@@ -2362,8 +2414,12 @@ function action(label, fn, primary) {
   b.addEventListener('click', fn);
   return b;
 }
+let inspShown = '';
 function renderInspector() {
   const box = $('inspBody');
+  // A new part or piece starts at the top, so its name is in view; any other re-render keeps the reader's place.
+  const shown = `${state.select}|${iso.focus ? iso.focus.id : ''}`;
+  if (shown !== inspShown) { inspShown = shown; box.scrollTop = 0; }
   box.replaceChildren();
   if (tab === 'sources') return renderSources(box);
   if (tab === 'help') return renderHelp(box);
@@ -2376,6 +2432,7 @@ function renderInspector() {
   box.append(h);
   const chips = el('div', 'chips');
   const c = el('span', 'chip');
+  c.title = BASIS_TIP;
   c.append(el('span', `basis ${p.basis}`), BASIS[p.basis]);
   chips.append(c);
   box.append(chips);
@@ -2442,7 +2499,33 @@ function renderInspector() {
     ul.append(li);
   }
   box.append(ul);
+  tagKey(box);
 }
+// The overview's headline numbers. A row can cite more than one source, and each gets its own tag.
+const HEADLINE = [
+  ['Major / minor radius', '230 mm / 75 mm', ['S2', 'S3']],
+  ['Vessel', '4 × 150 mm elbows, ConFlat', ['S1']],
+  ['Ports', '3 viewing, 1 vacuum, 4 diagnostic', ['S1']],
+  ['TF coils', '8 × 50 turns, 40 A each', ['S1']],
+  ['TF field', '0.025 T CW, 0.1 T pulsed', ['S2', 'S3']],
+  ['PF coils', '4 + 2 satellites', ['S1']],
+  ['Plasma', '1–5 eV glow in N₂ or He', ['S2', 'S3']],
+  ['Envelope', '90 × 90 × 160 cm', ['S2', 'S3']],
+];
+// How many rows cite each source: the parts' spec and piece rows, the sheets' rows, the not-drawn list and the
+// headline numbers. A row citing two sources counts for each; a list of sources is not a row, and `std` is not S9.
+const citedBy = (() => {
+  const n = new Map();
+  const add = (ids) => { for (const id of [].concat(ids)) if (id) n.set(id, (n.get(id) || 0) + 1); };
+  for (const p of DOCS.PARTS) {
+    for (const r of p.specs) add(r[2]);
+    for (const rows of Object.values(p.pieces || {})) for (const r of rows) add(r[2]);
+  }
+  for (const d of Object.values(DOCS.SUBDOCS)) for (const r of d.rows) add(r[2]);
+  for (const r of DOCS.NOT_DRAWN) add(r[2]);
+  for (const r of HEADLINE) add(r[2]);
+  return n;
+})();
 function renderOverview(box) {
   box.append(el('div', 'eyebrow', 'Overview'));
   box.append(el('h2', null, 'MinimaK SPM1'));
@@ -2457,19 +2540,11 @@ function renderOverview(box) {
   box.append(el('h3', null, 'Headline numbers'));
   const t = el('table', 'specs');
   const tb = el('tbody');
-  for (const [label, value, src] of [
-    ['Major / minor radius', '230 mm / 75 mm', 'S2'],
-    ['Vessel', '4 × 150 mm elbows, ConFlat', 'S1'],
-    ['Ports', '3 viewing, 1 vacuum, 4 diagnostic', 'S1'],
-    ['TF coils', '8 × 50 turns, 40 A each', 'S1'],
-    ['TF field', '0.025 T CW, 0.1 T pulsed', 'S2'],
-    ['PF coils', '4 + 2 satellites', 'S1'],
-    ['Plasma', '1–5 eV glow in N₂ or He', 'S2'],
-    ['Envelope', '90 × 90 × 160 cm', 'S2'],
-  ]) {
+  for (const [label, value, ids] of HEADLINE) {
     const tr = el('tr');
     const v = el('td');
-    v.append(value, ' ', refButton(src));
+    v.append(value);
+    for (const id of ids) v.append(' ', refButton(id));
     tr.append(el('td', null, label), v);
     tb.append(tr);
   }
@@ -2497,6 +2572,9 @@ function renderSources(box) {
     a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
     li.append(a, el('div', 'who', s.who));
     li.append(el('p', null, s.gives));
+    // A source no row cites is background, and says so.
+    const n = citedBy.get(s.id) || 0;
+    li.append(el('p', 'cites', n ? `Cited by ${n} row${n === 1 ? '' : 's'}` : 'Background: not cited by any row'));
     const users = DOCS.PARTS.filter((p) => p.sources.includes(s.id));
     if (users.length) {
       const cc = el('div', 'chips');
@@ -2638,6 +2716,7 @@ function applyTheme() {
   shared.uCut.value.set(pal.cut);
   shared.uInk.value.set(pal.ink);
   shared.uLitColor.value.set(pal.lit);
+  shared.uPaper.value.set(pal.paper);
   shared.uGhost.value = pal.ghost;
   shared.uGlass.value = pal.glass;
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
@@ -2709,9 +2788,11 @@ function updateReadout() {
   r.dataset.l1 = line1; r.dataset.l2 = line2;
   r.replaceChildren(el('div', null, line1), el('div', null, line2));
 }
-const HINT = () => (coarse ? 'Drag to turn · two fingers to pan and zoom · double-tap to inspect'
-  : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect'
-    : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect');
+// While inspecting, the hint says what the pointer does to sub-parts; outside, how to move and how to inspect.
+const HINT = () => (coarse ? (iso.part ? 'Tap a sub-part to preview its sheet' : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+  : iso.part ? 'Point at a sub-part to preview · click to keep · Esc steps back'
+    : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
+      : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
 function setHint(text) { $('hint').textContent = text || HINT(); }
 
 // ---------- Pointer, wheel and keys ----------
