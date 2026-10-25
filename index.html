@@ -563,6 +563,7 @@ const shared = {
   uCut: { value: new THREE.Color() },
   uInk: { value: new THREE.Color() },
   uLitColor: { value: new THREE.Color() },
+  uPaper: { value: new THREE.Color() },
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
   uGlass: { value: 0.28 },
@@ -628,6 +629,7 @@ const FRAG_COLOR = /* glsl */`
   uniform vec3 uLight;
   uniform vec3 uCut;
   uniform vec3 uInk;
+  uniform vec3 uPaper;
   uniform float uDpr;
   varying vec3 vNv;
   varying vec3 vNw;
@@ -647,7 +649,15 @@ const FRAG_COLOR = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
     vec3 c = uColor * tone;
-    c = mix(c, uLitColor, uLit);
+    // A lit part keeps its own material: it only lightens toward the paper, and an accent rim, strongest at grazing
+    // angles, rings its silhouette. The levels (hover 0.26-0.32, kept 0.42, hot 0.55) are spread over 0-1 so each
+    // reads apart: a higher one lightens more and widens the rim. Stripes stay reserved for cut faces.
+    if (uLit > 0.0) {
+      float s = clamp((uLit - 0.2) / 0.3, 0.0, 1.0);
+      float rim = smoothstep(0.85 - 0.75 * s, 1.0, 1.0 - abs(n.z));
+      c = mix(c, uPaper, 0.08 + 0.3 * s);
+      c = mix(c, uLitColor, rim * (0.5 + 0.5 * s));
+    }
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -760,7 +770,7 @@ function colorMat(tone, clip) {
   const m = new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
-      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
     },
     vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
@@ -2672,6 +2682,7 @@ function applyTheme() {
   shared.uCut.value.set(pal.cut);
   shared.uInk.value.set(pal.ink);
   shared.uLitColor.value.set(pal.lit);
+  shared.uPaper.value.set(pal.paper);
   shared.uGhost.value = pal.ghost;
   shared.uGlass.value = pal.glass;
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
