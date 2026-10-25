@@ -22,7 +22,7 @@
       id: 'S3', short: 'rideosystems.biz',
       title: 'Technology: SPM1 Table Top Tokamak',
       who: 'Rideo Systems Ltd', url: 'https://www.rideosystems.biz/technology',
-      gives: 'The same headline specification as S2, and that the machine is modular and upgradeable for teaching E×B, J×B, cross-field and instability effects.',
+      gives: 'Confirms S2’s headline specification: major radius 23 cm, minor radius 7.5 cm; 8 TF coils each with its own supply, 0.025 T continuous and up to 0.1 T pulsed; 4 PF coils independently controlled; glow discharge from variable HV and RF sources in N₂ or He; low-temperature plasma of 1–5 eV; 90 × 90 × 160 cm envelope. It also says the machine is modular and upgradeable for teaching E×B, J×B, cross-field and instability effects.',
     },
     {
       id: 'S4', short: 'Apte, webinar 2025',
