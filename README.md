@@ -114,13 +114,13 @@ Black and white with shades, like a rendering from a CAD package, on dimmed pape
 - The light comes from the upper left and turns with the view. Each face takes one of five flat shades by how squarely it faces the light, so rounded parts show bands.
 - Parts cast hard shadows on each other and on the table. They come from a 4096 × 4096 shadow map that covers only what the view shows, so they stay sharp when you zoom in. A shadow takes a lit face to the shade of a face just turned away.
 - Each material keeps its own grey: steel and ceramic pale, copper a mid grey set between steel's shades, the black parts dark.
-- The only colour is the selection, in amber as in the hologram:
+- Two things are in colour. The plasma glows pink-violet, the colour nitrogen glows, as in the colour drawing: a grey glow could not be seen on the grey parts. The selection is amber, as in the hologram:
   - a pale amber wash on a part under the pointer;
   - solid amber, keeping its shade, on a selected part or a kept sheet's sub-part;
   - brighter amber on the sub-part whose sheet is under the pointer;
   - an amber rim where the surface turns away.
 
-  The plasma glows grey, and amber while it is selected.
+  The plasma turns amber too while it is selected, but keeps its pink-violet while you inspect it.
 - The panels are the colour drawing's, in greys. Amber marks the selection there too, on an ink edge so it shows on the grey. Focus rings and the axis triad are ink.
 
 ### Hologram
