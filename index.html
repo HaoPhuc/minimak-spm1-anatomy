@@ -1683,15 +1683,17 @@ function applyLook() {
   const t = themeName();
   const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
   const apart = Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p));
-  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost * (t === 'dark' ? 0.3 : t === 'greyscale' ? 0.6 : 1);
+  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost * (t === 'dark' ? 0.3 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
     u.uI.value = sc > 1 ? I * 0.32 : I;
     g.visible = state.pNow > 0;
-    // In greyscale the plasma is a soft grey glow, amber while it is selected or under the pointer.
+    // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on grey parts
+    // could not be seen. It turns amber while it is selected or under the pointer, but not while it is inspected, as
+    // an inspected part keeps its own look.
     if (t === 'greyscale') {
-      u.uCore.value.copy(shown(boost > 1 ? '#f0a540' : '#e4e4e0'));
-      u.uRim.value.copy(shown(boost > 1 ? '#b8650f' : '#8e8e8a'));
+      if (boost > 1 && !iso.part) { u.uCore.value.copy(shown('#f0a540')); u.uRim.value.copy(shown('#b8650f')); }
+      else { u.uCore.value.set('#ffe2f6'); u.uRim.value.set('#b84ad6'); }
     }
   }
   // Lit displays and LEDs: green and red in colour, a pale grey glow in greyscale.
@@ -3337,7 +3339,7 @@ function applyTheme() {
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
   shadow.uniforms.uA.value = pal.shadow;
   shadow.uniforms.uInk.value.set(pal.shadowInk);
-  // The plasma is the one thing that glows: pink in the drawing, brighter in the hologram, grey in greyscale (applyLook).
+  // The plasma is the one thing that glows: pink in the drawing and in greyscale (applyLook), brighter in the hologram.
   for (const g of glow) {
     const u = g.material.uniforms;
     u.uCore.value.set(holo ? '#ff8fe8' : '#ffe2f6');
