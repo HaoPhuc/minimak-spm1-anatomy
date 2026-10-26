@@ -93,6 +93,14 @@
         ['Volume', '≈ 25 L (π a² · 2π R₀, derived)', 'derived'],
       ],
       connects: ['joints', 'lateral', 'diagPorts', 'tf', 'posts', 'plasma'],
+      // Which quarter carries which port, as the photos show it; the probe's port is the drawing's guess.
+      piecesHead: 'Ports',
+      pieces: {
+        'Right quarter': [['Lateral port', 'the pump line', 'photo']],
+        'Back quarter': [['Lateral port', 'a viewport', 'photo'], ['Top port', 'the gauge and gas stack (≈ DN63)', 'photo']],
+        'Left quarter': [['Lateral port', 'a viewport', 'photo'], ['Top port', 'the Langmuir probe (port not published)', 'assumed'], ['Bottom port', 'discharge electrode B', 'photo']],
+        'Front quarter': [['Lateral port', 'a viewport', 'photo'], ['Top port', 'the laser window', 'photo'], ['Bottom port', 'discharge electrode A', 'photo']],
+      },
       know: 'The chamber wall is also the discharge cathode (S4 slide 20), so the vessel is part of the electrical circuit as well as the vacuum boundary. The wall thickness drawn (2 mm) is not published.',
       sources: ['S1', 'S2', 'S4'],
     },
@@ -206,7 +214,7 @@
         ['Placement', 'on the central former (photo, S4 slide 15)', 'photo'],
       ],
       connects: ['former', 'psu'],
-      know: 'With no plasma current the PF coils move and shape the glow; they cannot hold it in place on their own.',
+      know: 'With no plasma current the PF coils move and shape the glow; they cannot hold it in place on their own. Which of the pair is PF1 is not published; the drawing calls the upper one PF1.',
       sources: ['S2', 'S4'],
     },
     {
@@ -229,13 +237,18 @@
         ['Mounting', 'brackets above, pads on the table below', 'photo'],
       ],
       connects: ['posts', 'table', 'psu'],
+      pieces: {
+        'Upper satellite coil': [['Held by', 'brackets from the corner posts, above the vessel', 'photo']],
+        'Lower satellite coil': [['Held by', 'the table top, under the vessel', 'photo']],
+      },
       know: 'Tens of mT near the coils: keep anyone with a pacemaker or implant out of the coil area, and steel tools away.',
       sources: ['S1', 'S4'],
     },
     {
       id: 'solenoid', name: 'Central solenoid', group: 'magnets', count: 1, basis: 'assumed',
-      what: 'The transformer coil of a tokamak, in the hole of the torus. A changing current in it induces a voltage round the ring. It is drawn here wound on the central former across the midplane; its real turns and position are not published.',
+      what: 'The transformer coil of a tokamak, in the hole of the torus. A changing current in it induces a voltage round the ring. It is drawn here wound on the central former across the midplane; its turns and height are not published.',
       specs: [
+        ['Position', 'inside the centre of the torus', 'S1'],
         ['Drive', 'low voltage, AC and DC', 'S2'],
         ['Built system', 'DC solenoid drive', 'S4'],
         ['Upgrade', 'superconducting (HTS) solenoid', 'S4'],
@@ -280,6 +293,10 @@
         ['Placement', 'bottom ports (pink HV lead in photos)', 'photo'],
       ],
       connects: ['diagPorts', 'hv', 'plasma'],
+      pieces: {
+        'Electrode A (front)': [['Port', 'the front quarter’s bottom port', 'photo']],
+        'Electrode B (left)': [['Port', 'the left quarter’s bottom port', 'photo']],
+      },
       know: 'Touch the electrodes only with the supply off and grounded. Rely on the PLC interlocks; never bypass them.',
       sources: ['S1', 'S4'],
     },
@@ -486,6 +503,102 @@
     ['High-speed camera', 'upgrade', 'S4'],
     ['Control PC and monitor', 'beside the table', 'S4'],
     ['Gas bottle and regulator', 'not shown in photos', null],
+  ];
+
+  // How two connected parts attach: one entry per pair in `connects` (each pair once, in either order), a sentence
+  // that reads from both sides, and its tags. A sentence that is partly a guess says which part is not published.
+  const JOINS = [
+    ['vessel', 'joints', 'Each elbow is TIG welded to a ConFlat flange at both ends, and the flanges of neighbouring quarters are bolted together.', ['S4', 'S1']],
+    ['vessel', 'lateral', 'Each elbow has a short port tube welded into its outboard side, ending in a DN100CF flange.', ['photo']],
+    ['vessel', 'diagPorts', 'Small port tubes are welded into the top and bottom of the front and left quarters, and a larger one into the top of the back quarter.', ['photo']],
+    ['vessel', 'tf', 'Each coil is wound directly onto a copper former mounted on an elbow, two coils per quarter.', ['S4']],
+    ['vessel', 'posts', 'The posts hold the vessel by its joint flanges, so the ring stands clear of the table.', ['photo']],
+    ['vessel', 'plasma', 'The glow fills the whole chamber, and the chamber wall is the cathode of the discharge.', ['S4']],
+    ['joints', 'gaskets', 'One copper gasket sits between the two flanges of each joint, and tightening the bolts drives both knife edges into it.', ['S6']],
+    ['joints', 'posts', 'A clamp block on each post grips one joint’s pair of flanges.', ['photo']],
+    ['lateral', 'viewport', 'Three lateral ports carry a viewport, bolted to the port’s DN100CF flange over a copper gasket.', ['S1', 'S9']],
+    ['lateral', 'pumpPort', 'The fourth lateral port is the vacuum port: a zero-length reducer bolts onto its DN100CF flange.', ['S1', 'photo']],
+    ['viewport', 'camera', 'As drawn, the webcam stands on a post and looks in through the left viewport; which window it uses is not published.', ['assumed']],
+    ['viewport', 'spectro', 'As drawn, an adaptor on the back viewport holds the fibre that takes the glow’s light to the spectrometer; which window is not published.', ['assumed']],
+    ['diagPorts', 'laser', 'The laser window is a DN40CF viewport bolted to the front quarter’s top port.', ['photo']],
+    ['diagPorts', 'probe', 'As drawn, a bellows feedthrough on the left quarter’s top port pushes the probe in; the probe is an option, and its port is not published.', ['assumed']],
+    ['diagPorts', 'electrode', 'Each electrode is a high-voltage feedthrough on a DN40CF flange, bolted to a bottom port: one under the front quarter, one under the left.', ['photo']],
+    ['diagPorts', 'stack', 'The stack’s reducer flange bolts to the larger port on top of the back quarter (≈ DN63CF).', ['photo']],
+    ['tf', 'psu', 'Each coil is driven by its own supply channel, up to 40 A continuous.', ['S2', 'S4']],
+    ['pfInner', 'former', 'PF1 and PF2 are wound round the central former, one above and one below the midplane, and their leads run up inside it.', ['photo']],
+    ['pfInner', 'psu', 'Each of the four PF coils is controlled on its own supply channel.', ['S2']],
+    ['pfOuter', 'posts', 'As drawn, PF3 and PF4 sit on aluminium channels braced to the corner posts; how they are really mounted is not published.', ['assumed']],
+    ['pfOuter', 'psu', 'Like PF1 and PF2, each is controlled on its own supply channel.', ['S2']],
+    ['satellite', 'posts', 'The upper satellite coil is held above the vessel by brackets from the corner posts.', ['photo']],
+    ['satellite', 'table', 'The lower satellite coil lies on the table top, under the vessel.', ['photo']],
+    ['satellite', 'psu', 'Like every magnet coil, each can be connected to its own variable switch-mode supply.', ['S1']],
+    ['solenoid', 'former', 'The solenoid sits inside the centre of the torus. It is drawn wound on the central former; its turns and height are not published.', ['S1', 'assumed']],
+    ['solenoid', 'psu', 'It is driven at low voltage, AC or DC, from its own supply.', ['S2']],
+    ['former', 'table', 'The central former stands on the table top, in the hole of the torus.', ['photo']],
+    ['plasma', 'electrode', 'The glow strikes between the anode electrodes and the chamber wall, which is the cathode.', ['S4']],
+    ['plasma', 'probe', 'The probe’s tip reaches into the glow to sample it; how far it goes in is not published.', ['assumed']],
+    ['electrode', 'hv', 'A pink HV lead from the supply plugs onto each electrode’s terminal cap.', ['photo']],
+    ['hv', 'drawer', 'The PLC safety monitor in the drawer interlocks the HV supply.', ['S4']],
+    ['pumpPort', 'hose', 'A KF clamp holds the bellows hose on the reducer’s KF stub.', ['photo']],
+    ['hose', 'pump', 'The hose runs over the table edge and down to the pump’s inlet on the shelf below.', ['photo']],
+    ['pump', 'drawer', 'As drawn, the pump is wired through the drawer; how it is switched is not published.', ['assumed']],
+    ['stack', 'gauge', 'The gauge sits on a short KF16 tube on the cross’s top arm, through a DN40CF to KF16 adaptor.', ['photo']],
+    ['stack', 'needle', 'The needle valve bolts to one side arm of the four-way cross; the other side arm is blanked off.', ['photo']],
+    ['gauge', 'drawer', 'Its cable runs down under the table, and the control system monitors the vacuum pressure.', ['S4']],
+    ['camera', 'drawer', 'Its video goes to the control software, which tracks the glow’s position and shape.', ['S2']],
+    ['spectro', 'drawer', 'The control software takes its spectra for analysis.', ['S4']],
+    ['table', 'posts', 'Each post is bolted to the table top with an angle bracket.', ['photo']],
+    ['psu', 'drawer', 'The coil supplies are part of the control system, and the PLC safety monitor in the drawer handles the interlocks.', ['S4']],
+    ['drawer', 'estop', 'The emergency stop on the table top feeds the PLC safety monitor in the drawer.', ['S4']],
+  ];
+
+  // How a run goes, in the order of the webinar (S4 slides 16–27). No operating procedure is published.
+  const RUN = [
+    { title: 'Pump down', text: 'The rotary vane pump empties the chamber through the pump port and the bellows line, and the gauge on the top stack reads the pressure.', parts: ['pump', 'hose', 'pumpPort', 'gauge'], tags: ['S4'] },
+    { title: 'Let in a little gas', text: 'A needle valve on the stack bleeds nitrogen or helium in against the pump, so the pressure settles at the fill you want.', parts: ['needle', 'stack'], tags: ['S2', 'assumed'] },
+    { title: 'Strike the glow', text: 'The 4 kV pulsed supply puts high voltage between the electrodes, the anode, and the chamber wall, the cathode. The gas breaks down into a glow that fills the vessel.', parts: ['hv', 'electrode', 'vessel', 'plasma'], tags: ['S4'] },
+    { title: 'Add the magnetic field', text: 'Each coil runs on its own supply. The TF coils brighten the glow and gather it into a ring; changing the current in PF1 and PF2 moves it up or down.', parts: ['tf', 'pfInner', 'pfOuter', 'satellite', 'solenoid', 'psu'], tags: ['S4'] },
+  ];
+
+  // The guided tour: stops in the order of a run, each a part and why it matters at that point.
+  const TOUR = [
+    { part: 'vessel', text: 'Everything happens inside this ring: four stainless quarters bolted into a sealed torus that holds the gas and, later, the glow.', tags: ['S1'] },
+    { part: 'pump', text: 'First the air comes out. This rotary vane pump under the table empties the chamber through the bellows line.', tags: ['S4'] },
+    { part: 'gauge', text: 'The gauge on top of the back quarter tells you when the chamber is empty enough, and later how much gas you have let in.', tags: ['S4'] },
+    { part: 'needle', text: 'Then a little nitrogen or helium is let back in through this valve, against the pump, until the pressure settles where a glow will strike.', tags: ['S2', 'assumed'] },
+    { part: 'electrode', text: 'High voltage between these electrodes and the chamber wall breaks the gas down into a glow.', tags: ['S4'] },
+    { part: 'tf', text: 'The eight TF coils add a field the long way round the ring. It traps the glow’s electrons, so the glow brightens and gathers into a ring.', tags: ['S4'] },
+    { part: 'pfInner', text: 'PF1 and PF2 add a vertical field. Changing their current pushes the glow up or down: the webinar’s dipole position control.', tags: ['S4'] },
+    { part: 'plasma', text: 'The result: a cold glow of 1–5 eV filling the chamber, shaped by the coils. No fusion and no plasma current, but a tokamak’s magnets.', tags: ['S2'] },
+  ];
+
+  // Words a first-year student may not know. The first use of each on a page is underlined and opens its definition.
+  // `match` finds a use; a match that also contains another term (DN160CF holds DN and CF) defines both at once.
+  const GLOSSARY = [
+    { id: 'torus', term: 'Torus', def: 'A ring with a round cross-section, like a doughnut. Here the vacuum chamber: a tube bent round into a closed ring.', match: /\btor(?:us|i)\b/i },
+    { id: 'toroidal', term: 'Toroidal', def: 'The long way round the ring, along the tube. The TF coils make a field that runs this way.', match: /\btoroidal\b/i },
+    { id: 'poloidal', term: 'Poloidal', def: 'The short way round: around the tube, in a vertical plane through the centre of the ring. Flat coils round the vertical axis, such as the PF coils, make field in these planes.', match: /\bpoloidal\b/i },
+    { id: 'tf', term: 'TF', def: 'Toroidal field: the field that runs the long way round the ring, made here by the eight coils that wrap the tube.', match: /\bTF\d*\b/ },
+    { id: 'pf', term: 'PF', def: 'Poloidal field. The PF coils are flat rings above and below the midplane; their field pushes the glow up or down and shapes it.', match: /\bPF\d*\b/ },
+    { id: 'solenoid', term: 'Solenoid', def: 'A long coil wound like a spring. In a tokamak the central solenoid is the primary of a transformer: changing its current induces a voltage round the ring.', match: /\bsolenoids?\b/i },
+    { id: 'tokamak', term: 'Tokamak', def: 'A fusion device that holds a hot plasma in a torus with a strong toroidal field and the field of a large current driven round the plasma. The SPM1 has a tokamak’s coils but no plasma current.', match: /\btokamaks?\b/i },
+    { id: 'cf', term: 'ConFlat (CF)', def: 'An all-metal vacuum flange. A knife edge on each face bites into a soft copper gasket, which seals down to ultra-high vacuum.', src: 'S6', match: /\bConFlat\b|\bCF\b|(?<=\d)CF\b/ },
+    { id: 'dn', term: 'DN', def: 'Nominal diameter in millimetres, the size name of a flange. DN40, DN63, DN100 and DN160 ConFlat flanges are 2¾, 4½, 6 and 8 inches across.', src: 'S5', match: /\bDN ?\d+(?:CF)?\b/ },
+    { id: 'knife', term: 'Knife edge', def: 'The sharp ring machined into the face of a CF flange. Tightening the bolts drives it into the copper gasket, which seals the joint.', src: 'S6', match: /\bknife[- ]edges?\b/i },
+    { id: 'kf', term: 'KF', def: 'A quick vacuum joint (ISO-KF): two chamfered flanges held by a hinged clamp and sealed by a rubber O-ring on a centring ring. Quick to open, for the rough-vacuum side.', src: 'S6', match: /\bKF\d*\b/ },
+    { id: 'ofhc', term: 'OFHC copper', def: 'Oxygen-free, high-conductivity copper: pure and soft, so a knife edge can sink into it. CF gaskets are made of it.', src: 'S6', match: /\bOFHC\b|\boxygen-free\b/i },
+    { id: 'ev', term: 'eV', def: 'Electronvolt, a unit of energy. As a temperature, 1 eV is about 11,600 K. In the glow only the electrons are that hot; the gas stays near room temperature.', match: /\beV\b/ },
+    { id: 'glow', term: 'Glow discharge', def: 'A gas at low pressure made to conduct by a high voltage between two electrodes. Electrons accelerated by the field excite and ionise the gas, which glows.', src: 'S4', match: /\bglow[- ]discharges?\b/i },
+    { id: 'cathode', term: 'Cathode', def: 'The negative electrode of a discharge. On the SPM1 it is the chamber wall.', src: 'S4', match: /\bcathodes?\b/i },
+    { id: 'anode', term: 'Anode', def: 'The positive electrode of a discharge. On the SPM1, the electrodes on the bottom ports.', src: 'S4', match: /\banodes?\b/i },
+    { id: 'langmuir', term: 'Langmuir probe', def: 'A small bare wire put into a plasma. Sweeping its voltage and measuring the current it collects gives the electron temperature and density.', match: /\bLangmuir\b/i },
+    { id: 'pirani', term: 'Pirani gauge', def: 'A heat-loss gauge: gas carries heat away from a hot wire, faster at higher pressure. A Convectron adds convection, so it reads up to atmosphere. The reading depends on the gas.', src: 'S7', match: /\bPirani\b|\bConvectron\b/i },
+    { id: 'mbar', term: 'mbar', def: 'Millibar, a unit of pressure. The air around us is about 1000 mbar.', match: /\bmbar\b/ },
+    { id: 'torr', term: 'Torr', def: 'A unit of pressure: 1 Torr is 1.33 mbar, and the atmosphere is 760 Torr.', match: /\bTorr\b/ },
+    { id: 'uhv', term: 'UHV', def: 'Ultra-high vacuum: around 10⁻⁹ mbar and below. Reaching it takes all-metal seals such as CF, and usually a bake-out.', match: /\bUHV\b|\bultra-high vacuum\b/i },
+    { id: 'bake', term: 'Bake-out', def: 'Heating a vacuum chamber, typically to 150–250 °C, to drive water and gas off its walls so it pumps down lower.', match: /\bbake[- ]?outs?\b/i },
+    { id: 'tig', term: 'TIG welding', def: 'Tungsten inert gas welding: an arc from a tungsten electrode under a shield of argon, which gives the clean welds vacuum parts need.', src: 'S4', match: /\bTIG\b/ },
+    { id: 'feedthrough', term: 'Feedthrough', def: 'A flange that passes something through the vacuum wall: a high-voltage conductor in a ceramic insulator, or a shaft that moves on a bellows.', match: /\bfeedthroughs?\b/i },
   ];
 
   // ---------- Sub-parts: the technical sheet shown on the glass board ----------
@@ -942,5 +1055,5 @@
   };
 
   PARTS.forEach((p, i) => { p.n = i + 1; });
-  root.SPM1_DOCS = { SOURCES, GROUPS, PARTS, NOT_DRAWN, SUBDOCS, SUBMAP };
+  root.SPM1_DOCS = { SOURCES, GROUPS, PARTS, NOT_DRAWN, JOINS, RUN, TOUR, GLOSSARY, SUBDOCS, SUBMAP };
 })(typeof window !== 'undefined' ? window : globalThis);

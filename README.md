@@ -10,7 +10,7 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | --- | --- |
 | **Assembly** (left) | The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec or description; every word you type must match. Words that name a piece or a sub-part ("left viewport bolt", "gasket back") also list the matching pieces under their part, such as *Left viewport (webcam) · 16 bolts*; a click on one inspects that piece and keeps its sheet open. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. From the keyboard the list is one Tab stop, and the first Tab stop on the page, *Skip to the assembly*, jumps to it: ↑ ↓ move between rows, → ← open and close a group, Enter selects, Space hides or shows, and `I` inspects the selected part. |
 | **Viewer** (centre) | The model. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The scale bar is true at every zoom, because the view is orthographic. |
-| **Inspector** (right) | **Part**: **Inspect on its own** first, then what the part does, what it connects to, what it is made of, its pieces, its specification with a source tag on every row, and practical notes. **Sources**: every reference, what was taken from it, and which parts cite it. **Controls**: every mouse, touch and key binding. |
+| **Inspector** (right) | **Machine**, the first tab and one click away from anything: what the machine is, how a run goes, **Take the tour**, the headline numbers and how to use the page. **Part**: **Inspect on its own** first, then what the part does, how it attaches to each part it connects to, what it is made of, its pieces, its specification with a source tag on every row, and practical notes. **Sources**: every reference, what was taken from it, and how many rows cite it. **Controls**: every mouse, touch and key binding. |
 | **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, **Panels**, and the theme: the light drawing or the hologram. |
 
 Drag the edge between a side panel and the view to size the panel. Double-click the edge for the default width, or focus it and use the arrow keys. Dragged nearly shut, a panel folds to a thin rail; the arrow in its header does the same, and a click on the rail opens it again. **Panels** (or `F`) folds or unfolds both, giving the model and its sheets the full width. The page remembers the sizes. On a narrow screen the panels stack under the model instead.
@@ -39,8 +39,8 @@ Double-click a part, press **Inspect on its own**, or select it and press `I`. T
   Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest.
 - Pieces are named by where they sit. The gaskets are named by their joint (*Right–back joint*: joint k sits on the diagonal between two quarters). The eight joint flanges are named by their joint and the quarter they are welded to (*Right–back joint, right side*).
 - A part with several pieces (three viewports, eight TF coils) starts with all of them, and a click or a tap on one picks it. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time, and so does a click on a row of the **Pieces** table. The other pieces fade to ghosts and the camera glides to the one you picked. Clicking **All** picks the nearest piece, or goes back to every piece.
-- The **Pieces** table, in the Part tab, has one row per piece of a repeated part, named by where it sits, with whatever the sources tell apart for each piece and its tag: which port carries the pump line, the laser window or an electrode. The piece in view is marked. Where the sources tell the pieces no differently, a line under the rows says so. A part made of different objects (the HV supply and its two leads, the gas valve, the gauge, the spectrometer) has no Pieces table: **Made of** lists each object's sub-parts under its name instead.
-- **Connects to** names the parts this one attaches to. While inspecting, a click on one inspects it, on its piece nearest the one you were looking at (from the webcam, *Viewports* opens on the left viewport); from a view of every piece it opens on every piece too. Every link goes both ways. **← name** in the inspect bar, or `Backspace`, goes back to the part and piece you came from.
+- The **Pieces** table, in the Part tab, has one row per piece of a repeated part, named by where it sits, with whatever the sources tell apart for each piece and its tag: which ports each quarter carries, which port carries the pump line, the laser window or each electrode, and how each satellite coil is held. The piece in view is marked. Where the sources tell the pieces no differently (the TF coils, the joints, the PF pairs), a line under the rows says so. A part made of different objects (the HV supply and its two leads, the gas valve, the gauge, the spectrometer) has no Pieces table: **Made of** lists each object's sub-parts under its name instead.
+- **How it attaches** names each part this one connects to, with a sentence on how the two are joined and its tags: the TF coils, for example, are wound onto copper formers mounted on the elbows (S4). Each of the 42 connected pairs has one sentence, read from either side, and a sentence that is partly a guess says which part is not published. While inspecting, a click on a name inspects that part, on its piece nearest the one you were looking at (from the webcam, *Viewports* opens on the left viewport); from a view of every piece it opens on every piece too. Every link goes both ways. **← name** in the inspect bar, or `Backspace`, goes back to the part and piece you came from.
 - **Context** turns the ghost of the rest of the machine on or off.
 - **Esc** steps back one level: the preview, then from one piece to the whole part, then to the assembly, then the selection. It never closes a kept sheet, so three presses at most leave a part.
 - **Done** or **Back to assembly** reverses the inspect at the pace of an explode, so you can see where the part goes:
@@ -49,6 +49,23 @@ Double-click a part, press **Inspect on its own**, or select it and press `I`. T
   3. The rest of the machine gets its outlines, then turns solid, and the plasma lights again.
 
   Any drag, zoom or view button during the move takes over the camera. With reduced motion turned on, it goes back at once.
+
+### How a run goes, and the tour
+
+The Machine tab gives a run in four steps, each naming the parts it uses; a click on a part selects it, or inspects it while you inspect:
+
+1. **Pump down**: the rotary vane pump empties the chamber through the pump port and the bellows line, and the gauge reads the pressure.
+2. **Let in a little gas**: nitrogen or helium, through a valve on the stack.
+3. **Strike the glow**: high voltage between the electrodes (the anode) and the chamber wall (the cathode).
+4. **Add the magnetic field**: the TF coils brighten the glow and gather it into a ring; PF1 and PF2 move it up or down.
+
+The order follows the webinar (S4 slides 16–27). No operating procedure is published, so the steps say what each part does in a run, not how to operate the machine.
+
+**Take the tour** inspects the parts in that order, eight stops from the empty chamber to the glow: the vessel, the pump, the gauge, the gas valve, the electrodes, the TF coils, PF1 and PF2, and the plasma. At each stop a line above *What it does* says why the part matters at that point, with its tags, and the inspect bar shows *Stop 3 of 8* and **Next ›**. From the first page that is eight clicks to the plasma. Inspecting a stop's part by any other way (**← name**, a link) makes it the current stop, and a link to a part off the tour keeps your place. **Done**, or Esc back to the assembly, leaves the tour.
+
+### Words explained where they are used
+
+About two dozen words a first-year student may not know are explained on the page: torus, toroidal and poloidal, TF and PF, solenoid, tokamak, ConFlat (CF) and DN, knife edge, KF, OFHC copper, eV, glow discharge, cathode and anode, Langmuir probe, Pirani gauge, mbar and Torr, UHV, bake-out, TIG welding and feedthrough. On each page (the Machine tab, a Part tab, a part card, a sheet) the first use of each word in the text has a dotted underline. A click, or Tab onto it, opens the definition under its paragraph or table row, and a second click closes it; hovering alone opens nothing. One use can explain two words: *DN160CF* opens both DN and ConFlat. A definition taken from one of the sources carries its tag.
 
 ### Sheets
 
@@ -106,7 +123,7 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 | --- | --- |
 | [`index.html`](index.html) | The page: renderer and ink pass, turntable camera, inspect mode, assembly tree, inspector |
 | [`device.js`](device.js) | The geometry in centimetres. One table of dimensions (`D`) at the top, the ConFlat sizes (`CF`), and `DETACH`, how far each part travels when inspected. Each piece carries `apart`, where it goes in the exploded view. Each mesh carries `sub`, the sub-part it belongs to, and `ex`, where that sub-part goes when the part is taken apart |
-| [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS`, and `NOT_DRAWN` |
+| [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS` (with `pieces` where the pieces differ), `NOT_DRAWN`, how each connected pair attaches (`JOINS`), the run steps (`RUN`), the tour (`TOUR`), the glossary (`GLOSSARY`), and the sub-part sheets (`SUBDOCS`, `SUBMAP`). A pair in `connects` with no join, or a join for parts that do not connect, is reported in the browser console |
 
 ## Sources
 
