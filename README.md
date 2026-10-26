@@ -11,7 +11,7 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | **Assembly** (left) | The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec or description; every word you type must match. Words that name a piece or a sub-part ("left viewport bolt", "gasket back") also list the matching pieces under their part, such as *Left viewport (webcam) · 16 bolts*; a click on one inspects that piece and keeps its sheet open. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. From the keyboard the list is one Tab stop, and the first Tab stop on the page, *Skip to the assembly*, jumps to it: ↑ ↓ move between rows, → ← open and close a group, Enter selects, Space hides or shows, and `I` inspects the selected part. |
 | **Viewer** (centre) | The model. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The scale bar is true at every zoom, because the view is orthographic. |
 | **Inspector** (right) | **Machine**, the first tab and one click away from anything: what the machine is, how a run goes, **Take the tour**, the headline numbers and how to use the page. **Part**: **Inspect on its own** first, then what the part does, how it attaches to each part it connects to, what it is made of, its pieces, its specification with a source tag on every row, and practical notes. **Sources**: every reference, what was taken from it, and how many rows cite it. **Controls**: every mouse, touch and key binding. |
-| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, **Panels**, and the theme: the light drawing or the hologram. |
+| **Modebar** (top) | Orbit or pan on left-drag, zoom, reset, fit the whole system, the Iso, Front, Right and Top views, Explode with its **Spread** slider, Cutaway, **Panels**, and the theme: **Colour**, **Greyscale** or **Hologram**. |
 
 Drag the edge between a side panel and the view to size the panel. Double-click the edge for the default width, or focus it and use the arrow keys. Dragged nearly shut, a panel folds to a thin rail; the arrow in its header does the same, and a click on the rail opens it again. **Panels** (or `F`) folds or unfolds both, giving the model and its sheets the full width. The page remembers the sizes. On a narrow screen the panels stack under the model instead.
 
@@ -99,9 +99,33 @@ The Part tab shows the part's basis as *Drawn from: published spec*, *photos* or
   - Each sheet says when the SPM1's own part is not published.
 - **Coils, electrodes, the gauge and the control parts** carry what the sources and photos show. Where nothing is published, the sheet says so rather than guessing.
 
+### Themes
+
+The theme buttons at the right of the modebar pick one of three drawings, and the page remembers the choice. With none chosen, a dark system theme opens the hologram and a light one the colour drawing. The buttons are one Tab stop: ← and → move to the next theme. Under 1440 px only the chosen theme keeps its label, and under 1320 px none do, so the modebar stays on one row.
+
+- **Colour**: the light drawing, solid shaded parts in their own colours with inked outlines.
+- **Greyscale**: the same drawing in greys, shaded like a CAD rendering (below).
+- **Hologram**: glowing blue on black (below).
+
+### Greyscale
+
+Black and white with shades, like a rendering from a CAD package, on dimmed paper so it is easy on the eyes.
+
+- The light comes from the upper left and turns with the view. Each face takes one of five flat shades by how squarely it faces the light, so rounded parts show bands.
+- Parts cast hard shadows on each other and on the table. They come from a 4096 × 4096 shadow map that covers only what the view shows, so they stay sharp when you zoom in. A shadow takes a lit face to the shade of a face just turned away.
+- Each material keeps its own grey: steel and ceramic pale, copper a mid grey set between steel's shades, the black parts dark.
+- The only colour is the selection, in amber as in the hologram:
+  - a pale amber wash on a part under the pointer;
+  - solid amber, keeping its shade, on a selected part or a kept sheet's sub-part;
+  - brighter amber on the sub-part whose sheet is under the pointer;
+  - an amber rim where the surface turns away.
+
+  The plasma glows grey, and amber while it is selected.
+- The panels are the colour drawing's, in greys. Amber marks the selection there too, on an ink edge so it shows on the grey. Focus rings and the axis triad are ink.
+
 ### Hologram
 
-The theme button switches between the light drawing and a hologram. A dark system theme opens the hologram. The palette is the soft ice blue of the displays in Tony Stark's workshop: `#4f9fd6` on deep navy, kept dim so it is easy on the eyes. The shading follows [holographic-shader-visualizer-three.Js](https://github.com/YasirAwan4831/holographic-shader-visualizer-three.Js) (fresnel rims and scan lines).
+The palette is the soft ice blue of the displays in Tony Stark's workshop: `#4f9fd6` on deep navy, kept dim so it is easy on the eyes. The shading follows [holographic-shader-visualizer-three.Js](https://github.com/YasirAwan4831/holographic-shader-visualizer-three.Js) (fresnel rims and scan lines).
 
 - Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
 - The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
