@@ -37,6 +37,24 @@
     color-scheme: dark;
     scrollbar-color: #1b3a55 transparent;
   }
+  /* The greyscale drawing: a shaded black-and-white rendering on dimmed paper. Amber marks the selection, as in the
+     hologram, and nothing else, so the accent (focus rings, the tour's rule) is ink. The basis dots keep their shapes. */
+  :root.greyscale {
+    --paper: #b9b9b5;
+    --card: #cbcbc7;
+    --ink: #121212;
+    --muted: #3f3f3d;
+    --rule: #a5a5a1;
+    --soft: #c1c1bd;
+    --chip: #b5b5b1;
+    --accent: #121212;
+    --spec: #1f1f1e;
+    --photo: #1f1f1e;
+    --assumed: #3f3f3d;
+    --amber: #e8901c;
+    color-scheme: light;
+    scrollbar-color: #8f8f8b transparent;
+  }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
@@ -67,12 +85,23 @@
   /* The tools wrap to a second row rather than scroll out of sight. */
   .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
   .mb { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); overflow: hidden; flex: none; }
-  .mb button { border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1; white-space: nowrap; }
+  .mb button { position: relative; border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1; white-space: nowrap; }
   .mb button + button { border-left: 1px solid var(--rule); }
   .mb button:hover { background: var(--soft); }
-  .mb button[aria-pressed="true"] { background: var(--ink); color: var(--card); }
+  .mb button[aria-pressed="true"], .mb button[aria-checked="true"] { background: var(--ink); color: var(--card); }
   .mb svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  /* Under 1440 px the theme buttons not chosen show only their icons, and under 1320 px the chosen one too, so the
+     modebar keeps to one row on a laptop, Spread slider included. A label that is not shown still names its button. */
+  @media (max-width: 1440px) {
+    .mb[role="radiogroup"] button[aria-checked="false"] .lbl { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  }
+  @media (max-width: 1320px) {
+    .mb[role="radiogroup"] .lbl { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  }
   button:focus-visible, input:focus-visible, .stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* The group clips its buttons, so a button's ring is drawn inside it, on a band of the card that shows on a pressed
+     button too. */
+  .mb button:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 4px var(--card); }
 
   .panel { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* Either side panel folds to a thin rail, to give the model and its screens the room. */
@@ -386,7 +415,7 @@
     .panel-body { overflow: visible; }
     .isobar { max-width: calc(100% - 100px); left: 10px; right: auto; margin: 0; justify-content: flex-start; }
     .corner.br { max-width: 50%; }
-    .mb .lbl { display: none; }
+    .mb .lbl { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   }
   @media (max-width: 520px) {
     .triad { width: 68px; height: 68px; }
@@ -424,7 +453,7 @@
   .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
   .holo .scale i { border-color: var(--accent); }
-  .holo .mb button[aria-pressed="true"], .holo .isobar button[aria-pressed="true"], .holo .isobar button.done,
+  .holo .mb button[aria-pressed="true"], .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"], .holo .isobar button.done,
   .holo .isobar button.next, .holo .actions button.primary {
     background: rgb(90 170 225 / 0.16); color: #dcecf8; border-color: var(--accent);
     box-shadow: inset 0 0 0 1px rgb(90 170 225 / 0.6), 0 0 12px rgb(90 170 225 / 0.3);
@@ -451,12 +480,21 @@
   .holo .screen.folded .bar { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
   @media (prefers-reduced-motion: reduce) { .holo .screen::before { animation: none; display: none; } }
   .holo .triad .ring { fill: rgb(5 15 27 / 0.7); stroke: rgb(90 170 225 / 0.35); }
+
+  /* ---------- Greyscale: the light drawing's chrome in greys. The selection is marked in amber as in the model, on an
+     ink edge so the mark stands out from the grey. ---------- */
+  .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--amber); }
+  .greyscale .screen.hot { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber), 0 0 0 2px var(--ink); }
+  .greyscale .tabs button[aria-selected="true"] { background: var(--ink); color: var(--card); box-shadow: inset 0 -3px 0 var(--amber); }
+  .greyscale .search::placeholder { color: var(--muted); opacity: 1; }
+  .greyscale .ti.off .name, .greyscale .eye[aria-pressed="false"] { opacity: 0.7; }
 </style>
 <script>
-  // Pick the hologram before first paint, so a dark-theme viewer never sees the light page flash.
+  // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash.
   try {
     const t = localStorage.getItem('spm1-theme');
-    if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('holo');
+    if (t === 'greyscale') document.documentElement.classList.add('greyscale');
+    else if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('holo');
   } catch { if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('holo'); }
 </script>
 <script type="importmap">
@@ -491,7 +529,11 @@
         <button type="button" id="bCut" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span></button>
       </div>
       <div class="mb"><button type="button" id="bPanels" aria-pressed="true" title="Show or hide the side panels (F)"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg><span class="lbl">Panels</span></button></div>
-      <div class="mb"><button type="button" id="themeBtn" title="Switch colour theme"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 2.5v11a5.5 5.5 0 0 0 0-11z" fill="currentColor"/></svg><span class="lbl" id="themeLbl">Theme</span></button></div>
+      <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
+        <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
+        <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
+        <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on black"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
+      </div>
     </nav>
   </header>
 
@@ -598,12 +640,15 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
 };
 const systemDark = matchMedia('(prefers-color-scheme: dark)');
+// 'light' is the drawing in colour, 'greyscale' the greyscale drawing and 'dark' the hologram. With no choice saved, the
+// system's light or dark setting picks between the light drawing and the hologram.
+const LOOKS = ['light', 'greyscale', 'dark'];
 function themeName() {
   const t = document.documentElement.dataset.theme;
-  return t === 'dark' || t === 'light' ? t : systemDark.matches ? 'dark' : 'light';
+  return LOOKS.includes(t) ? t : systemDark.matches ? 'dark' : 'light';
 }
 const savedTheme = store.get('spm1-theme');
-if (savedTheme === 'dark' || savedTheme === 'light') document.documentElement.dataset.theme = savedTheme;
+if (LOOKS.includes(savedTheme)) document.documentElement.dataset.theme = savedTheme;
 
 const TONES = {
   steel: '#d9dad5', vessel: '#d9dad5', steel2: '#cbcdc8', bolt: '#b3b5b0', copper: '#d79e72', black: '#4a4b4c', ink: '#2b2b29',
@@ -615,17 +660,35 @@ const TONES = {
 };
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
+// The greyscale drawing gives its colours as they show on screen (see `shown`), and its own light, raked further in
+// from the upper left so the cast shadows fall clear of the parts that cast them.
 const THEME = {
   light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  greyscale: { paper: '#cbcbc7', cut: '#9a9a96', ink: '#0e0e0e', lit: '#e8901c', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
   dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff9a3c', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
+const LIGHT = [-0.42, 0.58, 0.7];
+// Colours set from a hex are taken as sRGB and turned linear, and the renderer writes linear values straight to the
+// screen, so they show darker than the hex. `shown` keeps a hex as it is, for the greyscale drawing's greys.
+const shown = (hex) => new THREE.Color().setStyle(hex, THREE.LinearSRGBColorSpace);
+const themeColor = (hex, theme) => (theme === 'greyscale' ? shown(hex) : new THREE.Color(hex));
 // The hologram is one soft ice blue, like the displays in Tony Stark's workshop, a little brighter for parts
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
 // selection glows amber (THEME.dark.lit) so it stands apart from the blue.
 const HOLO = new THREE.Color('#4f9fd6');
-let holo = false;
+let holo = false, greyscale = false;
+const clearColor = new THREE.Color();
+// The greyscale drawing keeps how light each material is, squeezed toward the middle so nothing is white: steel and
+// ceramic come out a pale grey, copper a mid grey and the black parts a dark one. Copper and its alloys get a grey of
+// their own, set between steel's shades: from its lightness alone, lit copper is steel one shade down.
+const GREYS = { copper: 0.62, bronze: 0.6, brass: 0.68 };
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
+  if (theme === 'greyscale') {
+    const s = shown(TONES[name] || '#ff00ff');
+    const g = GREYS[name] ?? 0.2 + 0.72 * (0.2126 * s.r + 0.7152 * s.g + 0.0722 * s.b);
+    return c.setRGB(g, g, g, THREE.LinearSRGBColorSpace);
+  }
   if (theme !== 'dark') return c;
   const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
   return HOLO.clone().multiplyScalar(0.55 + 0.45 * l);
@@ -665,6 +728,12 @@ const shared = {
   uTime: { value: 0 },
   uScan: { value: 0.6 },
   uSweep: { value: -200 },
+  // Greyscale: the shadow map's depth, world to shadow-map space, one texel there, its size in cm, and the depth bias.
+  tShadow: { value: null },
+  uShadowM: { value: new THREE.Matrix4() },
+  uShadowTexel: { value: 1 / 4096 },
+  uShadowCm: { value: 0.1 },
+  uShadowBias: { value: 0.001 },
   // Port openings in the vessel wall (filled once the machine is built): axis + radius, base + length.
   uHoleA: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
   uHoleP: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
@@ -832,6 +901,83 @@ const FRAG_HOLO = /* glsl */`
   }
 `;
 
+// The greyscale drawing, shaded like a CAD rendering: the light falls into five flat shades, and the parts cast
+// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: amber.
+const FRAG_GREY = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  ${HOLES}
+  uniform vec3 uColor;
+  uniform vec3 uLitColor;
+  uniform float uLit;
+  uniform vec3 uEmit;
+  uniform vec3 uLight;
+  uniform vec3 uCut;
+  uniform vec3 uInk;
+  uniform float uDpr;
+  uniform sampler2D tShadow;
+  uniform mat4 uShadowM;
+  uniform float uShadowTexel;
+  uniform float uShadowCm;
+  uniform float uShadowBias;
+  varying vec3 vNv;
+  varying vec3 vNw;
+  varying vec3 vWp;
+  // Whether a point of the map is lit, blended between its four nearest texels so a shadow's edge runs smooth rather
+  // than in steps once it is cut into a shade.
+  float lit4(vec2 uv, float z) {
+    vec2 t = uv / uShadowTexel - 0.5;
+    vec2 f = fract(t);
+    vec2 b = (floor(t) + 0.5) * uShadowTexel;
+    vec2 o = vec2(uShadowTexel, 0.0);
+    float a = step(z, texture2D(tShadow, b).x), c = step(z, texture2D(tShadow, b + o).x);
+    float d = step(z, texture2D(tShadow, b + o.yx).x), e = step(z, texture2D(tShadow, b + o.xx).x);
+    return mix(mix(a, c, f.x), mix(d, e, f.x), f.y);
+  }
+  // 1 in the light, 0 in a cast shadow. The point is moved off the surface along its normal so a face never shadows
+  // itself, and four blended taps place the edge between texels.
+  float sunlit() {
+    vec3 p = (uShadowM * vec4(vWp + normalize(vNw) * uShadowCm * 1.5, 1.0)).xyz * 0.5 + 0.5;
+    if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;
+    float z = p.z - uShadowBias, h = 0.75 * uShadowTexel;
+    return 0.25 * (lit4(p.xy + vec2(-h, -h), z) + lit4(p.xy + vec2(h, -h), z) + lit4(p.xy + vec2(-h, h), z) + lit4(p.xy + vec2(h, h), z));
+  }
+  void main() {
+    #include <clipping_planes_fragment>
+    #ifdef HOLES
+      holes();
+    #endif
+    if (!gl_FrontFacing) {
+      float h = step(mod(gl_FragCoord.x - gl_FragCoord.y, 6.0 * uDpr), 1.0 * uDpr);
+      gl_FragColor = vec4(mix(uCut, uInk, h * 0.5), 1.0);
+      return;
+    }
+    vec3 n = normalize(vNv);
+    float k = dot(n, uLight);
+    // 0 for a face turned right away, 0.3 for one just turned away, 0.4-1 across the lit faces, reaching full light
+    // well before a face looks straight at the light; then rounded to five shades, the step between two smoothed over
+    // a pixel. A cast shadow takes a lit face to the shade at 0.3 in one step, however soft the map's edge is.
+    float x = k > 0.0 ? 0.4 + 0.6 * smoothstep(0.0, 0.8, k) : 0.3 + 0.3 * k;
+    float y = x * 4.0;
+    float w = fwidth(y) * 0.75 + 1e-4;
+    float q = (floor(y) + smoothstep(0.5 - w, 0.5 + w, fract(y))) / 4.0;
+    float s = sunlit();
+    float fs = fwidth(s) + 1e-3;
+    if (k > 0.0) q = mix(0.25, q, smoothstep(0.5 - fs, 0.5 + fs, s));
+    vec3 c = uColor * (0.42 + 0.58 * q);
+    // Under the pointer (levels up to 0.32) a part takes a pale amber wash; selected or kept (0.42 and up) it fills in
+    // amber, keeping its shade, and the one whose sheet is hot (0.55) is brighter still. Every lit level gets an amber
+    // rim where the surface turns away.
+    if (uLit > 0.0) {
+      float sel = smoothstep(0.3, 0.42, uLit);
+      vec3 wash = mix(uLitColor, vec3(1.0), 0.4) * (0.82 + 0.18 * q);
+      vec3 fill = uLitColor * (0.62 + 0.42 * q + 0.12 * step(0.5, uLit));
+      c = mix(c, mix(wash, fill, sel), mix(0.4, 0.9, sel));
+      c = mix(c, uLitColor, 0.85 * smoothstep(0.7, 1.0, 1.0 - abs(n.z)));
+    }
+    gl_FragColor = vec4(c + uEmit, 1.0);
+  }
+`;
+
 // Window glass is see-through: a faint tint, stronger at grazing angles, with a small glint.
 const FRAG_GLASS = /* glsl */`
   #include <clipping_planes_pars_fragment>
@@ -865,6 +1011,7 @@ function colorMat(tone, clip) {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
       uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
+      tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias,
     },
     vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
     transparent: glass, depthWrite: !glass, clipping: true,
@@ -1182,6 +1329,57 @@ const post = (() => {
   return { scene: s, camera: new THREE.Camera(), mat };
 })();
 
+// ---------- Greyscale: a shadow map from the drawing's light ----------
+// The light turns with the camera, so the shadows always fall down and to the right as in the drawing. The map covers
+// only what the view shows of the machine, seen from the light, so it stays sharp when zoomed in.
+// It is made the first time it is needed: 4096 texels square, 16-bit depth (a few hundredths of a millimetre over the
+// light's range) and a one-channel colour buffer that nothing reads.
+let rtShadow = null;
+function shadowTarget() {
+  if (rtShadow) return rtShadow;
+  const n = Math.min(4096, renderer.capabilities.maxTextureSize);
+  rtShadow = new THREE.WebGLRenderTarget(n, n, { format: THREE.RedFormat, depthTexture: new THREE.DepthTexture(n, n, THREE.UnsignedShortType) });
+  shared.tShadow.value = rtShadow.depthTexture;
+  shared.uShadowTexel.value = 1 / n;
+  return rtShadow;
+}
+const shadowCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.5, 10);
+// The light stands outside everything the machine can reach, exploded at the widest spread.
+const shadowSphere = new THREE.Box3().setFromObject(dev.root).getBoundingSphere(new THREE.Sphere());
+shadowSphere.radius *= 2;
+const sceneBox = new THREE.Box3(), fromLight = new THREE.Box3(), seen = new THREE.Box3(), sv = new V3(), sw = new V3();
+function aimShadow() {
+  const c = shadowSphere.center, R = shadowSphere.radius;
+  shadowCam.position.copy(c).addScaledVector(sv.copy(shared.uLight.value).transformDirection(camera.matrixWorld), R + 1);
+  shadowCam.up.set(0, 1, 0).transformDirection(camera.matrixWorld);
+  shadowCam.lookAt(c);
+  shadowCam.updateMatrixWorld();
+  // The map covers the machine as it is now, as the light sees it, cut to what the view shows of it: the view's box
+  // between the machine's nearest and farthest depth.
+  sceneBox.setFromObject(dev.root);
+  fromLight.makeEmpty();
+  let z0 = Infinity, z1 = -Infinity;
+  for (let i = 0; i < 8; i++) {
+    sv.set(i & 1 ? sceneBox.max.x : sceneBox.min.x, i & 2 ? sceneBox.max.y : sceneBox.min.y, i & 4 ? sceneBox.max.z : sceneBox.min.z);
+    const z = sw.copy(sv).applyMatrix4(camera.matrixWorldInverse).z;
+    z0 = Math.min(z0, z); z1 = Math.max(z1, z);
+    fromLight.expandByPoint(sv.applyMatrix4(shadowCam.matrixWorldInverse));
+  }
+  seen.makeEmpty();
+  for (const x of [camera.left, camera.right]) for (const y of [camera.bottom, camera.top]) for (const z of [z0, z1])
+    seen.expandByPoint(sv.set(x, y, z).applyMatrix4(camera.matrixWorld).applyMatrix4(shadowCam.matrixWorldInverse));
+  seen.min.z = fromLight.min.z; seen.max.z = fromLight.max.z;
+  seen.intersect(fromLight);
+  const b = seen.isEmpty() ? fromLight : seen;
+  shadowCam.left = b.min.x; shadowCam.right = b.max.x; shadowCam.bottom = b.min.y; shadowCam.top = b.max.y;
+  shadowCam.near = 0.5; shadowCam.far = 2 * R + 1.5;
+  shadowCam.updateProjectionMatrix();
+  shared.uShadowM.value.multiplyMatrices(shadowCam.projectionMatrix, shadowCam.matrixWorldInverse);
+  const cm = Math.max(shadowCam.right - shadowCam.left, shadowCam.top - shadowCam.bottom) * shared.uShadowTexel.value;
+  shared.uShadowCm.value = cm;
+  shared.uShadowBias.value = (1.5 * cm) / (shadowCam.far - shadowCam.near);
+}
+
 let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
 let dirty = true;
 function resize() {
@@ -1229,6 +1427,14 @@ function draw() {
   renderer.setClearColor(0x000000, 0);
   renderer.clear();
   renderer.render(scene, camera);
+  // The greyscale drawing's shadows come from the same parts as the outlines, but not from the window glass.
+  if (greyscale) {
+    for (const m of solids) if (m.userData.tone === 'glass') m.visible = false;
+    renderer.setRenderTarget(shadowTarget());
+    aimShadow();
+    renderer.clear();
+    renderer.render(scene, shadowCam);
+  }
 
   for (const m of solids) {
     const g = m.userData.piece ? ease(m.userData.piece.userData.gNow) : 0;
@@ -1244,7 +1450,7 @@ function draw() {
   }
   camera.layers.enable(1);
   renderer.setRenderTarget(rtColor);
-  renderer.setClearColor(pal.paper, 1);
+  renderer.setClearColor(clearColor, 1);
   renderer.clear();
   renderer.render(scene, camera);
   for (const m of solids) { m.material = m.userData.colorMat; m.visible = true; }
@@ -1477,17 +1683,25 @@ function applyLook() {
   const t = themeName();
   const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
   const apart = Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p));
-  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost * (t === 'dark' ? 0.3 : 1);
+  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost * (t === 'dark' ? 0.3 : t === 'greyscale' ? 0.6 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
     u.uI.value = sc > 1 ? I * 0.32 : I;
     g.visible = state.pNow > 0;
+    // In greyscale the plasma is a soft grey glow, amber while it is selected or under the pointer.
+    if (t === 'greyscale') {
+      u.uCore.value.copy(shown(boost > 1 ? '#f0a540' : '#e4e4e0'));
+      u.uRim.value.copy(shown(boost > 1 ? '#b8650f' : '#8e8e8a'));
+    }
   }
+  // Lit displays and LEDs: green and red in colour, a pale grey glow in greyscale.
   const lcdOn = new THREE.Color(t === 'dark' ? '#3f9a5c' : '#5fbf78').multiplyScalar(0.5);
   for (const m of solids) {
-    if (m.userData.tone === 'lcd') m.userData.emit.copy(lcdOn);
-    if (m.userData.tone === 'hvlcd') m.userData.emit.set(t === 'dark' ? '#8a2f2a' : '#d2473b').multiplyScalar(0.55);
-    if (m.userData.tone === 'led') m.userData.emit.set(t === 'dark' ? '#2fae55' : '#36c060').multiplyScalar(0.7);
+    const tone = m.userData.tone;
+    if (t === 'greyscale') { if (tone === 'lcd' || tone === 'hvlcd' || tone === 'led') m.userData.emit.setScalar(tone === 'led' ? 0.42 : 0.26); }
+    else if (tone === 'lcd') m.userData.emit.copy(lcdOn);
+    else if (tone === 'hvlcd') m.userData.emit.set(t === 'dark' ? '#8a2f2a' : '#d2473b').multiplyScalar(0.55);
+    else if (tone === 'led') m.userData.emit.set(t === 'dark' ? '#2fae55' : '#36c060').multiplyScalar(0.7);
   }
 }
 
@@ -2929,7 +3143,8 @@ function renderOverview(box) {
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
-    'The coloured dot next to each part says how far to trust its drawn shape and position.',
+    'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
+    'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
   ]) box.append(el('p', null, s));
   markTerms(box, 'machine');
@@ -2997,6 +3212,9 @@ function renderHelp(box) {
       ['→ ←', 'open or close a group'],
       ['Enter', 'select the part'],
       ['Space', 'show or hide it'],
+    ]],
+    ['Theme buttons (one Tab stop)', [
+      ['← →', 'switch to the next theme: Colour, Greyscale, Hologram'],
     ]],
     ['Keys (click the model first)', [
       ['← → ↑ ↓', 'turn'],
@@ -3070,11 +3288,21 @@ $('sSpread').addEventListener('change', () => { if (!iso.part) fitAll(); else fr
 function setCut(on) { state.cut = on; setPressed('bCut', on); dirty = true; }
 $('bExplode').addEventListener('click', () => setExplode(!state.explode));
 $('bCut').addEventListener('click', () => setCut(!state.cut));
-$('themeBtn').addEventListener('click', () => {
-  const next = themeName() === 'dark' ? 'light' : 'dark';
-  document.documentElement.dataset.theme = next;
-  store.set('spm1-theme', next);
+// The theme is a radio group: one Tab stop, the arrows move to the next theme and pick it.
+const lookBtns = [...document.querySelectorAll('[data-look]')];
+function setLook(look) {
+  document.documentElement.dataset.theme = look;
+  store.set('spm1-theme', look);
   applyTheme();
+}
+for (const b of lookBtns) b.addEventListener('click', () => setLook(b.dataset.look));
+$('looks').addEventListener('keydown', (e) => {
+  const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+  if (!d) return;
+  e.preventDefault();
+  const b = lookBtns[(lookBtns.indexOf(e.target.closest('[data-look]')) + d + lookBtns.length) % lookBtns.length];
+  setLook(b.dataset.look);
+  b.focus();
 });
 systemDark.addEventListener('change', applyTheme);
 
@@ -3082,11 +3310,14 @@ function applyTheme() {
   const t = themeName();
   const pal = THEME[t];
   holo = t === 'dark';
+  greyscale = t === 'greyscale';
   document.documentElement.classList.toggle('holo', holo);
+  document.documentElement.classList.toggle('greyscale', greyscale);
+  shared.uLight.value.set(...(pal.light || LIGHT)).normalize();
   for (const m of colorMats.values()) {
     const glass = m.userData.tone === 'glass';
     m.uniforms.uColor.value.copy(toneColor(m.userData.tone, t));
-    m.fragmentShader = holo ? FRAG_HOLO : glass ? FRAG_GLASS : FRAG_COLOR;
+    m.fragmentShader = holo ? FRAG_HOLO : glass ? FRAG_GLASS : greyscale ? FRAG_GREY : FRAG_COLOR;
     m.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     m.transparent = holo || glass;
     m.depthWrite = !holo && !glass;
@@ -3096,15 +3327,17 @@ function applyTheme() {
   shadow.uniforms.uHolo.value = holo ? 1 : 0;
   shadow.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
   shadow.needsUpdate = true;
-  shared.uCut.value.set(pal.cut);
-  shared.uInk.value.set(pal.ink);
-  shared.uLitColor.value.set(pal.lit);
-  shared.uPaper.value.set(pal.paper);
+  shared.uCut.value.copy(themeColor(pal.cut, t));
+  shared.uInk.value.copy(themeColor(pal.ink, t));
+  shared.uLitColor.value.copy(themeColor(pal.lit, t));
+  shared.uPaper.value.copy(themeColor(pal.paper, t));
+  clearColor.copy(shared.uPaper.value);
   shared.uGhost.value = pal.ghost;
   shared.uGlass.value = pal.glass;
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
   shadow.uniforms.uA.value = pal.shadow;
   shadow.uniforms.uInk.value.set(pal.shadowInk);
+  // The plasma is the one thing that glows: pink in the drawing, brighter in the hologram, grey in greyscale (applyLook).
   for (const g of glow) {
     const u = g.material.uniforms;
     u.uCore.value.set(holo ? '#ff8fe8' : '#ffe2f6');
@@ -3112,8 +3345,10 @@ function applyTheme() {
     g.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     g.material.needsUpdate = true;
   }
-  $('themeLbl').textContent = holo ? 'Light' : 'Hologram';
-  $('themeBtn').title = holo ? 'Switch to the light drawing' : 'Switch to the hologram';
+  for (const b of lookBtns) {
+    b.setAttribute('aria-checked', b.dataset.look === t ? 'true' : 'false');
+    b.tabIndex = b.dataset.look === t ? 0 : -1;
+  }
   applyLook();
   dirty = true;
 }
@@ -3135,10 +3370,12 @@ function drawTriad() {
   let s = '<circle class="ring" r="39"/>';
   for (const a of items) {
     const neg = a.k.startsWith('−');
+    // In greyscale the axes are ink and told apart by their letters.
+    const c = greyscale ? 'var(--ink)' : a.c;
     s += `<g class="ax" data-view="${a.view}" role="button" aria-label="Look from ${a.view}" opacity="${0.55 + 0.45 * (a.d * 0.5 + 0.5)}">`;
-    if (!neg) s += `<line x1="0" y1="0" x2="${a.x.toFixed(1)}" y2="${a.y.toFixed(1)}" stroke="${a.c}" stroke-width="2"/>`;
-    s += `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="${neg ? 4 : 7}" fill="${neg ? 'var(--card)' : a.c}" stroke="${a.c}" stroke-width="1.5"/>`;
-    if (!neg) s += `<text x="${a.x.toFixed(1)}" y="${(a.y + 3.4).toFixed(1)}" text-anchor="middle" style="fill:#fff">${a.k}</text>`;
+    if (!neg) s += `<line x1="0" y1="0" x2="${a.x.toFixed(1)}" y2="${a.y.toFixed(1)}" stroke="${c}" stroke-width="2"/>`;
+    s += `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="${neg ? 4 : 7}" fill="${neg ? 'var(--card)' : c}" stroke="${c}" stroke-width="1.5"/>`;
+    if (!neg) s += `<text x="${a.x.toFixed(1)}" y="${(a.y + 3.4).toFixed(1)}" text-anchor="middle" style="fill:${greyscale ? 'var(--card)' : '#fff'}">${a.k}</text>`;
     s += '</g>';
   }
   triad.innerHTML = s;
