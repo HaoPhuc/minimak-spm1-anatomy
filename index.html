@@ -260,6 +260,12 @@
   .isobar .step button:first-child { border-radius: 7px 0 0 7px; margin-left: 0; }
   .isobar .step button:last-child { border-radius: 0 7px 7px 0; }
   .isobar .step #bAll { min-width: 4.6em; font-variant-numeric: tabular-nums; }
+  /* On the tour: which stop this is, and the way on. */
+  .isobar .tour { display: inline-flex; align-items: center; gap: 6px; padding-left: 8px; border-left: 1px solid var(--rule); }
+  .isobar .tour[hidden] { display: none; }
+  .isobar .tour > span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .isobar button.next { background: var(--accent); color: var(--card); border-color: var(--accent); }
+  .isobar button.next[hidden] { display: none; }
   .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
   .slide[hidden] { display: none; }
   .slide input { width: 92px; accent-color: var(--accent); }
@@ -316,8 +322,8 @@
   table.ptab tr { cursor: pointer; }
   table.ptab tbody tr:hover { background: var(--soft); }
   table.ptab tr.on { background: var(--chip); }
-  table.ptab tr.on button { font-weight: 600; }
-  table.ptab button { width: 100%; border: 0; background: none; padding: 5px 4px; text-align: left; cursor: pointer; font-size: 13px; }
+  table.ptab tr.on td:first-child > button { font-weight: 600; }
+  table.ptab td:first-child > button { width: 100%; border: 0; background: none; padding: 5px 4px; text-align: left; cursor: pointer; font-size: 13px; }
   .screen table.ptab, .screen table.ptab button { font-size: 12.5px; }
   .srclist { list-style: none; margin: 0; padding: 0; }
   .srclist li { padding: 10px 0; border-top: 1px solid var(--rule); }
@@ -335,6 +341,36 @@
   .stat div { background: var(--soft); border-radius: 8px; padding: 8px; }
   .stat b { display: block; font-size: 18px; font-weight: 650; }
   .stat span { font-size: 12px; color: var(--muted); }
+  /* How it attaches: each connected part, then how the two are joined, with its tags. */
+  .joins { list-style: none; margin: 0; padding: 0; }
+  .joins li { padding: 7px 0; border-top: 1px solid var(--rule); }
+  .joins li:first-child { border-top: 0; padding-top: 0; }
+  .joins p { margin: 3px 0 0; font-size: 13px; }
+  /* How a run goes: numbered steps, each with the parts it uses. */
+  .run { list-style: none; margin: 0 0 4px; padding: 0; counter-reset: run; }
+  .run li { counter-increment: run; position: relative; padding: 0 0 10px 30px; }
+  .run li::before { content: counter(run); position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--chip); font: 600 12px/20px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: center; }
+  .run b { display: block; font-weight: 600; }
+  .run p { margin: 2px 0 6px; font-size: 13px; }
+  .run .chips { margin-bottom: 0; }
+  /* The tour's stop, above What it does: why this part matters at this point of a run. */
+  .tourline { background: var(--soft); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 8px 10px; margin: 0 0 12px; }
+  .doc .tourline p { margin: 2px 0 0; }
+  /* Glossary words: a dotted underline. A click, or Tab onto it, opens the definition under its paragraph or row. */
+  .term { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: help; text-align: inherit; text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .term[aria-expanded="true"] { text-decoration-style: solid; }
+  .term:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px; }
+  .def { display: block; margin: 6px 0 4px; padding: 6px 9px; background: var(--soft); border-radius: 8px; font-size: 12.5px; line-height: 1.45; color: var(--ink); text-align: left; font-weight: 400; }
+  .def[hidden], tr.defrow[hidden] { display: none; }
+  .def > span { display: block; }
+  .def > span + span { margin-top: 4px; }
+  table.specs tr.defrow td, table.ptab tr.defrow td { border-top: 0; padding: 0 0 4px; width: auto; color: var(--ink); text-align: left; }
+  table.ptab tr.defrow { cursor: default; }
+  table.ptab tbody tr.defrow:hover { background: none; }
+  /* A Pieces table with several facts per piece lists them down one cell. */
+  table.ptab.stacked th + th, table.ptab.stacked td + td { text-align: left; }
+  table.ptab .line + .line { margin-top: 3px; }
+  table.ptab .line > span:first-child { color: var(--muted); }
 
   @media (max-width: 1180px) { .app { --tw: 230px; --iw: 320px; } }
   @media (max-width: 960px) {
@@ -389,7 +425,7 @@
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"], .holo .isobar button[aria-pressed="true"], .holo .isobar button.done,
-  .holo .actions button.primary {
+  .holo .isobar button.next, .holo .actions button.primary {
     background: rgb(90 170 225 / 0.16); color: #dcecf8; border-color: var(--accent);
     box-shadow: inset 0 0 0 1px rgb(90 170 225 / 0.6), 0 0 12px rgb(90 170 225 / 0.3);
   }
@@ -488,6 +524,10 @@
       <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
       <button type="button" id="bScreens" aria-pressed="true" title="Sheets beside the part (S)">Screens</button>
+      <span class="tour" id="tourStep" role="group" aria-label="Tour" hidden>
+        <span id="tourLabel"></span>
+        <button type="button" class="next" id="bTourNext">Next ›</button>
+      </span>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
     <div class="hud" id="hud" hidden>
@@ -518,7 +558,8 @@
     <div class="panel-head">
       <div class="head-row">
         <div class="tabs" role="tablist">
-          <button type="button" role="tab" id="tPart" aria-selected="true" aria-controls="inspBody">Part</button>
+          <button type="button" role="tab" id="tMachine" aria-selected="true" aria-controls="inspBody">Machine</button>
+          <button type="button" role="tab" id="tPart" aria-selected="false" aria-controls="inspBody">Part</button>
           <button type="button" role="tab" id="tSources" aria-selected="false" aria-controls="inspBody">Sources</button>
           <button type="button" role="tab" id="tHelp" aria-selected="false" aria-controls="inspBody">Controls</button>
         </div>
@@ -1342,8 +1383,9 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0, b: 0 }) {
 // ---------- State ----------
 // A sheet is a sub-part of the inspected part, { part, sub }: kept ones in `pins`, the preview in `live`.
 const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
-// `foldTree`: Inspect folded the assembly list to make room, so Done unfolds it.
-const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false };
+// `foldTree`: Inspect folded the assembly list to make room, so Done unfolds it. `tour`: the stop of the guided tour
+// (an index into TOUR), or null off the tour.
+const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null };
 const hidden = new Set();
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
@@ -1486,6 +1528,8 @@ function inspect(id, focusPiece = null, o = {}) {
     if (panels.tree && !stacked() && width < 1000) { panels.tree = false; iso.foldTree = true; applyPanels(); resize(); }
   }
   if (hidden.has(id)) hidden.delete(id);
+  // On the tour, a stop's part, however it is reached (Next, ← back, a link), becomes the current stop.
+  if (iso.tour !== null) { const j = DOCS.TOUR.findIndex((s) => s.part === id); if (j >= 0) iso.tour = j; }
   if (iso.part && iso.part !== id && !o.back) iso.history = [...iso.history, { part: iso.part, focus: iso.focus }].slice(-20);
   if (iso.part !== id) { iso.apart = false; clearSheets(); restoreSheets(id); }
   else if (iso.focus !== focusPiece) state.live = null; // any change of piece clears the preview
@@ -1504,6 +1548,8 @@ function inspect(id, focusPiece = null, o = {}) {
   updateIsoBar(); // the bar (back button, piece step) settles before the screens measure where it ends
   renderHud();
   frameIsolated(!focusPiece, MOVE.fly, MOVE.lift);
+  // Inspecting shows the part's Part tab: the part card only stands in for it when it is not beside the view.
+  if (entering && tab !== 'part') setTab('part', false);
   renderInspector();
   setHint();
   announceInspect();
@@ -1540,6 +1586,7 @@ function endInspect() {
   iso.focus = null;
   iso.apart = false;
   iso.history = [];
+  iso.tour = null;
   if (iso.foldTree) { panels.tree = true; applyPanels(); resize(); }
   renderHud();
   refreshPieces();
@@ -1604,7 +1651,29 @@ function updateIsoBar() {
   $('bContext').setAttribute('aria-pressed', iso.context ? 'true' : 'false');
   $('bScreens').setAttribute('aria-pressed', HUD.on ? 'true' : 'false');
   $('bApart').disabled = iso.part === 'plasma';
+  // On the tour: which stop, and Next to the following one (none after the last; Done leaves the tour).
+  $('tourStep').hidden = iso.tour === null;
+  if (iso.tour !== null) {
+    const n = DOCS.TOUR.length, next = DOCS.TOUR[iso.tour + 1];
+    $('tourLabel').textContent = `Stop ${iso.tour + 1} of ${n}`;
+    $('bTourNext').hidden = !next;
+    if (next) $('bTourNext').title = `Next stop: ${partById.get(next.part).name}`;
+  }
 }
+// The guided tour: inspect each stop's part in turn. Done, or Esc back to the assembly, ends it.
+function startTour() {
+  iso.tour = 0;
+  setTab('part');
+  inspect(DOCS.TOUR[0].part);
+}
+function nextStop() {
+  const next = iso.tour !== null && DOCS.TOUR[iso.tour + 1];
+  if (!next) return;
+  iso.tour++;
+  inspect(next.part);
+  if (tab !== 'part') setTab('part');
+}
+$('bTourNext').addEventListener('click', nextStop);
 $('bDone').addEventListener('click', endInspect);
 $('bBack').addEventListener('click', goBack);
 $('bAll').addEventListener('click', () => setFocus(iso.focus ? null : nearestPiece(piecesOf.get(iso.part) || [])));
@@ -1951,6 +2020,79 @@ function tagKey(host) {
   used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', null, k), ` ${TAGS[k]}`));
   host.append(key);
 }
+// The glossary (GLOSSARY in parts.js). On each page (the Machine tab, a Part tab, a part card, a sheet) the first use of
+// a word in its text is underlined: a click, or Tab onto it, opens the definition under the paragraph or table row it
+// is in. Headings, bars, buttons, links and tags are not searched. Pages are rebuilt often, so which definitions were
+// opened by a click is remembered by page and word.
+const NOT_TEXT = 'button, a, h2, h3, h4, h5, th, .bar, .eyebrow, .from, .stat, .tagkey';
+const termById = new Map(DOCS.GLOSSARY.map((g) => [g.id, g]));
+const openTerms = new Set();
+function markTerms(host, page) {
+  const done = new Set();
+  const walk = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.parentElement.closest(NOT_TEXT) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+  const nodes = [];
+  for (let n = walk.nextNode(); n; n = walk.nextNode()) nodes.push(n);
+  for (let node of nodes) {
+    while (node) {
+      // The earliest use in this text of a word not yet defined on the page.
+      let hit = null, word = null;
+      for (const g of DOCS.GLOSSARY) {
+        const m = done.has(g.id) ? null : g.match.exec(node.data);
+        if (m && (!hit || m.index < hit.index)) { hit = m; word = g; }
+      }
+      if (!hit) break;
+      // One use can stand for more than one word: DN160CF is both DN and CF.
+      const ids = [word.id, ...DOCS.GLOSSARY.filter((g) => g !== word && !done.has(g.id) && g.match.test(hit[0])).map((g) => g.id)];
+      for (const id of ids) done.add(id);
+      const rest = node.splitText(hit.index + hit[0].length);
+      defineTerm(node.splitText(hit.index), ids, page);
+      node = rest;
+    }
+  }
+}
+// Turn a use into the underlined word, with its definition under the word's table row, or at the end of its
+// paragraph or item.
+function defineTerm(word, ids, page) {
+  const key = `${page}|${ids.join('+')}`;
+  const b = el('button', 'term', word.data);
+  b.type = 'button';
+  b.dataset.fk = `term:${ids.join('+')}`;
+  b.title = 'What it means';
+  const def = el('span', 'def');
+  def.id = `def-${key.replace(/[^\w-]+/g, '-')}`;
+  def.setAttribute('role', 'note');
+  for (const id of ids) {
+    const g = termById.get(id);
+    const d = el('span');
+    d.append(el('b', null, g.term), ` ${g.def}`);
+    if (g.src) d.append(' ', refButton(g.src));
+    def.append(d);
+  }
+  b.setAttribute('aria-controls', def.id);
+  const show = (on) => {
+    b.setAttribute('aria-expanded', on ? 'true' : 'false');
+    def.hidden = !on;
+    const row = def.closest('tr.defrow');
+    if (row) row.hidden = !on;
+  };
+  // A click opens it until a second click; Tab onto it opens it while the word has focus.
+  b.addEventListener('click', () => { if (openTerms.delete(key)) show(false); else { openTerms.add(key); show(true); } });
+  b.addEventListener('focus', () => { if (b.matches(':focus-visible')) show(true); });
+  b.addEventListener('blur', () => { if (!openTerms.has(key)) show(false); });
+  word.replaceWith(b);
+  const tr = b.closest('tr');
+  if (tr) {
+    const row = el('tr', 'defrow');
+    const td = el('td');
+    td.colSpan = tr.cells.length;
+    td.append(def);
+    row.append(td);
+    let at = tr;
+    while (at.nextElementSibling?.classList.contains('defrow')) at = at.nextElementSibling;
+    at.after(row);
+  } else (b.closest('p, li, div') || b.parentElement).append(def);
+  show(openTerms.has(key));
+}
 // A sub-part's sheet: one per sub-part, whichever piece it was kept from. Its bar names the sub-part and, on a repeated
 // part, on how many pieces it is the same; what tells the pieces apart is in the Pieces table.
 function sheetScreen(x, live) {
@@ -1972,7 +2114,7 @@ function sheetScreen(x, live) {
   // Where it belongs: the part, the object it is part of when the part is made of several, and the sub-part's own
   // name when the sheet's title differs.
   const owner = part.count < 2 && list.length > 1 ? list.find((pc) => subMeshes(pc, x.sub).length)?.userData.label : null;
-  sc.append(el('div', 'from', [part.name, owner, doc && doc.title !== x.sub ? x.sub : null].filter(Boolean).join(' · ')));
+  sc.append(el('div', 'from', [part.name, owner !== part.name && owner, doc && doc.title !== x.sub ? x.sub : null].filter(Boolean).join(' · ')));
   if (doc?.material) { const m = el('p', 'mat'); m.append(el('b', null, 'Material: '), doc.material); sc.append(m); }
   if (doc?.rows.length) sc.append(specTable(doc.rows));
   if (doc?.note) sc.append(el('p', 'note', doc.note));
@@ -1984,6 +2126,7 @@ function sheetScreen(x, live) {
     sc.append(sr);
   }
   tagKey(sc);
+  markTerms(sc, `sheet-${x.part}-${x.sub}`);
   // Hovering a sheet lights its sub-part in the model.
   sc.addEventListener('mouseenter', () => { state.hotSheet = x; sc.classList.add('hot'); refreshLit(); });
   sc.addEventListener('mouseleave', () => { if (sameSheet(state.hotSheet, x)) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); });
@@ -2213,7 +2356,8 @@ function select(id, o = {}) {
   touched = true;
   if (iso.part && id && id !== iso.part) inspect(id);
   refreshLit();
-  setTab('part');
+  // A part opens its Part tab; clearing the selection goes back to the Machine tab.
+  setTab(id ? 'part' : 'machine');
   renderInspector();
   const row = id && document.querySelector(`.ti[data-part="${id}"]`);
   if (row && o.scroll !== false) revealRow(row);
@@ -2436,12 +2580,14 @@ $('search').addEventListener('input', (e) => {
 });
 
 // ---------- Inspector ----------
-let tab = 'part';
-function setTab(t) {
+// The Machine tab comes first and is always one click away: the overview, how a run goes, and the tour.
+let tab = 'machine';
+function setTab(t, render = true) {
   tab = t;
-  for (const [id, name] of [['tPart', 'part'], ['tSources', 'sources'], ['tHelp', 'help']]) $(id).setAttribute('aria-selected', name === t ? 'true' : 'false');
-  renderInspector();
+  for (const [id, name] of [['tMachine', 'machine'], ['tPart', 'part'], ['tSources', 'sources'], ['tHelp', 'help']]) $(id).setAttribute('aria-selected', name === t ? 'true' : 'false');
+  if (render) renderInspector();
 }
+$('tMachine').addEventListener('click', () => setTab('machine'));
 $('tPart').addEventListener('click', () => setTab('part'));
 $('tSources').addEventListener('click', () => setTab('sources'));
 $('tHelp').addEventListener('click', () => setTab('help'));
@@ -2485,13 +2631,14 @@ let inspShown = '';
 function renderInspector() {
   const box = $('inspBody');
   // A new part or piece starts at the top, so its name is in view; any other re-render keeps the reader's place.
-  const shown = `${state.select}|${iso.focus ? iso.focus.id : ''}`;
+  const shown = `${tab}|${state.select}|${iso.focus ? iso.focus.id : ''}`;
   if (shown !== inspShown) { inspShown = shown; box.scrollTop = 0; }
   const fk = box.contains(document.activeElement) ? document.activeElement.dataset.fk : null;
   box.replaceChildren();
-  if (tab === 'sources') renderSources(box);
+  if (tab === 'machine') renderOverview(box);
+  else if (tab === 'sources') renderSources(box);
   else if (tab === 'help') renderHelp(box);
-  else if (!state.select) renderOverview(box);
+  else if (!state.select) box.append(el('div', 'eyebrow', 'Part'), el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
   else renderPart(box, false);
   if (fk) (box.querySelector(`[data-fk="${CSS.escape(fk)}"]`) || box.querySelector('h2'))?.focus({ preventScroll: true });
 }
@@ -2531,23 +2678,34 @@ function renderPart(box, card) {
   c.append(el('span', `basis ${p.basis}`), BASIS[p.basis]);
   chips.append(c);
   box.append(chips);
+  // On the tour, why this part matters at this point of a run.
+  const stop = here && iso.tour !== null ? DOCS.TOUR[iso.tour] : null;
+  if (stop?.part === p.id) {
+    const t = el('div', 'tourline');
+    const s = el('p', null, stop.text);
+    for (const id of stop.tags) s.append(' ', refButton(id));
+    t.append(el('div', 'eyebrow', `Tour · stop ${iso.tour + 1} of ${DOCS.TOUR.length}`), s);
+    box.append(t);
+  }
   box.append(el('p', null, p.what));
+  // How it attaches: each connected part (a click follows the link), and how the two are joined.
   if (p.connects?.length) {
-    box.append(el('h3', null, 'Connects to'));
-    const cc = el('div', 'chips');
+    box.append(el('h3', null, 'How it attaches'));
+    const ul = el('ul', 'joins');
     for (const id of p.connects) {
       const q = partById.get(id);
       if (!q) continue;
-      const b = el('button', 'chip', q.name);
-      b.type = 'button';
-      b.dataset.fk = `link:${id}`;
-      b.title = here ? `Inspect the ${q.name.toLowerCase()}` : `Read about the ${q.name.toLowerCase()}`;
-      b.addEventListener('click', () => followLink(id));
-      b.addEventListener('mouseenter', () => { state.legendHot = id; refreshLit(); });
-      b.addEventListener('mouseleave', () => { state.legendHot = null; refreshLit(); });
-      cc.append(b);
+      const li = el('li');
+      li.append(partLink(id, here));
+      const j = joinOf(p.id, id);
+      if (j) {
+        const s = el('p', null, j.text);
+        for (const t of j.tags) s.append(' ', refButton(t));
+        li.append(s);
+      }
+      ul.append(li);
     }
-    box.append(cc);
+    box.append(ul);
   }
   const subs = subsList(p);
   if (subs) box.append(el('h3', null, here && iso.apart ? 'Taken apart into' : 'Made of'), subs);
@@ -2574,6 +2732,28 @@ function renderPart(box, card) {
   }
   box.append(ul);
   tagKey(box);
+  markTerms(box, `${card ? 'card' : 'part'}-${p.id}`);
+}
+// A button naming another part: while inspecting it inspects that part, otherwise it selects it to read about.
+function partLink(id, here) {
+  const q = partById.get(id);
+  const b = el('button', 'chip', q.name);
+  b.type = 'button';
+  b.dataset.fk = `link:${id}`;
+  b.title = here ? `Inspect the ${q.name.toLowerCase()}` : `Read about the ${q.name.toLowerCase()}`;
+  b.addEventListener('click', () => followLink(id));
+  b.addEventListener('mouseenter', () => { state.legendHot = id; refreshLit(); });
+  b.addEventListener('mouseleave', () => { state.legendHot = null; refreshLit(); });
+  return b;
+}
+// How two connected parts attach (JOINS in parts.js): one sentence per pair, read from either side. A pair in
+// `connects` with no sentence, or a sentence for parts that do not connect, shows up in development.
+const joins = new Map(DOCS.JOINS.map(([a, b, text, tags]) => [[a, b].sort().join('|'), { text, tags }]));
+const joinOf = (a, b) => joins.get([a, b].sort().join('|')) || null;
+{
+  const pairs = new Set(DOCS.PARTS.flatMap((p) => p.connects.map((q) => [p.id, q].sort().join('|'))));
+  for (const k of pairs) if (!joins.has(k)) console.warn(`Missing join: ${k} has no sentence on how it attaches.`);
+  for (const k of joins.keys()) if (!pairs.has(k)) console.warn(`Stray join: ${k} is not in connects.`);
 }
 // What a part is made of. Each row keeps its sub-part's sheet, or closes it if it is kept; hovering one lights it. A
 // repeated part lists its sub-parts once, with how many pieces carry each. A part made of different objects (a supply
@@ -2621,11 +2801,13 @@ function piecesTable(p) {
   const here = iso.part === p.id;
   const fields = [];
   for (const rows of Object.values(p.pieces || {})) for (const [f] of rows) if (!fields.includes(f)) fields.push(f);
-  const t = el('table', 'ptab');
+  // One fact per piece gets its own column; several go down one cell, each named, under the part's `piecesHead`.
+  const stacked = fields.length > 1;
+  const t = el('table', stacked ? 'ptab stacked' : 'ptab');
   if (fields.length) {
     const head = el('thead');
     const tr = el('tr');
-    tr.append(el('th', null, 'Where it sits'), ...fields.map((f) => el('th', null, f)));
+    tr.append(el('th', null, 'Where it sits'), ...(stacked ? [el('th', null, p.piecesHead || '')] : fields.map((f) => el('th', null, f))));
     head.append(tr);
     t.append(head);
   }
@@ -2641,13 +2823,23 @@ function piecesTable(p) {
     const td = el('td');
     td.append(b);
     tr.append(td);
-    for (const f of fields) {
-      const r = p.pieces?.[pc.userData.label]?.find((x) => x[0] === f);
+    const rows = p.pieces?.[pc.userData.label] || [];
+    if (stacked) {
+      const v = el('td');
+      for (const [f, value, src] of rows) {
+        const line = el('div', 'line');
+        line.append(el('span', null, `${f}: `), value, ' ', refButton(src));
+        v.append(line);
+      }
+      if (!rows.length) v.append('–');
+      tr.append(v);
+    } else for (const f of fields) {
+      const r = rows.find((x) => x[0] === f);
       const v = el('td');
       if (r) v.append(r[1], ' ', refButton(r[2])); else v.append('–');
       tr.append(v);
     }
-    tr.addEventListener('click', (e) => { if (!e.target.closest('.ref')) focusPiece(pc); });
+    tr.addEventListener('click', (e) => { if (!e.target.closest('.ref, .term')) focusPiece(pc); });
     tr.addEventListener('mouseenter', () => { state.rowPiece = pc; refreshLit(); });
     tr.addEventListener('mouseleave', () => { state.rowPiece = null; refreshLit(); });
     tb.append(tr);
@@ -2668,8 +2860,9 @@ const HEADLINE = [
   ['Plasma', '1–5 eV glow in N₂ or He', ['S2', 'S3']],
   ['Envelope', '90 × 90 × 160 cm', ['S2', 'S3']],
 ];
-// How many rows cite each source: the parts' spec and piece rows, the sheets' rows, the not-drawn list and the
-// headline numbers. A row citing two sources counts for each; a list of sources is not a row, and `std` is not S9.
+// How many rows cite each source: the parts' spec and piece rows, the sheets' rows, the not-drawn list, the headline
+// numbers, the joins, the run steps, the tour stops and the glossary. A row citing two sources counts for each; a list
+// of sources is not a row, and `std` is not S9.
 const citedBy = (() => {
   const n = new Map();
   const add = (ids) => { for (const id of [].concat(ids)) if (id) n.set(id, (n.get(id) || 0) + 1); };
@@ -2680,12 +2873,35 @@ const citedBy = (() => {
   for (const d of Object.values(DOCS.SUBDOCS)) for (const r of d.rows) add(r[2]);
   for (const r of DOCS.NOT_DRAWN) add(r[2]);
   for (const r of HEADLINE) add(r[2]);
+  for (const r of DOCS.JOINS) add(r[3]);
+  for (const s of [...DOCS.RUN, ...DOCS.TOUR]) add(s.tags);
+  for (const g of DOCS.GLOSSARY) add(g.src);
   return n;
 })();
+// The Machine tab: what the machine is, how a run goes (each step names the parts it uses), the tour, the headline
+// numbers and how to use the page.
 function renderOverview(box) {
-  box.append(el('div', 'eyebrow', 'Overview'));
+  box.append(el('div', 'eyebrow', 'Machine'));
   box.append(el('h2', null, 'MinimaK SPM1'));
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
+  const acts = el('div', 'actions');
+  acts.append(action('Take the tour', startTour, true, 'act:tour'));
+  box.append(acts, el('p', 'note', `${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow. Next in the inspect bar goes on; Done leaves.`));
+  box.append(el('h3', null, 'How a run goes'));
+  const ol = el('ol', 'run');
+  for (const s of DOCS.RUN) {
+    const li = el('li');
+    const p = el('p', null, s.text);
+    for (const id of s.tags) p.append(' ', refButton(id));
+    const cc = el('div', 'chips');
+    for (const id of s.parts) cc.append(partLink(id, !!iso.part));
+    li.append(el('b', null, s.title), p, cc);
+    ol.append(li);
+  }
+  box.append(ol);
+  const order = el('p', 'note', 'The order follows the webinar ');
+  order.append(refButton('S4'), '; no operating procedure is published.');
+  box.append(order);
   const st = el('div', 'stat');
   for (const [n, l] of [[DOCS.PARTS.length, 'components'], [pieces.length, 'pieces drawn'], [DOCS.SOURCES.length, 'sources']]) {
     const d = el('div');
@@ -2714,7 +2930,9 @@ function renderOverview(box) {
     'Explode separates every component at once; the Spread slider beside it sets how far.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
     'The coloured dot next to each part says how far to trust its drawn shape and position.',
+    'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
   ]) box.append(el('p', null, s));
+  markTerms(box, 'machine');
 }
 function renderSources(box) {
   box.append(el('div', 'eyebrow', 'Where the numbers come from'));
@@ -2762,6 +2980,8 @@ function renderHelp(box) {
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
       ['Hover a sheet', 'light its sub-part in the model'],
       ['Click a connected part', 'inspect it at the piece nearest this one; ← in the inspect bar goes back'],
+      ['Take the tour (Machine tab)', 'inspect the parts in the order of a run; Next › in the inspect bar goes on, Done leaves'],
+      ['A word with a dotted underline', 'click it, or Tab onto it, for what it means; click again to close'],
       ['Drag a panel’s edge', 'size the panel; double-click the edge for the default'],
       ['Double-click empty space', 'reset the view'],
     ]],
@@ -3306,6 +3526,7 @@ if (renderer) {
 applyTheme();
 requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
+  setTab, startTour, nextStop, joinOf,
   // What is drawn under a point of the page, for checks: its part, sub-part and piece.
   pickAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y })); return m ? { part: m.userData.part, sub: m.userData.sub || null, piece: m.userData.piece?.userData.label || null } : null; },
 };
