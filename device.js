@@ -789,7 +789,8 @@
       add(gg, at(ring(K.ti, K.to, kfTo - gBack, 24), frame(pol(D.R0, deg, (gBack + kfTo) / 2), Z)), 'steel', TUBE);
       kfJoint(K, pol(D.R0, deg, kfJ), Z, radial(deg), { pc: st, ...ADAPT }, { pc: gg, ...TUBE },
         { pc: gg, sub: 'KF16 centring ring and O-ring', ex: V(0, 0, -1.5) }, { pc: gg, sub: 'KF16 clamp', ex: along(radial(deg), 6) }, 32);
-      add(gg, at(hexNut(1.7, 1.0, 0.97), frame(pol(D.R0, deg, kfTo - 0.5), Z)), 'steel2', { sub: 'Sensor tube nut', ex: V(0, 0, 3) });
+      // The nut fits over the Ø19 mm tube, so it is 24 mm across flats: a hex any narrower than its bore turns inside out.
+      add(gg, at(hexNut(2.4, 1.0, 0.97), frame(pol(D.R0, deg, kfTo - 0.5), Z)), 'steel2', { sub: 'Sensor tube nut', ex: V(0, 0, 3) });
       const head = pol(D.R0, deg, kfTo + 2.6);
       const HEAD = { ex: V(0, 0, 7) };
       add(gg, at(box(3.2, 8.4, 5.0), rtz(head, deg)), 'gaugeblue', HEAD);
