@@ -148,6 +148,8 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 | [`index.html`](index.html) | The page: renderer and ink pass, turntable camera, inspect mode, assembly tree, inspector |
 | [`device.js`](device.js) | The geometry in centimetres. One table of dimensions (`D`) at the top, the ConFlat sizes (`CF`), and `DETACH`, how far each part travels when inspected. Each piece carries `apart`, where it goes in the exploded view. Each mesh carries `sub`, the sub-part it belongs to, and `ex`, where that sub-part goes when the part is taken apart |
 | [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS` (with `pieces` where the pieces differ), `NOT_DRAWN`, how each connected pair attaches (`JOINS`), the run steps (`RUN`), the tour (`TOUR`), the glossary (`GLOSSARY`), and the sub-part sheets (`SUBDOCS`, `SUBMAP`). A pair in `connects` with no join, or a join for parts that do not connect, is reported in the browser console |
+| [`PLAN.md`](PLAN.md) | The first critique and plan for Inspect; its three phases are done |
+| [`PLAN-2.md`](PLAN-2.md) | The next plan, from an eight-critic review panel: inspecting small parts, Stark-style, and showing where they go. Its record is in [`review-panel/`](review-panel/) |
 
 ## Sources
 
