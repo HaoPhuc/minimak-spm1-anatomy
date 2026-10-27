@@ -33,10 +33,12 @@ Double-click a part, press **Inspect on its own**, or select it and press `I`. T
 - **Take apart** separates the part into its sub-parts along the directions they come off:
   - Bolts slide out of their holes and nuts come off the back.
   - Gaskets come out from between their flanges.
+  - A KF joint opens: the clamp comes off, and the centring ring with its O-ring drops out from between the two flanges.
   - A TF coil's copper former, winding and cover band separate along the coil axis.
   - The pump's motor and fan cover come off its block.
 
-  Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest.
+  Its own **Spread** slider sets the spacing. A part with several pieces is taken apart one piece at a time, starting with the nearest. A weld does not come apart, so a port tube stays with its flange and weld; where nothing comes off (a welded port, a gasket on its own) **Take apart** is off and says why.
+- **Section** (or `X`) cuts the part in half. The plane runs through the middle of the piece and contains its axis where it has one (a flange, a gasket, a coil), turned to face you as far as it can, so the cut shows the true profile; it stays put as you turn the view. The parts it is joined to, within reach of it, are cut with it and drawn solid, so a gasket shows between its two flanges with both knife edges biting it. Cut faces are hatched.
 - Pieces are named by where they sit. The gaskets are named by their joint (*Right–back joint*: joint k sits on the diagonal between two quarters). The eight joint flanges are named by their joint and the quarter they are welded to (*Right–back joint, right side*).
 - A part with several pieces (three viewports, eight TF coils) starts with all of them, and a click or a tap on one picks it. The arrows beside **All** in the inspect bar, or `,` and `.`, step through them one at a time, and so does a click on a row of the **Pieces** table. The other pieces fade to ghosts and the camera glides to the one you picked. Clicking **All** picks the nearest piece, or goes back to every piece.
 - The **Pieces** table, in the Part tab, has one row per piece of a repeated part, named by where it sits, with whatever the sources tell apart for each piece and its tag: which ports each quarter carries, which port carries the pump line, the laser window or each electrode, and how each satellite coil is held. The piece in view is marked. Where the sources tell the pieces no differently (the TF coils, the joints, the PF pairs), a line under the rows says so. A part made of different objects (the HV supply and its two leads, the gas valve, the gauge, the spectrometer) has no Pieces table: **Made of** lists each object's sub-parts under its name instead.
@@ -139,7 +141,7 @@ The animation runs at 30 frames a second while the page is idle, and stands stil
 
 ### Keys
 
-Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `,` `.` previous and next piece, `G` ghost, `S` sheets, `L` floating sheets back into the column, `Backspace` back to the previous part, `Esc` one step back, `F` panels, `H` hide.
+Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, `1`–`4` pick a view, `E` explode, `[` `]` spread, `C` cutaway, `I` inspect, `T` take apart, `,` `.` previous and next piece, `G` ghost, `X` section, `S` sheets, `L` floating sheets back into the column, `Backspace` back to the previous part, `Esc` one step back, `F` panels, `H` hide.
 
 ## Files
 
@@ -165,6 +167,7 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 | S8 | [minimak-groundwork](https://github.com/HaoPhuc/minimak-groundwork) | Background, not cited by any row: TU/e context and the Langmuir fit script |
 | S9 | [MBE-Komponenten, flange, gasket and tube dimensions](https://www.mbe-komponenten.de/service/flange-gasket/) | Every CF flange, port tube, gasket and bolt hole in the model and on the sheets |
 | S10 | [Kurt J. Lesker, Kodial CF viewports](https://www.lesker.com/viewports/viewports-cf-flanged-kodial-glass.cfm) | Viewport glass, view diameter, thickness, Kovar seal, bake-out |
+| S11 | [Kurt J. Lesker, KF technical notes](https://www.lesker.com/newweb/flanges/flanges_technicalnotes_kf_1.cfm) | How a KF joint goes together: centring ring and O-ring, the clamp on the flanges’ chamfered backs. Its dimension figure is not in its text, so the KF sizes are the drawing’s |
 
 ## How true it is
 
@@ -174,6 +177,6 @@ Every part has a basis, shown as the dot in the tree:
 - **Photo** (half dot): scaled or placed from the webinar photos. The joints sit on the diagonals, clamped to four aluminium corner posts. The TF formers have fold-out copper tabs. The PF1/PF2 windings and leads are on a white central former. The satellite coils are hose-wound rings. The gauge and gas stack is on top of the back quarter. The table is a Thorlabs Nexus. The control drawer, the coil-supply chassis and the pump are under the table.
 - **Assumed** (ring): placed where plausible. These are the outer PF coils (PF3, PF4), the solenoid's position, the HV supply, the gas valve, the Langmuir probe, the webcam and the spectrometer.
 
-The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) are drawn to the MBE-Komponenten CF table (S9) and match the bolt counts in the photos. The vessel is drawn as a 154 × 2 mm DN160CF tube, so its 150 mm bore gives the published 75 mm minor radius. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived", and numbers picked for the drawing are marked "assumed".
+The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) are drawn to the MBE-Komponenten CF table (S9) and match the bolt counts in the photos. Every sealing face has its knife edge and gasket recess at the S9 diameters, and every one of the 17 CF joints has its copper gasket. Bolts are drawn at their stock length (the grip, a nut and two threads, rounded up), with nuts on every through-bolted joint; only the DN40 holes on the reducer are tapped. The KF joints (the gauge on its KF16 adaptor, the bellows hose at the pump port and the pump) are drawn as two flanges, a centring ring with its O-ring, and a clamp; their sizes are the usual ISO-KF ones, marked "assumed", as no SPM1 KF part is published. The vessel is drawn as a 154 × 2 mm DN160CF tube, so its 150 mm bore gives the published 75 mm minor radius. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived", and numbers picked for the drawing are marked "assumed".
 
 To correct the model at the kickoff, change `D` at the top of `device.js` and the `basis` and spec rows in `parts.js`.

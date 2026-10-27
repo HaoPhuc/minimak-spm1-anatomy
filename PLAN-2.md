@@ -234,6 +234,20 @@ Every phase's *done when* includes, unless it says otherwise:
   - a sectioned Right–back joint at ×16 shows both knife edges biting the gasket at Ø166.1;
   - the gauge lifts off at its KF16 clamp, and the O-ring is a sub-part with a sheet.
 
+**Status: done** (October 2026). All four checks pass in headless Chrome:
+- **Gaskets:** a copper ring in all 17 CF joints. The stack has "3 DN40 gaskets" and the needle valve its own, both on the DN40 sheet.
+- **Bolts:** none ends in air. Through-bolted joints have nuts; the reducer's DN40 holes are tapped, marked on its face, with M6 × 25 bolts.
+- **Knife edges:** a sectioned Right–back joint at ×16 and ×40 shows both edges biting the gasket at Ø166.1, viewed square to the cut.
+- **Gauge:** it lifts off at its KF16 clamp, and the "KF16 centring ring and O-ring" has a sheet (AS568-314, S6).
+
+What differs from the plan:
+- **KF sizes:** no source gives the ISO-KF dimensions in its text; the Lesker KF notes, added as **S11**, give only the assembly. So the KF flange, ring and clamp sizes are the usual ISO ones, tagged *assumed*. The KF40 flange is redrawn at Ø55 mm, down from 65 mm.
+- **Hose flanges:** the bellows hose's own KF40 flanges are drawn with the pump port and the pump, so each KF joint comes apart whole.
+- **Welds and welded ports:** welds and welded flanges no longer move in Take apart. Where nothing moves (the lateral ports, the DN40 and DN63 ports, a gasket on its own), Take apart is off and says why.
+- **Section neighbours:** the section cuts the parts the inspected part is joined to (`connects`), and its own other pieces, inside a box round it; not every part within reach, which cluttered the view. It aims the plane but never turns the camera (D2); a square-on view waits for **Turn to see** (W4).
+- **T4 sheets, partly done:** stock lengths, spanner sizes and washers are on every CF bolt and nut sheet, and 16 sheets are written for small hardware that had none. Sub-parts without a sheet fell from 61 of 145 to 45 of 155. The 45 left are frames, enclosures, cables and brackets; they run alongside, as planned.
+- **Known blemish:** thin seam lines cross some hatched cut faces where the far surfaces behind the cut change depth.
+
 ### Phase 1: see it, reach it, link it (S each; no change to the model)
 
 | Item | Change |
