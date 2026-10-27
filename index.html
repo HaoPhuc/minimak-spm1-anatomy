@@ -322,6 +322,12 @@
   .overlay .dot { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
   .overlay .edge { fill: var(--accent); stroke: var(--card); stroke-width: 2; stroke-linejoin: round; }
   .overlay text { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+  /* The quarter names pinned to the view's edge, in the letters printed on the table, and the trail of a sub-part taken
+     off its piece: dashed, from a hollow ring where it sits. */
+  .overlay .compass { stroke: var(--ink); stroke-width: 1.75; }
+  .overlay text.quarter { font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
+  .overlay .trail .line { stroke-dasharray: 2 4; stroke-width: 1.75; }
+  .overlay .home { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
   .callouts { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   .callout {
     position: absolute; pointer-events: auto; cursor: pointer; padding: 2px 6px; border-radius: 6px; white-space: normal; overflow-wrap: anywhere;
@@ -612,6 +618,7 @@
       </span>
       <button type="button" id="bApart" aria-pressed="false" title="Take the part apart into its pieces (T)">Take apart</button>
       <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
+      <button type="button" id="bTurn" hidden title="The parts come apart toward you, so they hide one another: turn the view to see them side by side">Turn to see</button>
       <button type="button" id="bSection" aria-pressed="false" title="Cut the part in half through its axis, with the parts round it (X)">Section</button>
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
       <button type="button" id="bScreens" aria-pressed="true" title="Sheets beside the part (S)">Screens</button>
@@ -1354,6 +1361,38 @@ const shadow = (() => {
   return mat;
 })();
 
+// ---------- Quarter names on the table ----------
+// Each edge of the table is named for the quarter of the vessel above it, printed flat on the table top so it turns with
+// the model and reads from that side: Front (−y, toward you in the front view), Right (+x), Back and Left. They go with
+// the table when it drops in Explode. Colour pass only (layer 1), with no outline.
+const QUARTERS = [['Right', 0], ['Back', 90], ['Left', 180], ['Front', 270]];
+const tableG = groupByName.get('table')?.obj || scene;
+const quarterAt = (deg) => new V3(Math.cos(deg * DEG), Math.sin(deg * DEG), 0).multiplyScalar(DIMS.table.half - 6).setZ(DIMS.table.top + 0.15);
+const tableLabels = QUARTERS.map(([name, deg]) => {
+  const c = document.createElement('canvas');
+  c.width = 512; c.height = 128;
+  const x = c.getContext('2d');
+  x.font = '600 80px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  x.letterSpacing = '14px';
+  x.textAlign = 'center';
+  x.textBaseline = 'middle';
+  x.fillStyle = '#ffffff';
+  x.fillText(name.toUpperCase(), 263, 66);
+  const tex = new THREE.CanvasTexture(c);
+  if (renderer) tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(18, 4.5), mat);
+  // The letters' tops point to the middle of the table, so each name reads from its own edge.
+  const up = new V3(-Math.cos(deg * DEG), -Math.sin(deg * DEG), 0);
+  const right = up.clone().cross(new V3(0, 0, 1));
+  mesh.matrix.makeBasis(right, up, new V3(0, 0, 1)).setPosition(quarterAt(deg));
+  mesh.matrixAutoUpdate = false;
+  mesh.layers.set(1);
+  mesh.renderOrder = 1;
+  tableG.add(mesh);
+  return mesh;
+});
+
 // ---------- Post-processing: colour, then normals + ids + depth, then ink ----------
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
@@ -1578,7 +1617,9 @@ function draw() {
       if (holo) { m.material = m.userData.colorMat; m.userData.dim = 0.25; }
       else m.material = dimMat(m.userData.colorMat.userData.section);
     } else if (g <= 0) m.material = m.userData.colorMat;
-    else if (holo) { m.material = m.userData.colorMat; m.userData.dim = lit ? Math.max(0.6, 1 - (1 - pal.ghost) * g) : 1 - (1 - pal.ghost) * g; m.visible = lit || !(g >= 1 && FINE.has(m.userData.tone)); }
+    // A mate fades only halfway, and keeps its fasteners.
+    else if (holo) { const mate = m.userData.piece.userData.mate; m.material = m.userData.colorMat; m.userData.dim = lit || mate ? Math.max(mate ? 0.5 : 0.6, 1 - (1 - pal.ghost) * g) : 1 - (1 - pal.ghost) * g; m.visible = lit || mate || !(g >= 1 && FINE.has(m.userData.tone)); }
+    else if (m.userData.piece.userData.mate) { m.material = GHOST_FADE; m.userData.solid = Math.max(0.5, 1 - g); }
     // A ghosted sub-part that is lit (its sheet kept or under the pointer) fills in partly, so it can still be found.
     else if (g >= 1 && lit) { m.material = GHOST_FADE; m.userData.solid = 0.55; }
     else if (g >= 1) { m.material = GHOST; m.visible = !FINE.has(m.userData.tone); }
@@ -1772,14 +1813,34 @@ function applyClip() {
 
 // ---------- Visibility, ghosts, highlight ----------
 function refreshPieces() {
+  const mates = mateSet();
   for (const pc of pieces) {
     const part = pc.userData.part;
     const ghost = !!iso.part && (part !== iso.part || (!!iso.focus && pc !== iso.focus));
     pc.userData.ghost = ghost;
+    pc.userData.mate = mates.has(pc);
     pc.visible = !hidden.has(part) && !(ghost && !iso.context);
   }
+  // The quarter names show wherever the table does.
+  const table = piecesOf.get('table')?.[0];
+  for (const l of tableLabels) l.visible = !table || table.visible;
   refreshSection();
   refreshLit();
+}
+// Mate context: while inspecting, the pieces of the parts this one is joined to (`connects`) that sit where it rests are
+// its mates. They are drawn half solid, fasteners and all, rather than as ghosts, so you can see what it fits onto: the
+// gauge's stack with its KF16 adaptor, a gasket's two flanges and their bolts. Parts joined to it from further off (the
+// gauge's cable to the control drawer) stay ghosts.
+function mateSet() {
+  const set = new Set();
+  if (!iso.part) return set;
+  const joined = new Set(partById.get(iso.part)?.connects || []);
+  const near = (iso.focus ? [iso.focus] : piecesOf.get(iso.part) || []).map((pc) => {
+    const b = seatBox(pc, null);
+    return b.expandByScalar(Math.max(3, 0.25 * b.getSize(new V3()).length()));
+  });
+  for (const pc of pieces) if (joined.has(pc.userData.part) && near.some((b) => boxOfPiece(pc).intersectsBox(b))) set.add(pc);
+  return set;
 }
 
 // ---------- Section: cut the inspected piece in half, with the parts round it ----------
@@ -1874,8 +1935,9 @@ function refreshLit() {
     const ids = DOCS.PARTS.filter((p) => p.group === g.dataset.group).map((p) => p.id);
     g.querySelector('.tg-head .eye').setAttribute('aria-pressed', ids.every((id) => hidden.has(id)) ? 'false' : 'true');
   }
-  // The leader line follows the sheet under the pointer or focus; the callouts light with their sub-part.
-  if (leaderKey() !== ov.leader) ov.dirty = true;
+  // The leader line follows the sheet under the pointer or focus, the trail the sub-part under the pointer; the
+  // callouts light with their sub-part.
+  if (leaderKey() !== ov.leader || trailKey() !== ov.trail) ov.dirty = true;
   syncCallouts();
   applyLook();
   dirty = true;
@@ -1927,9 +1989,11 @@ function snapshot() { return { az: goal.az, el: goal.el, zoom: goal.zoom, target
 function frameIsolated(reset, glideFor = 0, delay = 0) {
   stopGlide();
   const b = iso.show ? boxOfSub(iso.show.pc, iso.show.sub) : iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
+  // The frame keeps where the part rests in view, so the lift shows what it came off, taken apart or not.
+  if (!iso.show) for (const pc of iso.focus ? [iso.focus] : piecesOf.get(iso.part) || []) b.union(seatBox(pc, null));
   if (reset) goal.el = clamp(goal.el, 14, 40);
   // Show me fills two thirds of the free view with the sub-part.
-  frameBox(b, iso.show ? 1.5 : iso.focus ? 1.6 : 1.3, hudInsets());
+  frameBox(b, iso.show ? 1.5 : iso.focus ? 1.35 : 1.2, hudInsets());
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000 + delay, dur: glideFor, from: null };
 }
 // The one live region: a line for a screen reader when a sheet is kept or closed, a part inspected or a piece picked.
@@ -2092,6 +2156,7 @@ function updateIsoBar() {
   $('bApart').setAttribute('aria-pressed', iso.apart ? 'true' : 'false');
   $('bApart').textContent = iso.apart ? 'Put together' : 'Take apart';
   $('apartWrap').hidden = !iso.apart;
+  showTurn(turnOffered());
   $('bContext').setAttribute('aria-pressed', iso.context ? 'true' : 'false');
   $('bSection').setAttribute('aria-pressed', iso.section ? 'true' : 'false');
   $('bSection').disabled = !piecesOf.has(iso.part);
@@ -2153,6 +2218,52 @@ $('bApart').addEventListener('click', () => setApart(!iso.apart));
 $('sApart').addEventListener('input', (e) => { iso.apartSpread = +e.target.value; $('oApart').textContent = fmtSpread(iso.apartSpread); dirty = true; });
 $('sApart').addEventListener('change', () => { if (iso.section) refreshSection(); frameIsolated(false); });
 $('bSection').addEventListener('click', () => setSection(!iso.section));
+// Turn to see: a piece taken apart along an axis that points at you has its sub-parts stacked behind one another. When
+// the axis is within 20° of the line of sight, the inspect bar offers to turn the view until it lies across it (15°
+// short of square, so it keeps some depth). The view never turns by itself; under reduced motion it cuts.
+function apartPiece() {
+  const list = piecesOf.get(iso.part) || [];
+  return iso.part && iso.apart ? iso.focus || (list.length === 1 ? list[0] : null) : null;
+}
+// The direction a piece comes apart along: the main axis of its sub-parts' moves, each sub-part counted once.
+function apartAxis(pc) {
+  if (pc.userData.apartAxis !== undefined) return pc.userData.apartAxis;
+  const seen = new Set(), v = [];
+  pc.traverse((m) => { if (m.isMesh && m.userData.ex.lengthSq() > 1e-6 && !seen.has(m.userData.sub)) { seen.add(m.userData.sub); v.push(m.userData.ex.clone().normalize()); } });
+  let a = v[0]?.clone() || null;
+  for (let i = 0; a && i < 24; i++) {
+    const n = new V3();
+    for (const x of v) n.addScaledVector(x, x.dot(a));
+    if (n.lengthSq() < 1e-12) break;
+    a = n.normalize();
+  }
+  pc.userData.apartAxis = a;
+  return a;
+}
+function turnOffered() {
+  const pc = apartPiece(), a = pc && apartAxis(pc);
+  return !!a && !iso.show && Math.abs(a.dot(basis(view.az, view.el).dir)) > Math.cos(20 * DEG);
+}
+function turnToSee() {
+  const pc = apartPiece(), a = pc && apartAxis(pc);
+  if (!a) return;
+  const d = basis(goal.az, goal.el).dir;
+  let n = d.clone().addScaledVector(a, -d.dot(a));
+  if (n.lengthSq() < 1e-4) n = new V3(0, 0, 1).addScaledVector(a, -a.z);
+  if (n.lengthSq() < 1e-4) n.set(1, 0, 0);
+  n.normalize().multiplyScalar(Math.cos(15 * DEG)).addScaledVector(a, Math.sign(d.dot(a) || 1) * Math.sin(15 * DEG));
+  lookFrom(Math.atan2(n.y, n.x) / DEG, clamp(Math.asin(clamp(n.z, -1, 1)) / DEG, -80, 80));
+  frameIsolated(false, MOVE.piece);
+  showTurn(false);
+  announce('Turned so the sub-parts come apart across the view.');
+}
+// The button comes and goes with the view; focus on it as it goes moves to Take apart, not to the page.
+function showTurn(on) {
+  const b = $('bTurn');
+  if (!on && document.activeElement === b) $('bApart').focus();
+  b.hidden = !on;
+}
+$('bTurn').addEventListener('click', turnToSee);
 function setContext(on) {
   iso.context = on;
   refreshPieces();
@@ -2168,10 +2279,10 @@ $('bContext').addEventListener('click', () => setContext(!iso.context));
 // with each step up a link, and rings its seat (the overlay). Under reduced motion it cuts rather than glides. Turning
 // or zooming the view keeps it; Esc goes back to the frame before. Any change of piece or part, or Take apart, ends it.
 const SHOW = '<svg viewBox="0 0 16 16"><path d="M2 5.5V2h3.5M10.5 2H14v3.5M14 10.5V14h-3.5M5.5 14H2v-3.5"/><circle cx="8" cy="8" r="2.3"/></svg>';
-// Where a piece's sub-part is headed now: lifted with its piece, and moved off it when the part is taken apart.
-function boxOfSub(pc, sub) {
+// Where a piece's sub-part is headed now: lifted with its piece, and moved off it when the part is taken apart (`k`, the
+// take-apart spread, 0 for its place on the piece).
+function boxOfSub(pc, sub, k = iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc) ? iso.apartSpread : 0) {
   const off = pieceOffset(pc);
-  const k = iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc) ? iso.apartSpread : 0;
   const b = new THREE.Box3();
   for (const m of subMeshes(pc, sub)) b.union(m.userData.restBox.clone().translate(off.clone().addScaledVector(m.userData.ex, k)));
   return b;
@@ -3059,9 +3170,75 @@ function layoutOverlay() {
   const free = freeRect();
   const occ = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost && !m.userData.dimmed && m.userData.tone !== 'glass'; });
   drawSeat(free);
+  drawQuarters(free);
   const lead = drawLeader(free, occ);
+  drawTrail(free);
   drawCallouts(free, occ, lead);
+  showTurn(turnOffered());
   ov.shown = true;
+}
+// The names of the quarters next to the inspected part (within 60° round the ring), each where its edge of the table is,
+// or, when that is out of sight, pinned to the edge of the view on the way to it: a gasket between the right and back
+// quarters names Right and Back. A part in the middle of the ring has none.
+function drawQuarters(free) {
+  if (!iso.part || !piecesOf.has(iso.part)) return;
+  const c3 = (iso.show ? boxOfSub(iso.show.pc, iso.show.sub) : iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part)).getCenter(new V3());
+  if (Math.hypot(c3.x, c3.y) < 6) return;
+  const az = Math.atan2(c3.y, c3.x) / DEG;
+  const cs = toScreen(c3);
+  const from = inRect(cs, free) ? cs : { x: (free.x0 + free.x1) / 2, y: (free.y0 + free.y1) / 2 };
+  const inner = { x0: free.x0 + 22, y0: free.y0 + 22, x1: free.x1 - 22, y1: free.y1 - ($('card').classList.contains('docked') ? 22 : 58) };
+  const g = svgEl('g', {}, 'quarters');
+  // What can hide a printed name: anything drawn solid or half solid, but not the see-through ghosts.
+  const cover = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && (!pc.userData.ghost || pc.userData.mate) && !m.userData.dimmed && pc.userData.part !== 'table'; });
+  for (const [name, deg] of QUARTERS) {
+    if (Math.abs(((az - deg + 540) % 360) - 180) > 60) continue;
+    const at = quarterAt(deg).add(tableG.position);
+    const s = toScreen(at);
+    // On the table, in the view and not hidden behind anything: the printed name says it.
+    if (inRect(s, inner)) {
+      ovRay.setFromCamera(new THREE.Vector2((s.x / width) * 2 - 1, -(s.y / height) * 2 + 1), camera);
+      const h = ovRay.intersectObjects(cover, false)[0];
+      if (!h || h.distance > at.clone().sub(ovRay.ray.origin).dot(ovRay.ray.direction) - 0.5) continue;
+    }
+    const p = exitOf(from, s, inner);
+    const a = Math.atan2(s.y - from.y, s.x - from.x), k = 7;
+    const tip = { x: p.x + Math.cos(a) * k, y: p.y + Math.sin(a) * k };
+    const l = { x: p.x + Math.cos(a + 2.4) * k, y: p.y + Math.sin(a + 2.4) * k }, r = { x: p.x + Math.cos(a - 2.4) * k, y: p.y + Math.sin(a - 2.4) * k };
+    g.append(svgEl('path', { d: `M${l.x.toFixed(1)} ${l.y.toFixed(1)}L${tip.x.toFixed(1)} ${tip.y.toFixed(1)}L${r.x.toFixed(1)} ${r.y.toFixed(1)}` }, 'halo'),
+      svgEl('path', { d: `M${l.x.toFixed(1)} ${l.y.toFixed(1)}L${tip.x.toFixed(1)} ${tip.y.toFixed(1)}L${r.x.toFixed(1)} ${r.y.toFixed(1)}` }, 'line compass'));
+    // The name sits inward of its arrow, toward the middle of the view.
+    const txt = svgEl('text', { x: p.x - Math.cos(a) * 12, y: p.y - Math.sin(a) * 12 + 4, 'text-anchor': Math.abs(Math.cos(a)) < 0.4 ? 'middle' : Math.cos(a) > 0 ? 'end' : 'start' }, 'quarter');
+    txt.textContent = name.toUpperCase();
+    g.append(txt);
+  }
+  ov.svg.append(g);
+}
+// The one trail: where the sub-part under the pointer (or its Made of row), else the one the leader line ends on, sits on
+// its piece, and the way it came off when the piece was taken apart. Never one per bolt.
+function trailSub() {
+  if (!iso.part || !iso.apart || iso.show) return null;
+  const list = piecesOf.get(iso.part) || [];
+  const pc = iso.focus || (list.length === 1 ? list[0] : null);
+  if (!pc) return null;
+  const m = state.hoverMesh;
+  if (m?.userData.piece === pc && m.userData.sub) return { pc, sub: m.userData.sub };
+  if (state.hoverSub && subMeshes(pc, state.hoverSub).length) return { pc, sub: state.hoverSub };
+  const x = leaderSheet();
+  return x && x.part === iso.part && subMeshes(pc, x.sub).length ? { pc, sub: x.sub } : null;
+}
+const trailKey = () => { const t = trailSub(); return t ? `${t.pc.id}|${t.sub}` : ''; };
+function drawTrail(free) {
+  ov.trail = trailKey();
+  const t = trailSub();
+  if (!t) return;
+  const now = screenRect(boxOfSub(t.pc, t.sub)), home = screenRect(boxOfSub(t.pc, t.sub, 0));
+  const c = { x: (now.x0 + now.x1) / 2, y: (now.y0 + now.y1) / 2 }, h = { x: (home.x0 + home.x1) / 2, y: (home.y0 + home.y1) / 2 };
+  if (Math.hypot(c.x - h.x, c.y - h.y) < 10 || !inRect(h, free)) return;
+  const g = svgEl('g', {}, 'trail');
+  line(g, h, exitOf(c, h, now));
+  g.append(svgEl('circle', { cx: h.x, cy: h.y, r: 4 }, 'home'));
+  ov.svg.append(g);
 }
 // The seat ring, its tether and, for a seat out of sight, the edge marker.
 function drawSeat(free) {
@@ -3070,12 +3247,20 @@ function drawSeat(free) {
   const pc = s ? s.pc : iso.focus || (list.length === 1 ? list[0] : null);
   if (!pc || (!s && iso.apart)) return;
   const now = screenRect(s ? boxOfSub(pc, s.sub) : boxOfPiece(pc));
-  const home = screenRect(seatBox(pc, s ? s.sub : null));
+  // A lifted piece sits down on the face of its place opposite the way it lifts (the gauge on its clamp, a viewport on
+  // its port), so that face is ringed: the tenth of its box at that end.
+  const seat = seatBox(pc, s ? s.sub : null);
   const c = { x: (now.x0 + now.x1) / 2, y: (now.y0 + now.y1) / 2 };
-  const h = { x: (home.x0 + home.x1) / 2, y: (home.y0 + home.y1) / 2 };
-  const off = Math.hypot(h.x - c.x, h.y - c.y);
   // A piece barely lifted is next to its seat: there is nothing to point at.
-  if (!s && off < 12) return;
+  const whole = screenRect(seat);
+  if (!s && Math.hypot((whole.x0 + whole.x1) / 2 - c.x, (whole.y0 + whole.y1) / 2 - c.y) < 12) return;
+  if (!s) {
+    const v = pc.userData.detachVec, i = [0, 1, 2].reduce((a, b) => (Math.abs(v.getComponent(b)) > Math.abs(v.getComponent(a)) ? b : a));
+    const lo = seat.min.getComponent(i), hi = seat.max.getComponent(i), t = 0.1 * (hi - lo);
+    if (v.getComponent(i) > 0) seat.max.setComponent(i, lo + t); else seat.min.setComponent(i, hi - t);
+  }
+  const home = screenRect(seat);
+  const h = { x: (home.x0 + home.x1) / 2, y: (home.y0 + home.y1) / 2 };
   const g = svgEl('g', {}, 'seat');
   if (inRect(h, free, 8)) {
     const rx = Math.max(9, (home.x1 - home.x0) / 2 + 6), ry = Math.max(9, (home.y1 - home.y0) / 2 + 6);
@@ -3903,6 +4088,7 @@ function renderOverview(box) {
     'Explode separates every component at once; the Spread slider beside it sets how far.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
     'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades, a dashed ring marks where it sits in the machine, and the inspect bar says where it is. Esc goes back to the view you had.',
+    'While you inspect a part, what it fits onto is drawn half solid, bolts and all, and a dashed ring marks where it sits. The table’s edges are named Front, Right, Back and Left for the quarters above them, so you know which side you are looking from.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
     'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
@@ -3977,6 +4163,7 @@ function renderHelp(box) {
       ['Click near a small part', 'a click that hits nothing picks the smallest part within 12 px'],
       ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed and its seat ringed; the inspect bar says where it is. Esc goes back'],
       ['A callout on a part taken apart', 'preview its sheet; its number is the Made of row’s'],
+      ['Turn to see (inspect bar)', 'offered when a part taken apart comes apart toward you: turns the view so its sub-parts lie across it'],
       ['Link icon in the inspect bar', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
       ['Drag a sheet or the preview out of the column', 'it floats where you drop it, kept; drop it back on the column to return it'],
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
@@ -4220,6 +4407,13 @@ function applyTheme() {
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
   shadow.uniforms.uA.value = pal.shadow;
   shadow.uniforms.uInk.value.set(pal.shadowInk);
+  // The quarter names are printed in ink, and glow in the hologram's blue.
+  for (const l of tableLabels) {
+    l.material.color.set(holo ? '#5aaae0' : pal.ink);
+    l.material.opacity = holo ? 0.85 : 0.7;
+    l.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
+    l.material.needsUpdate = true;
+  }
   // The plasma is the one thing that glows: pink in the drawing and in greyscale (applyLook), brighter in the hologram.
   for (const g of glow) {
     const u = g.material.uniforms;
@@ -4279,6 +4473,16 @@ function drawScale() {
   const bar = $('scale');
   bar.firstChild.style.width = `${px.toFixed(0)}px`;
   bar.lastChild.textContent = L >= 100 ? `${L / 100} m` : L < 1 ? `${L * 10} mm` : `${L} cm`;
+}
+// The 3D view's text description says which side it is seen from, in the quarters' names, once the view stops.
+const SIDES = ['right', 'back right', 'back', 'back left', 'left', 'front left', 'front', 'front right'];
+let described = '';
+function describeView() {
+  const side = SIDES[Math.round((((view.az % 360) + 360) % 360) / 45) % 8];
+  // From above, the front (−y) shows at the bottom when looking from the front (azimuth −90°), at the left from the right.
+  const from = view.el > 60 ? `above, the front at the ${['bottom', 'left', 'top', 'right'][Math.round((((view.az + 90) % 360 + 360) % 360) / 90) % 4]}` : view.el < -60 ? 'below' : `the ${side}`;
+  const t = `3D model of the MinimaK SPM1, seen from ${from}. The table's edges are named for the quarters of the vessel above them: Front, Right, Back and Left. Drag to turn, right-drag to pan, scroll to zoom, double-click a part to inspect it on its own.`;
+  if (t !== described) { described = t; stage.setAttribute('aria-label', t); }
 }
 function updateReadout() {
   const az = ((Math.round(view.az) % 360) + 540) % 360 - 180;
@@ -4660,6 +4864,7 @@ function frame() {
   else {
     if (!shift && ov.crept) { ov.crept = false; ov.dirty = true; }
     if (ov.dirty && now - ov.at > 0.12) { layoutOverlay(); ov.crept = shift > 0; }
+    describeView();
   }
 
   // The hologram's scan lines and sweep keep moving, at 30 frames a second when nothing else does.
