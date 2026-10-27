@@ -404,6 +404,47 @@ What differs from the plan:
   the table.
 - **Students:** four of five point to the gauge's seat within 5 s.
 
+**Status: built** (October 2026). The two checks that can be measured pass in headless Chrome, at 1366×768 and
+1440×900 with the column open, in Colour, Greyscale and Hologram; the student test has not been run.
+- **Gauge:**
+  - On first inspect the stack is a mate (half solid) and the control drawer, joined to the gauge only by its cable,
+    stays a ghost.
+  - The stack's KF16 adaptor flange is inside the free view. The seat ring sits on the gauge's clamp face, and *Back*
+    names its quarter.
+  - Taken apart, the gauge's seat stays in frame.
+  - V3 still holds: the sensor nut shows 546 visible pixels at 1366×768 and 790 at 1440×900 (400 asked).
+- **Gasket:** inspecting the Right–back gasket makes both its flanges mates, with their 20 bolts and 20 nuts. *RIGHT*
+  and *BACK* are in the view at 12 px, ink on a card halo.
+- **Students:** not run. It needs five people who have not seen the app.
+- **Also checked:**
+  - Turn to see is not offered at the default view of the stack taken apart, but is offered from above. Pressed, it
+    leaves the take-apart axis 71.5° from the line of sight. By Tab and Enter, focus then goes to Take apart; on touch
+    it is a 44 px tap; under reduced motion it cuts.
+  - One trail with the pointer on one bolt of a ring.
+  - Context off hides the mates.
+  - The view's description reads *seen from the front*, *the right*, *the back left* and *above, the front at the
+    bottom* from those sides.
+  - Phase 2's checks still pass. No console errors.
+
+What differs from the plan:
+- **Mates are the joined parts near where the part rests,** not every part in `connects`: the gauge's cable to the
+  drawer would otherwise frame half the machine. They are drawn half solid without outlines, so the inspected part's
+  edges still read through them. In the hologram they are dimmed to half.
+- **Framing keeps the seat** by framing the part and where it rests together, with less padding (1.35 for a piece,
+  was 1.6) so small parts stay large.
+- **The seat ring of a lifted piece** rings the face it sits down on (the tenth of its resting box opposite the lift),
+  not the whole box.
+- **Quarter names:**
+  - They are printed on the table top 6 cm in from each edge, each reading from its own side, and go down with the
+    table in Explode.
+  - A part's frame rarely reaches the table, so while inspecting, the quarters within 60° round the ring from the part
+    are also named in the overlay. The name goes where the edge of the table is when nothing hides it, and is pinned to
+    the edge of the view, pointing to it, when it is out of sight or hidden.
+- **Turn to see** stops 15° short of square to the axis, so the view keeps some depth. Its axis is the main direction
+  of the sub-parts' moves.
+- **The trail** follows the sub-part under the pointer or its Made of row, else the leader line's sheet, and shows only
+  while the piece is taken apart.
+
 ### Phase 4: in order (M, then L)
 
 **O1. Steps in fitting order** inside the Take apart bar, as ‹ step n / N ›.
