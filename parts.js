@@ -760,7 +760,7 @@
       note: 'The bellows hose clamps onto it with a centring ring and O-ring between the flanges.',
       sources: ['S11'],
     },
-    'sensor-nut': fastener('Sensor tube nut', [['Drawn as', '17 mm across flats, 10 mm high']], 'Holds the sensor tube in the gauge module.'),
+    'sensor-nut': fastener('Sensor tube nut', [['Drawn as', '24 mm across flats, 10 mm high, over the Ø19 mm tube']], 'Holds the sensor tube in the gauge module.'),
     'gauge-plug': fastener('Gauge cable connector', [['Drawn as', 'Ø10 mm, 12 mm long']], 'Plugs the gauge cable into the side of the module.'),
     'compression-fitting': fastener('Outlet compression fitting', [['Drawn as', 'brass, a nut 11 mm across flats on a Ø5 mm line']], 'Joins the gas line to the needle valve’s outlet.'),
     'gas-inlet-fitting': fastener('Gas inlet fitting', [['Drawn as', 'brass block 24 × 24 × 18 mm, a nut 14 mm across flats']], 'Where the gas line from the cylinder joins the line up to the needle valve.'),

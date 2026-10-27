@@ -304,6 +304,34 @@
   .isobar .tour > span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .isobar button.next { background: var(--accent); color: var(--card); border-color: var(--accent); }
   .isobar button.next[hidden] { display: none; }
+  /* Show me: where the framed sub-part is, each step up a link. It takes the place of the part's name. */
+  .isobar .crumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 2px; font-size: 12.5px; margin-right: 6px; min-width: 0; }
+  .isobar .crumbs[hidden] { display: none; }
+  .isobar .crumbs button { border: 0; background: none; padding: 2px 3px; font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .isobar .crumbs button:hover { background: var(--soft); }
+  .isobar .crumbs .sep { color: var(--muted); padding: 0 1px; }
+  .isobar .crumbs [aria-current] { font-weight: 600; padding: 2px 3px; }
+  /* The model's own labels, drawn only while the view is still: the seat ring and its tether, the leader line from a
+     sheet to its sub-part, and the callouts on a part taken apart. Each line has a band of the card under it, so it
+     reads on any surface. */
+  .overlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
+  .overlay .halo { fill: none; stroke: var(--card); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.92; }
+  .overlay .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .overlay .stub { stroke-width: 1.5; }
+  .overlay .seat .line { stroke-dasharray: 6 4; stroke-linecap: butt; }
+  .overlay .dot { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
+  .overlay .edge { fill: var(--accent); stroke: var(--card); stroke-width: 2; stroke-linejoin: round; }
+  .overlay text { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+  .callouts { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .callout {
+    position: absolute; pointer-events: auto; cursor: pointer; padding: 2px 6px; border-radius: 6px; white-space: normal; overflow-wrap: anywhere;
+    font: 12px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: calc(12px * var(--ui-scale, 1)); color: var(--ink);
+    background: color-mix(in srgb, var(--card) 92%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+  }
+  .callout b { font: 600 1em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); margin-right: 4px; }
+  .callout.balloon { display: grid; place-items: center; padding: 0; border-radius: 50%; width: calc(20px * var(--ui-scale, 1)); height: calc(20px * var(--ui-scale, 1)); font: 600 calc(11.5px * var(--ui-scale, 1))/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border-color: var(--accent); }
+  .callout.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .callout:hover { border-color: var(--accent); }
   .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
   .slide[hidden] { display: none; }
   .slide input { width: 92px; accent-color: var(--accent); }
@@ -311,12 +339,18 @@
   .mb .slide { border-left: 1px solid var(--rule); }
   .mb button[aria-disabled="true"] { opacity: 0.4; }
   .subs { list-style: none; margin: 0; padding: 0; }
-  .subs button { width: calc(100% + 12px); display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: none; text-align: left; padding: 4px 6px; margin: 0 -6px; border-radius: 6px; font-size: 13px; cursor: default; }
-  .subs button:hover { background: var(--soft); }
-  .subs button { cursor: pointer; }
-  .subs button.on { background: var(--chip); }
-  .subs button.on span:first-child { font-weight: 600; }
+  /* A Made of row: its number (the callouts' number), its name, on how many pieces, and Show me at the end. */
+  .subs li.row { display: flex; align-items: stretch; margin: 0 -6px; border-radius: 6px; }
+  .subs li.row:hover { background: var(--soft); }
+  .subs button.sub { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: none; text-align: left; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .subs button.sub.on { background: var(--chip); }
+  .subs button.sub.on .nm { font-weight: 600; }
+  .subs .nm { flex: 1; min-width: 0; }
+  .subs .no { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); min-width: 1.4em; }
   .subs .k { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); white-space: nowrap; }
+  .subs button.show, .screen .bar button.show { flex: none; width: 28px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+  .subs button.show:hover, .subs button.show:focus-visible { color: var(--ink); background: var(--chip); }
+  .subs button.show svg, .screen .bar button.show svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .subs .grp { font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 0 2px; }
   .subs .grp:first-child { padding-top: 0; }
   .fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
@@ -481,6 +515,8 @@
     box-shadow: 0 0 22px rgb(90 170 225 / 0.14), inset 0 0 24px rgb(90 170 225 / 0.06);
   }
   .holo .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 26px rgb(90 170 225 / 0.3), inset 0 0 24px rgb(90 170 225 / 0.1); }
+  .holo .callout { background: rgb(5 18 32 / 0.88); border-color: rgb(90 170 225 / 0.42); border-radius: 3px; }
+  .holo .callout.balloon { border-radius: 50%; border-color: var(--accent); }
   .holo .screen::before {
     content: ""; position: absolute; left: 0; right: 0; top: -60px; height: 60px; pointer-events: none;
     background: linear-gradient(transparent, rgb(90 170 225 / 0.07), transparent);
@@ -568,6 +604,7 @@
     <div class="isobar" id="isobar">
       <button type="button" id="bBack" hidden title="Back to the part you came from (Backspace)"></button>
       <span class="lbl" id="isoLabel"></span>
+      <nav class="crumbs" id="crumbs" aria-label="Where it is" hidden></nav>
       <span class="step" id="pieceStep" role="group" aria-label="Which piece">
         <button type="button" id="bPrev" title="Previous piece (,)" aria-label="Previous piece">‹</button>
         <button type="button" id="bAll" title="Every piece, or pick one with the arrows">All</button>
@@ -585,6 +622,8 @@
       <button type="button" id="bLink" class="icon" title="Copy a link to this part, piece, its sheets and the view" aria-label="Copy link"><svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
+    <svg class="overlay" id="overlay" aria-hidden="true"></svg>
+    <div class="callouts" id="callouts" aria-hidden="true"></div>
     <div class="hud" id="hud" hidden>
       <section class="sheets" id="sheets" aria-label="Sheets">
         <div class="sheets-head" id="sheetsHead" hidden>
@@ -1066,6 +1105,37 @@ function ghostMat(fade) {
   return m;
 }
 const GHOST = ghostMat(false), GHOST_FADE = ghostMat(true);
+// Show me dims the rest of the part: its own shading washed toward the paper and see-through, with no outline, so the
+// framed sub-part reads first and shows through whatever is in front of it. One copy per section cut, so a sectioned
+// part stays cut. (The hologram dims with its own uDim instead.)
+const FRAG_DIM = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  uniform vec3 uColor;
+  uniform vec3 uPaper;
+  uniform vec3 uLight;
+  varying vec3 vNv;
+  varying vec3 vNw;
+  void main() {
+    #include <clipping_planes_fragment>
+    vec3 n = normalize(vNv);
+    float w = smoothstep(-0.4, 1.0, dot(n, uLight));
+    vec3 c = uColor * (mix(0.66, 1.05, w) + 0.06 * smoothstep(0.6, 1.0, vNw.z));
+    gl_FragColor = vec4(mix(uPaper, c, 0.5), 0.42);
+  }
+`;
+const dimMats = new Map();
+function dimMat(sec) {
+  if (dimMats.has(sec)) return dimMats.get(sec);
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uPaper: shared.uPaper, uLight: shared.uLight, uSolid: { value: 0 }, uColor: { value: new THREE.Color() } },
+    vertexShader: VERT, fragmentShader: FRAG_DIM, transparent: true, depthWrite: false, side: THREE.FrontSide, clipping: true,
+  });
+  m.userData.ghost = true;
+  m.userData.fade = true;
+  if (sec) m.clippingPlanes = SEC_PLANES[sec];
+  dimMats.set(sec, m);
+  return m;
+}
 
 const solids = [];
 // Small detail that only clutters the ghost of the context: holes, bolts, slots, rules, LEDs.
@@ -1482,7 +1552,8 @@ function draw() {
     const g = u ? ease(u.gNow) : 0;
     m.material = m.userData.inkMat;
     // A part fading to a ghost loses its outline halfway; one turning solid gets its outline first, then its fill.
-    m.visible = !((u && (u.ghost ? g > 0.5 : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4));
+    // What Show me dims has no outline, so the framed sub-part's edges show through it.
+    m.visible = !((u && (u.ghost ? g > 0.5 : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
@@ -1503,7 +1574,10 @@ function draw() {
     m.userData.dim = 1;
     m.visible = true;
     const lit = m.userData.lit > 0;
-    if (g <= 0) m.material = m.userData.colorMat;
+    if (g <= 0 && m.userData.dimmed) {
+      if (holo) { m.material = m.userData.colorMat; m.userData.dim = 0.25; }
+      else m.material = dimMat(m.userData.colorMat.userData.section);
+    } else if (g <= 0) m.material = m.userData.colorMat;
     else if (holo) { m.material = m.userData.colorMat; m.userData.dim = lit ? Math.max(0.6, 1 - (1 - pal.ghost) * g) : 1 - (1 - pal.ghost) * g; m.visible = lit || !(g >= 1 && FINE.has(m.userData.tone)); }
     // A ghosted sub-part that is lit (its sheet kept or under the pointer) fills in partly, so it can still be found.
     else if (g >= 1 && lit) { m.material = GHOST_FADE; m.userData.solid = 0.55; }
@@ -1524,7 +1598,8 @@ function draw() {
 // ---------- Turntable camera: azimuth about the vertical, elevation, orthographic zoom, pan ----------
 // Horizontal drag spins the model about z, vertical drag tilts it, z stays up (plotly's turntable mode).
 const HOME = { az: -56, el: 24 };
-const ZOOM_MIN = 0.3, ZOOM_MAX = 40;
+// Up to 120×, so Show me can fill the view with a nut of 2 cm.
+const ZOOM_MIN = 0.3, ZOOM_MAX = 120;
 const view = { az: HOME.az, el: HOME.el, zoom: 1, target: new V3() };
 const goal = { az: HOME.az, el: HOME.el, zoom: 1, target: new V3() };
 let fit = { half: 100, centre: new V3() };
@@ -1591,7 +1666,7 @@ function lookFrom(az, elv, o = {}) {
   dirty = true;
 }
 function resetView() {
-  if (iso.part) return frameIsolated(true);
+  if (iso.part) { endShow(false); return frameIsolated(true); }
   lookFrom(HOME.az, HOME.el, { zoom: 1, target: fit.centre });
 }
 function fitAll() {
@@ -1652,8 +1727,9 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0, b: 0 }) {
 // A sheet is a sub-part of the inspected part, { part, sub }: kept ones in `pins`, the preview in `live`.
 const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
 // `foldTree`: Inspect folded the assembly list to make room, so Done unfolds it. `tour`: the stop of the guided tour
-// (an index into TOUR), or null off the tour.
-const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null, section: false, secN: null, secFor: null };
+// (an index into TOUR), or null off the tour. `show`: the sub-part Show me frames, { pc, sub, saved }, `saved` being
+// the frame to go back to.
+const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null, section: false, secN: null, secFor: null, show: null };
 const hidden = new Set();
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
@@ -1798,6 +1874,9 @@ function refreshLit() {
     const ids = DOCS.PARTS.filter((p) => p.group === g.dataset.group).map((p) => p.id);
     g.querySelector('.tg-head .eye').setAttribute('aria-pressed', ids.every((id) => hidden.has(id)) ? 'false' : 'true');
   }
+  // The leader line follows the sheet under the pointer or focus; the callouts light with their sub-part.
+  if (leaderKey() !== ov.leader) ov.dirty = true;
+  syncCallouts();
   applyLook();
   dirty = true;
 }
@@ -1847,9 +1926,10 @@ const MOVE = { lift: 0.3, fly: 1.2, piece: 0.9, apart: 0.8 };
 function snapshot() { return { az: goal.az, el: goal.el, zoom: goal.zoom, target: goal.target.clone() }; }
 function frameIsolated(reset, glideFor = 0, delay = 0) {
   stopGlide();
-  const b = iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
+  const b = iso.show ? boxOfSub(iso.show.pc, iso.show.sub) : iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
   if (reset) goal.el = clamp(goal.el, 14, 40);
-  frameBox(b, iso.focus ? 1.6 : 1.3, hudInsets());
+  // Show me fills two thirds of the free view with the sub-part.
+  frameBox(b, iso.show ? 1.5 : iso.focus ? 1.6 : 1.3, hudInsets());
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000 + delay, dur: glideFor, from: null };
 }
 // The one live region: a line for a screen reader when a sheet is kept or closed, a part inspected or a piece picked.
@@ -1865,6 +1945,7 @@ function announceInspect() {
 // part keeps its sheets for when you come back to it.
 function inspect(id, focusPiece = null, o = {}) {
   if (!id || !partById.has(id)) return;
+  endShow(false);
   // A part made of different objects (the gauge and its cable, the valve and its line) opens on its main object, so
   // the cable does not set the framing; All shows them all.
   if (!focusPiece && iso.part !== id && composite(id)) focusPiece = piecesOf.get(id)[0];
@@ -1929,6 +2010,7 @@ function endInspect() {
   const slow = !reduceMotion.matches;
   // Focus on a sheet or the inspect bar would be lost as they go, so it returns to the part's row in the list.
   const lost = hud.contains(document.activeElement) || $('isobar').contains(document.activeElement);
+  endShow(false);
   const mine = piecesOf.get(iso.part) || [];
   const start = slow && mine.some((pc) => pc.userData.tp > 0.02) ? BACK.together : 0;
   for (const pc of mine) pc.userData.dHold = slow ? now + start : 0;
@@ -1962,6 +2044,7 @@ function endInspect() {
 // Show one piece of the inspected part (the rest of it fades to ghosts), or all of them with null. Any change of
 // piece clears the preview; the kept sheets belong to sub-parts, so they stay.
 function setFocus(pc) {
+  endShow(false);
   iso.focus = pc;
   if (!pc) iso.apart = false;
   state.live = null;
@@ -1996,6 +2079,10 @@ function updateIsoBar() {
   const lbl = $('isoLabel');
   lbl.replaceChildren(el('b', null, iso.focus ? iso.focus.userData.label : p.name), p.count > 1 && !iso.focus ? ` ×${p.count}` : '');
   lbl.title = `Inspecting ${lbl.textContent}`;
+  // In Show me the breadcrumb takes the place of the part's name.
+  lbl.hidden = !!iso.show;
+  $('crumbs').hidden = !iso.show;
+  if (iso.show) $('crumbs').replaceChildren(...crumbs());
   $('pieceStep').hidden = list.length < 2;
   const back = iso.history.at(-1);
   $('bBack').hidden = !back;
@@ -2041,6 +2128,7 @@ $('bPrev').addEventListener('click', () => stepPiece(-1));
 $('bNext').addEventListener('click', () => stepPiece(1));
 function setApart(on) {
   if (!iso.part || (on && !comesApart.has(iso.part))) return;
+  endShow(false);
   iso.apart = on;
   state.live = null; // taking apart, or putting back, clears the preview
   // Pieces of one part sit close together (eight coils round one ring), so take apart one at a time: the nearest.
@@ -2072,6 +2160,127 @@ function setContext(on) {
   announce(on ? 'The rest of the machine shows as a ghost.' : 'The rest of the machine is hidden.');
 }
 $('bContext').addEventListener('click', () => setContext(!iso.context));
+
+// ---------- Show me: one sub-part, close up ----------
+// One command with several triggers: the Show me button on a sheet's bar or a Made of row, Z, Enter on a Made of row,
+// and a double-click on a sub-part with a mouse. It frames the sub-part, on the piece in view, at two thirds of the
+// free view (below the inspect bar, beside the column), dims the rest of the part, names where it is in the inspect bar
+// with each step up a link, and rings its seat (the overlay). Under reduced motion it cuts rather than glides. Turning
+// or zooming the view keeps it; Esc goes back to the frame before. Any change of piece or part, or Take apart, ends it.
+const SHOW = '<svg viewBox="0 0 16 16"><path d="M2 5.5V2h3.5M10.5 2H14v3.5M14 10.5V14h-3.5M5.5 14H2v-3.5"/><circle cx="8" cy="8" r="2.3"/></svg>';
+// Where a piece's sub-part is headed now: lifted with its piece, and moved off it when the part is taken apart.
+function boxOfSub(pc, sub) {
+  const off = pieceOffset(pc);
+  const k = iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc) ? iso.apartSpread : 0;
+  const b = new THREE.Box3();
+  for (const m of subMeshes(pc, sub)) b.union(m.userData.restBox.clone().translate(off.clone().addScaledVector(m.userData.ex, k)));
+  return b;
+}
+// The piece a sub-part is shown on: the one in view, else the nearest shown piece that has it, else the nearest of all.
+function pieceFor(part, sub) {
+  const all = (piecesOf.get(part) || []).filter((pc) => subMeshes(pc, sub).length);
+  if (iso.part === part && iso.focus && all.includes(iso.focus)) return iso.focus;
+  const shown = all.filter((pc) => !pc.userData.ghost);
+  return shown.length ? nearestPiece(shown) : all.length ? nearestPiece(all) : null;
+}
+function refreshDim() {
+  const s = iso.show;
+  for (const m of solids) m.userData.dimmed = !!s && m.userData.part === iso.part && !(m.userData.piece === s.pc && m.userData.sub === s.sub);
+  ov.dirty = true;
+  dirty = true;
+}
+function showMe(part, sub, pc = null) {
+  if (!part || !sub || !partById.has(part)) return;
+  if (iso.part !== part) inspect(part);
+  pc = pc && pc.userData.part === part && subMeshes(pc, sub).length ? pc : pieceFor(part, sub);
+  if (!pc) return;
+  // A sub-part only a ghosted piece has is shown on that piece, which is picked first.
+  if (pc.userData.ghost) setFocus(pc);
+  if (iso.show && iso.show.pc === pc && iso.show.sub === sub) return;
+  iso.show = { pc, sub, saved: iso.show ? iso.show.saved : snapshot() };
+  refreshDim();
+  updateIsoBar(); // the breadcrumb settles the bar's height before the framing measures it
+  frameIsolated(false, 0.8);
+  setHint();
+  const many = (piecesOf.get(part) || []).length > 1 && pc.userData.label !== partById.get(part).name;
+  announce(`Show me: ${sub}${many ? `, ${pc.userData.label}` : ''}. Esc goes back.`);
+}
+// Out of Show me; `restore` glides back to the frame before it (Esc). Anything that frames the part anew passes false.
+function endShow(restore) {
+  if (!iso.show) return;
+  const { saved } = iso.show;
+  iso.show = null;
+  refreshDim();
+  if (restore && saved) {
+    stopGlide();
+    goal.az = nearestAz(saved.az); goal.el = saved.el; goal.zoom = saved.zoom; goal.target.copy(saved.target);
+    if (!reduceMotion.matches) glide = { at: performance.now() / 1000, dur: 0.7, from: null };
+    dirty = true;
+    announce('Back to the frame before Show me.');
+  }
+  updateIsoBar();
+  setHint();
+}
+// What Z shows: the Made of row or the sheet that has focus, else the sheet under the pointer, the preview, the
+// sub-part under the pointer, or the sheet kept last.
+function showCandidate() {
+  const a = document.activeElement;
+  const row = a?.closest?.('li.row');
+  if (row) return { part: row.dataset.part, sub: row.dataset.sub };
+  const key = a?.closest?.('.screen')?.dataset.key;
+  if (key === 'live' && state.live) return state.live;
+  const kept = key && state.pins.find((x) => sheetKey(x) === key);
+  if (kept) return kept;
+  if (state.hotSheet) return state.hotSheet;
+  if (state.live) return state.live;
+  const m = state.hoverMesh;
+  if (iso.part && m?.userData.sub && m.userData.part === iso.part) return { part: iso.part, sub: m.userData.sub, pc: m.userData.piece };
+  return iso.part ? state.pins.at(-1) || null : null;
+}
+function showButton(fn, fk) {
+  const b = el('button', 'show');
+  b.type = 'button';
+  b.innerHTML = SHOW;
+  b.title = 'Show me: frame it close up (Z)';
+  b.setAttribute('aria-label', 'Show me');
+  b.dataset.fk = fk;
+  b.addEventListener('click', fn);
+  return b;
+}
+// The piece of the vessel a piece is mounted on, for the breadcrumb: the quarter whose group carries it.
+function quarterOf(pc) {
+  for (let g = pc.parent; g; g = g.parent) if (/^quarter\d$/.test(g.name)) return (piecesOf.get('vessel') || []).find((v) => v.parent === g) || null;
+  return null;
+}
+// Where the framed sub-part is: the vessel quarter it is mounted on, the part, the piece when the part has several, and
+// the sub-part itself. Each step up is a link out of Show me to it.
+function crumbs() {
+  const { pc, sub } = iso.show;
+  const p = partById.get(iso.part);
+  const many = (piecesOf.get(p.id) || []).length > 1;
+  const steps = [];
+  const q = iso.part !== 'vessel' && quarterOf(pc);
+  if (q) steps.push([q.userData.label, `Inspect the ${q.userData.label.toLowerCase()}`, () => inspect('vessel', q)]);
+  steps.push([p.name, many && !composite(p.id) ? 'Every piece of it' : 'The whole part', () => {
+    endShow(false);
+    if (many && !composite(p.id) && iso.focus) setFocus(null); else frameIsolated(false, MOVE.piece);
+  }]);
+  if (many && pc.userData.label !== p.name) steps.push([pc.userData.label, 'This piece', () => { endShow(false); if (iso.focus !== pc) setFocus(pc); else frameIsolated(false, MOVE.piece); }]);
+  const out = [];
+  for (const [text, title, fn] of steps) {
+    const b = el('button', null, text);
+    b.type = 'button';
+    b.title = title;
+    b.addEventListener('click', fn);
+    const sep = el('span', 'sep', '›');
+    sep.setAttribute('aria-hidden', 'true');
+    out.push(b, sep);
+  }
+  const here = el('span', null, sub);
+  here.setAttribute('aria-current', 'location');
+  out.push(here);
+  return out;
+}
 
 // ---------- Side panels: drag the edge between a panel and the view to size it, or fold it to a rail ----------
 const PANEL = { tree: { min: 180, max: 520, w: 'tw' }, insp: { min: 240, max: 640, w: 'iw' } };
@@ -2478,9 +2687,10 @@ function sheetScreen(x, live) {
   const list = piecesOf.get(part.id) || [];
   const n = subsOf(part.id).get(x.sub) || 0;
   const badge = part.count > 1 && list.length > 1 && n ? (n === list.length ? `Same on all ${n}` : `On ${n} of ${list.length}`) : null;
+  const show = showButton(() => showMe(x.part, x.sub), 'show');
   const buttons = live
-    ? [barButton('Keep', 'Keep this sheet', 'keep', () => pinSheet(x.part, x.sub), 'keep'), barButton('×', 'Close the preview', 'close', () => setLive(null))]
-    : [barButton('×', 'Close this sheet', 'close', (e) => { unpinSheet(x); if (!e.detail) focusRow(x.sub); })];
+    ? [show, barButton('Keep', 'Keep this sheet', 'keep', () => pinSheet(x.part, x.sub), 'keep'), barButton('×', 'Close the preview', 'close', () => setLive(null))]
+    : [show, barButton('×', 'Close this sheet', 'close', (e) => { unpinSheet(x); if (!e.detail) focusRow(x.sub); })];
   const sc = screen(live ? 'live' : sheetKey(x), `${x.part}|${x.sub}`, x.sub, { fold: !live, state: live ? 'Preview' : null, line2: badge, buttons, label: doc?.title || x.sub });
   sc.classList.toggle('live', live);
   sc.firstChild.classList.add('grab');
@@ -2623,6 +2833,8 @@ function renderHud() {
     const t = a.isConnected && hud.contains(a) ? a : had.fk ? HUD.els.get(had.key)?.querySelector(`[data-fk="${CSS.escape(had.fk)}"]`) : null;
     t?.focus({ preventScroll: true });
   }
+  // The sheets may have moved, so the leader line is drawn again.
+  ov.dirty = true;
 }
 // A floating sheet stays where it was dropped, inside the view.
 function placeFloat(sc) {
@@ -2728,6 +2940,358 @@ function screenBoxOf(box) {
   }
   return r;
 }
+
+// ---------- The overlay: the seat ring, the leader line and the callouts ----------
+// Drawn on the model only while the view is still (D5): hidden as soon as the camera or a part moves, and laid out again
+// once both have stopped, so nothing slides about while you read it. Each line has a band of the card under it, so it
+// reads on any surface and in every theme.
+// - The seat ring: a dashed ring where the framed sub-part (Show me), or the one piece in view, rests in the machine,
+//   with one tether to it from where it is now. A seat outside the free view gets an edge marker pointing to it.
+// - The leader line: one line from the sheet under the pointer or keyboard focus (else the one kept last, or the dock's
+//   card) to its sub-part, ending on a point of it that can be seen.
+// - The callouts: on a piece taken apart, its sub-parts named in the gutters beside it, numbered as the Made of rows,
+//   with short stubs: at most ten, five at text size 2. Where they do not fit, would cross each other or the leader
+//   line, they become numbered balloons on the part. They are hidden from assistive technology (the Made of rows carry
+//   the same numbers and names) and out of the Tab order; a click or tap on one previews its sheet.
+const ov = { svg: $('overlay'), cl: $('callouts'), shown: false, dirty: true, at: 0, leader: '', cands: null };
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, cls) {
+  const e = document.createElementNS(SVGNS, tag);
+  if (cls) e.setAttribute('class', cls);
+  for (const k in attrs) e.setAttribute(k, typeof attrs[k] === 'number' ? attrs[k].toFixed(1) : attrs[k]);
+  return e;
+}
+// A world point on the view as it is now (the camera is orthographic), in px from the view's top-left corner.
+function toScreen(p) {
+  const { right, up } = basis(view.az, view.el);
+  const k = (2 * halfNow()) / height;
+  const d = new V3().subVectors(p, view.target);
+  return { x: width / 2 + d.dot(right) / k, y: height / 2 - d.dot(up) / k };
+}
+function screenRect(box) {
+  const r = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+  for (let i = 0; i < 8; i++) {
+    const s = toScreen(new V3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
+    r.x0 = Math.min(r.x0, s.x); r.x1 = Math.max(r.x1, s.x); r.y0 = Math.min(r.y0, s.y); r.y1 = Math.max(r.y1, s.y);
+  }
+  return r;
+}
+// The part of the view nothing covers: below the inspect bar, beside the column or above the dock.
+function freeRect() {
+  const i = hudInsets();
+  return { x0: i.l, y0: i.t, x1: width - i.r, y1: height - i.b };
+}
+const inRect = (s, r, m = 0) => s.x >= r.x0 + m && s.x <= r.x1 - m && s.y >= r.y0 + m && s.y <= r.y1 - m;
+// Where the way from `a` (inside `r`) to `b` leaves the rectangle `r`: a tether starts at the edge of what it leaves.
+function exitOf(a, b, r) {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const t = Math.min(1, dx ? ((dx > 0 ? r.x1 : r.x0) - a.x) / dx : Infinity, dy ? ((dy > 0 ? r.y1 : r.y0) - a.y) / dy : Infinity);
+  return { x: a.x + dx * t, y: a.y + dy * t };
+}
+// Where a piece, or one of its sub-parts, rests in the machine: not lifted, not taken apart, but exploded with it.
+function seatBox(pc, sub) {
+  const off = new V3();
+  const e = state.explode ? state.spread : 0;
+  if (pc.userData.egroup) off.addScaledVector(pc.userData.egroup.offset, e);
+  off.addScaledVector(pc.userData.apart, e);
+  const b = new THREE.Box3();
+  pc.traverse((m) => { if (m.isMesh && (!sub || m.userData.sub === sub)) b.union(m.userData.restBox.clone().translate(off)); });
+  return b;
+}
+// Points on a sub-part's surface where it is now: the middles of up to `n` of its faces (inside a face, never on an
+// edge, so a line ending there ends on the part), or each bolt of a ring.
+const sampleM = new THREE.Matrix4(), sA = new V3(), sB = new V3(), sC = new V3();
+function subPoints(pc, sub, n) {
+  const out = [];
+  const meshes = subMeshes(pc, sub);
+  const per = Math.max(2, Math.ceil(n / Math.max(1, meshes.length)));
+  for (const m of meshes) {
+    m.updateWorldMatrix(true, false);
+    const g = m.geometry;
+    if (!g.boundingBox) g.computeBoundingBox();
+    if (m.isInstancedMesh) {
+      const c = g.boundingBox.getCenter(new V3());
+      for (let i = 0; i < m.count; i++) { m.getMatrixAt(i, sampleM); out.push({ p: c.clone().applyMatrix4(sampleM).applyMatrix4(m.matrixWorld), mesh: m, inst: i }); }
+    } else {
+      const pos = g.attributes.position, idx = g.index;
+      const tris = Math.floor((idx ? idx.count : pos.count) / 3);
+      const step = Math.max(1, Math.floor(tris / per));
+      const at = (i) => (idx ? idx.getX(i) : i);
+      for (let t = Math.floor(step / 2); t < tris; t += step) {
+        sA.fromBufferAttribute(pos, at(3 * t)); sB.fromBufferAttribute(pos, at(3 * t + 1)); sC.fromBufferAttribute(pos, at(3 * t + 2));
+        out.push({ p: new V3().add(sA).add(sB).add(sC).multiplyScalar(1 / 3).applyMatrix4(m.matrixWorld), mesh: m, inst: null });
+      }
+    }
+  }
+  return out;
+}
+// Whether a point of a sub-part is the first thing seen along the line of sight. Only what is drawn solid can hide it:
+// not the ghosts, nor what Show me dims.
+const ovRay = new THREE.Raycaster();
+function seenAt(q, s, occ) {
+  ovRay.setFromCamera(new THREE.Vector2((s.x / width) * 2 - 1, -(s.y / height) * 2 + 1), camera);
+  const h = ovRay.intersectObjects(occ, false)[0];
+  if (!h || h.object !== q.mesh) return false;
+  return q.inst != null ? h.instanceId === q.inst : h.point.distanceTo(q.p) < Math.max(0.15, meshSize(q.mesh) * 0.06);
+}
+// A point of a sub-part that can be seen, nearest to `to` (a screen point), testing the nearest first; failing that,
+// the nearest point at all.
+function anchorOf(pc, sub, to, occ) {
+  const pts = subPoints(pc, sub, 32).map((q) => ({ ...q, s: toScreen(q.p) })).filter((q) => inRect(q.s, { x0: 0, y0: 0, x1: width, y1: height }));
+  pts.sort((a, b) => Math.hypot(a.s.x - to.x, a.s.y - to.y) - Math.hypot(b.s.x - to.x, b.s.y - to.y));
+  for (const q of pts.slice(0, 24)) if (seenAt(q, q.s, occ)) return q.s;
+  return pts[0]?.s || null;
+}
+function hideOverlay() {
+  ov.svg.replaceChildren();
+  ov.cl.replaceChildren();
+  ov.shown = false;
+}
+function line(g, a, b, cls = '') {
+  g.append(svgEl('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y }, `halo ${cls}`), svgEl('line', { x1: a.x, y1: a.y, x2: b.x, y2: b.y }, `line ${cls}`));
+}
+function layoutOverlay() {
+  ov.dirty = false;
+  hideOverlay();
+  if (!iso.part || !renderer || width < 2) return;
+  dev.root.updateMatrixWorld(true);
+  camera.updateMatrixWorld();
+  const free = freeRect();
+  const occ = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost && !m.userData.dimmed && m.userData.tone !== 'glass'; });
+  drawSeat(free);
+  const lead = drawLeader(free, occ);
+  drawCallouts(free, occ, lead);
+  ov.shown = true;
+}
+// The seat ring, its tether and, for a seat out of sight, the edge marker.
+function drawSeat(free) {
+  const s = iso.show;
+  const list = piecesOf.get(iso.part) || [];
+  const pc = s ? s.pc : iso.focus || (list.length === 1 ? list[0] : null);
+  if (!pc || (!s && iso.apart)) return;
+  const now = screenRect(s ? boxOfSub(pc, s.sub) : boxOfPiece(pc));
+  const home = screenRect(seatBox(pc, s ? s.sub : null));
+  const c = { x: (now.x0 + now.x1) / 2, y: (now.y0 + now.y1) / 2 };
+  const h = { x: (home.x0 + home.x1) / 2, y: (home.y0 + home.y1) / 2 };
+  const off = Math.hypot(h.x - c.x, h.y - c.y);
+  // A piece barely lifted is next to its seat: there is nothing to point at.
+  if (!s && off < 12) return;
+  const g = svgEl('g', {}, 'seat');
+  if (inRect(h, free, 8)) {
+    const rx = Math.max(9, (home.x1 - home.x0) / 2 + 6), ry = Math.max(9, (home.y1 - home.y0) / 2 + 6);
+    g.append(svgEl('ellipse', { cx: h.x, cy: h.y, rx, ry }, 'halo'), svgEl('ellipse', { cx: h.x, cy: h.y, rx, ry }, 'line'));
+    // The tether runs from the edge of the part to the ring's edge.
+    const from = exitOf(c, h, now);
+    const d = Math.hypot(h.x - from.x, h.y - from.y);
+    if (d > Math.min(rx, ry) + 4 && inRect(c, free)) {
+      const t = 1 - Math.min(rx, ry) / d;
+      line(g, from, { x: from.x + (h.x - from.x) * t, y: from.y + (h.y - from.y) * t }, 'tether');
+    }
+    g.append(svgEl('circle', { cx: h.x, cy: h.y, r: 3 }, 'dot'));
+  } else {
+    // The seat is out of sight: a marker on the edge of the free view, on the way from the part to the seat, clear of
+    // the scale bar and the hint along the bottom.
+    const fc = inRect(c, free) ? c : { x: (free.x0 + free.x1) / 2, y: (free.y0 + free.y1) / 2 };
+    const inner = { x0: free.x0 + 20, y0: free.y0 + 20, x1: free.x1 - 20, y1: free.y1 - ($('card').classList.contains('docked') ? 20 : 56) };
+    const p = exitOf(fc, h, inner);
+    const a = Math.atan2(h.y - fc.y, h.x - fc.x), k = 10;
+    const tip = { x: p.x + Math.cos(a) * k, y: p.y + Math.sin(a) * k };
+    const l = { x: p.x + Math.cos(a + 2.5) * k, y: p.y + Math.sin(a + 2.5) * k }, r = { x: p.x + Math.cos(a - 2.5) * k, y: p.y + Math.sin(a - 2.5) * k };
+    if (inRect(c, free)) { const from = exitOf(c, h, now); if (Math.hypot(p.x - from.x, p.y - from.y) > 24) line(g, from, { x: p.x - Math.cos(a) * 18, y: p.y - Math.sin(a) * 18 }, 'tether'); }
+    g.append(svgEl('path', { d: `M${tip.x.toFixed(1)} ${tip.y.toFixed(1)}L${l.x.toFixed(1)} ${l.y.toFixed(1)}L${r.x.toFixed(1)} ${r.y.toFixed(1)}Z` }, 'edge'));
+    // "Seat" beside the arrow, on the side toward the middle of the view.
+    const sx = Math.sin(a), sy = -Math.cos(a), sg = sx * (fc.x - p.x) + sy * (fc.y - p.y) >= 0 ? 1 : -1;
+    const txt = svgEl('text', { x: p.x + sx * sg * 14, y: p.y + sy * sg * 14 + 4, 'text-anchor': Math.abs(sx) < 0.3 ? 'middle' : sx * sg > 0 ? 'start' : 'end' });
+    txt.textContent = 'Seat';
+    g.append(txt);
+  }
+  ov.svg.append(g);
+}
+// The sheet the leader line starts from: under the pointer or keyboard focus, else the card the dock shows, else the
+// sheet kept last.
+function leaderSheet() {
+  if (!iso.part || !HUD.on) return null;
+  if (state.hotSheet) return state.hotSheet;
+  if (dockLayout()) return state.live || state.pins.find((x) => sheetKey(x) === HUD.card) || null;
+  return state.pins.at(-1) || null;
+}
+const leaderKey = () => { const x = leaderSheet(); return x ? `${sheetKey(x)}${sameSheet(x, state.live) ? '|live' : ''}` : ''; };
+function drawLeader(free, occ) {
+  ov.leader = leaderKey();
+  const x = leaderSheet();
+  if (!x || x.part !== iso.part) return null;
+  const sc = (sameSheet(x, state.live) && HUD.els.get('live')) || HUD.els.get(sheetKey(x));
+  if (!sc?.isConnected) return null;
+  const st = stage.getBoundingClientRect();
+  let r = sc.getBoundingClientRect();
+  // A sheet in the scrolling list counts only as far as it is scrolled into sight.
+  if (sc.parentNode === $('sheetList')) {
+    const l = $('sheetList').getBoundingClientRect();
+    r = { left: r.left, right: r.right, top: Math.max(r.top, l.top), bottom: Math.min(r.bottom, l.bottom) };
+  }
+  if (r.bottom - r.top < 8) return null;
+  const box = { x0: r.left - st.left, x1: r.right - st.left, y0: r.top - st.top, y1: r.bottom - st.top };
+  const pc = iso.show && sameSheet(x, iso.show) ? iso.show.pc : pieceFor(x.part, x.sub);
+  if (!pc) return null;
+  const mid = { x: (box.x0 + box.x1) / 2, y: (box.y0 + box.y1) / 2 };
+  const a = anchorOf(pc, x.sub, mid, occ);
+  if (!a || inRect(a, box)) return null;
+  // The line leaves the sheet from the point of its edge nearest the sub-part.
+  const my = Math.min(10, (box.y1 - box.y0) / 2), mx = Math.min(10, (box.x1 - box.x0) / 2);
+  const e = { x: clamp(a.x, box.x0 + mx, box.x1 - mx), y: clamp(a.y, box.y0 + my, box.y1 - my) };
+  if (a.x < box.x0) e.x = box.x0; else if (a.x > box.x1) e.x = box.x1;
+  else if (a.y < box.y0) e.y = box.y0; else e.y = box.y1;
+  const g = svgEl('g', {}, 'leader');
+  line(g, e, a);
+  g.append(svgEl('circle', { cx: a.x, cy: a.y, r: 3.5 }, 'dot'));
+  ov.svg.append(g);
+  return { a: e, b: a, sub: x.sub };
+}
+// Each sub-part of the piece taken apart that can be seen: its number in the Made of rows, the points of it in sight
+// and how big it is on screen. Kept until the view or the part changes, as the sight lines are the slow part.
+function calloutCands(pc, occ) {
+  const sig = [view.az, view.el, view.zoom, view.target.x, view.target.y, view.target.z, iso.apartSpread].map((v) => v.toFixed(3)).join(',') + `|${pc.id}|${width}x${height}`;
+  if (ov.cands?.sig === sig) return ov.cands.list;
+  const list = [];
+  let no = 0;
+  for (const sub of subsOf(iso.part, pc).keys()) {
+    no++;
+    const vis = [];
+    for (const q of subPoints(pc, sub, 12)) { const s = toScreen(q.p); if (inRect(s, { x0: 0, y0: 0, x1: width, y1: height }) && seenAt(q, s, occ)) vis.push(s); }
+    if (!vis.length) continue;
+    const r = screenRect(boxOfSub(pc, sub));
+    list.push({ sub, no, vis, area: (r.x1 - r.x0) * (r.y1 - r.y0), cx: vis.reduce((t, s) => t + s.x, 0) / vis.length, cy: vis.reduce((t, s) => t + s.y, 0) / vis.length });
+  }
+  ov.cands = { sig, list };
+  return list;
+}
+// Whether two segments cross (touching at an end does not count).
+function crosses(p, q) {
+  const o = (a, b, c) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+  const d1 = o(p.a, p.b, q.a), d2 = o(p.a, p.b, q.b), d3 = o(q.a, q.b, p.a), d4 = o(q.a, q.b, p.b);
+  return d1 * d2 < -1e-6 && d3 * d4 < -1e-6;
+}
+// Whether a segment runs through a box.
+function cutsBox(s, r) {
+  if (inRect(s.a, r) || inRect(s.b, r)) return true;
+  const c = [{ x: r.x0, y: r.y0 }, { x: r.x1, y: r.y0 }, { x: r.x1, y: r.y1 }, { x: r.x0, y: r.y1 }];
+  return c.some((p, i) => crosses(s, { a: p, b: c[(i + 1) % 4] }));
+}
+// The heights a segment takes up between two x positions (where the leader line crosses a gutter), or null.
+function bandOf(s, x0, x1) {
+  const { a, b } = s;
+  if (Math.max(a.x, b.x) < x0 || Math.min(a.x, b.x) > x1) return null;
+  const yAt = (x) => (b.x === a.x ? a.y : a.y + ((b.y - a.y) * (x - a.x)) / (b.x - a.x));
+  const xs = [clamp(a.x, x0, x1), clamp(b.x, x0, x1)];
+  const ys = xs.map(yAt);
+  return { y0: Math.min(...ys) - 6, y1: Math.max(...ys) + 6 };
+}
+function calloutEl(c, balloon) {
+  const d = el('div', balloon ? 'callout balloon' : 'callout');
+  d.dataset.sub = c.sub;
+  if (balloon) { d.textContent = String(c.no); d.title = `${c.no} · ${c.sub}`; } else d.append(el('b', null, String(c.no)), c.sub);
+  d.addEventListener('click', () => { if (!HUD.on) setScreens(true); setLive({ part: iso.part, sub: c.sub }); });
+  lights(d, () => { state.hoverSub = c.sub; refreshLit(); }, () => { state.hoverSub = null; refreshLit(); });
+  ov.cl.append(d);
+  return d;
+}
+function drawCallouts(free, occ, lead) {
+  const list = piecesOf.get(iso.part) || [];
+  const pc = iso.focus || (list.length === 1 ? list[0] : null);
+  if (!iso.apart || iso.show || !pc) return;
+  const kept = (c) => isPinned({ part: iso.part, sub: c.sub }) || sameSheet(state.live, { part: iso.part, sub: c.sub });
+  // The sub-part the leader line ends on is named by its sheet, so it needs no callout.
+  const chosen = calloutCands(pc, occ).filter((c) => c.sub !== lead?.sub).sort((a, b) => kept(b) - kept(a) || b.area - a.area).slice(0, Math.round(10 / uiScale));
+  if (!chosen.length) return;
+  const R = screenRect(boxOfPiece(pc));
+  R.x0 = Math.max(R.x0, free.x0); R.x1 = Math.min(R.x1, free.x1);
+  const mid = (R.x0 + R.x1) / 2, stub = 12, gap = 4;
+  const room = { l: R.x0 - free.x0 - stub - 6, r: free.x1 - R.x1 - stub - 6 };
+  const minW = 64 * uiScale;
+  const placed = [];
+  let fits = room.l >= minW || room.r >= minW;
+  if (fits) {
+    const side = { l: [], r: [] };
+    for (const c of chosen) {
+      let s = c.cx < mid ? 'l' : 'r';
+      if (room[s] < minW) s = s === 'l' ? 'r' : 'l';
+      // The stub starts from the point of it nearest its gutter.
+      const a = c.vis.reduce((b, v) => (s === 'l' ? v.x < b.x : v.x > b.x) ? v : b);
+      side[s].push({ c, a, s });
+    }
+    for (const s of ['l', 'r']) {
+      const items = side[s].sort((p, q) => p.a.y - q.a.y);
+      // Where the leader line runs through this gutter, no label goes.
+      const band = lead && bandOf(lead, s === 'l' ? free.x0 : R.x1, s === 'l' ? R.x0 : free.x1);
+      const clear = (it) => !band || it.y + it.h <= band.y0 || it.y >= band.y1;
+      for (const it of items) {
+        it.el = calloutEl(it.c, false);
+        it.el.style.maxWidth = `${Math.min(room[s], 200 * uiScale)}px`;
+        const b = it.el.getBoundingClientRect();
+        it.w = b.width; it.h = b.height;
+        it.y = clamp(it.a.y - it.h / 2, free.y0 + 4, free.y1 - 4 - it.h);
+      }
+      // Pushed apart top to bottom (and off the leader's band), then back up from the bottom if the last ran off the view.
+      for (let i = 0; i < items.length; i++) {
+        if (i) items[i].y = Math.max(items[i].y, items[i - 1].y + items[i - 1].h + gap);
+        if (!clear(items[i])) items[i].y = items[i].a.y < (band.y0 + band.y1) / 2 && (!i || band.y0 - items[i].h >= items[i - 1].y + items[i - 1].h + gap) ? band.y0 - items[i].h : band.y1;
+      }
+      const over = items.length ? items.at(-1).y + items.at(-1).h - (free.y1 - 4) : 0;
+      if (over > 0) {
+        items.at(-1).y -= over;
+        for (let i = items.length - 2; i >= 0; i--) items[i].y = Math.min(items[i].y, items[i + 1].y - items[i].h - gap);
+      }
+      if (items.length && (items[0].y < free.y0 + 4 || !items.every(clear))) fits = false;
+      for (const it of items) {
+        it.x = s === 'l' ? R.x0 - stub - it.w : R.x1 + stub;
+        it.seg = { a: { x: s === 'l' ? it.x + it.w : it.x, y: it.y + it.h / 2 }, b: it.a };
+        placed.push(it);
+      }
+    }
+    // Stubs may not cross each other or the leader line, nor a label sit on the leader line.
+    for (let i = 0; i < placed.length && fits; i++) {
+      const it = placed[i];
+      if (lead && (crosses(it.seg, lead) || cutsBox(lead, { x0: it.x, y0: it.y, x1: it.x + it.w, y1: it.y + it.h }))) fits = false;
+      for (let j = i + 1; j < placed.length && fits; j++) if (crosses(placed[i].seg, placed[j].seg)) fits = false;
+    }
+  }
+  if (fits) {
+    const g = svgEl('g', {}, 'stubs');
+    for (const it of placed) {
+      it.el.style.left = `${it.x}px`;
+      it.el.style.top = `${it.y}px`;
+      line(g, it.seg.a, it.seg.b, 'stub');
+      g.append(svgEl('circle', { cx: it.a.x, cy: it.a.y, r: 2.5 }, 'dot'));
+    }
+    ov.svg.append(g);
+  } else {
+    // Numbered balloons on the part, each on a point of its sub-part, nudged apart where they overlap.
+    ov.cl.replaceChildren();
+    const r = 10 * uiScale;
+    const bs = chosen.map((c) => {
+      const a = c.vis.reduce((b, v) => Math.hypot(v.x - c.cx, v.y - c.cy) < Math.hypot(b.x - c.cx, b.y - c.cy) ? v : b);
+      return { c, x: a.x, y: a.y };
+    });
+    for (let k = 0; k < 24; k++) for (let i = 0; i < bs.length; i++) for (let j = i + 1; j < bs.length; j++) {
+      const dx = bs[j].x - bs[i].x, dy = bs[j].y - bs[i].y, d = Math.hypot(dx, dy) || 1;
+      if (d < 2 * r + 2) { const f = (2 * r + 2 - d) / 2; bs[i].x -= (dx / d) * f; bs[i].y -= (dy / d) * f; bs[j].x += (dx / d) * f; bs[j].y += (dy / d) * f; }
+    }
+    for (const b of bs) {
+      const d = calloutEl(b.c, true);
+      d.style.left = `${clamp(b.x, free.x0 + r, free.x1 - r) - r}px`;
+      d.style.top = `${clamp(b.y, free.y0 + r, free.y1 - r) - r}px`;
+    }
+  }
+  syncCallouts();
+}
+// A callout is lit while its sub-part is: its Made of row or the callout under the pointer or focus, or its sheet.
+function syncCallouts() {
+  for (const d of ov.cl.children) {
+    const x = { part: iso.part, sub: d.dataset.sub };
+    d.classList.toggle('hot', d.dataset.sub === state.hoverSub || sameSheet(state.hotSheet, x) || sameSheet(state.live, x));
+  }
+}
+$('sheetList').addEventListener('scroll', () => { ov.dirty = true; }, { passive: true });
 
 // ---------- Selection ----------
 function select(id, o = {}) {
@@ -3152,27 +3716,40 @@ const joinOf = (a, b) => joins.get([a, b].sort().join('|')) || null;
   for (const k of pairs) if (!joins.has(k)) console.warn(`Missing join: ${k} has no sentence on how it attaches.`);
   for (const k of joins.keys()) if (!pairs.has(k)) console.warn(`Stray join: ${k} is not in connects.`);
 }
-// What a part is made of. Each row keeps its sub-part's sheet, or closes it if it is kept; hovering one lights it. A
-// repeated part lists its sub-parts once, with how many pieces carry each. A part made of different objects (a supply
-// and its two leads) lists each object's sub-parts under its name. With one piece in view, that piece's.
+// What a part is made of. Each row is numbered as its callout on the part taken apart. A click (or Space) keeps its
+// sub-part's sheet, or closes it if it is kept; Enter, Z or the Show me button at its end frames it close up; hovering
+// or focusing one lights it, and its callout. A repeated part lists its sub-parts once, with how many pieces carry
+// each. A part made of different objects (a supply and its two leads) lists each object's sub-parts under its name,
+// each numbered from 1. With one piece in view, that piece's.
 function subsList(p) {
   const here = iso.part === p.id;
   const list = piecesOf.get(p.id) || [];
   const inView = here && iso.focus ? [iso.focus] : list;
   const ul = el('ul', 'subs');
+  let no = 0;
   const row = (name, k) => {
     const on = here && isPinned({ part: p.id, sub: name });
-    const b = el('button', on ? 'on' : null);
+    const li = el('li', 'row');
+    li.dataset.part = p.id;
+    li.dataset.sub = name;
+    const b = el('button', on ? 'sub on' : 'sub');
     b.type = 'button';
     b.dataset.fk = `sub:${name}`;
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    b.title = on ? 'Close its sheet' : 'Keep its sheet';
-    b.append(el('span', null, name));
+    b.title = `${on ? 'Close' : 'Keep'} its sheet (click or Space) · Show me (Enter or Z)`;
+    b.append(el('span', 'no', String(++no)), el('span', 'nm', name));
     if (k) b.append(el('span', 'k', k));
     b.addEventListener('click', (e) => toggleSub(p.id, name, !e.detail));
-    lights(b, () => { state.hoverSub = name; refreshLit(); }, () => { state.hoverSub = null; refreshLit(); });
-    const li = el('li');
-    li.append(b);
+    b.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey) return;
+      e.preventDefault();
+      showMe(p.id, name);
+    });
+    // The keyboard has Enter and Z on the row, so the button is not a Tab stop of its own.
+    const s = showButton(() => showMe(p.id, name), `show:${name}`);
+    s.tabIndex = -1;
+    lights(li, () => { state.hoverSub = name; refreshLit(); }, () => { state.hoverSub = null; refreshLit(); });
+    li.append(b, s);
     ul.append(li);
   };
   if (p.count < 2 && list.length > 1) {
@@ -3180,6 +3757,7 @@ function subsList(p) {
       const subs = subsOf(p.id, pc);
       if (!subs.size) continue;
       ul.append(el('li', 'grp', pc.userData.label));
+      no = 0;
       for (const name of subs.keys()) row(name);
     }
   } else {
@@ -3324,6 +3902,7 @@ function renderOverview(box) {
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
+    'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades, a dashed ring marks where it sits in the machine, and the inspect bar says where it is. Esc goes back to the view you had.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
     'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
@@ -3396,6 +3975,8 @@ function renderHelp(box) {
       ['Click a piece (inspecting, every piece shown)', 'pick that piece'],
       ['Click a sub-part (inspecting, one piece shown)', 'keep its sheet; a click on a kept one shows its sheet again. × on the sheet, or its Made of row, closes it'],
       ['Click near a small part', 'a click that hits nothing picks the smallest part within 12 px'],
+      ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed and its seat ringed; the inspect bar says where it is. Esc goes back'],
+      ['A callout on a part taken apart', 'preview its sheet; its number is the Made of row’s'],
       ['Link icon in the inspect bar', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
       ['Drag a sheet or the preview out of the column', 'it floats where you drop it, kept; drop it back on the column to return it'],
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
@@ -3412,6 +3993,11 @@ function renderHelp(box) {
       ['Tap', 'select'],
       ['Double-tap', 'inspect'],
       ['Tap (inspecting)', 'with every piece shown, pick a piece; with one, preview a sub-part’s sheet, and Keep keeps it. A tap picks the smallest part within 24 px'],
+      ['Show me (on a sheet’s bar or a Made of row)', 'frame the sub-part close up; the links in the inspect bar go back'],
+    ]],
+    ['Made of rows', [
+      ['Click or Space', 'keep its sheet, or close it'],
+      ['Enter or Z', 'Show me'],
     ]],
     ['Assembly list (one Tab stop)', [
       ['↑ ↓', 'move between rows'],
@@ -3439,11 +4025,12 @@ function renderHelp(box) {
       ['G', 'context: the ghost of the rest of the machine on or off'],
       ['X', 'section: cut the inspected part in half through its axis, with the parts round it'],
       ['S', 'sheets on or off'],
+      ['Z', 'Show me: the Made of row or sheet in focus, else the sheet or sub-part under the pointer, the preview, or the sheet kept last'],
       ['L', 'tidy: floating sheets back into the column'],
       ['Backspace', 'back to the part you came from by a link'],
       ['F', 'fold or unfold the side panels'],
       ['H', 'hide the selected part'],
-      ['Esc', 'step back: the preview, one piece, the part, then the selection. Kept sheets stay'],
+      ['Esc', 'step back: the preview, Show me, one piece, the part, then the selection. Kept sheets stay. On the tour it stops at every piece; Done leaves'],
     ]],
   ];
   for (const [title, rows] of groups) {
@@ -3475,7 +4062,7 @@ function setLetterKeys(on) {
 }
 
 // ---------- Links: the state is in the address, so a view can be shared and the browser's Back works ----------
-// #part=gaskets&piece=right-back-joint&sheets=ofhc-copper-gasket&apart=1&section=1&view=az,el,zoom,x,y,z&theme=greyscale
+// #part=gaskets&piece=right-back-joint&sheets=ofhc-copper-gasket&apart=1&section=1&show=piece.sub-part&view=az,el,zoom,x,y,z&theme=greyscale
 // Outside Inspect: #select=tf&view=... A piece and a sheet are named by slugs of their labels; a slug that starts a
 // label also matches it (piece=right-back). The address is rewritten a few times a second: moving to another part or
 // piece adds a history entry, anything else replaces the current one.
@@ -3491,6 +4078,7 @@ function linkOf() {
     if (state.pins.length) kv.push(['sheets', state.pins.map((x) => slug(x.sub)).join(',')]);
     if (iso.apart) kv.push(['apart', '1']);
     if (iso.section) kv.push(['section', '1']);
+    if (iso.show) kv.push(['show', `${slug(iso.show.pc.userData.label)}.${slug(iso.show.sub)}`]);
   } else if (state.select) kv.push(['select', state.select]);
   const az = (((goal.az % 360) + 540) % 360) - 180;
   kv.push(['view', [az, goal.el, goal.zoom, goal.target.x, goal.target.y, goal.target.z].map((v) => +v.toFixed(2)).join(',')]);
@@ -3522,6 +4110,11 @@ function applyLink(h) {
     for (const sub of want) if (!isPinned({ part, sub })) pinSheet(part, sub);
     if ((q.get('apart') === '1') !== iso.apart) setApart(q.get('apart') === '1');
     if ((q.get('section') === '1') !== iso.section) setSection(q.get('section') === '1');
+    // show=piece.sub-part: Show me on that sub-part of that piece (slugs have no dots).
+    const [sp, ss] = (q.get('show') || '').split('.');
+    const spc = sp && ss ? slugFind(list, sp, (x) => x.userData.label) : null;
+    const ssub = spc ? slugFind([...subsOf(part, spc).keys()], ss, (sub) => sub) : null;
+    if (ssub) showMe(part, ssub, spc); else endShow(false);
   } else {
     if (iso.part) endInspect();
     const sel = q.get('select');
@@ -3679,7 +4272,7 @@ triad.addEventListener('click', (e) => {
 function drawScale() {
   const cmPerPx = (2 * halfNow()) / height;
   const target = 110 * cmPerPx;
-  const steps = [0.5, 1, 2, 5, 10, 20, 50, 100];
+  const steps = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
   let L = steps[0];
   for (const s of steps) if (s <= target) L = s;
   const px = L / cmPerPx;
@@ -3703,8 +4296,9 @@ function updateReadout() {
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
 // While inspecting, the hint says what the pointer does now; outside, how to move and how to inspect.
-const HINT = () => (coarse ? (iso.part ? (allShown() ? 'Tap a piece to pick it' : 'Tap a sub-part to preview its sheet') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
-  : iso.part ? `Point at a sub-part to preview · ${allShown() ? 'click a piece to pick it' : 'click to keep'} · Esc steps back`
+const HINT = () => (coarse ? (iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it' : 'Tap a sub-part to preview its sheet') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+  : iso.show ? 'Show me · drag to turn round it · Esc goes back'
+  : iso.part ? `Point at a sub-part to preview · ${allShown() ? 'click a piece to pick it' : 'click to keep · double-click to show it'} · Esc steps back`
     : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
       : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
 function setHint(text) { $('hint').textContent = text || HINT(); }
@@ -3824,9 +4418,14 @@ stage.addEventListener('click', (e) => {
   const x = { part: iso.part, sub: m.userData.sub };
   if (isPinned(x)) { state.live = null; revealSheet(x); } else pinSheet(x.part, x.sub);
 });
-// Outside Inspect, a double-click inspects the part under it, or resets the view on empty space. Inside, it does nothing.
+// Outside Inspect, a double-click inspects the part under it, or resets the view on empty space. Inside, a double-click
+// on a sub-part (with a mouse) is Show me; on anything else it does nothing.
 stage.addEventListener('dblclick', (e) => {
-  if (iso.part) return;
+  if (iso.part) {
+    const m = !coarse && pickMesh(ndcOf(e));
+    if (m?.userData.sub && m.userData.part === iso.part) showMe(iso.part, m.userData.sub, m.userData.piece);
+    return;
+  }
   const pc = pick(ndcOf(e));
   if (!pc) return resetView();
   inspect(pc.userData.part);
@@ -3897,11 +4496,14 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'backspace' && iso.history.length) goBack();
   else if (k === 'f') togglePanels();
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
-  // Esc steps back: the preview, then from one piece to the whole part, then to the assembly, then the selection. It
-  // never closes a kept sheet, so three presses at most leave a part.
+  else if (k === 'z' && showCandidate()) { const c = showCandidate(); showMe(c.part, c.sub, c.pc); }
+  // Esc steps back, one rung at a time: the preview, the Show me frame, one piece to every piece, the part to the
+  // assembly, then the selection. It never closes a kept sheet. On the tour it stops at every piece: only Done leaves.
   else if (k === 'escape') {
     if (state.live) setLive(null);
+    else if (iso.show) endShow(true);
     else if (iso.focus) setFocus(null);
+    else if (iso.part && iso.tour !== null) announce('On the tour: Done leaves it.');
     else if (iso.part) endInspect();
     else select(null);
   }
@@ -3973,10 +4575,13 @@ function frame() {
 
   const follow = (x, t, rate) => { if (reduceMotion.matches) return t; const y = x + (t - x) * (1 - Math.exp(-dt * rate)); return Math.abs(t - y) < 1e-4 ? t : y; };
   let moving = false;
+  // How far the parts moved this frame, as a share of the way they travel: the overlay waits until it is small.
+  let shift = 0;
   const sp0 = state.spreadNow, ap0 = iso.apartNow;
   state.spreadNow = follow(state.spreadNow, state.spread, 6);
   iso.apartNow = follow(iso.apartNow, iso.apartSpread, 6);
   const spreadMoved = state.spreadNow !== sp0, apartMoved = iso.apartNow !== ap0;
+  shift = Math.max(Math.abs(state.spreadNow - sp0) / state.spread, Math.abs(iso.apartNow - ap0) / iso.apartSpread);
 
   // The explode: groups move with a stagger, each piece adds its own offset, the spread scales both.
   const target = state.explode ? 1 : 0;
@@ -3986,10 +4591,12 @@ function frame() {
     if (!(now - state.explodeAt < delay && !reduceMotion.matches)) g.p = follow(g.p, target, 4.2);
     else if (Math.abs(target - g.p) > 1e-4) moving = true;
     if (g.p !== before || spreadMoved) { moving = true; g.obj.position.copy(g.offset).multiplyScalar(ease(g.p) * state.spreadNow); }
+    shift = Math.max(shift, Math.abs(g.p - before));
   }
   const ep0 = state.ep;
   state.ep = follow(state.ep, target, 4.2);
   if (state.ep !== ep0) moving = true;
+  shift = Math.max(shift, Math.abs(state.ep - ep0));
 
   // Inspect lifts a part out; take-apart moves each of its sub-parts along its own direction. Going back, a part waits
   // for its sub-parts before it flies home, and the ghosts wait for it before they turn solid.
@@ -4000,6 +4607,7 @@ function frame() {
     if (now >= u.dHold) u.dp = follow(u.dp, out, 3.2);
     else active = true;
     u.tp = follow(u.tp, iso.part === u.part && iso.apart && (!iso.focus || iso.focus === pc) ? 1 : 0, 4.5);
+    shift = Math.max(shift, Math.abs(u.dp - d0), Math.abs(u.tp - t0));
     // Half a second to fade to a ghost, a little longer back to solid (after its hold), eased where it is drawn.
     const gT = u.ghost && !u.secCtx ? 1 : 0;
     if (u.gNow !== gT) {
@@ -4045,6 +4653,15 @@ function frame() {
     hoverPending = null;
   }
 
+  // The overlay shows only while nothing moves: it goes as soon as the camera or a part starts, and is laid out again a
+  // moment after both have stopped. The parts ease the last millimetres over a second or more, so it does not wait for
+  // those; it is laid out once more when they have stopped.
+  if (glide || d > 1e-3 || shift > 0.001) { if (ov.shown) hideOverlay(); ov.dirty = true; ov.at = now; }
+  else {
+    if (!shift && ov.crept) { ov.crept = false; ov.dirty = true; }
+    if (ov.dirty && now - ov.at > 0.12) { layoutOverlay(); ov.crept = shift > 0; }
+  }
+
   // The hologram's scan lines and sweep keep moving, at 30 frames a second when nothing else does.
   if (holo && !reduceMotion.matches && now - lastDraw > 1 / 30) active = true;
 
@@ -4082,6 +4699,7 @@ if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
   setTab, startTour, nextStop, joinOf, setSection, setScale, setLetterKeys, dockLayout, linkOf,
+  showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
   // What a click or tap at a point of the page would pick, forgiving a near miss as the pointer does.
   pickNear: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y })); return m ? { part: m.userData.part, sub: m.userData.sub || null } : null; },
   // What is drawn under a point of the page, for checks: its part, sub-part and piece.
