@@ -49,10 +49,16 @@
       gives: 'Reference data for standard zero-length viewports: Kodial (alkali borosilicate 7056) glass sealed to a 304L flange through a Kovar sleeve; view 38.0 mm and glass 3.0 mm for DN40CF, view 90.0 mm and glass 6.0 mm for DN100CF; bake-out to 350 °C at no more than 2–3 °C per minute. The make of the SPM1 viewports is not published.',
     },
     {
+      id: 'S11', short: 'Lesker, KF notes',
+      title: 'KF (QF) flanges, technical notes',
+      who: 'Kurt J. Lesker Company', url: 'https://www.lesker.com/newweb/flanges/flanges_technicalnotes_kf_1.cfm',
+      gives: 'How a KF joint goes together: the flanges are sexless, the elastomer O-ring is held on a centring ring that also aligns the two flanges, and a circumferential clamp pulls on the chamfered backs of both flanges, tightened by a wing nut, thumbscrew, bolt or over-centre lever. The page’s dimension figure is not in its text, so KF sizes on the sheets are the drawing’s.',
+    },
+    {
       id: 'S6', short: 'Vacuum flange',
       title: 'Vacuum flange (ConFlat and KF)',
       who: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/Vacuum_flange',
-      gives: 'How a CF knife edge bites into a soft copper gasket to make an all-metal seal, and how a KF joint uses a clamp, a centring ring and an elastomer O-ring.',
+      gives: 'How a CF knife edge bites into a soft copper gasket to make an all-metal seal, and how a KF joint uses a clamp and an elastomer O-ring (AS568) mounted in a metal centring ring; its KF table gives the O-ring size for each flange: AS-314 for KF16, AS-326 for KF40.',
     },
     {
       id: 'S7', short: 'MKS Convectron',
@@ -539,11 +545,11 @@
     ['plasma', 'probe', 'The probe’s tip reaches into the glow to sample it; how far it goes in is not published.', ['assumed']],
     ['electrode', 'hv', 'A pink HV lead from the supply plugs onto each electrode’s terminal cap.', ['photo']],
     ['hv', 'drawer', 'The PLC safety monitor in the drawer interlocks the HV supply.', ['S4']],
-    ['pumpPort', 'hose', 'A KF clamp holds the bellows hose on the reducer’s KF stub.', ['photo']],
+    ['pumpPort', 'hose', 'A KF clamp holds the bellows hose’s own KF flange against the reducer’s KF stub, with a centring ring and its O-ring between them.', ['photo', 'S11']],
     ['hose', 'pump', 'The hose runs over the table edge and down to the pump’s inlet on the shelf below.', ['photo']],
     ['pump', 'drawer', 'As drawn, the pump is wired through the drawer; how it is switched is not published.', ['assumed']],
-    ['stack', 'gauge', 'The gauge sits on a short KF16 tube on the cross’s top arm, through a DN40CF to KF16 adaptor.', ['photo']],
-    ['stack', 'needle', 'The needle valve bolts to one side arm of the four-way cross; the other side arm is blanked off.', ['photo']],
+    ['stack', 'gauge', 'The gauge clamps onto the KF16 stub of a DN40CF to KF16 adaptor on the cross’s top arm, with a centring ring and its O-ring between the flanges. It comes off at that clamp.', ['photo', 'S11']],
+    ['stack', 'needle', 'The needle valve bolts to one side arm of the four-way cross, on its own copper gasket, with six bolts and nuts; the other side arm is blanked off.', ['photo', 'S9']],
     ['gauge', 'drawer', 'Its cable runs down under the table, and the control system monitors the vacuum pressure.', ['S4']],
     ['camera', 'drawer', 'Its video goes to the control software, which tracks the glow’s position and shape.', ['S2']],
     ['spectro', 'drawer', 'The control software takes its spectra for analysis.', ['S4']],
@@ -640,7 +646,10 @@
     note: 'Welded into a hole cut in the elbow, with the flange welded on its outer end. The drawn tube follows this standard size; the SPM1’s own tube size is not published.',
     sources: ['S9', 'S4'],
   });
-  const bolts = (dn, n, hole, grip, metric, imperial) => ({
+  // A hex head or nut on an M8 bolt is 13 mm across flats, on 5/16-24 1/2 in; on M6 10 mm, on 1/4-28 7/16 in.
+  const SPANNER = { M8: '13 mm (M8) or 1/2 in (5/16-24)', M6: '10 mm (M6) or 7/16 in (1/4-28)' };
+  // The length is the grip, a nut and two threads, rounded up to the next stock length; the bolts are drawn at it.
+  const bolts = (dn, n, hole, grip, metric, imperial, len) => ({
     title: `DN${dn}CF flange bolts`,
     material: 'Stainless steel (grade not published)',
     rows: [
@@ -648,6 +657,9 @@
       ['Holes they pass', `Ø${hole} mm`, 'S9'],
       ['Thread', `${metric} or ${imperial} (the hole takes either; not published)`, 'std'],
       ['Grip', `${grip} mm: two flanges and a 2 mm gasket`, 'derived'],
+      ['Length', `${metric} × ${len} mm: the grip, a nut and two threads, rounded up to a stock length`, 'derived'],
+      ['Spanner', SPANNER[metric], 'derived'],
+      ['Washers', 'none drawn; not published', 'assumed'],
     ],
     note: 'Draw them up in a star pattern in small steps until the flange faces meet evenly. Bolts that see bake-out are often silver-plated so they do not gall.',
     sources: ['S9'],
@@ -655,9 +667,29 @@
   const nuts = (dn, n, metric, imperial) => ({
     title: `DN${dn}CF nuts`,
     material: 'Stainless steel (grade not published)',
-    rows: [['Count', `${n}, one per bolt`, 'S9'], ['Thread', `${metric} or ${imperial} (not published)`, 'std'], ['Seat', 'back face of the welded flange', 'std']],
+    rows: [['Count', `${n}, one per bolt`, 'S9'], ['Thread', `${metric} or ${imperial} (not published)`, 'std'], ['Seat', 'back face of the other flange', 'std'], ['Spanner', SPANNER[metric], 'derived']],
     note: 'Each nut carries the bolt from the far side, so a joint can be opened without reaching inside.',
     sources: ['S9'],
+  });
+  // A KF centring ring with its O-ring (S6 gives the O-ring for each size).
+  const kfRing = (size, oring) => ({
+    title: `KF${size} centring ring and O-ring`,
+    material: 'Metal centring ring with an elastomer O-ring (materials not published)',
+    rows: [
+      ['O-ring', `AS568-${oring}, the size for KF${size}`, 'S6'],
+      ['Ring', 'holds the O-ring in place and lines the two flanges up', 'S11'],
+      ['Drawn as', size === 16 ? 'Ø15 mm bore, 3 mm between the flange faces' : 'Ø37 mm bore, 4 mm between the flange faces', 'assumed'],
+    ],
+    note: 'The O-ring is the seal, so a hair or a scratch across it leaks. It is elastomer, not metal: the KF side is for rough vacuum. The ring is easy to drop when the clamp comes off.',
+    sources: ['S6', 'S11'],
+  });
+  // Small hardware whose size is not published: what it holds and how it is drawn.
+  const fastener = (title, rows, holds) => ({
+    title,
+    material: 'Not published',
+    rows: [...rows.map(([k, v]) => [k, v, 'assumed'])],
+    note: `${holds} Its size and make are not published; the rows give how it is drawn, so you know what you are looking at.`,
+    sources: [],
   });
   const SUBDOCS = {
     elbow: {
@@ -685,10 +717,10 @@
     'tube-100': tube(100, '104.0', '2.0', '100.0'),
     'tube-63': tube(63, '63.5', '1.8', '59.9'),
     'tube-40': tube(40, '38.0', '1.5', '35.0'),
-    'bolts-160': bolts(160, 20, '8.4', '44.0', 'M8', '5/16-24 UNF'),
-    'bolts-100': bolts(100, 16, '8.4', '41.0', 'M8', '5/16-24 UNF'),
-    'bolts-63': bolts(63, 8, '8.4', '36.0', 'M8', '5/16-24 UNF'),
-    'bolts-40': bolts(40, 6, '6.8', '27.0', 'M6', '1/4-28 UNF'),
+    'bolts-160': bolts(160, 20, '8.4', '44.0', 'M8', '5/16-24 UNF', 55),
+    'bolts-100': bolts(100, 16, '8.4', '41.0', 'M8', '5/16-24 UNF', 50),
+    'bolts-63': bolts(63, 8, '8.4', '36.0', 'M8', '5/16-24 UNF', 45),
+    'bolts-40': bolts(40, 6, '6.8', '27.0', 'M6', '1/4-28 UNF', 35),
     'nuts-160': nuts(160, 20, 'M8', '5/16-24 UNF'),
     'nuts-100': nuts(100, 16, 'M8', '5/16-24 UNF'),
     'nuts-63': nuts(63, 8, 'M8', '5/16-24 UNF'),
@@ -696,17 +728,52 @@
     'bolts-tapped': {
       title: 'DN40CF bolts into the reducer',
       material: 'Stainless steel (grade not published)',
-      rows: [['Thread', 'M6 or 1/4-28 UNF (not published)', 'std'], ['Holes', '6 on a 58.7 mm circle', 'S9']],
-      note: 'The DN40 side of a zero-length reducer is tapped, so these bolts screw straight in and need no nuts.',
+      rows: [
+        ['Thread', 'M6 or 1/4-28 UNF (not published)', 'std'],
+        ['Holes', '6 tapped on a 58.7 mm circle', 'S9'],
+        ['Length', 'M6 × 25 mm: the 12.5 mm cross flange, the 2 mm gasket and 10.5 mm of thread', 'derived'],
+        ['Spanner', SPANNER.M6, 'derived'],
+      ],
+      note: 'The DN40 side of a zero-length reducer is tapped, so these bolts screw straight in and need no nuts. A bolt long enough to bottom out in the thread will not pull the gasket tight.',
       sources: ['S9'],
     },
     weld: {
       title: 'TIG weld',
       material: 'Fused stainless steel',
       rows: [['Process', 'tungsten inert gas (TIG)', 'S4'], ['Tested', 'to 10⁻⁹ mbar with the vessel', 'S4']],
-      note: 'Drawn as a bead on the outside. In UHV work tubes are usually welded from the vacuum side so no gas is trapped in a crevice (a virtual leak). How these welds were made is not published.',
+      note: 'Drawn as a bead on the outside. A weld does not come apart, so Take apart leaves it on its tube and flange. In UHV work tubes are usually welded from the vacuum side so no gas is trapped in a crevice (a virtual leak). How these welds were made is not published.',
       sources: ['S4'],
     },
+    'kf-ring-16': kfRing(16, 314),
+    'kf-ring-40': kfRing(40, 326),
+    'kf-hose-flange': {
+      title: 'Hose end flange, KF40',
+      material: 'Stainless steel, part of the bellows hose (not published)',
+      rows: [['Size', 'KF40, to match the port and the pump', 'assumed'], ['Drawn as', 'Ø55 mm flange on a Ø41 mm tube', 'assumed']],
+      note: 'It belongs to the bellows hose. It is drawn with the port, and with the pump at the other end, so a whole KF joint (both flanges, the centring ring and the clamp) comes apart together.',
+      sources: ['S11'],
+    },
+    'kf40-inlet': {
+      title: 'Pump inlet, KF40',
+      material: 'Stainless steel (not published)',
+      rows: [['Size', 'KF40 (not published)', 'assumed'], ['Drawn as', 'Ø55 mm flange on a Ø41 mm tube', 'assumed']],
+      note: 'The bellows hose clamps onto it with a centring ring and O-ring between the flanges.',
+      sources: ['S11'],
+    },
+    'sensor-nut': fastener('Sensor tube nut', [['Drawn as', '17 mm across flats, 10 mm high']], 'Holds the sensor tube in the gauge module.'),
+    'gauge-plug': fastener('Gauge cable connector', [['Drawn as', 'Ø10 mm, 12 mm long']], 'Plugs the gauge cable into the side of the module.'),
+    'compression-fitting': fastener('Outlet compression fitting', [['Drawn as', 'brass, a nut 11 mm across flats on a Ø5 mm line']], 'Joins the gas line to the needle valve’s outlet.'),
+    'gas-inlet-fitting': fastener('Gas inlet fitting', [['Drawn as', 'brass block 24 × 24 × 18 mm, a nut 14 mm across flats']], 'Where the gas line from the cylinder joins the line up to the needle valve.'),
+    'former-base-bolts': fastener('Base bolts', [['Count', '8 on a Ø232 mm circle'], ['Drawn as', 'heads 9 mm across flats, 5 mm high']], 'Hold the central former’s base flange down on the table.'),
+    'former-rim-screws': fastener('Rim screws', [['Count', '8, round the top rim'], ['Drawn as', 'Ø6 mm heads']], 'Hold the top rim on the central former.'),
+    'pf-bracket-bolts': fastener('Bracket bolts', [['Count', '2 per bracket, 8 per coil'], ['Drawn as', 'heads 9 mm across flats']], 'Bolt the outer PF coil’s brackets to the corner posts.'),
+    'post-bracket-bolts': fastener('Bracket bolts', [['Count', '2 per post'], ['Drawn as', 'heads 10 mm across flats']], 'Hold each post’s angle bracket on the table top.'),
+    'post-clamp-bolts': fastener('Clamp bolts', [['Count', '2 per clamp block'], ['Drawn as', 'heads 10 mm across flats']], 'Tighten the clamp block that grips a joint’s pair of flanges.'),
+    'hv-feet': fastener('Mounting feet and bolts', [['Count', '2 feet, one bolt each'], ['Drawn as', 'heads 9 mm across flats']], 'Hold the HV supply on the table.'),
+    'spectro-lid-screws': fastener('Lid screws', [['Count', '4'], ['Drawn as', 'Ø5 mm heads']], 'Hold the spectrometer’s lid on.'),
+    'cable-gland': fastener('Cable gland', [['Drawn as', 'Ø14 mm']], 'Seals where the E-stop’s cable enters its box.'),
+    'levelling-feet': fastener('Levelling feet', [['Count', '4, one per leg'], ['Drawn as', 'Ø18 mm stud on a Ø60 mm pad']], 'Level the table; turn each foot to take out a rock.'),
+    'sma': fastener('SMA fibre connector', [['Type', 'SMA 905, the usual fibre connector on small spectrometers'], ['Drawn as', 'Ø11–12 mm']], 'Joins the optical fibre to the spectrometer and to the adaptor on the back viewport.'),
     'vp-flange-100': {
       title: 'DN100CF zero-length viewport flange',
       material: '304L stainless steel (reference part)',
@@ -758,10 +825,14 @@
     },
     'kf-clamp': {
       title: 'KF (ISO-KF) clamp',
-      material: 'Hinged clamp (metal not published), centring ring with elastomer O-ring',
-      rows: [['Seal', 'O-ring on a centring ring between two chamfered flanges', 'S6']],
-      note: 'A KF joint seals on an elastomer, not metal, so it is for the rough-vacuum side. Size and make on the SPM1 are not published.',
-      sources: ['S6'],
+      material: 'Hinged clamp (metal not published)',
+      rows: [
+        ['Grips', 'the chamfered backs of both flanges, pulling them onto the centring ring', 'S11'],
+        ['Tightened by', 'a wing nut (drawn); thumbscrew, bolt or lever clamps also exist', 'S11'],
+        ['Seal', 'O-ring on a centring ring between the two flanges', 'S6'],
+      ],
+      note: 'A KF joint seals on an elastomer, not metal, so it is for the rough-vacuum side. Open the clamp and the joint comes apart by hand; the centring ring stays on one flange or falls out. Size and make on the SPM1 are not published.',
+      sources: ['S6', 'S11'],
     },
     'reducer-63-40': {
       title: 'Zero-length reducer, DN63CF to DN40CF',
@@ -791,9 +862,9 @@
     'adaptor-40-kf16': {
       title: 'DN40CF to KF16 adaptor',
       material: 'Stainless steel (grade not published)',
-      rows: [['CF side', 'DN40CF, 6 × Ø6.8 mm', 'S9'], ['KF side', 'KF16 stub for the gauge', 'photo']],
-      note: '',
-      sources: ['S9', 'S4'],
+      rows: [['CF side', 'DN40CF, 6 × Ø6.8 mm, bolted through to the cross', 'S9'], ['KF side', 'KF16 stub flange: the gauge clamps onto it', 'photo'], ['Drawn as', 'a 10 mm stub, Ø30 mm KF flange', 'assumed']],
+      note: 'The gauge comes off here, at its KF16 clamp; the adaptor stays on the cross.',
+      sources: ['S9', 'S4', 'S11'],
     },
     convectron: {
       title: 'Convectron ATM gauge module',
@@ -807,11 +878,11 @@
       sources: ['S7', 'S4'],
     },
     'kf16-tube': {
-      title: 'KF16 tube',
+      title: 'KF16 tube and flange',
       material: 'Stainless steel',
-      rows: [['Seen in', 'S4 slides 9, 15 and 16', 'photo']],
-      note: 'Raises the gauge head clear of the cross. Length drawn from the photos.',
-      sources: ['S4'],
+      rows: [['Seen in', 'S4 slides 9, 15 and 16', 'photo'], ['Flange', 'KF16, drawn Ø30 mm on a Ø19 mm tube', 'assumed']],
+      note: 'Raises the gauge head clear of the cross. Its flange clamps onto the adaptor’s KF16 stub. Length drawn from the photos.',
+      sources: ['S4', 'S11'],
     },
     'tf-winding': {
       title: 'TF winding',
@@ -1032,17 +1103,26 @@
     'lateral|Port tube, 104 mm': 'tube-100', 'lateral|DN100CF flange': 'cf100',
     'viewport|Copper gasket': 'gasket-100', 'viewport|Viewport flange': 'vp-flange-100', 'viewport|Window glass, sealed into the flange': 'vp-glass-100',
     'pumpPort|Copper gasket': 'gasket-100', 'pumpPort|Zero-length reducer with KF40 stub': 'reducer-100-kf40', 'pumpPort|KF40 clamp with wing nut': 'kf-clamp',
+    'pumpPort|KF40 centring ring and O-ring': 'kf-ring-40', 'pumpPort|Hose end flange, KF40': 'kf-hose-flange',
     '*|16 bolts': 'bolts-100', '*|16 nuts': 'nuts-100', '*|8 bolts': 'bolts-63', '*|8 nuts': 'nuts-63', '*|6 bolts': 'bolts-40', '*|6 nuts': 'nuts-40',
     '*|TIG weld': 'weld',
     'diagPorts|Port tube, 38 mm': 'tube-40', 'diagPorts|DN40CF flange': 'cf40', 'diagPorts|Port tube, 63.5 mm': 'tube-63', 'diagPorts|DN63CF flange': 'cf63',
     'laser|Copper gasket': 'gasket-40', 'electrode|Copper gasket': 'gasket-40', 'probe|Copper gasket': 'gasket-40', 'stack|Copper gasket': 'gasket-63',
+    'stack|3 DN40 gaskets': 'gasket-40', 'needle|Copper gasket': 'gasket-40',
     'laser|DN40CF viewport flange': 'vp-flange-40', 'laser|Window glass': 'vp-glass-40',
     'electrode|HV feedthrough: flange, ceramic insulator, anode rod': 'hv-feedthrough', 'electrode|HV terminal cap': 'hv-cap', 'electrode|Anode disc': 'anode',
     'probe|Bellows linear feedthrough': 'linear-ft', 'probe|Probe: shaft, ceramic sleeve, wire tip': 'probe-tip',
     'stack|DN63 to DN40 reducer flange': 'reducer-63-40', 'stack|DN40 four-way cross': 'cross-40', 'stack|6 bolts into the reducer': 'bolts-tapped',
-    'stack|DN40 blank flange': 'blank-40', 'stack|6 bolts on the blank': 'bolts-40', 'stack|DN40 to KF16 adaptor flange': 'adaptor-40-kf16', 'stack|6 bolts on the adaptor': 'bolts-40',
-    'gauge|Convectron ATM display module': 'convectron', 'gauge|KF16 tube': 'kf16-tube', 'gauge|KF16 clamp and centring ring': 'kf-clamp',
+    'stack|DN40 blank flange': 'blank-40', 'stack|6 bolts on the blank': 'bolts-40', 'stack|6 nuts on the blank': 'nuts-40',
+    'stack|DN40 to KF16 adaptor flange': 'adaptor-40-kf16', 'stack|6 bolts on the adaptor': 'bolts-40', 'stack|6 nuts on the adaptor': 'nuts-40',
+    'gauge|Convectron ATM display module': 'convectron', 'gauge|KF16 tube and flange': 'kf16-tube', 'gauge|KF16 clamp': 'kf-clamp',
+    'gauge|KF16 centring ring and O-ring': 'kf-ring-16', 'gauge|Sensor tube nut': 'sensor-nut', 'gauge|Cable connector': 'gauge-plug',
     'needle|DN40 inlet flange': 'cf40', 'needle|Needle valve body': 'needle-body', 'needle|Needle stem and knob': 'needle-body',
+    'needle|Outlet compression fitting': 'compression-fitting', 'needle|Gas inlet fitting': 'gas-inlet-fitting',
+    'former|8 base bolts': 'former-base-bolts', 'former|8 rim screws': 'former-rim-screws', 'pfOuter|8 bracket bolts': 'pf-bracket-bolts',
+    'posts|Bracket bolts': 'post-bracket-bolts', 'posts|Clamp bolts': 'post-clamp-bolts', 'hv|Mounting feet and bolts': 'hv-feet',
+    'spectro|Lid screws': 'spectro-lid-screws', 'spectro|SMA fibre input': 'sma', 'spectro|SMA connector': 'sma', 'estop|Cable gland': 'cable-gland',
+    'table|4 levelling feet': 'levelling-feet',
     'tf|Winding: 50 turns of 6 mm cable': 'tf-winding', 'tf|Copper former with fold-out tabs': 'tf-former', 'tf|Copper cover band': 'tf-cover', 'tf|Terminal block and lead studs': 'tf-terminal',
     'former|White metal tube': 'former-tube', 'pfInner|Winding, copper-taped cable': 'pf-inner-winding', 'solenoid|Winding': 'sol-winding',
     'satellite|Cable in a hose sleeve, taped': 'sat-coil',
@@ -1051,6 +1131,7 @@
     'drawer|PLC safety monitor': 'plc', 'drawer|Switch-mode supply': 'drawer-psu', 'drawer|4 relays': 'drawer-rail', 'drawer|Terminal blocks': 'drawer-rail', 'drawer|DIN rails': 'drawer-rail',
     'pfOuter|Aluminium U-channel former': 'pf-outer', 'pfOuter|Winding': 'pf-outer',
     'pump|Pump block (oil-sealed vane stage)': 'pump-block', 'pump|KF40 clamp': 'kf-clamp', 'hose|Bellows hose': 'bellows-hose',
+    'pump|KF40 inlet port': 'kf40-inlet', 'pump|KF40 centring ring and O-ring': 'kf-ring-40', 'pump|Hose end flange, KF40': 'kf-hose-flange',
     'spectro|Spectrometer body': 'spectro-body', 'camera|Webcam body and lens': 'webcam', 'estop|Mushroom button': 'estop-button',
   };
 

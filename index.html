@@ -564,6 +564,7 @@
       </span>
       <button type="button" id="bApart" aria-pressed="false" title="Take the part apart into its pieces (T)">Take apart</button>
       <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
+      <button type="button" id="bSection" aria-pressed="false" title="Cut the part in half through its axis, with the parts round it (X)">Section</button>
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
       <button type="button" id="bScreens" aria-pressed="true" title="Sheets beside the part (S)">Screens</button>
       <span class="tour" id="tourStep" role="group" aria-label="Tour" hidden>
@@ -1001,9 +1002,15 @@ const FRAG_GLASS = /* glsl */`
 
 const sectorPlanes = [new THREE.Plane(new V3(0, 0, -1), 1e6), new THREE.Plane(), new THREE.Plane()];
 
+// Section copies of the materials: `sec` 'piece' is cut by the section plane, 'ctx' (the parts round the piece) by the
+// plane and a box round the piece. The planes are fixed objects updated in place, so applyClip leaves them alone.
+const secPlane = new THREE.Plane();
+const secBox = Array.from({ length: 6 }, () => new THREE.Plane());
+const SEC_PLANES = { piece: [secPlane], ctx: [secPlane, ...secBox] };
+
 const colorMats = new Map();
-function colorMat(tone, clip) {
-  const key = `${tone}|${clip ? 1 : 0}`;
+function colorMat(tone, clip, sec = null) {
+  const key = `${tone}|${clip ? 1 : 0}${sec ? `|${sec}` : ''}`;
   if (colorMats.has(key)) return colorMats.get(key);
   const glass = tone === 'glass';
   const m = new THREE.ShaderMaterial({
@@ -1019,17 +1026,22 @@ function colorMat(tone, clip) {
   if (tone === 'vessel') { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
   m.userData.tone = tone;
   m.userData.clip = clip;
+  m.userData.section = sec;
+  if (sec) m.clippingPlanes = SEC_PLANES[sec];
   colorMats.set(key, m);
   return m;
 }
-function inkMat(clip, holes) {
+function inkMat(clip, holes, sec = null) {
   const m = new THREE.ShaderMaterial({ uniforms: { uId: { value: 0 } }, vertexShader: VERT, fragmentShader: FRAG_INK, side: THREE.DoubleSide, clipping: true });
   if (holes) { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
   m.userData.ink = true;
   m.userData.clip = clip;
+  m.userData.section = sec;
+  if (sec) m.clippingPlanes = SEC_PLANES[sec];
   return m;
 }
 const INK = { clip: inkMat(true), free: inkMat(false), clipHoles: inkMat(true, true), freeHoles: inkMat(false, true) };
+const INK_SEC = { piece: inkMat(false, false, 'piece'), ctx: inkMat(false, false, 'ctx'), pieceHoles: inkMat(false, true, 'piece'), ctxHoles: inkMat(false, true, 'ctx') };
 // GHOST is the x-ray; GHOST_FADE is the same turning solid again, so it writes depth and takes each mesh's colour.
 function ghostMat(fade) {
   const m = new THREE.ShaderMaterial({
@@ -1072,8 +1084,8 @@ function register(mesh, tone, o) {
   mesh.userData.solid = 0;
   mesh.userData.emit = ZERO.clone();
   mesh.userData.clip = !!o.clip;
-  mesh.userData.colorMat = mesh.material;
-  mesh.userData.inkMat = tone === 'vessel' ? (o.clip ? INK.clipHoles : INK.freeHoles) : o.clip ? INK.clip : INK.free;
+  mesh.userData.colorMat = mesh.userData.baseColorMat = mesh.material;
+  mesh.userData.inkMat = mesh.userData.baseInkMat = tone === 'vessel' ? (o.clip ? INK.clipHoles : INK.freeHoles) : o.clip ? INK.clip : INK.free;
   mesh.userData.inkId = ((nextInk++ % 250) + 2) / 255;
   mesh.onBeforeRender = perMesh;
   if (tone === 'glass') mesh.renderOrder = 10;
@@ -1096,6 +1108,8 @@ paint.instanced = (geometry, tone, matrices, o) => {
 // ---------- Build the machine ----------
 const dev = window.SPM1Device.build(THREE, paint);
 scene.add(dev.root);
+// Section copies of every colour material, made now so the theme dresses them with the rest.
+for (const m of [...colorMats.values()]) for (const sec of ['piece', 'ctx']) colorMat(m.userData.tone, m.userData.clip, sec);
 const DIMS = dev.dims;
 dev.holes.slice(0, 12).forEach((h, i) => {
   shared.uHoleA.value[i].set(h.a.x, h.a.y, h.a.z, h.r);
@@ -1170,6 +1184,10 @@ for (const [part, list] of piecesOf) for (const pc of list) {
   pc.userData.label = partById.get(part)?.name || part;
   if (list.length > 1) console.warn(`Missing piece label: a piece of "${pc.userData.label}" (${part}) takes the part's name.`);
 }
+// Whether Take apart moves anything: a welded port, or a gasket on its own, has nothing that comes off.
+const comesApart = new Set();
+for (const [part, list] of piecesOf) for (const pc of list) pc.traverse((m) => { if (m.isMesh && m.userData.ex.lengthSq() > 1e-6) comesApart.add(part); });
+const NO_APART = 'Nothing on this part comes off: it is one piece, or welded';
 
 // ---------- Plasma glow (layer 1, no ink) and a soft floor shadow ----------
 const GLOW_VERT = /* glsl */`
@@ -1591,7 +1609,7 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0, b: 0 }) {
 const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
 // `foldTree`: Inspect folded the assembly list to make room, so Done unfolds it. `tour`: the stop of the guided tour
 // (an index into TOUR), or null off the tour.
-const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null };
+const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null, section: false, secN: null, secFor: null };
 const hidden = new Set();
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
@@ -1623,7 +1641,7 @@ function applyClip() {
   const key = iso.part ? 'none' : 'sector';
   if (key === clipKey) return;
   clipKey = key;
-  const mats = [...colorMats.values(), ...Object.values(INK)];
+  const mats = [...colorMats.values(), ...Object.values(INK)].filter((m) => !m.userData.section);
   for (const m of mats) {
     if (key === 'sector' && m.userData.clip) { m.clippingPlanes = sectorPlanes; m.clipIntersection = true; }
     else m.clippingPlanes = [];
@@ -1640,7 +1658,67 @@ function refreshPieces() {
     pc.userData.ghost = ghost;
     pc.visible = !hidden.has(part) && !(ghost && !iso.context);
   }
+  refreshSection();
   refreshLit();
+}
+
+// ---------- Section: cut the inspected piece in half, with the parts round it ----------
+// The plane runs through the piece's middle. It contains the piece's axis where it has one (a flange, a gasket, a
+// coil), turned to face you as far as it can, so the cut shows the true profile; otherwise it faces you. It is aimed
+// when Section is turned on or the piece changes, and then stays put as you turn the view. The parts it is joined to
+// (and its own other pieces) within reach of it are drawn solid and cut by the same plane, inside a box round the
+// piece: a gasket shows between its two flanges with both knife edges biting it. Cut faces are hatched, as in the
+// cutaway.
+function aimSection() {
+  const list = iso.focus ? [iso.focus] : piecesOf.get(iso.part) || [];
+  const axis = list.length === 1 ? list[0].userData.axis : null;
+  const v = new V3().subVectors(view.target, camera.position).normalize();
+  const n = v.clone();
+  if (axis) {
+    n.addScaledVector(axis, -v.dot(axis));
+    if (n.lengthSq() < 0.04) n.crossVectors(axis, Math.abs(axis.z) < 0.9 ? new V3(0, 0, 1) : new V3(1, 0, 0));
+  }
+  iso.secN = n.normalize();
+  iso.secFor = iso.focus || iso.part;
+}
+function refreshSection() {
+  const on = !!iso.part && iso.section && piecesOf.has(iso.part);
+  const ctx = new Set();
+  if (on) {
+    if (iso.secFor !== (iso.focus || iso.part)) aimSection();
+    const R = iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
+    const size = R.getSize(new V3());
+    secPlane.setFromNormalAndCoplanarPoint(iso.secN, R.getCenter(new V3()));
+    const B = R.clone().expandByScalar(Math.max(2, 0.3 * Math.max(size.x, size.y, size.z)));
+    for (let i = 0; i < 3; i++) {
+      const e = new V3().setComponent(i, 1);
+      secBox[i * 2].set(e, -B.min.getComponent(i));
+      secBox[i * 2 + 1].set(e.clone().negate(), B.max.getComponent(i));
+    }
+    const joined = new Set([iso.part, ...(partById.get(iso.part)?.connects || [])]);
+    for (const pc of pieces) if (pc.userData.ghost && joined.has(pc.userData.part) && !hidden.has(pc.userData.part) && boxOfPiece(pc).intersectsBox(B)) ctx.add(pc);
+  }
+  for (const pc of pieces) {
+    const was = pc.userData.secCtx;
+    pc.userData.secCtx = ctx.has(pc);
+    if (pc.userData.secCtx) { pc.visible = true; if (!was) pc.userData.gNow = 0; }
+  }
+  for (const m of solids) {
+    const pc = m.userData.piece;
+    const role = !on || !pc ? null : pc.userData.secCtx ? 'ctx' : pc.userData.ghost ? null : 'piece';
+    m.userData.colorMat = role ? colorMat(m.userData.tone, m.userData.clip, role) : m.userData.baseColorMat;
+    m.userData.inkMat = role ? INK_SEC[role + (m.userData.tone === 'vessel' ? 'Holes' : '')] : m.userData.baseInkMat;
+    m.material = m.userData.colorMat;
+  }
+  dirty = true;
+}
+function setSection(on) {
+  if (!iso.part || !piecesOf.has(iso.part)) return;
+  iso.section = on;
+  iso.secFor = null;
+  refreshPieces();
+  updateIsoBar();
+  announce(on ? 'Section on: the part is cut in half, with the parts round it.' : 'Section off.');
 }
 function refreshLit() {
   const t = themeName();
@@ -1801,6 +1879,7 @@ function endInspect() {
   iso.part = null;
   iso.focus = null;
   iso.apart = false;
+  iso.section = false;
   iso.history = [];
   iso.tour = null;
   if (iso.foldTree) { panels.tree = true; applyPanels(); resize(); }
@@ -1865,8 +1944,11 @@ function updateIsoBar() {
   $('bApart').textContent = iso.apart ? 'Put together' : 'Take apart';
   $('apartWrap').hidden = !iso.apart;
   $('bContext').setAttribute('aria-pressed', iso.context ? 'true' : 'false');
+  $('bSection').setAttribute('aria-pressed', iso.section ? 'true' : 'false');
+  $('bSection').disabled = !piecesOf.has(iso.part);
   $('bScreens').setAttribute('aria-pressed', HUD.on ? 'true' : 'false');
-  $('bApart').disabled = iso.part === 'plasma';
+  $('bApart').disabled = !comesApart.has(iso.part);
+  $('bApart').title = comesApart.has(iso.part) ? 'Take the part apart into its sub-parts (T)' : NO_APART;
   // On the tour: which stop, and Next to the following one (none after the last; Done leaves the tour).
   $('tourStep').hidden = iso.tour === null;
   if (iso.tour !== null) {
@@ -1896,7 +1978,7 @@ $('bAll').addEventListener('click', () => setFocus(iso.focus ? null : nearestPie
 $('bPrev').addEventListener('click', () => stepPiece(-1));
 $('bNext').addEventListener('click', () => stepPiece(1));
 function setApart(on) {
-  if (!iso.part || iso.part === 'plasma') return;
+  if (!iso.part || (on && !comesApart.has(iso.part))) return;
   iso.apart = on;
   state.live = null; // taking apart, or putting back, clears the preview
   // Pieces of one part sit close together (eight coils round one ring), so take apart one at a time: the nearest.
@@ -1906,6 +1988,7 @@ function setApart(on) {
     refreshPieces();
     announceInspect();
   }
+  if (iso.section) refreshSection();
   frameIsolated(false, MOVE.apart);
   updateIsoBar();
   renderInspector();
@@ -1917,7 +2000,8 @@ function setApart(on) {
 const fmtSpread = (v) => `${(+v).toFixed(1)}×`;
 $('bApart').addEventListener('click', () => setApart(!iso.apart));
 $('sApart').addEventListener('input', (e) => { iso.apartSpread = +e.target.value; $('oApart').textContent = fmtSpread(iso.apartSpread); dirty = true; });
-$('sApart').addEventListener('change', () => frameIsolated(false));
+$('sApart').addEventListener('change', () => { if (iso.section) refreshSection(); frameIsolated(false); });
+$('bSection').addEventListener('click', () => setSection(!iso.section));
 $('bContext').addEventListener('click', () => { iso.context = !iso.context; refreshPieces(); updateIsoBar(); });
 
 // ---------- Side panels: drag the edge between a panel and the view to size it, or fold it to a rail ----------
@@ -2874,7 +2958,7 @@ function renderPart(box, card) {
     const acts = el('div', 'actions');
     if (here) {
       acts.append(action('Back to assembly', endInspect, true, 'act:done'));
-      if (p.id !== 'plasma') acts.append(action(iso.apart ? 'Put back together' : 'Take apart', () => setApart(!iso.apart), false, 'act:apart'));
+      if (comesApart.has(p.id)) acts.append(action(iso.apart ? 'Put back together' : 'Take apart', () => setApart(!iso.apart), false, 'act:apart'));
     } else acts.append(action('Inspect on its own', () => inspect(p.id), true, 'act:inspect'), action('Zoom to it', () => zoomToPart(p.id), false, 'act:zoom'));
     acts.append(action(hidden.has(p.id) ? 'Show' : 'Hide', () => { setHidden([p.id], !hidden.has(p.id)); renderInspector(); }, false, 'act:hide'));
     box.append(acts);
@@ -3233,6 +3317,7 @@ function renderHelp(box) {
       ['T', 'take the inspected part apart'],
       [', .', 'previous or next piece of the inspected part'],
       ['G', 'ghost context on or off'],
+      ['X', 'section: cut the inspected part in half through its axis, with the parts round it'],
       ['S', 'sheets on or off'],
       ['L', 'tidy: floating sheets back into the column'],
       ['Backspace', 'back to the part you came from by a link'],
@@ -3579,6 +3664,7 @@ window.addEventListener('keydown', (e) => {
     else { state.spread = clamp(state.spread + dv, 0.4, 2.5); $('sSpread').value = state.spread; $('oSpread').textContent = fmtSpread(state.spread); if (!state.explode) setExplode(true); }
   }
   else if (k === 'g' && iso.part) { iso.context = !iso.context; refreshPieces(); updateIsoBar(); }
+  else if (k === 'x' && iso.part) setSection(!iso.section);
   else if (k === 'h' && state.select) { setHidden([state.select], !hidden.has(state.select)); renderInspector(); }
   else if (k === 's' && iso.part) setScreens(!HUD.on);
   else if (k === 'l' && iso.part) tidySheets();
@@ -3686,7 +3772,7 @@ function frame() {
     else active = true;
     u.tp = follow(u.tp, iso.part === u.part && iso.apart && (!iso.focus || iso.focus === pc) ? 1 : 0, 4.5);
     // Half a second to fade to a ghost, a little longer back to solid (after its hold), eased where it is drawn.
-    const gT = u.ghost ? 1 : 0;
+    const gT = u.ghost && !u.secCtx ? 1 : 0;
     if (u.gNow !== gT) {
       if (reduceMotion.matches) u.gNow = gT;
       else if (gT) u.gNow = Math.min(1, u.gNow + dt / 0.5);
@@ -3765,7 +3851,7 @@ if (renderer) {
 applyTheme();
 requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
-  setTab, startTour, nextStop, joinOf,
+  setTab, startTour, nextStop, joinOf, setSection,
   // What is drawn under a point of the page, for checks: its part, sub-part and piece.
   pickAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y })); return m ? { part: m.userData.part, sub: m.userData.sub || null, piece: m.userData.piece?.userData.label || null } : null; },
 };

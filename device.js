@@ -8,15 +8,23 @@
   const DEG = Math.PI / 180;
 
   // ConFlat sizes from the MBE-Komponenten CF table (parts.js, source S9): flange OD, bolt circle, bolt count,
-  // thickness, bolt-hole radius, tube OD and wall, gasket ID and OD. Bolts are M8 through the Ø8.4 mm holes and
-  // M6 through the Ø6.8 mm ones: head across flats af, head height k, nut height m, shank radius br.
+  // thickness, bolt-hole radius, tube OD and wall, gasket ID and OD, knife-edge and gasket-recess diameters. Bolts are
+  // M8 through the Ø8.4 mm holes and M6 through the Ø6.8 mm ones: head across flats af, head height k, nut height m,
+  // shank radius br. `len` is the through bolt's stock length: grip (two flanges and the gasket) + nut + two threads,
+  // rounded up to the next stock size (parts.js, derived).
   const M8 = { af: 1.3, k: 0.53, m: 0.65, br: 0.4 };
   const M6 = { af: 1.0, k: 0.4, m: 0.52, br: 0.3 };
   const CF = {
-    160: { od: 20.32, bc: 18.10, n: 20, t: 2.10, hr: 0.42, tube: 15.4, wall: 0.2, gasket: [7.625, 8.565], ...M8 },
-    100: { od: 15.24, bc: 13.03, n: 16, t: 1.95, hr: 0.42, tube: 10.4, wall: 0.2, gasket: [5.085, 6.025], ...M8 },
-    63: { od: 11.43, bc: 9.22, n: 8, t: 1.70, hr: 0.42, tube: 6.35, wall: 0.18, gasket: [3.6, 4.12], ...M8 },
-    40: { od: 6.99, bc: 5.87, n: 6, t: 1.25, hr: 0.34, tube: 3.8, wall: 0.15, gasket: [1.96, 2.41], ...M6 },
+    160: { od: 20.32, bc: 18.10, n: 20, t: 2.10, hr: 0.42, tube: 15.4, wall: 0.2, gasket: [7.625, 8.565], edge: 16.61, recess: 17.14, len: 5.5, ...M8 },
+    100: { od: 15.24, bc: 13.03, n: 16, t: 1.95, hr: 0.42, tube: 10.4, wall: 0.2, gasket: [5.085, 6.025], edge: 11.53, recess: 12.06, len: 5.0, ...M8 },
+    63: { od: 11.43, bc: 9.22, n: 8, t: 1.70, hr: 0.42, tube: 6.35, wall: 0.18, gasket: [3.6, 4.12], edge: 7.72, recess: 8.25, len: 4.5, ...M8 },
+    40: { od: 6.99, bc: 5.87, n: 6, t: 1.25, hr: 0.34, tube: 3.8, wall: 0.15, gasket: [1.96, 2.41], edge: 4.19, recess: 4.83, len: 3.5, ...M6 },
+  };
+  // ISO-KF joints as drawn (sizes not published for the SPM1; parts.js tags them assumed): tube bore and outside
+  // radius, flange radius, flange length and rim thickness, the gap the centring ring holds, the clamp's outer radius.
+  const KF = {
+    16: { ti: 0.75, to: 0.95, f: 1.5, t: 0.45, rim: 0.12, g: 0.3, c: 1.85 },
+    40: { ti: 1.85, to: 2.05, f: 2.75, t: 0.6, rim: 0.18, g: 0.4, c: 3.2 },
   };
 
   const D = {
@@ -38,6 +46,7 @@
     post: { R: 40.2, half: 2.25, top: 19 },
     cut: [287, 352],
     CF,
+    KF,
   };
 
   // How far each part travels when it is inspected on its own: up (`lift`), away from the torus axis (`spread`).
@@ -237,12 +246,36 @@
       const b = Math.min(0.3, h / 4);
       return revolve([[rIn, -h / 2], [rOut - b, -h / 2], [rOut, -h / 2 + b], [rOut, h / 2 - b], [rOut - b, h / 2], [rIn, h / 2], [rIn, -h / 2]], seg);
     }
+    // A sealing face: the gasket recess, DR deep, and inside it the knife edge, HK high on a WK base, so its tip stands
+    // just proud of the face and bites the gasket in the gap (the depths are the drawing's; the diameters are S9's).
+    const DR = 0.06, HK = 0.09, WK = 0.12;
+    // The outline for revolve() of the part of a flange inside radius rCut: along the face (+1, the side along the
+    // axis) from rCut in to the bore at rIn, down the bore, and out along the back (-1) to rCut, each side flat or a
+    // sealing face for `cf`. It is left open at rCut, where it meets the drilled outer ring, so no face lies inside
+    // the metal for a section to show.
+    function sealProfile(rIn, rCut, t, seals) {
+      const face = (s) => {
+        const y0 = t / 2;
+        if (!s) return [[rCut, y0], [rIn, y0]];
+        const rR = s.cf.recess / 2, rE = s.cf.edge / 2, yF = y0 - DR;
+        const pts = rR < rCut - 1e-6 ? [[rCut, y0], [rR, y0], [rR, yF]] : [[rCut, yF]];
+        pts.push([rE + WK / 2, yF], [rE, yF + HK], [rE - WK / 2, yF], [rIn, yF]);
+        return pts;
+      };
+      const top = face(seals.find((s) => s.side > 0));
+      const bottom = face(seals.find((s) => s.side < 0)).map(([r, y]) => [r, -y]).reverse();
+      return [...top, ...bottom];
+    }
     // A ConFlat flange drilled for its bolts: an annulus rIn..rOut (rIn 0 for a blank), thickness t, centred on
     // `centre` with its axis along `axis`. Each hole set puts n clearance holes of radius r on a bolt circle of
     // radius rad, at exactly the angles circleMatrices(.., u, v, rad, n, phase) gives the bolts that pass through.
-    function cfRing(centre, axis, rIn, rOut, t, sets, seg = 72) {
+    // `seals` lists the faces that seal on a gasket ({ side: ±1, cf }): inside the widest recess the flange is a
+    // revolved profile with the recess and knife edge. A hole set inside that recess (the reducer's tapped DN40
+    // holes) is not drilled through; the caller marks it on its face.
+    function cfRing(centre, axis, rIn, rOut, t, sets, seg = 72, seals = []) {
       const M = frame(centre, axis);
       const inv = M.clone().invert();
+      const rCut = seals.length ? Math.max(...seals.map((s) => s.cf.recess / 2)) : rIn;
       // The outline runs one way round and every hole the other, so the extruded walls face out of the metal.
       const poly = (path, cx, cz, r, n, hole) => {
         for (let k = 0; k <= n; k++) {
@@ -252,9 +285,10 @@
         return path;
       };
       const shape = poly(new THREE.Shape(), 0, 0, rOut, seg);
-      if (rIn > 0) shape.holes.push(poly(new THREE.Path(), 0, 0, rIn, seg, true));
+      if (rCut > 0) shape.holes.push(poly(new THREE.Path(), 0, 0, rCut, seg, true));
       const holes = [];
       for (const h of sets) {
+        if (h.rad < rCut) continue;
         for (let i = 0; i < h.n; i++) {
           const b = ((i + (h.phase ?? 0.5)) / h.n) * Math.PI * 2;
           const w = centre.clone().add(h.u.clone().multiplyScalar(h.rad * Math.cos(b))).add(h.v.clone().multiplyScalar(h.rad * Math.sin(b))).applyMatrix4(inv);
@@ -272,17 +306,39 @@
         if (Math.abs(nrm.getY(k)) > 0.5) continue;
         const x = p.getX(k), z = p.getZ(k), rho = Math.hypot(x, z);
         if (Math.abs(rho - rOut) < 0.02) nrm.setXYZ(k, x / rho, 0, z / rho);
-        else if (rIn > 0 && Math.abs(rho - rIn) < 0.02) nrm.setXYZ(k, -x / rho, 0, -z / rho);
+        else if (rCut > 0 && Math.abs(rho - rCut) < 0.02) nrm.setXYZ(k, -x / rho, 0, -z / rho);
         else {
           let best = null, bd = Infinity;
           for (const hl of holes) { const d = Math.hypot(x - hl[0], z - hl[1]) - hl[2]; if (Math.abs(d) < bd) { bd = Math.abs(d); best = hl; } }
           if (best) { const dx = x - best[0], dz = z - best[1], l = Math.hypot(dx, dz) || 1; nrm.setXYZ(k, -dx / l, 0, -dz / l); }
         }
       }
-      g.applyMatrix4(M);
-      g.computeBoundingSphere();
-      g.computeBoundingBox();
-      return g;
+      if (!seals.length) {
+        g.applyMatrix4(M);
+        g.computeBoundingSphere();
+        g.computeBoundingBox();
+        return g;
+      }
+      // The outer ring's own wall at rCut would lie inside the metal, against the revolved part: drop it, and put back
+      // only the recess wall of the widest seal, from its floor up to the face.
+      const src = g.index ? g.toNonIndexed() : g;
+      const sp = src.attributes.position, sn = src.attributes.normal, pos = [], nor = [];
+      for (let i = 0; i < sp.count; i += 3) {
+        let wall = true;
+        for (let j = 0; j < 3 && wall; j++) wall = Math.abs(Math.hypot(sp.getX(i + j), sp.getZ(i + j)) - rCut) < 0.01 && Math.abs(sn.getY(i + j)) < 0.5;
+        if (wall) continue;
+        for (let j = 0; j < 3; j++) { pos.push(sp.getX(i + j), sp.getY(i + j), sp.getZ(i + j)); nor.push(sn.getX(i + j), sn.getY(i + j), sn.getZ(i + j)); }
+      }
+      const ringPart = new THREE.BufferGeometry();
+      ringPart.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      ringPart.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+      const parts = [ringPart.applyMatrix4(M), revolve(sealProfile(rIn, rCut, t, seals), seg).applyMatrix4(M)];
+      for (const s of seals) {
+        if (Math.abs(s.cf.recess / 2 - rCut) > 1e-6) continue;
+        const y0 = (s.side * t) / 2, yF = s.side * (t / 2 - DR);
+        parts.push(revolve(s.side > 0 ? [[rCut, y0], [rCut, yF]] : [[rCut, yF], [rCut, y0]], seg).applyMatrix4(M));
+      }
+      return merge(parts);
     }
     const drilled = (u, v, cf) => ({ u, v, rad: cf.bc / 2, n: cf.n, r: cf.hr });
     const disc = (r, h, seg = 32) => revolve([[0, -h / 2], [r, -h / 2], [r, h / 2], [0, h / 2]], seg);
@@ -343,6 +399,7 @@
     // `apart`: how far it moves from its group in the exploded assembly (spread 1).
     // `detach`: how it lifts out when inspected on its own (default from DETACH).
     // `sub`: the name of the sub-part its meshes belong to unless a mesh names another.
+    // `axis`: the axis it is turned about or sealed along, if it has one; a section of the piece contains it.
     function piece(part, parent, o = {}) {
       const g = new THREE.Group();
       g.userData.part = part;
@@ -351,6 +408,7 @@
       g.userData.apart = o.apart || V(0, 0, 0);
       g.userData.sub = o.sub || null;
       g.userData.clip = !!o.clip;
+      g.userData.axis = o.axis ? o.axis.clone().normalize() : null;
       parent.add(g);
       instances.push(g);
       return g;
@@ -418,14 +476,42 @@
       return out;
     }
 
-    // A CF flange pair's bolts: heads on the outer face, nuts on the back face of the welded flange.
-    // Taken apart, the bolts pull out along the axis and the nuts drop off the back.
+    // A CF flange pair's bolts, at their stock length: heads on the outer face, nuts on the back face of the other
+    // flange. Taken apart, the bolts pull out along the axis and the nuts drop off the back (or go where o.boltsEx and
+    // o.nutsEx say). `o.name` tells several sets on one piece apart ("6 bolts on the blank").
     function cfBolts(pc, cf, face, back, axis, u, v, o = {}) {
-      const len = cf.t * 2 + D.gap + 0.7;
-      addInst(pc, boltGeom(len, cf.af, cf.br, cf.k), 'bolt', circleMatrices(face, axis, u, v, cf.bc / 2, cf.n, o.phase ?? 0.5),
-        { sub: `${cf.n} bolts`, ex: along(axis, o.bolts ?? 10) });
+      const name = o.name ? ` ${o.name}` : '';
+      addInst(pc, boltGeom(cf.len, cf.af, cf.br, cf.k), 'bolt', circleMatrices(face, axis, u, v, cf.bc / 2, cf.n, o.phase ?? 0.5),
+        { sub: `${cf.n} bolts${name}`, ex: o.boltsEx || along(axis, o.bolts ?? 10) });
       addInst(pc, nutGeom(cf.af, cf.br + 0.02, cf.m), 'bolt', circleMatrices(back, axis.clone().negate(), u, v, cf.bc / 2, cf.n, o.phase ?? 0.5),
-        { sub: `${cf.n} nuts`, ex: along(axis, -(o.nuts ?? 4)) });
+        { sub: `${cf.n} nuts${name}`, ex: o.nutsEx || along(axis, -(o.nuts ?? 4)) });
+    }
+    // A copper CF gasket centred in the gap at `centre`, across `axis`.
+    const cfGasket = (cf, centre, axis, seg = 40) => at(ring(cf.gasket[0], cf.gasket[1], D.gap * 0.9, seg), frame(centre, axis));
+
+    // ---------- ISO-KF joints ----------
+    // A KF flange below its joint plane (local y up, the plane at y = 0): the bore, a tapered back the clamp pulls on,
+    // and the flat face that holds the centring ring.
+    const kfFlange = (kf, seg) => revolve([[kf.ti, -kf.g / 2 - kf.t], [kf.to, -kf.g / 2 - kf.t], [kf.f, -kf.g / 2 - kf.rim], [kf.f, -kf.g / 2], [kf.ti, -kf.g / 2], [kf.ti, -kf.g / 2 - kf.t]], seg);
+    // A joint at `origin` along `axis`, the fixed side behind it: `stub` gets the fixed side's flange, `mate` the
+    // other side's, `ring` the centring ring and its O-ring, `clamp` the hinged clamp and its wing screw, each as
+    // { pc, sub, ex }. `side` points to where the wing screw sits. Returns the mating flange's mesh.
+    function kfJoint(kf, origin, axis, side, stub, mate, ring_, clamp, seg = 32) {
+      const opt = (x) => ({ sub: x.sub, ex: x.ex || V(0, 0, 0) });
+      add(stub.pc, at(kfFlange(kf, seg), frame(origin, axis)), 'steel2', opt(stub));
+      const m = add(mate.pc, at(kfFlange(kf, seg), frame(origin, axis.clone().negate())), 'steel2', opt(mate));
+      add(ring_.pc, at(ring(kf.ti, kf.ti + 0.22, kf.g, seg), frame(origin, axis)), 'steel2', opt(ring_));
+      const tor = new THREE.TorusGeometry(kf.ti + 0.22 + kf.g * 0.58, kf.g * 0.58, 10, seg);
+      tor.deleteAttribute('uv');
+      tor.rotateX(-Math.PI / 2);
+      add(ring_.pc, at(tor, frame(origin, axis)), 'black', opt(ring_));
+      const hw = kf.g / 2 + kf.t, jaw = kf.to + 0.1, flat = kf.f + 0.05, lip = kf.g / 2 + kf.rim;
+      add(clamp.pc, at(revolve([[jaw, -hw], [kf.c, -hw], [kf.c, hw], [jaw, hw], [flat, lip], [flat, -lip], [jaw, -hw]], seg), frame(origin, axis)), 'alu', opt(clamp));
+      const across = new THREE.Vector3().crossVectors(axis, side).normalize();
+      const screwAt = origin.clone().add(side.clone().multiplyScalar(kf.c + 0.2));
+      add(clamp.pc, at(rod(kf.c * 0.09, kf.c * 1.1), frame(screwAt, across)), 'bolt', opt(clamp));
+      add(clamp.pc, at(box(kf.c * 0.28, kf.c * 0.16, kf.c * 0.8), frame(screwAt.clone().add(across.clone().multiplyScalar(kf.c * 0.5)), across, side)), 'alu', opt(clamp));
+      return m;
     }
 
     // A thin weld bead where a tube meets a flange.
@@ -453,23 +539,25 @@
       // the quarter it is welded to, so the eight read apart.
       for (const [pj, side, jt] of [[p0, 1, (k + 3) % 4], [p1, -1, k]]) {
         const tdir = toroidal(pj).multiplyScalar(side);
-        const fl = piece('joints', q, { clip: true, sub: 'DN160CF flange', label: `${JOINT[jt]} joint, ${QUARTER[k].toLowerCase()} side`, detach: tdir.clone().multiplyScalar(3.2).add(radial(pj).multiplyScalar(2)) });
+        const fl = piece('joints', q, { clip: true, sub: 'DN160CF flange', label: `${JOINT[jt]} joint, ${QUARTER[k].toLowerCase()} side`, detach: tdir.clone().multiplyScalar(3.2).add(radial(pj).multiplyScalar(2)), axis: tdir });
         const centre = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t / 2));
-        add(fl, cfRing(centre, tdir, D.aIn, J.od / 2, J.t, [drilled(radial(pj), Z, J)], 80), 'steel2');
-        add(fl, bead(D.aOut, pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t + 0.14)), tdir), 'steel2', { sub: 'TIG weld to the elbow', ex: along(tdir, 3) });
+        add(fl, cfRing(centre, tdir, D.aIn, J.od / 2, J.t, [drilled(radial(pj), Z, J)], 80, [{ side: -1, cf: J }]), 'steel2');
+        // A weld does not come apart: Take apart leaves it on its flange.
+        add(fl, bead(D.aOut, pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t + 0.14)), tdir), 'steel2', { sub: 'TIG weld to the elbow' });
         const face = pol(D.R0, pj).add(tdir.clone().multiplyScalar(D.gap / 2 + J.t));
         const mats = circleMatrices(face, tdir, radial(pj), Z, J.bc / 2, J.n);
-        if (side < 0) addInst(fl, boltGeom(J.t * 2 + D.gap + 0.9, J.af, J.br, J.k), 'bolt', mats, { sub: '20 bolts', ex: along(tdir, 9) });
+        if (side < 0) addInst(fl, boltGeom(J.len, J.af, J.br, J.k), 'bolt', mats, { sub: '20 bolts', ex: along(tdir, 9) });
         else addInst(fl, nutGeom(J.af, J.br + 0.02, J.m), 'bolt', mats, { sub: '20 nuts', ex: along(tdir, 7) });
       }
 
       // Lateral DN100CF port: a tube welded into the elbow, with a flange welded on its end.
       const rdir = radial(pk);
-      const lat = piece('lateral', q, { clip: true, sub: 'Port tube, 104 mm', label: `${k ? QUARTER[k] : 'Right (pump)'} port` });
+      // Tube, weld and flange are one welded piece, so nothing on it comes off.
+      const lat = piece('lateral', q, { clip: true, sub: 'Port tube, 104 mm', label: `${k ? QUARTER[k] : 'Right (pump)'} port`, axis: rdir });
       const nR = L.tube / 2;
       add(lat, saddleNeck(pol(D.R0, pk), rdir, nR - L.wall, nR, D.lat.flangeAt - D.R0, lateralStart(pk)), 'steel');
-      add(lat, cfRing(pol(D.lat.flangeAt + L.t / 2, pk), rdir, nR - L.wall, L.od / 2, L.t, [drilled(Z, toroidal(pk), L)]), 'steel2', { sub: 'DN100CF flange', ex: along(rdir, 7) });
-      add(lat, bead(nR, pol(D.lat.flangeAt - 0.14, pk), rdir.clone().negate()), 'steel2', { sub: 'TIG weld', ex: along(rdir, 3.5) });
+      add(lat, cfRing(pol(D.lat.flangeAt + L.t / 2, pk), rdir, nR - L.wall, L.od / 2, L.t, [drilled(Z, toroidal(pk), L)], 72, [{ side: 1, cf: L }]), 'steel2', { sub: 'DN100CF flange' });
+      add(lat, bead(nR, pol(D.lat.flangeAt - 0.14, pk), rdir.clone().negate()), 'steel2', { sub: 'TIG weld' });
 
       // Two TF coils per quarter, either side of the lateral port. Taken apart along the coil axis:
       // the copper former one way, the cover band the other, the winding in the middle.
@@ -477,7 +565,7 @@
       // quarter k − 1, j = 1 (pk + 22.5°) towards quarter k + 1.
       for (const [j, pc] of [[0, pk - 22.5], [1, pk + 22.5]]) {
         const side = QUARTER[(k + (j ? 1 : 3)) % 4].toLowerCase();
-        const coil = piece('tf', q, { clip: true, apart: V(0, 0, 20), label: `${QUARTER[k]} quarter, ${side}-side coil` });
+        const coil = piece('tf', q, { clip: true, apart: V(0, 0, 20), label: `${QUARTER[k]} quarter, ${side}-side coil`, axis: toroidal(pc) });
         const tf = D.tf, hw = tf.halfW / D.R0, c = pc * DEG;
         const axis = toroidal(pc);
         const FORMER = { sub: 'Copper former with fold-out tabs', ex: along(axis, -11) };
@@ -516,70 +604,71 @@
       const pj = 45 + 90 * k;
       const off = radial(90 * k).multiplyScalar(16).add(radial(90 * ((k + 1) % 4)).multiplyScalar(16)).multiplyScalar(0.5);
       const g = group(`gasket${k}`, off, 0.32 + k * 0.05);
-      const gk = piece('gaskets', g, { clip: true, sub: 'OFHC copper gasket', label: `${JOINT[k]} joint`, detach: V(0, 0, 0) });
-      add(gk, at(ring(J.gasket[0], J.gasket[1], D.gap * 0.9, 80), frame(pol(D.R0, pj), toroidal(pj))), 'copper');
+      const gk = piece('gaskets', g, { clip: true, sub: 'OFHC copper gasket', label: `${JOINT[k]} joint`, detach: V(0, 0, 0), axis: toroidal(pj) });
+      add(gk, cfGasket(J, pol(D.R0, pj), toroidal(pj), 80), 'copper');
     }
 
     // ---------- Lateral port fittings ----------
     const latFace = D.lat.flangeAt + L.t;
     function windowFlange(pc, deg, glassR) {
       const rdir = radial(deg);
-      add(pc, at(ring(L.gasket[0], L.gasket[1], D.gap * 0.9, 48), frame(pol(latFace + D.gap / 2, deg), rdir)), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
-      add(pc, cfRing(pol(latFace + D.gap + L.t / 2, deg), rdir, glassR, L.od / 2, L.t, [drilled(Z, toroidal(deg), L)]), 'steel2', { sub: 'Viewport flange', ex: along(rdir, 7) });
+      add(pc, cfGasket(L, pol(latFace + D.gap / 2, deg), rdir, 48), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
+      add(pc, cfRing(pol(latFace + D.gap + L.t / 2, deg), rdir, glassR, L.od / 2, L.t, [drilled(Z, toroidal(deg), L)], 72, [{ side: -1, cf: L }]), 'steel2', { sub: 'Viewport flange', ex: along(rdir, 7) });
       add(pc, at(disc(glassR, 0.6, 48), frame(pol(latFace + D.gap + 0.5, deg), rdir)), 'glass', { sub: 'Window glass, sealed into the flange', ex: along(rdir, 11) });
       cfBolts(pc, L, pol(latFace + D.gap + L.t, deg), pol(D.lat.flangeAt, deg), rdir, Z, toroidal(deg), { bolts: 16, nuts: 5 });
     }
-    const vpB = piece('viewport', qB, { clip: true, apart: along(radial(90), 12), label: 'Back viewport (spectrometer)' });
+    const vpB = piece('viewport', qB, { clip: true, apart: along(radial(90), 12), label: 'Back viewport (spectrometer)', axis: radial(90) });
     windowFlange(vpB, 90, 4.5);
-    const vpL = piece('viewport', qL, { clip: true, apart: along(radial(180), 12), label: 'Left viewport (webcam)' });
+    const vpL = piece('viewport', qL, { clip: true, apart: along(radial(180), 12), label: 'Left viewport (webcam)', axis: radial(180) });
     windowFlange(vpL, 180, 4.5);
-    const vpF = piece('viewport', qF, { clip: true, apart: along(radial(270), 12), label: 'Front viewport (eyes)' });
+    const vpF = piece('viewport', qF, { clip: true, apart: along(radial(270), 12), label: 'Front viewport (eyes)', axis: radial(270) });
     windowFlange(vpF, 270, 4.5);
 
-    // Right port: zero-length reducer to a KF40 stub for the bellows line.
+    // Right port: zero-length reducer to a KF40 stub for the bellows line. The hose's own KF40 flange is drawn with the
+    // port, so the whole joint (stub, centring ring and O-ring, hose flange, clamp) comes apart together; the hose
+    // stays plugged into its flange.
     let pumpLineFrom, pumpPortEnd;
     {
-      const rdir = radial(0);
-      const pc = piece('pumpPort', qR, { clip: true, apart: along(rdir, 10) });
-      add(pc, at(ring(L.gasket[0], L.gasket[1], D.gap * 0.9, 48), frame(pol(latFace + D.gap / 2, 0), rdir)), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
+      const rdir = radial(0), K = KF[40];
+      const pc = piece('pumpPort', qR, { clip: true, apart: along(rdir, 10), axis: rdir });
+      add(pc, cfGasket(L, pol(latFace + D.gap / 2, 0), rdir, 48), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
       const RED = { sub: 'Zero-length reducer with KF40 stub', ex: along(rdir, 7) };
-      add(pc, cfRing(pol(latFace + D.gap + L.t / 2, 0), rdir, 2.05, L.od / 2, L.t, [drilled(Z, toroidal(0), L)]), 'steel2', RED);
+      add(pc, cfRing(pol(latFace + D.gap + L.t / 2, 0), rdir, 2.05, L.od / 2, L.t, [drilled(Z, toroidal(0), L)], 72, [{ side: -1, cf: L }]), 'steel2', RED);
       cfBolts(pc, L, pol(latFace + D.gap + L.t, 0), pol(D.lat.flangeAt, 0), rdir, Z, toroidal(0), { bolts: 13, nuts: 5 });
-      const from = latFace + D.gap + L.t, to = from + 3.2;
-      add(pc, at(ring(1.85, 2.05, to - from, 32), frame(pol((from + to) / 2, 0), rdir)), 'steel', RED);
-      add(pc, at(flangeRing(1.85, 3.25, 0.6, 40), frame(pol(to - 0.3, 0), rdir)), 'steel2', RED);
-      const CLAMP = { sub: 'KF40 clamp with wing nut', ex: along(rdir, 13) };
-      pumpPortEnd = add(pc, at(revolve([[2.1, -0.75], [3.6, -0.55], [3.6, 0.55], [2.1, 0.75], [2.1, -0.75]], 40), frame(pol(to, 0), rdir)), 'alu', CLAMP);
-      add(pc, at(rod(0.3, 3.4), frame(pol(to, 0, 3.85), toroidal(0))), 'bolt', CLAMP);
-      add(pc, at(box(0.9, 0.5, 2.6), frame(pol(to, 0, 3.85).add(toroidal(0).multiplyScalar(1.6)), toroidal(0), rdir)), 'alu', CLAMP);
-      pumpLineFrom = to + 0.6;
+      const from = latFace + D.gap + L.t, to = from + 3.2 - K.t;
+      add(pc, at(ring(K.ti, K.to, to - from, 32), frame(pol((from + to) / 2, 0), rdir)), 'steel', RED);
+      const joint = pol(to + K.t + K.g / 2, 0);
+      pumpPortEnd = kfJoint(K, joint, rdir, Z, { pc, ...RED }, { pc, sub: 'Hose end flange, KF40', ex: along(rdir, 10) },
+        { pc, sub: 'KF40 centring ring and O-ring', ex: along(rdir, 9).add(V(0, 0, 4)) }, { pc, sub: 'KF40 clamp with wing nut', ex: along(rdir, 13).add(V(0, 0, -6)) }, 40);
+      pumpLineFrom = to + K.t * 2 + K.g;
     }
 
     // ---------- Small DN40CF ports on the top and bottom of the front and left quarters ----------
     function smallPort(q, deg, up, label) {
       const dir = up ? Z.clone() : Z.clone().negate();
-      const pc = piece('diagPorts', q, { clip: true, sub: 'Port tube, 38 mm', label });
+      // Tube, weld and flange are one welded piece.
+      const pc = piece('diagPorts', q, { clip: true, sub: 'Port tube, 38 mm', label, axis: Z });
       const zs = up ? 1 : -1;
       const nr = S.tube / 2;
       add(pc, saddleNeck(pol(D.R0, deg, 0), dir, nr - S.wall, nr, D.small.flangeAt, verticalStart(deg), 36), 'steel');
-      add(pc, cfRing(pol(D.R0, deg, zs * (D.small.flangeAt + S.t / 2)), dir, nr - S.wall, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', { sub: 'DN40CF flange', ex: along(dir, 5) });
-      add(pc, bead(nr, pol(D.R0, deg, zs * (D.small.flangeAt - 0.14)), dir.clone().negate()), 'steel2', { sub: 'TIG weld', ex: along(dir, 2.5) });
+      add(pc, cfRing(pol(D.R0, deg, zs * (D.small.flangeAt + S.t / 2)), dir, nr - S.wall, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40, [{ side: 1, cf: S }]), 'steel2', { sub: 'DN40CF flange' });
+      add(pc, bead(nr, pol(D.R0, deg, zs * (D.small.flangeAt - 0.14)), dir.clone().negate()), 'steel2', { sub: 'TIG weld' });
       const face = D.small.flangeAt + S.t;
       const mate = zs * (face + D.gap);
       return {
         pc, dir, zs, face, mate,
         // The mating flange's bolts and nuts belong to whatever is mounted on the port.
         bolts: (owner, o) => cfBolts(owner, S, pol(D.R0, deg, zs * (face + D.gap + S.t)), pol(D.R0, deg, zs * D.small.flangeAt), dir, radial(deg), toroidal(deg), o),
-        gasket: (owner) => add(owner, at(ring(S.gasket[0], S.gasket[1], D.gap * 0.9, 32), frame(pol(D.R0, deg, zs * (face + D.gap / 2)), dir)), 'copper', { sub: 'Copper gasket', ex: along(dir, 2) }),
+        gasket: (owner) => add(owner, cfGasket(S, pol(D.R0, deg, zs * (face + D.gap / 2)), dir, 32), 'copper', { sub: 'Copper gasket', ex: along(dir, 2) }),
       };
     }
 
     // Front top: laser diagnostics window.
     {
       const sp = smallPort(qF, 270, true, 'Front top port');
-      const pc = piece('laser', qF, { clip: true, apart: V(0, 0, 10) });
+      const pc = piece('laser', qF, { clip: true, apart: V(0, 0, 10), axis: Z });
       sp.gasket(pc);
-      add(pc, cfRing(pol(D.R0, 270, sp.mate + S.t / 2), Z, 1.9, S.od / 2, S.t, [drilled(radial(270), toroidal(270), S)], 40), 'steel2', { sub: 'DN40CF viewport flange', ex: V(0, 0, 5) });
+      add(pc, cfRing(pol(D.R0, 270, sp.mate + S.t / 2), Z, 1.9, S.od / 2, S.t, [drilled(radial(270), toroidal(270), S)], 40, [{ side: -1, cf: S }]), 'steel2', { sub: 'DN40CF viewport flange', ex: V(0, 0, 5) });
       add(pc, at(disc(1.9, 0.3, 32), frame(pol(D.R0, 270, sp.mate + 0.35), Z)), 'glass', { sub: 'Window glass', ex: V(0, 0, 8) });
       sp.bolts(pc, { bolts: 12, nuts: 3 });
     }
@@ -588,11 +677,11 @@
     const hvEnds = [];
     for (const [q, deg, name] of [[qF, 270, 'Electrode A (front)'], [qL, 180, 'Electrode B (left)']]) {
       const sp = smallPort(q, deg, false, `${deg === 270 ? 'Front' : 'Left'} bottom port`);
-      const pc = piece('electrode', q, { clip: true, apart: V(0, 0, -12), label: name });
+      const pc = piece('electrode', q, { clip: true, apart: V(0, 0, -12), label: name, axis: Z });
       sp.gasket(pc);
       const FEED = { sub: 'HV feedthrough: flange, ceramic insulator, anode rod', ex: V(0, 0, -6) };
       const zf = sp.mate - S.t / 2;
-      add(pc, cfRing(pol(D.R0, deg, zf), Z, 0.55, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', FEED);
+      add(pc, cfRing(pol(D.R0, deg, zf), Z, 0.55, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40, [{ side: 1, cf: S }]), 'steel2', FEED);
       sp.bolts(pc, { bolts: 12, nuts: 3 });
       const insFrom = -(sp.face + D.gap + S.t);
       const prof = [[0.55, 0]];
@@ -609,13 +698,13 @@
     // Left top: Langmuir probe on a bellows linear feedthrough.
     {
       const sp = smallPort(qL, 180, true, 'Left top port');
-      const pc = piece('probe', qL, { clip: true, apart: V(0, 0, 14) });
+      const pc = piece('probe', qL, { clip: true, apart: V(0, 0, 14), axis: Z });
       sp.gasket(pc);
       const base = sp.mate + S.t;
       const FEED = { sub: 'Bellows linear feedthrough', ex: V(0, 0, 6) };
       const DRIVE = { sub: 'Micrometer drive and knob', ex: V(0, 0, 11) };
       const PROBE = { sub: 'Probe: shaft, ceramic sleeve, wire tip', ex: along(radial(180), 7).add(V(0, 0, 3)) };
-      add(pc, cfRing(pol(D.R0, 180, sp.mate + S.t / 2), Z, 0.5, S.od / 2, S.t, [drilled(radial(180), toroidal(180), S)], 40), 'steel2', FEED);
+      add(pc, cfRing(pol(D.R0, 180, sp.mate + S.t / 2), Z, 0.5, S.od / 2, S.t, [drilled(radial(180), toroidal(180), S)], 40, [{ side: -1, cf: S }]), 'steel2', FEED);
       sp.bolts(pc, { bolts: 16, nuts: 3 });
       const top = base + 6;
       const prof = [[0.6, base]];
@@ -633,53 +722,73 @@
       add(pc, at(rod(0.09, 1.2, 8), frame(pol(D.R0, 180, 0.9), Z)), 'tip', PROBE);
     }
 
-    // Back top: the larger gauge port (DN63CF) with the gauge and gas-inlet stack.
+    // Back top: the larger gauge port (DN63CF) with the gauge and gas-inlet stack. Above the reducer sit four DN40
+    // seals, each with its own gasket: reducer → cross, cross → blank and cross → KF16 adaptor (the stack's three) and
+    // cross → needle valve (the valve's). The reducer's DN40 holes are tapped; every other DN40 joint is bolted through
+    // with nuts.
     let gaugeCableFrom, gasFrom, gaugePlug, needleOut;
     {
       const deg = 90;
-      const port = piece('diagPorts', qB, { clip: true, sub: 'Port tube, 63.5 mm', label: 'Back top gauge port (DN63)' });
+      const port = piece('diagPorts', qB, { clip: true, sub: 'Port tube, 63.5 mm', label: 'Back top gauge port (DN63)', axis: Z });
       const nr = G.tube / 2;
       add(port, saddleNeck(pol(D.R0, deg, 0), Z, nr - G.wall, nr, D.gport.flangeAt, verticalStart(deg), 40), 'steel');
-      add(port, cfRing(pol(D.R0, deg, D.gport.flangeAt + G.t / 2), Z, nr - G.wall, G.od / 2, G.t, [drilled(radial(deg), toroidal(deg), G)], 56), 'steel2', { sub: 'DN63CF flange', ex: V(0, 0, 5) });
-      add(port, bead(nr, pol(D.R0, deg, D.gport.flangeAt - 0.14), Z.clone().negate()), 'steel2', { sub: 'TIG weld', ex: V(0, 0, 2.5) });
+      add(port, cfRing(pol(D.R0, deg, D.gport.flangeAt + G.t / 2), Z, nr - G.wall, G.od / 2, G.t, [drilled(radial(deg), toroidal(deg), G)], 56, [{ side: 1, cf: G }]), 'steel2', { sub: 'DN63CF flange' });
+      add(port, bead(nr, pol(D.R0, deg, D.gport.flangeAt - 0.14), Z.clone().negate()), 'steel2', { sub: 'TIG weld' });
       const face = D.gport.flangeAt + G.t;
 
-      const st = piece('stack', qB, { clip: true, apart: V(0, 0, 10) });
-      add(st, at(ring(G.gasket[0], G.gasket[1], D.gap * 0.9, 40), frame(pol(D.R0, deg, face + D.gap / 2), Z)), 'copper', { sub: 'Copper gasket', ex: V(0, 0, 2) });
+      const st = piece('stack', qB, { clip: true, apart: V(0, 0, 10), axis: Z });
+      add(st, cfGasket(G, pol(D.R0, deg, face + D.gap / 2), Z), 'copper', { sub: 'Copper gasket', ex: V(0, 0, 2) });
       const rz = face + D.gap;
-      add(st, cfRing(pol(D.R0, deg, rz + G.t / 2), Z, 1.75, G.od / 2, G.t, [drilled(radial(deg), toroidal(deg), G), drilled(radial(deg), toroidal(deg), S)], 56), 'bronze', { sub: 'DN63 to DN40 reducer flange', ex: V(0, 0, 5) });
+      const RED = { sub: 'DN63 to DN40 reducer flange', ex: V(0, 0, 5) };
+      add(st, cfRing(pol(D.R0, deg, rz + G.t / 2), Z, 1.75, G.od / 2, G.t, [drilled(radial(deg), toroidal(deg), G), drilled(radial(deg), toroidal(deg), S)], 56, [{ side: -1, cf: G }, { side: 1, cf: S }]), 'bronze', RED);
+      // The DN40 holes are tapped into the top face, not drilled through.
+      addInst(st, disc(S.hr, 0.02, 12), 'hole', circleMatrices(pol(D.R0, deg, rz + G.t + 0.01), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), RED);
       cfBolts(st, G, pol(D.R0, deg, rz + G.t), pol(D.R0, deg, D.gport.flangeAt), Z, radial(deg), toroidal(deg), { bolts: 9, nuts: 3 });
       // DN40 four-way cross: vertical body, two side arms along the ring.
       const CROSS = { sub: 'DN40 four-way cross', ex: V(0, 0, 10) };
-      const c0 = rz + G.t, c1 = c0 + 8, cm = (c0 + c1) / 2;
+      const GASKETS = '3 DN40 gaskets';
+      const c0 = rz + G.t + D.gap, c1 = c0 + 8, cm = (c0 + c1) / 2;
       const cr = S.tube / 2;
+      add(st, cfGasket(S, pol(D.R0, deg, rz + G.t + D.gap / 2), Z, 32), 'copper', { sub: GASKETS, ex: V(0, 0, 7.5) });
       add(st, at(ring(cr - 0.15, cr, c1 - c0 - 2 * S.t, 32), frame(pol(D.R0, deg, cm), Z)), 'steel', CROSS);
-      add(st, cfRing(pol(D.R0, deg, c0 + S.t / 2), Z, cr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', CROSS);
-      addInst(st, boltGeom(S.t + 0.8, S.af, S.br, S.k), 'bolt', circleMatrices(pol(D.R0, deg, c0 + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), { sub: '6 bolts into the reducer', ex: V(0, 0, 18) });
-      add(st, cfRing(pol(D.R0, deg, c1 - S.t / 2), Z, cr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', CROSS);
+      add(st, cfRing(pol(D.R0, deg, c0 + S.t / 2), Z, cr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40, [{ side: -1, cf: S }]), 'steel2', CROSS);
+      // M6 × 25 into the tapped holes: through the cross flange and the gasket, then 10.5 mm into the reducer.
+      addInst(st, boltGeom(2.5, S.af, S.br, S.k), 'bolt', circleMatrices(pol(D.R0, deg, c0 + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), { sub: '6 bolts into the reducer', ex: V(0, 0, 18) });
+      add(st, cfRing(pol(D.R0, deg, c1 - S.t / 2), Z, cr - 0.15, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40, [{ side: 1, cf: S }]), 'steel2', CROSS);
       const tq = toroidal(deg);
+      const armFace = cr + 4 - 0.2;
       for (const s of [-1, 1]) {
         const ax = tq.clone().multiplyScalar(s);
         const centre = pol(D.R0, deg, cm);
         add(st, at(ring(cr - 0.15, cr, 4 - S.t, 32), frame(centre.clone().add(ax.clone().multiplyScalar(cr + (4 - S.t) / 2 - 0.2)), ax)), 'steel', CROSS);
-        add(st, cfRing(centre.clone().add(ax.clone().multiplyScalar(cr + 4 - S.t / 2 - 0.2)), ax, cr - 0.15, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40), 'steel2', CROSS);
+        add(st, cfRing(centre.clone().add(ax.clone().multiplyScalar(armFace - S.t / 2)), ax, cr - 0.15, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40, [{ side: 1, cf: S }]), 'steel2', CROSS);
         if (s > 0) {
           // Blank on the +toroidal arm.
-          add(st, cfRing(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t / 2 - 0.2 + D.gap)), ax, 0, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40), 'steel2', { sub: 'DN40 blank flange', ex: along(ax, 5).add(V(0, 0, 10)) });
-          addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br, S.k), 'bolt', circleMatrices(centre.clone().add(ax.clone().multiplyScalar(cr + 4 + S.t - 0.2 + D.gap)), ax, Z, radial(deg), S.bc / 2, S.n), { sub: '6 bolts on the blank', ex: along(ax, 10).add(V(0, 0, 10)) });
+          const up = V(0, 0, 10);
+          const at0 = (d) => centre.clone().add(ax.clone().multiplyScalar(d));
+          add(st, cfGasket(S, at0(armFace + D.gap / 2), ax, 32), 'copper', { sub: GASKETS, ex: along(ax, 2.5).add(up) });
+          add(st, cfRing(at0(armFace + D.gap + S.t / 2), ax, 0, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40, [{ side: -1, cf: S }]), 'steel2', { sub: 'DN40 blank flange', ex: along(ax, 5).add(up) });
+          cfBolts(st, S, at0(armFace + D.gap + S.t), at0(armFace - S.t), ax, Z, radial(deg), { name: 'on the blank', boltsEx: along(ax, 10).add(up), nutsEx: V(0, 0, 14) });
         }
       }
-      // Top: DN40 to KF16 adaptor flange.
-      add(st, cfRing(pol(D.R0, deg, c1 + D.gap + S.t / 2), Z, 0.8, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40), 'steel2', { sub: 'DN40 to KF16 adaptor flange', ex: V(0, 0, 15) });
-      addInst(st, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br, S.k), 'bolt', circleMatrices(pol(D.R0, deg, c1 + D.gap + S.t), Z, radial(deg), toroidal(deg), S.bc / 2, S.n), { sub: '6 bolts on the adaptor', ex: V(0, 0, 21) });
+      // Top: DN40 to KF16 adaptor flange, with its KF16 stub.
+      const ADAPT = { sub: 'DN40 to KF16 adaptor flange', ex: V(0, 0, 15) };
+      add(st, cfGasket(S, pol(D.R0, deg, c1 + D.gap / 2), Z, 32), 'copper', { sub: GASKETS, ex: V(0, 0, 12.5) });
+      add(st, cfRing(pol(D.R0, deg, c1 + D.gap + S.t / 2), Z, 0.8, S.od / 2, S.t, [drilled(radial(deg), toroidal(deg), S)], 40, [{ side: -1, cf: S }]), 'steel2', ADAPT);
+      cfBolts(st, S, pol(D.R0, deg, c1 + D.gap + S.t), pol(D.R0, deg, c1 - S.t), Z, radial(deg), toroidal(deg), { name: 'on the adaptor', boltsEx: V(0, 0, 21), nutsEx: V(0, 0, 7) });
       const kfFrom = c1 + D.gap + S.t;
+      const K = KF[16], stub = 1.0;
+      add(st, at(ring(K.ti, K.to, stub, 24), frame(pol(D.R0, deg, kfFrom + stub / 2), Z)), 'steel', ADAPT);
+      const kfJ = kfFrom + stub + K.t + K.g / 2;
 
-      const gg = piece('gauge', qB, { clip: true, apart: V(0, 0, 22), label: 'Vacuum gauge', sub: 'Convectron ATM display module' });
-      const kfTo = kfFrom + 9;
-      add(gg, at(ring(0.75, 0.95, kfTo - kfFrom, 24), frame(pol(D.R0, deg, (kfFrom + kfTo) / 2), Z)), 'steel', { sub: 'KF16 tube' });
-      const KF = { sub: 'KF16 clamp and centring ring', ex: along(radial(deg), 6) };
-      add(gg, at(flangeRing(0.75, 1.5, 0.45, 32), frame(pol(D.R0, deg, kfFrom + 3), Z)), 'steel2', KF);
-      add(gg, at(revolve([[1.0, -0.5], [1.8, -0.35], [1.8, 0.35], [1.0, 0.5], [1.0, -0.5]], 32), frame(pol(D.R0, deg, kfFrom + 3), Z)), 'alu', KF);
+      // The gauge comes off at its KF16 clamp: its own flange, the centring ring with its O-ring and the clamp belong
+      // to it, and the stub flange stays on the adaptor.
+      const gg = piece('gauge', qB, { clip: true, apart: V(0, 0, 22), label: 'Vacuum gauge', sub: 'Convectron ATM display module', axis: Z });
+      const kfTo = kfFrom + 9, gBack = kfJ + K.g / 2 + K.t;
+      const TUBE = { sub: 'KF16 tube and flange' };
+      add(gg, at(ring(K.ti, K.to, kfTo - gBack, 24), frame(pol(D.R0, deg, (gBack + kfTo) / 2), Z)), 'steel', TUBE);
+      kfJoint(K, pol(D.R0, deg, kfJ), Z, radial(deg), { pc: st, ...ADAPT }, { pc: gg, ...TUBE },
+        { pc: gg, sub: 'KF16 centring ring and O-ring', ex: V(0, 0, -1.5) }, { pc: gg, sub: 'KF16 clamp', ex: along(radial(deg), 6) }, 32);
       add(gg, at(hexNut(1.7, 1.0, 0.97), frame(pol(D.R0, deg, kfTo - 0.5), Z)), 'steel2', { sub: 'Sensor tube nut', ex: V(0, 0, 3) });
       const head = pol(D.R0, deg, kfTo + 2.6);
       const HEAD = { ex: V(0, 0, 7) };
@@ -693,10 +802,12 @@
 
       // Needle valve on the -toroidal arm, with its gas line down to the table.
       const ax = tq.clone().negate();
-      const nv = piece('needle', qB, { clip: true, apart: along(ax, 7).add(V(0, 0, 10)), label: 'Needle valve' });
-      const armEnd = pol(D.R0, deg, cm).add(ax.clone().multiplyScalar(cr + 4 - 0.2 + D.gap));
-      add(nv, cfRing(armEnd.clone().add(ax.clone().multiplyScalar(S.t / 2)), ax, 0.4, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40), 'steel2', { sub: 'DN40 inlet flange', ex: along(ax, 3) });
-      addInst(nv, boltGeom(S.t * 2 + D.gap + 0.6, S.af, S.br, S.k), 'bolt', circleMatrices(armEnd.clone().add(ax.clone().multiplyScalar(S.t)), ax, Z, radial(deg), S.bc / 2, S.n), { sub: '6 bolts', ex: along(ax, 8) });
+      const nv = piece('needle', qB, { clip: true, apart: along(ax, 7).add(V(0, 0, 10)), label: 'Needle valve', axis: ax });
+      const arm = pol(D.R0, deg, cm).add(ax.clone().multiplyScalar(armFace));
+      const armEnd = arm.clone().add(ax.clone().multiplyScalar(D.gap));
+      add(nv, cfGasket(S, arm.clone().add(ax.clone().multiplyScalar(D.gap / 2)), ax, 32), 'copper', { sub: 'Copper gasket', ex: along(ax, 1.5) });
+      add(nv, cfRing(armEnd.clone().add(ax.clone().multiplyScalar(S.t / 2)), ax, 0.4, S.od / 2, S.t, [drilled(Z, radial(deg), S)], 40, [{ side: -1, cf: S }]), 'steel2', { sub: 'DN40 inlet flange', ex: along(ax, 3) });
+      cfBolts(nv, S, armEnd.clone().add(ax.clone().multiplyScalar(S.t)), arm.clone().add(ax.clone().multiplyScalar(-S.t)), ax, Z, radial(deg), { boltsEx: along(ax, 8), nutsEx: along(ax, -1.5).add(V(0, 0, -2)) });
       const vb = armEnd.clone().add(ax.clone().multiplyScalar(S.t + 1.2));
       const BODY = { sub: 'Needle valve body', ex: along(ax, 6) };
       const STEM = { sub: 'Needle stem and knob', ex: along(ax, 6).add(V(0, 0, 5)) };
@@ -953,13 +1064,14 @@
       add(pp, at(disc(1.3, 0.5, 24), frame(V(px - 5.95, py + 7.5, pz + 5), V(-1, 0, 0))), 'oil', SIGHT);
       add(pp, at(ring(1.3, 1.8, 0.5, 24), frame(V(px - 5.95, py + 7.5, pz + 5), V(-1, 0, 0))), 'bolt', SIGHT);
       add(pp, at(box(5, 6, 4), T(px, py - 6, mz + 7.2)), 'black', { sub: 'Motor terminal box', ex: V(0, -9, 5) });
-      const inletZ = pz + 0.8 + 13.5;
+      // The inlet is a KF40 joint like the pump port's: the hose's own flange is drawn with the pump.
+      const inletZ = pz + 0.8 + 13.5, K = KF[40];
       const INLET = { sub: 'KF40 inlet port', ex: V(0, 0, 4) };
-      add(pp, at(ring(1.85, 2.05, 3.4, 28), frame(V(px, py + 8, inletZ + 1.7), Z)), 'steel', INLET);
-      add(pp, at(flangeRing(1.85, 3.25, 0.6, 32), frame(V(px, py + 8, inletZ + 3.1), Z)), 'steel2', INLET);
-      pumpClamp = add(pp, at(revolve([[2.1, -0.75], [3.6, -0.55], [3.6, 0.55], [2.1, 0.75], [2.1, -0.75]], 32), frame(V(px, py + 8, inletZ + 3.4), Z)), 'alu', { sub: 'KF40 clamp', ex: V(0, 0, 8) });
+      add(pp, at(ring(K.ti, K.to, 3.4 - K.t, 28), frame(V(px, py + 8, inletZ + (3.4 - K.t) / 2), Z)), 'steel', INLET);
+      pumpClamp = kfJoint(K, V(px, py + 8, inletZ + 3.4 + K.g / 2), Z, V(1, 0, 0), { pc: pp, ...INLET }, { pc: pp, sub: 'Hose end flange, KF40', ex: V(0, 0, 9) },
+        { pc: pp, sub: 'KF40 centring ring and O-ring', ex: V(0, 0, 6.5) }, { pc: pp, sub: 'KF40 clamp', ex: V(6, 0, 7) }, 32);
       add(pp, at(disc(1.6, 3.0, 24), frame(V(px + 3.6, py + 12, inletZ + 1.5), Z)), 'black', { sub: 'Exhaust oil-mist filter', ex: V(4, 0, 5) });
-      pumpInlet = V(px, py + 8, inletZ + 4.0);
+      pumpInlet = V(px, py + 8, inletZ + 3.4 + K.g + K.t);
     }
 
     // ---------- On the table: HV supply, E-stop, spectrometer, webcam ----------
