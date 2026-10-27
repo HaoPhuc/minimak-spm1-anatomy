@@ -347,6 +347,47 @@ marker leave users lost at ×28 in a test.
   covering a bolt ring (Kai's k10 view, at 1440 and 1366).
 - **Leader line:** it still ends on the kept sub-part after a 90° turn.
 
+**Status: done** (October 2026). All three checks pass in headless Chrome, at 1366×768 and 1440×900 with the column
+open, in Colour, Greyscale and Hologram:
+- **Show me:**
+  - One click on the sensor nut's Show me button frames it at 67 % of the free view's width: 46 % of its height at
+    1366×768, 40 % at 1440×900. A tap at 1024×768 gives 67 % and 54 %.
+  - The breadcrumb reads *Back quarter › Vacuum gauge › Sensor tube nut*.
+  - The nut's seat is out of frame at that zoom, so the edge marker points to it. Zoomed out four times, the seat ring
+    and its tether are drawn.
+  - Esc returns to exactly the frame before.
+- **Callouts:** the stack, taken apart, shows ten named callouts with no stub crossing another or the leader line, and
+  none on a bolt ring. At text size 2 in a 1920×1080 window there are five, as numbered balloons.
+- **Leader line:** with the adaptor flange's sheet kept, the line's end picks the adaptor flange before a 90° drag of
+  the model and after it.
+- **Also checked:**
+  - Keyboard: Enter on a Made of row (12 Tabs from the part's name) and `Z` are Show me; Space keeps.
+  - Esc steps Show me → piece → every piece → assembly. On the tour, four presses stay on the tour.
+  - Reduced motion: Show me and Esc cut.
+  - Links: `show=vacuum-gauge.sensor-tube-nut` reopens the same Show me.
+  - Section and the theme buttons keep Show me, and Done clears the overlay. No console errors.
+
+What differs from the plan:
+- **The 700 px rule** is a fit test instead. Callouts become balloons when they do not fit beside the part, a stub
+  would cross another or the leader line, or a label would sit on the leader line. At 1366×768 with the column, the
+  free view is 630 px wide, and the stack's ten names fit.
+- **The breadcrumb** has no "mounted on" step: *Gauge and gas stack* is not in it, since no data says what each part
+  is mounted on. It gives the vessel quarter (from the scene), the part, the piece and the sub-part.
+- **Enter on a Made of row** is Show me, as planned, so Space keeps the sheet; Enter used to. The row's Show me button
+  is not a Tab stop: Enter and `Z` do its job.
+- **The leader and the callouts:**
+  - The sub-part the leader line ends on gets no callout, since its sheet names it.
+  - The other labels keep clear of where the line crosses their gutter.
+  - The callouts wait until the parts move less than 0.1 % of their travel per frame, about 1.5 s after Take apart.
+    They are laid out once more when the parts have fully stopped.
+- **The seat ring** also marks where a single lifted piece rests (W2 in full), when it is lifted more than 12 px.
+  While a piece is taken apart, the callouts take its place.
+- **Zoom** goes to 120× (was 40×), so Show me can fill the view with a 2 cm nut. The scale bar goes down to 1 mm.
+- **Found on the way:** the gauge's sensor tube nut was drawn 17 mm across flats over the Ø19 mm tube, so its bore cut
+  through the flats and the nut rendered inside out. Show me magnified exactly that. It is now drawn 24 mm across flats,
+  and its sheet says so.
+- **S5** stays deferred: no user test has been run.
+
 ### Phase 3: where it goes (M)
 
 | Item | Change |
