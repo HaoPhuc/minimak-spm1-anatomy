@@ -274,6 +274,40 @@ What differs from the plan:
   does nothing.
 - **Touch (V9):** at 1024×768 in landscape, every button is 44 px or more and the sheets get a column.
 
+**Status: done** (October 2026). All seven checks pass in headless Chrome:
+- **Contrast:** kept nuts against the same pixels unkept, 4.1:1 taken apart and 4.4:1 together. A kept TF former, 4.7:1
+  against itself unkept and 6:1 against the copper cover band.
+- **Picking:** all 300 taps within 12 px of the ~15 px gauge nuts open the nut's sheet, by touch and by mouse.
+- **Framing:** the gauge's sensor nut covers 623 px² on first inspect at 1366×768.
+- **Links:** the gasket link reproduces *Right–back joint* with the OFHC copper gasket sheet kept. All 30 parts
+  round-trip, on their first and last piece with two sheets kept. Back returns to the previous part, then the assembly.
+- **Text scale:** sheet digits are 25 px at 2× in a 1920×1080 window with three sheets kept, and the column sits under
+  the two-row inspect bar. At 1280×720 and 1.5× the gauge stays clear of the column.
+- **Announcements:** `#status` reads a new line after `T`, `E`, `G`, `S` and Esc. With single-letter keys off, `h`
+  does nothing; with them on, it hides the part.
+- **Touch:** at 1024×768 in landscape, no button is under 44 px, the inspector folds, and the sheets keep a column.
+
+What differs from the plan:
+- **Colour handling:** the renderer turns three.js colour management off, so a material's hex is shown as written. One
+  teal could not reach 3:1 against both pale steel and dark copper. So the kept fill is dark teal (`#00261f`) on
+  materials lighter than 35 % luma, and pale teal (`#9eebe0`) on darker ones.
+- **Outlines:** the ink pass writes each mesh's lit state into a spare channel, and the edge pass draws the outline from
+  it. So all three themes get the same outlines, solid for kept and hover and dashed for a preview. Greyscale lost its
+  hover wash and amber rim; a hovered part now gets the outline like the others.
+- **Text scale:** CSS `zoom` on the sheets, the inspect bar (the breadcrumb lives there), the view's labels and the
+  tooltips, not a rem rewrite. The column widens with it, and the dock takes over 280 px earlier per extra 1×.
+- **Copy link** is a link icon before **Done**, so the bar stays one row at 1×.
+- **Links:** pieces and sheets are named by slugs of their labels, and `sheet=` is read as well as `sheets=`. The
+  round trip showed that a prefix alone is not enough (*Gauge cable* opened *Gauge cable clamp*), so an exact
+  slug wins.
+- **Picking:** with a mouse the 12 px disc is searched only when the click hits nothing. On touch it is 24 px, and
+  the smallest part in reach wins even over a hit.
+- **Single-letter keys off** silences every key that types a character (`+`, `0`, `[` too), not only letters.
+- **Found on the way:** the sheet column had always sat at its CSS 80 px, because its top was summed from the
+  axis triad's `offsetTop`, which an SVG lacks. At 2× the inspect bar covered the sheets' header. Both are now
+  measured as rects, and the view's hint stops short of the column.
+- **Open questions 1 and 2** were taken as the plan assumed: teal in Colour, and a click never closes a sheet.
+
 ### Phase 2: Show me, the Stark core for small parts (M)
 
 **S1. Show me.**
@@ -369,9 +403,10 @@ last.
 ## 5. Open questions for you
 
 1. **The selection colour in Colour.** Teal, as a solid fill (Amara: amber fails 3:1 against copper), or amber in
-   every theme for one selection colour? The plan assumes teal.
+   every theme for one selection colour? The plan assumes teal. *Phase 1 built teal; amber stays a small change.*
 2. **V5 reverses the README's "click it again to close."** The plan assumes yes. Daniel proposed it, Amara backed
    it, no critic objected in round 3, and Lena added the touch clause. It fixes tremor and glove double-taps.
+   *Phase 1 built it; the README says so.*
 3. **Fitting order (O1).** No procedure is published (S4 slides 16–27 give only a run order). Tag the steps
    *assumed*, or ask Rideo Systems for their build order?
 4. **Stock bolt lengths (T4).** Should the drawn bolts change to the derived stock length? Ruud: yes, or a student
