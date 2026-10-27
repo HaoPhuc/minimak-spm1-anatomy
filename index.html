@@ -99,6 +99,12 @@
     .mb[role="radiogroup"] .lbl { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   }
   button:focus-visible, input:focus-visible, .stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* On a touch screen every control is at least 44 px, except the tags and explained words set inside the text. */
+  @media (pointer: coarse) { button:not(.term):not(.ref) { min-height: 44px; min-width: 44px; } }
+  /* The view clips what sticks out of it, so its own focus ring is drawn inside its edge. */
+  .stage:focus-visible { outline-offset: -4px; }
+  /* Text size (Controls tab): the inspect bar, the sheets and the view's labels grow together. */
+  .isobar, .sheets-head, .screen, .corner, .tip { zoom: var(--ui-scale, 1); }
   /* The group clips its buttons, so a button's ring is drawn inside it, on a band of the card that shows on a pressed
      button too. */
   .mb button:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 4px var(--card); }
@@ -181,7 +187,8 @@
   .corner { position: absolute; font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); pointer-events: none; }
   .corner.tl { top: 12px; left: 14px; color: var(--ink); }
   .corner.tl span { color: var(--muted); }
-  .corner.bl { bottom: 10px; left: 12px; max-width: 60%; }
+  /* The hint stops short of the sheet column (--hud-r). Lengths on a zoomed box are scaled by its zoom, so the inset is divided back. */
+  .corner.bl { --bl-max: 60%; bottom: 10px; left: 12px; max-width: min(var(--bl-max), calc(100% - (var(--hud-r, 0px) + 24px) / var(--ui-scale, 1))); }
   .corner.br { bottom: 10px; right: 12px; text-align: right; color: var(--ink); max-width: 38%; }
   .corner.bl .hint, .corner.br { background: color-mix(in srgb, var(--card) 84%, transparent); padding: 3px 6px; border-radius: 6px; }
   .scale { display: flex; align-items: flex-end; gap: 6px; margin: 0 0 6px 6px; color: var(--ink); }
@@ -200,7 +207,7 @@
      has a dock under the model instead, one card at a time. A sheet dragged out floats where it is dropped. */
   .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
   .hud[hidden] { display: none; }
-  .sheets { position: absolute; top: 80px; right: 12px; bottom: 8px; width: 280px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .sheets { position: absolute; top: 80px; right: 12px; bottom: 8px; width: calc(280px * var(--ui-scale, 1)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   .sheets-head {
     flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 4px 4px 4px 10px; border-radius: 10px; pointer-events: auto;
     background: color-mix(in srgb, var(--card) 90%, transparent);
@@ -283,6 +290,8 @@
   .isobar button[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
   .isobar button.done { background: var(--ink); color: var(--card); border-color: var(--ink); }
   .isobar #bBack { max-width: 13em; overflow: hidden; text-overflow: ellipsis; }
+  .isobar button.icon { display: inline-grid; place-items: center; padding: 4px 6px; }
+  .isobar button.icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   .isobar .step { display: inline-flex; }
   .isobar .step[hidden] { display: none; }
   .isobar .step button { border-radius: 0; margin-left: -1px; }
@@ -327,7 +336,9 @@
   button.chip:hover { background: var(--rule); }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; }
   .actions button { border: 1px solid var(--rule); background: var(--soft); border-radius: 8px; padding: 6px 11px; cursor: pointer; font-size: 13px; }
-  .actions button.primary { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .actions button.primary, .actions button[aria-checked="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .switch { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin: 2px 0 12px; }
+  .src-back { display: block; margin: 0 0 6px; border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
   table.specs { width: 100%; border-collapse: collapse; font-size: 13px; }
   table.specs td { padding: 5px 0; border-top: 1px solid var(--rule); vertical-align: top; }
   table.specs td:first-child { color: var(--muted); padding-right: 10px; width: 38%; }
@@ -419,7 +430,7 @@
   }
   @media (max-width: 520px) {
     .triad { width: 68px; height: 68px; }
-    .corner.bl { max-width: 52%; }
+    .corner.bl { --bl-max: 52%; }
     .corner.bl .hint { display: none; }
   }
 
@@ -571,6 +582,7 @@
         <span id="tourLabel"></span>
         <button type="button" class="next" id="bTourNext">Next ›</button>
       </span>
+      <button type="button" id="bLink" class="icon" title="Copy a link to this part, piece, its sheets and the view" aria-label="Copy link"><svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
     </div>
     <div class="hud" id="hud" hidden>
@@ -641,6 +653,11 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
 };
 const systemDark = matchMedia('(prefers-color-scheme: dark)');
+// Text size for the sheets, the inspect bar and the view's labels, and whether single-letter keys act (Controls tab).
+const SCALES = [1, 1.5, 2];
+let uiScale = SCALES.includes(+store.get('spm1-scale')) ? +store.get('spm1-scale') : 1;
+let letterKeys = store.get('spm1-keys') !== 'off';
+document.documentElement.style.setProperty('--ui-scale', String(uiScale));
 // 'light' is the drawing in colour, 'greyscale' the greyscale drawing and 'dark' the hologram. With no choice saved, the
 // system's light or dark setting picks between the light drawing and the hologram.
 const LOOKS = ['light', 'greyscale', 'dark'];
@@ -661,18 +678,14 @@ const TONES = {
 };
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
-// The greyscale drawing gives its colours as they show on screen (see `shown`), and its own light, raked further in
-// from the upper left so the cast shadows fall clear of the parts that cast them.
+// Colours show exactly as given (colour management is off). The greyscale drawing has its own light, raked further
+// in from the upper left so the cast shadows fall clear of the parts that cast them.
 const THEME = {
   light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
   greyscale: { paper: '#cbcbc7', cut: '#9a9a96', ink: '#0e0e0e', lit: '#e8901c', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
   dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff9a3c', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 const LIGHT = [-0.42, 0.58, 0.7];
-// Colours set from a hex are taken as sRGB and turned linear, and the renderer writes linear values straight to the
-// screen, so they show darker than the hex. `shown` keeps a hex as it is, for the greyscale drawing's greys.
-const shown = (hex) => new THREE.Color().setStyle(hex, THREE.LinearSRGBColorSpace);
-const themeColor = (hex, theme) => (theme === 'greyscale' ? shown(hex) : new THREE.Color(hex));
 // The hologram is one soft ice blue, like the displays in Tony Stark's workshop, a little brighter for parts
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
 // selection glows amber (THEME.dark.lit) so it stands apart from the blue.
@@ -686,9 +699,8 @@ const GREYS = { copper: 0.62, bronze: 0.6, brass: 0.68 };
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
   if (theme === 'greyscale') {
-    const s = shown(TONES[name] || '#ff00ff');
-    const g = GREYS[name] ?? 0.2 + 0.72 * (0.2126 * s.r + 0.7152 * s.g + 0.0722 * s.b);
-    return c.setRGB(g, g, g, THREE.LinearSRGBColorSpace);
+    const g = GREYS[name] ?? 0.2 + 0.72 * (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b);
+    return c.setRGB(g, g, g);
   }
   if (theme !== 'dark') return c;
   const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
@@ -719,6 +731,9 @@ const shared = {
   uCut: { value: new THREE.Color() },
   uInk: { value: new THREE.Color() },
   uLitColor: { value: new THREE.Color() },
+  // The colour drawing's fill for a selected or kept part: dark on light materials, pale on the rest.
+  uLitDark: { value: new THREE.Color() },
+  uLitLight: { value: new THREE.Color() },
   uPaper: { value: new THREE.Color() },
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
@@ -735,6 +750,7 @@ const shared = {
   uShadowTexel: { value: 1 / 4096 },
   uShadowCm: { value: 0.1 },
   uShadowBias: { value: 0.001 },
+  uShadowOn: { value: 0 },
   // Port openings in the vessel wall (filled once the machine is built): axis + radius, base + length.
   uHoleA: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
   uHoleP: { value: Array.from({ length: 12 }, () => new THREE.Vector4()) },
@@ -785,13 +801,13 @@ const FRAG_COLOR = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
   uniform vec3 uColor;
-  uniform vec3 uLitColor;
   uniform float uLit;
+  uniform vec3 uLitDark;
+  uniform vec3 uLitLight;
   uniform vec3 uEmit;
   uniform vec3 uLight;
   uniform vec3 uCut;
   uniform vec3 uInk;
-  uniform vec3 uPaper;
   uniform float uDpr;
   varying vec3 vNv;
   varying vec3 vNw;
@@ -811,15 +827,13 @@ const FRAG_COLOR = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
     vec3 c = uColor * tone;
-    // A lit part keeps its own material: it only lightens toward the paper, and a thin accent rim, only at near-grazing
-    // angles, outlines its silhouette (faces seen at a slant, like a former's fold-out tabs, stay copper). The levels
-    // (hover 0.26-0.32, kept 0.42, hot 0.55) are spread over 0-1 so each reads apart: a higher one lightens more and
-    // widens the rim a little. Stripes stay reserved for cut faces.
-    if (uLit > 0.0) {
-      float s = clamp((uLit - 0.2) / 0.3, 0.0, 1.0);
-      float rim = smoothstep(0.85 - 0.2 * s, 1.0, 1.0 - abs(n.z));
-      c = mix(c, uPaper, 0.04 + 0.4 * s);
-      c = mix(c, uLitColor, rim * (0.6 + 0.4 * s));
+    // A selected or kept part (levels 0.42 and up) fills in teal, flat enough to read as a fill: deep teal on a light or
+    // mid material (steel, copper, bolts, cable), pale teal on a dark one (the black parts), so it stands 3:1 or more
+    // from the same face unlit. The hot sheet's sub-part (0.55) is a little lighter. Hover and the preview leave the fill
+    // alone: the post pass outlines them.
+    if (uLit > 0.4) {
+      vec3 fill = dot(uColor, vec3(0.2126, 0.7152, 0.0722)) > 0.35 ? uLitDark : uLitLight;
+      c = fill * (0.9 + 0.12 * w) + (uLit > 0.5 ? 0.05 : 0.0);
     }
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
@@ -829,15 +843,19 @@ const FRAG_INK = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
   uniform float uId;
+  uniform float uLitS;
   varying vec3 vNv;
   varying vec3 vNw;
+  // The view-space normal's x and y (its z is positive on a front face of an orthographic view, so the post pass
+  // rebuilds it), the part's lit state (0 none, 1/4 hover, 2/4 preview, 3/4 kept or selected, 1 the hot sheet's) and
+  // the mesh id.
   void main() {
     #include <clipping_planes_fragment>
     #ifdef HOLES
       holes();
     #endif
-    if (!gl_FrontFacing) { gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0); return; }
-    gl_FragColor = vec4(normalize(vNv) * 0.5 + 0.5, uId);
+    if (!gl_FrontFacing) { gl_FragColor = vec4(0.5, 0.5, uLitS, 1.0); return; }
+    gl_FragColor = vec4(normalize(vNv).xy * 0.5 + 0.5, uLitS, uId);
   }
 `;
 
@@ -895,7 +913,7 @@ const FRAG_HOLO = /* glsl */`
     float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
     vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
     // The selection fills in amber, so it stands apart from the blue, and never goes white.
-    float lit = clamp(uLit * 1.5, 0.0, 0.75);
+    float lit = uLit > 0.4 ? clamp(uLit * 1.5, 0.0, 0.75) : 0.0;
     c = mix(c, uLitColor * (0.15 + 0.24 * rim) * (0.8 + 0.2 * band), lit);
     float vis = max(mix(1.0, 0.12, behind), lit * 0.45);
     gl_FragColor = vec4((c * vis + uEmit) * uDim, 1.0);
@@ -920,6 +938,7 @@ const FRAG_GREY = /* glsl */`
   uniform float uShadowTexel;
   uniform float uShadowCm;
   uniform float uShadowBias;
+  uniform float uShadowOn;
   varying vec3 vNv;
   varying vec3 vNw;
   varying vec3 vWp;
@@ -937,6 +956,7 @@ const FRAG_GREY = /* glsl */`
   // 1 in the light, 0 in a cast shadow. The point is moved off the surface along its normal so a face never shadows
   // itself, and four blended taps place the edge between texels.
   float sunlit() {
+    if (uShadowOn < 0.5) return 1.0;
     vec3 p = (uShadowM * vec4(vWp + normalize(vNw) * uShadowCm * 1.5, 1.0)).xyz * 0.5 + 0.5;
     if (p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0 || p.z > 1.0) return 1.0;
     float z = p.z - uShadowBias, h = 0.75 * uShadowTexel;
@@ -965,16 +985,9 @@ const FRAG_GREY = /* glsl */`
     float fs = fwidth(s) + 1e-3;
     if (k > 0.0) q = mix(0.25, q, smoothstep(0.5 - fs, 0.5 + fs, s));
     vec3 c = uColor * (0.42 + 0.58 * q);
-    // Under the pointer (levels up to 0.32) a part takes a pale amber wash; selected or kept (0.42 and up) it fills in
-    // amber, keeping its shade, and the one whose sheet is hot (0.55) is brighter still. Every lit level gets an amber
-    // rim where the surface turns away.
-    if (uLit > 0.0) {
-      float sel = smoothstep(0.3, 0.42, uLit);
-      vec3 wash = mix(uLitColor, vec3(1.0), 0.4) * (0.82 + 0.18 * q);
-      vec3 fill = uLitColor * (0.62 + 0.42 * q + 0.12 * step(0.5, uLit));
-      c = mix(c, mix(wash, fill, sel), mix(0.4, 0.9, sel));
-      c = mix(c, uLitColor, 0.85 * smoothstep(0.7, 1.0, 1.0 - abs(n.z)));
-    }
+    // Selected or kept (0.42 and up) a part fills in amber, keeping its shade, and the one whose sheet is hot (0.55) is
+    // brighter still. Under the pointer, or previewed, it keeps its greys: the post pass outlines it.
+    if (uLit > 0.4) c = mix(c, uLitColor * (0.62 + 0.42 * q + 0.12 * step(0.5, uLit)), 0.9);
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -1015,10 +1028,10 @@ function colorMat(tone, clip, sec = null) {
   const glass = tone === 'glass';
   const m = new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
+      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 }, uLitDark: shared.uLitDark, uLitLight: shared.uLitLight,
       uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
-      tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias,
+      tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
     },
     vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
     transparent: glass, depthWrite: !glass, clipping: true,
@@ -1032,7 +1045,7 @@ function colorMat(tone, clip, sec = null) {
   return m;
 }
 function inkMat(clip, holes, sec = null) {
-  const m = new THREE.ShaderMaterial({ uniforms: { uId: { value: 0 } }, vertexShader: VERT, fragmentShader: FRAG_INK, side: THREE.DoubleSide, clipping: true });
+  const m = new THREE.ShaderMaterial({ uniforms: { uId: { value: 0 }, uLitS: { value: 0 } }, vertexShader: VERT, fragmentShader: FRAG_INK, side: THREE.DoubleSide, clipping: true });
   if (holes) { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
   m.userData.ink = true;
   m.userData.clip = clip;
@@ -1066,7 +1079,7 @@ function perMesh(r, s, c, g, material) {
     if (!material.userData.fade) return;
     u.uColor.value.copy(this.userData.colorMat.uniforms.uColor.value);
     u.uSolid.value = this.userData.solid;
-  } else if (material.userData.ink) u.uId.value = this.userData.inkId;
+  } else if (material.userData.ink) { u.uId.value = this.userData.inkId; u.uLitS.value = this.userData.litCode; }
   else {
     u.uLit.value = this.userData.lit;
     u.uEmit.value.copy(this.userData.emit);
@@ -1080,6 +1093,7 @@ function register(mesh, tone, o) {
   mesh.userData.part = o.part;
   mesh.userData.tone = tone;
   mesh.userData.lit = 0;
+  mesh.userData.litCode = 0;
   mesh.userData.dim = 1;
   mesh.userData.solid = 0;
   mesh.userData.emit = ZERO.clone();
@@ -1188,6 +1202,8 @@ for (const [part, list] of piecesOf) for (const pc of list) {
 const comesApart = new Set();
 for (const [part, list] of piecesOf) for (const pc of list) pc.traverse((m) => { if (m.isMesh && m.userData.ex.lengthSq() > 1e-6) comesApart.add(part); });
 const NO_APART = 'Nothing on this part comes off: it is one piece, or welded';
+// A part made of different objects (count 1, several pieces): the gauge and its cable, the valve and its line.
+const composite = (id) => partById.get(id)?.count === 1 && (piecesOf.get(id) || []).length > 1;
 
 // ---------- Plasma glow (layer 1, no ink) and a soft floor shadow ----------
 const GLOW_VERT = /* glsl */`
@@ -1275,7 +1291,7 @@ const post = (() => {
       tColor: { value: null }, tNid: { value: null }, tDepth: { value: null },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
-      uHolo: { value: 0 }, uDpr: shared.uDpr,
+      uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
     },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: /* glsl */`
@@ -1290,9 +1306,28 @@ const post = (() => {
       uniform float uInkAlpha;
       uniform float uHolo;
       uniform float uDpr;
+      uniform vec3 uLitColor;
       varying vec2 vUv;
       float dep(vec2 uv) { return texture2D(tDepth, uv).x * uRange; }
-      vec3 nrm(vec4 t) { return t.a > 0.0 ? normalize(t.xyz * 2.0 - 1.0) : vec3(0.0); }
+      vec3 nrm(vec4 t) {
+        if (t.a <= 0.0) return vec3(0.0);
+        vec2 xy = t.xy * 2.0 - 1.0;
+        return vec3(xy, sqrt(max(0.0, 1.0 - dot(xy, xy))));
+      }
+      // A lit part's outline: where its lit state differs from a pixel two widths away, the higher state draws a band
+      // in the accent, about four pixels wide, half inside the part and half outside. Hover and kept are solid; the
+      // preview is dashed. Returns the band's strength.
+      float litLine() {
+        float r = 2.0 * uThick, c0 = texture2D(tNid, vUv).b, hi = c0, lo = c0;
+        for (int i = 0; i < 8; i++) {
+          float a = float(i) * 0.785398;
+          float b = texture2D(tNid, vUv + vec2(cos(a), sin(a)) * uTexel * r).b;
+          hi = max(hi, b); lo = min(lo, b);
+        }
+        if (hi < 0.1 || hi - lo < 0.1) return 0.0;
+        float dash = abs(hi - 0.5) < 0.1 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 10.0 * uDpr), 6.0 * uDpr) : 1.0;
+        return dash;
+      }
       void probe(vec2 uv, vec4 c, vec3 nc, inout float lap, inout float ne, inout float ide) {
         vec4 t = texture2D(tNid, uv);
         lap += dep(uv);
@@ -1317,7 +1352,8 @@ const post = (() => {
       void main() {
         float e = edge(uThick);
         vec3 col = texture2D(tColor, vUv).rgb;
-        if (uHolo < 0.5) { gl_FragColor = vec4(mix(col, uInk, e * uInkAlpha), 1.0); return; }
+        float lit = litLine();
+        if (uHolo < 0.5) { gl_FragColor = vec4(mix(mix(col, uInk, e * uInkAlpha), uLitColor, lit), 1.0); return; }
         // Hologram: a dark blue field with a faint grid, the added light toned down so it never clips, and edges that
         // glow in the colour of the part they belong to, with a soft halo.
         vec2 p = (vUv - 0.5) * vec2(uTexel.y / uTexel.x, 1.0);
@@ -1332,6 +1368,7 @@ const post = (() => {
         c += ec * 0.85 * (e * uInkAlpha + halo * 0.18);
         c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
+        c = mix(c, uLitColor * 1.15, lit);
         gl_FragColor = vec4(c, 1.0);
       }
     `,
@@ -1399,13 +1436,17 @@ function aimShadow() {
 }
 
 let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
+// On a touch screen, while a finger is down or the camera glides, the view renders at 1x and without the greyscale
+// drawing's shadows, so it keeps up on a tablet; it sharpens again when it is still.
+let lowRes = false;
 let dirty = true;
 function resize() {
   if (!renderer) return;
   const r = stage.getBoundingClientRect();
-  const nw = Math.max(1, Math.round(r.width)), nh = Math.max(1, Math.round(r.height)), nd = Math.min(window.devicePixelRatio || 1, 2);
+  const nw = Math.max(1, Math.round(r.width)), nh = Math.max(1, Math.round(r.height)), nd = lowRes ? 1 : Math.min(window.devicePixelRatio || 1, 2);
   // Already measured at this size (Inspect folds the tree and measures at once), so the camera keeps its glide.
   if (rtColor && nw === width && nh === height && nd === dpr) return;
+  const sized = nw !== width || nh !== height;
   width = nw;
   height = nh;
   dpr = nd;
@@ -1424,9 +1465,11 @@ function resize() {
   shared.uRes.value.set(w, h);
   post.mat.uniforms.uThick.value = Math.max(1, dpr * 0.75);
   shared.uDpr.value = dpr;
+  // Only the resolution changed (a finger down or lifted on a touch screen): the framing stays.
+  if (!sized) { dirty = true; return; }
   fitView();
   // The width of the view picks the sheet column or the dock, so frame the part again.
-  if (iso.part) { renderHud(); frameIsolated(false); }
+  if (iso.part) { updateIsoBar(); renderHud(); frameIsolated(false); }
   dirty = true;
 }
 
@@ -1446,7 +1489,8 @@ function draw() {
   renderer.clear();
   renderer.render(scene, camera);
   // The greyscale drawing's shadows come from the same parts as the outlines, but not from the window glass.
-  if (greyscale) {
+  shared.uShadowOn.value = greyscale && !lowRes ? 1 : 0;
+  if (greyscale && !lowRes) {
     for (const m of solids) if (m.userData.tone === 'glass') m.visible = false;
     renderer.setRenderTarget(shadowTarget());
     aimShadow();
@@ -1588,19 +1632,19 @@ function orbitBy(dx, dy) {
   goal.el = clamp(goal.el + dy * 0.3, -89, 89);
   dirty = true;
 }
-// Frame a world box, keeping the current turn, in the room the screens leave: `ins.l` and `ins.r` px at the sides,
-// `ins.b` px at the bottom.
+// Frame a world box, keeping the current turn, in the room the bars and screens leave: `ins.l` and `ins.r` px at the
+// sides, `ins.t` px at the top (the inspect bar), `ins.b` px at the bottom. A box as small as 3 mm can fill the view.
 function frameBox(box, pad = 1.35, ins = { l: 0, r: 0, b: 0 }) {
   stopGlide();
   const pts = [];
   for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) pts.push(new V3(x, y, z));
-  const b = ins.b || 0;
-  const f = frameOf(pts, goal.az, goal.el, pad, Math.max(0.35, 1 - (ins.l + ins.r) / width), Math.max(0.35, 1 - b / height));
-  goal.zoom = clamp(fit.half / Math.max(f.half, 3), ZOOM_MIN, ZOOM_MAX);
+  const b = ins.b || 0, t = ins.t || 0;
+  const f = frameOf(pts, goal.az, goal.el, pad, Math.max(0.35, 1 - (ins.l + ins.r) / width), Math.max(0.35, 1 - (b + t) / height));
+  goal.zoom = clamp(fit.half / Math.max(f.half, 0.3), ZOOM_MIN, ZOOM_MAX);
   goal.target.copy(box.getCenter(new V3()));
   const cmPerPx = (2 * fit.half) / goal.zoom / height;
   const { right, up } = basis(goal.az, goal.el);
-  goal.target.addScaledVector(right, ((ins.r - ins.l) / 2) * cmPerPx).addScaledVector(up, -(b / 2) * cmPerPx);
+  goal.target.addScaledVector(right, ((ins.r - ins.l) / 2) * cmPerPx).addScaledVector(up, ((t - b) / 2) * cmPerPx);
   dirty = true;
 }
 
@@ -1725,18 +1769,22 @@ function refreshLit() {
   for (const m of solids) {
     const pc = m.userData.piece;
     const p = m.userData.part;
-    let lit = 0;
     const sub = m.userData.sub;
-    // Sheets belong to sub-parts, not pieces: a kept or previewed sub-part is lit on every piece that has it.
+    // Sheets belong to sub-parts, not pieces: a kept or previewed sub-part is lit on every piece that has it. Each
+    // state has its own cue: the hot sheet's sub-part, a kept sub-part and the selected part are filled (levels 0.55
+    // and 0.42), the preview is outlined dashed, and whatever is under the pointer or named by a focused or hovered row
+    // or link is outlined (the post pass draws both from the ink pass's code).
     const here = sub && p === iso.part ? { part: p, sub } : null;
-    if (sameSheet(state.hotSheet, here)) lit = 0.55;
-    else if (here && isPinned(here)) lit = 0.42;
-    else if (state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) lit = 0.45;
-    else if (sameSheet(state.live, here)) lit = 0.32;
-    else if (state.rowPiece && pc === state.rowPiece) lit = 0.32; // a piece named in a list under the pointer
-    else if (iso.part) lit = pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub ? 0.32 : 0;
-    else lit = p === state.select ? 0.42 : p === state.hover || p === state.legendHot ? 0.26 : 0;
+    const pointed = iso.part && pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub;
+    let lit = 0, code = 0;
+    if (sameSheet(state.hotSheet, here)) { lit = 0.55; code = 1; }
+    else if (here && isPinned(here)) { lit = 0.42; code = 0.75; }
+    else if (sameSheet(state.live, here)) { lit = 0.32; code = 0.5; }
+    else if (!iso.part && p === state.select) { lit = 0.42; code = 0.75; }
+    else if ((state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) || (state.rowPiece && pc === state.rowPiece) || pointed
+      || (iso.part ? p === state.legendHot && p !== iso.part : p === state.hover || p === state.legendHot)) { lit = 0.3; code = 0.25; }
     m.userData.lit = lit;
+    m.userData.litCode = code;
   }
   for (const li of document.querySelectorAll('.ti')) {
     li.classList.toggle('sel', li.dataset.part === state.select);
@@ -1752,6 +1800,13 @@ function refreshLit() {
   }
   applyLook();
   dirty = true;
+}
+// A row, a link or a sheet lights its part while the pointer is over it or keyboard focus is in it.
+function lights(target, on, off) {
+  target.addEventListener('mouseenter', on);
+  target.addEventListener('mouseleave', off);
+  target.addEventListener('focusin', on);
+  target.addEventListener('focusout', off);
 }
 function plasmaShown() {
   if (iso.part) return iso.part === 'plasma';
@@ -1770,7 +1825,7 @@ function applyLook() {
     // could not be seen. It turns amber while it is selected or under the pointer, but not while it is inspected, as
     // an inspected part keeps its own look.
     if (t === 'greyscale') {
-      if (boost > 1 && !iso.part) { u.uCore.value.copy(shown('#f0a540')); u.uRim.value.copy(shown('#b8650f')); }
+      if (boost > 1 && !iso.part) { u.uCore.value.set('#f0a540'); u.uRim.value.set('#b8650f'); }
       else { u.uCore.value.set('#ffe2f6'); u.uRim.value.set('#b84ad6'); }
     }
   }
@@ -1810,6 +1865,9 @@ function announceInspect() {
 // part keeps its sheets for when you come back to it.
 function inspect(id, focusPiece = null, o = {}) {
   if (!id || !partById.has(id)) return;
+  // A part made of different objects (the gauge and its cable, the valve and its line) opens on its main object, so
+  // the cable does not set the framing; All shows them all.
+  if (!focusPiece && iso.part !== id && composite(id)) focusPiece = piecesOf.get(id)[0];
   const now = performance.now() / 1000;
   const slow = !reduceMotion.matches;
   // Focus in the assembly list would be lost when it folds, so it moves to the part's name.
@@ -1820,6 +1878,8 @@ function inspect(id, focusPiece = null, o = {}) {
     // Room for the model: the assembly list folds to its rail while inspecting whenever the view is under 1000 px
     // (not when stacked, where it sits under the inspector). Done unfolds it. The view is measured again at once.
     if (panels.tree && !stacked() && width < 1000) { panels.tree = false; iso.foldTree = true; applyPanels(); resize(); }
+    // A tablet in landscape under 1100 px folds the inspector too, so the sheets get their column beside the part.
+    if (coarse && panels.insp && !stacked() && innerWidth < 1100 && innerWidth > innerHeight) { panels.insp = false; iso.foldInsp = true; applyPanels(); resize(); }
   }
   if (hidden.has(id)) hidden.delete(id);
   // On the tour, a stop's part, however it is reached (Next, ← back, a link), becomes the current stop.
@@ -1883,6 +1943,7 @@ function endInspect() {
   iso.history = [];
   iso.tour = null;
   if (iso.foldTree) { panels.tree = true; applyPanels(); resize(); }
+  if (iso.foldInsp) { panels.insp = true; iso.foldInsp = false; applyPanels(); resize(); }
   renderHud();
   refreshPieces();
   applyClip();
@@ -1895,6 +1956,7 @@ function endInspect() {
   renderInspector();
   setHint();
   if (lost || document.activeElement === document.body) focusTreeRow(state.select);
+  announce('Back to the assembly.');
   dirty = true;
 }
 // Show one piece of the inspected part (the rest of it fades to ghosts), or all of them with null. Any change of
@@ -1995,6 +2057,7 @@ function setApart(on) {
   renderHud();
   refreshLit();
   setHint();
+  announce(on ? `${iso.focus ? iso.focus.userData.label : partById.get(iso.part).name} taken apart.` : 'Put back together.');
   dirty = true;
 }
 const fmtSpread = (v) => `${(+v).toFixed(1)}×`;
@@ -2002,7 +2065,13 @@ $('bApart').addEventListener('click', () => setApart(!iso.apart));
 $('sApart').addEventListener('input', (e) => { iso.apartSpread = +e.target.value; $('oApart').textContent = fmtSpread(iso.apartSpread); dirty = true; });
 $('sApart').addEventListener('change', () => { if (iso.section) refreshSection(); frameIsolated(false); });
 $('bSection').addEventListener('click', () => setSection(!iso.section));
-$('bContext').addEventListener('click', () => { iso.context = !iso.context; refreshPieces(); updateIsoBar(); });
+function setContext(on) {
+  iso.context = on;
+  refreshPieces();
+  updateIsoBar();
+  announce(on ? 'The rest of the machine shows as a ghost.' : 'The rest of the machine is hidden.');
+}
+$('bContext').addEventListener('click', () => setContext(!iso.context));
 
 // ---------- Side panels: drag the edge between a panel and the view to size it, or fold it to a rail ----------
 const PANEL = { tree: { min: 180, max: 520, w: 'tw' }, insp: { min: 240, max: 640, w: 'iw' } };
@@ -2018,6 +2087,7 @@ function applyPanels() {
   const app = document.querySelector('.app');
   // Once the list is open again, whoever opened it, Done has nothing to unfold. A fold made by Inspect is not stored.
   if (panels.tree) iso.foldTree = false;
+  if (panels.insp) iso.foldInsp = false;
   app.classList.toggle('fold-tree', !panels.tree);
   app.classList.toggle('fold-insp', !panels.insp);
   for (const [k, v] of [['--tw', panels.tree && panels.tw], ['--iw', panels.insp && panels.iw]]) {
@@ -2026,7 +2096,7 @@ function applyPanels() {
   $('treePanel').classList.toggle('folded', !panels.tree);
   $('inspPanel').classList.toggle('folded', !panels.insp);
   $('bPanels').setAttribute('aria-pressed', panels.tree || panels.insp ? 'true' : 'false');
-  store.set('spm1-panels', [!panels.tree && !iso.foldTree && 'tree', !panels.insp && 'insp'].filter(Boolean).join(','));
+  store.set('spm1-panels', [!panels.tree && !iso.foldTree && 'tree', !panels.insp && !iso.foldInsp && 'insp'].filter(Boolean).join(','));
   store.set('spm1-tw', String(panels.tw));
   store.set('spm1-iw', String(panels.iw));
   renderHud();
@@ -2096,7 +2166,7 @@ const BASIS_TIP = 'How far to trust the drawn shape and position. Each number ca
 const SCREEN_W = 280, COLUMN_MIN = 660, DOCK_H = 0.42;
 const stackedMQ = matchMedia('(max-width: 960px)');
 const stacked = () => stackedMQ.matches;
-const dockLayout = () => width < COLUMN_MIN;
+const dockLayout = () => width < COLUMN_MIN + SCREEN_W * (uiScale - 1);
 // The Part tab is beside the view unless the inspector is folded, or stacked under the view; then the part card shows.
 const partBeside = () => !stacked() && panels.insp;
 const partCardDue = () => !!iso.part && HUD.on && !partBeside();
@@ -2113,9 +2183,15 @@ function nearestPiece(list) {
   const { dir } = basis(view.az, view.el);
   return list.reduce((a, b) => (boxOfPiece(b).getCenter(new V3()).dot(dir) > boxOfPiece(a).getCenter(new V3()).dot(dir) ? b : a));
 }
+// The inspect bar takes the top of the view, so a part is framed below it; the sheet column or the dock takes a side.
+function barBottom() {
+  const bar = $('isobar');
+  return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
+}
 function hudInsets() {
-  if (!iso.part || !HUD.on) return { l: 0, r: 0, b: 0 };
-  return dockLayout() ? { l: 0, r: 0, b: Math.round(height * DOCK_H) + 8 } : { l: 0, r: SCREEN_W + 20, b: 0 };
+  const t = barBottom();
+  if (!iso.part || !HUD.on) return { l: 0, r: 0, b: 0, t };
+  return dockLayout() ? { l: 0, r: 0, b: Math.round(height * DOCK_H) + 8, t } : { l: 0, r: SCREEN_W * uiScale + 20, b: 0, t };
 }
 function setScreens(on) {
   HUD.on = on;
@@ -2124,6 +2200,7 @@ function setScreens(on) {
   renderHud();
   updateIsoBar();
   if (iso.part) frameIsolated(false, MOVE.piece);
+  announce(on ? 'Sheets on.' : 'Sheets off.');
 }
 $('bScreens').addEventListener('click', () => setScreens(!HUD.on));
 // Keep a sub-part's sheet, from a Made of row or a search hit: inspect the part first (at the given piece, if it has
@@ -2428,8 +2505,7 @@ function sheetScreen(x, live) {
   tagKey(sc);
   markTerms(sc, `sheet-${x.part}-${x.sub}`);
   // Hovering a sheet lights its sub-part in the model.
-  sc.addEventListener('mouseenter', () => { state.hotSheet = x; sc.classList.add('hot'); refreshLit(); });
-  sc.addEventListener('mouseleave', () => { if (sameSheet(state.hotSheet, x)) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); });
+  lights(sc, () => { state.hotSheet = x; sc.classList.add('hot'); refreshLit(); }, () => { if (sameSheet(state.hotSheet, x)) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); });
   return sc;
 }
 // The part card: what the Part tab shows, built by the same function, first in the column or the dock whenever the
@@ -2448,7 +2524,8 @@ function partCard() {
   sc.append(body);
   return sc;
 }
-const hudTop = () => { const bar = $('isobar'), t = $('triad'); return Math.max(bar.offsetTop + bar.offsetHeight, t.offsetTop + t.offsetHeight) + 8; };
+// The triad is an SVG, which has no offsetTop, so both are measured as rects against the card.
+const hudTop = () => Math.max(barBottom() - 6, $('triad').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top) + 8;
 // Screens are kept by key and rebuilt only when their content changes, so one being dragged is never replaced, and
 // focus stays on the control it was on.
 function renderHud() {
@@ -2527,6 +2604,7 @@ function renderHud() {
   const col = $('sheets');
   col.classList.toggle('dock', dock);
   col.style.top = dock ? '' : `${hudTop()}px`;
+  $('card').style.setProperty('--hud-r', `${hudInsets().r}px`);
   $('card').classList.toggle('docked', dock && listed.length > 0);
   // A new card in the dock starts at its top; a sheet just kept or pointed at is scrolled into view in the column.
   const shown = dock ? listed[0]?.dataset.key || null : null;
@@ -2550,9 +2628,9 @@ function renderHud() {
 function placeFloat(sc) {
   const p = HUD.pos.get(sc.dataset.key);
   if (!p) return;
-  const w = sc.offsetWidth, h = sc.offsetHeight;
-  sc.style.left = `${clamp(p.x, 4, Math.max(4, width - w - 4))}px`;
-  sc.style.top = `${clamp(p.y, 4, Math.max(4, height - Math.min(h, height - 8) - 4))}px`;
+  const { width: w, height: h } = sc.getBoundingClientRect();
+  sc.style.left = `${clamp(p.x, 4, Math.max(4, width - w - 4)) / uiScale}px`;
+  sc.style.top = `${clamp(p.y, 4, Math.max(4, height - Math.min(h, height - 8) - 4)) / uiScale}px`;
 }
 // Drag a sheet or the preview by its top bar. Dropped outside the column it floats there, and a preview dropped there is
 // kept; dropped on the column it goes back into it. The camera never moves. A click on a floating sheet brings it to
@@ -2575,9 +2653,10 @@ hud.addEventListener('pointerdown', (e) => {
       sc.style.zIndex = String(++HUD.z);
       if (sc.parentNode !== hud) hud.append(sc);
     }
-    at = { x: clamp(from.x + ev.clientX - start.x, 4, width - sc.offsetWidth - 4), y: clamp(from.y + ev.clientY - start.y, 4, height - 36) };
-    sc.style.left = `${at.x}px`;
-    sc.style.top = `${at.y}px`;
+    at = { x: clamp(from.x + ev.clientX - start.x, 4, width - sc.getBoundingClientRect().width - 4), y: clamp(from.y + ev.clientY - start.y, 4, height - 36) };
+    // A sheet is zoomed by the text size, and so are the offsets it is placed at.
+    sc.style.left = `${at.x / uiScale}px`;
+    sc.style.top = `${at.y / uiScale}px`;
   };
   const up = (ev) => {
     window.removeEventListener('pointermove', move);
@@ -2665,7 +2744,7 @@ function select(id, o = {}) {
   if (row && !$('tree').contains(document.activeElement)) setTreeCursor(row);
 }
 function zoomToPart(id) {
-  const b = boxOfPart(id);
+  const b = composite(id) ? boxOfPiece(piecesOf.get(id)[0]) : boxOfPart(id);
   if (!b.isEmpty()) frameBox(b, 1.5);
 }
 // Bring a part's row into sight inside the list's own scroll box. Never the page: stacked, the list sits under the
@@ -2698,6 +2777,8 @@ function setHidden(ids, hide) {
   }
   if (iso.part && hidden.has(iso.part)) endInspect();
   refreshPieces();
+  const names = ids.map((id) => partById.get(id)?.name).filter(Boolean);
+  announce(`${names.length > 2 ? `${names.length} parts` : names.join(' and ')} ${hide ? 'hidden' : 'shown'}.`);
 }
 function treeItem(li) {
   li.setAttribute('role', 'treeitem');
@@ -2777,8 +2858,7 @@ function buildTree() {
         select(state.select === p.id && !iso.part ? null : p.id, { scroll: false });
       });
       li.addEventListener('dblclick', (e) => { if (!e.target.closest('.eye')) inspect(p.id); });
-      li.addEventListener('mouseenter', () => { state.legendHot = p.id; refreshLit(); });
-      li.addEventListener('mouseleave', () => { state.legendHot = null; refreshLit(); });
+      lights(li, () => { state.legendHot = p.id; refreshLit(); }, () => { state.legendHot = null; refreshLit(); });
       const dot = el('span', `basis ${p.basis}`);
       dot.title = BASIS[p.basis];
       li.append(eye, name, dot);
@@ -2863,8 +2943,7 @@ $('search').addEventListener('input', (e) => {
       const row = treeItem(el('li', 'ti-hit', `${r.pc.userData.label} · ${r.sub}`));
       row.title = 'Inspect this piece and keep this sheet';
       row.addEventListener('click', () => { setTreeCursor(row); keepSheet(id, r.sub, r.pc); });
-      row.addEventListener('mouseenter', () => { state.rowPiece = r.pc; refreshLit(); });
-      row.addEventListener('mouseleave', () => { state.rowPiece = null; refreshLit(); });
+      lights(row, () => { state.rowPiece = r.pc; refreshLit(); }, () => { state.rowPiece = null; refreshLit(); });
       after.after(row);
       after = row;
     }
@@ -2901,10 +2980,28 @@ const TAGS = {
   assumed: 'not published; picked for the drawing',
 };
 const tagTitle = (k) => TAGS[k].charAt(0).toUpperCase() + TAGS[k].slice(1);
+// A source tag opens its source in the Sources tab and takes focus there, with a link back to the tag it came from.
 function showSource(id) {
+  const from = document.activeElement, fk = from?.dataset?.fk, fromTab = tab;
   if (!panels.insp) setPanel('insp', true);
   setTab('sources');
-  requestAnimationFrame(() => { const li = document.getElementById(`src-${id}`); li?.scrollIntoView({ block: 'center' }); li?.classList.remove('flash'); void li?.offsetWidth; li?.classList.add('flash'); });
+  requestAnimationFrame(() => {
+    const li = document.getElementById(`src-${id}`);
+    if (!li) return;
+    li.scrollIntoView({ block: 'center' });
+    li.classList.remove('flash'); void li.offsetWidth; li.classList.add('flash');
+    if (fromTab !== 'sources') {
+      const back = el('button', 'src-back', `← Back to the ${fromTab === 'part' ? 'part' : fromTab} tab`);
+      back.type = 'button';
+      back.addEventListener('click', () => {
+        setTab(fromTab);
+        requestAnimationFrame(() => (from?.isConnected ? from : fk ? document.querySelector(`[data-fk="${CSS.escape(fk)}"]`) : null)?.focus());
+      });
+      li.prepend(back);
+    }
+    li.tabIndex = -1;
+    li.focus({ preventScroll: true });
+  });
 }
 function refButton(id) {
   if (!id || (id in TAGS && id !== 'std')) {
@@ -2915,6 +3012,7 @@ function refButton(id) {
   const b = el('button', `ref ${id === 'std' ? 'std' : ''}`, id);
   b.type = 'button';
   b.title = id === 'std' ? `${TAGS.std} (S9)` : srcById.get(id)?.title || id;
+  b.dataset.fk = `ref:${id}`;
   b.addEventListener('click', () => showSource(id === 'std' ? 'S9' : id));
   return b;
 }
@@ -3042,8 +3140,7 @@ function partLink(id, here) {
   b.dataset.fk = `link:${id}`;
   b.title = here ? `Inspect the ${q.name.toLowerCase()}` : `Read about the ${q.name.toLowerCase()}`;
   b.addEventListener('click', () => followLink(id));
-  b.addEventListener('mouseenter', () => { state.legendHot = id; refreshLit(); });
-  b.addEventListener('mouseleave', () => { state.legendHot = null; refreshLit(); });
+  lights(b, () => { state.legendHot = id; refreshLit(); }, () => { state.legendHot = null; refreshLit(); });
   return b;
 }
 // How two connected parts attach (JOINS in parts.js): one sentence per pair, read from either side. A pair in
@@ -3073,8 +3170,7 @@ function subsList(p) {
     b.append(el('span', null, name));
     if (k) b.append(el('span', 'k', k));
     b.addEventListener('click', (e) => toggleSub(p.id, name, !e.detail));
-    b.addEventListener('mouseenter', () => { state.hoverSub = name; refreshLit(); });
-    b.addEventListener('mouseleave', () => { state.hoverSub = null; refreshLit(); });
+    lights(b, () => { state.hoverSub = name; refreshLit(); }, () => { state.hoverSub = null; refreshLit(); });
     const li = el('li');
     li.append(b);
     ul.append(li);
@@ -3140,8 +3236,7 @@ function piecesTable(p) {
       tr.append(v);
     }
     tr.addEventListener('click', (e) => { if (!e.target.closest('.ref, .term')) focusPiece(pc); });
-    tr.addEventListener('mouseenter', () => { state.rowPiece = pc; refreshLit(); });
-    tr.addEventListener('mouseleave', () => { state.rowPiece = null; refreshLit(); });
+    lights(tr, () => { state.rowPiece = pc; refreshLit(); }, () => { state.rowPiece = null; refreshLit(); });
     tb.append(tr);
   }
   t.append(tb);
@@ -3266,6 +3361,29 @@ function renderSources(box) {
   box.append(ul);
 }
 function renderHelp(box) {
+  box.append(el('div', 'eyebrow', 'Settings'));
+  box.append(el('h3', null, 'Text size: the sheets, the inspect bar and the view’s labels'));
+  const sizes = el('div', 'actions');
+  sizes.setAttribute('role', 'radiogroup');
+  sizes.setAttribute('aria-label', 'Text size');
+  for (const v of SCALES) {
+    const b = el('button', null, `${v}×`);
+    b.type = 'button';
+    b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', v === uiScale ? 'true' : 'false');
+    b.dataset.fk = `scale:${v}`;
+    b.addEventListener('click', () => setScale(v));
+    sizes.append(b);
+  }
+  box.append(sizes);
+  const sw = el('label', 'switch');
+  const cb = el('input');
+  cb.type = 'checkbox';
+  cb.checked = letterKeys;
+  cb.dataset.fk = 'keys';
+  cb.addEventListener('change', () => setLetterKeys(cb.checked));
+  sw.append(cb, el('span', null, 'Single-letter keys (E, C, I, T, X and the rest). Turn them off if they get pressed by accident, or with speech input; the arrows, Esc and Backspace still work.'));
+  box.append(sw);
   box.append(el('div', 'eyebrow', 'Moving around'));
   const groups = [
     ['Mouse', [
@@ -3274,9 +3392,11 @@ function renderHelp(box) {
       ['Wheel', 'zoom toward the pointer'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
-      ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or ×, Esc or a click on empty space'],
+      ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
       ['Click a piece (inspecting, every piece shown)', 'pick that piece'],
-      ['Click a sub-part (inspecting, one piece shown)', 'keep its sheet; click it again, on any piece, to close it'],
+      ['Click a sub-part (inspecting, one piece shown)', 'keep its sheet; a click on a kept one shows its sheet again. × on the sheet, or its Made of row, closes it'],
+      ['Click near a small part', 'a click that hits nothing picks the smallest part within 12 px'],
+      ['Link icon in the inspect bar', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
       ['Drag a sheet or the preview out of the column', 'it floats where you drop it, kept; drop it back on the column to return it'],
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
       ['Hover a sheet', 'light its sub-part in the model'],
@@ -3291,7 +3411,7 @@ function renderHelp(box) {
       ['Two fingers', 'pan and pinch to zoom'],
       ['Tap', 'select'],
       ['Double-tap', 'inspect'],
-      ['Tap (inspecting)', 'with every piece shown, pick a piece; with one, preview a sub-part’s sheet, and Keep keeps it'],
+      ['Tap (inspecting)', 'with every piece shown, pick a piece; with one, preview a sub-part’s sheet, and Keep keeps it. A tap picks the smallest part within 24 px'],
     ]],
     ['Assembly list (one Tab stop)', [
       ['↑ ↓', 'move between rows'],
@@ -3302,7 +3422,7 @@ function renderHelp(box) {
     ['Theme buttons (one Tab stop)', [
       ['← →', 'switch to the next theme: Colour, Greyscale, Hologram'],
     ]],
-    ['Keys (click the model first)', [
+    ['Keys (click the model first; with single-letter keys off, only the arrows, Esc and Backspace)', [
       ['← → ↑ ↓', 'turn'],
       ['Shift + arrows', 'pan'],
       ['+ −', 'zoom'],
@@ -3316,7 +3436,7 @@ function renderHelp(box) {
       ['I', 'inspect the selected part'],
       ['T', 'take the inspected part apart'],
       [', .', 'previous or next piece of the inspected part'],
-      ['G', 'ghost context on or off'],
+      ['G', 'context: the ghost of the rest of the machine on or off'],
       ['X', 'section: cut the inspected part in half through its axis, with the parts round it'],
       ['S', 'sheets on or off'],
       ['L', 'tidy: floating sheets back into the column'],
@@ -3337,6 +3457,85 @@ function renderHelp(box) {
   box.append(el('h3', null, 'Orientation'));
   box.append(el('p', null, 'The triad in the corner shows the axes: z is up, −y is the front of the table. Click an axis end to look along it. The scale bar at the bottom left is true at every zoom, because the view is orthographic.'));
 }
+
+function setScale(v) {
+  uiScale = v;
+  store.set('spm1-scale', String(v));
+  document.documentElement.style.setProperty('--ui-scale', String(v));
+  updateIsoBar();
+  renderHud();
+  if (iso.part) frameIsolated(false);
+  if (tab === 'controls') renderInspector();
+  announce(`Text size ${v}×.`);
+}
+function setLetterKeys(on) {
+  letterKeys = on;
+  store.set('spm1-keys', on ? 'on' : 'off');
+  announce(on ? 'Single-letter keys on.' : 'Single-letter keys off.');
+}
+
+// ---------- Links: the state is in the address, so a view can be shared and the browser's Back works ----------
+// #part=gaskets&piece=right-back-joint&sheets=ofhc-copper-gasket&apart=1&section=1&view=az,el,zoom,x,y,z&theme=greyscale
+// Outside Inspect: #select=tf&view=... A piece and a sheet are named by slugs of their labels; a slug that starts a
+// label also matches it (piece=right-back). The address is rewritten a few times a second: moving to another part or
+// piece adds a history entry, anything else replaces the current one.
+const slug = (t) => t.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+// An exact slug wins; otherwise the first label that starts with it (so piece=right-back finds the joint).
+const slugFind = (list, w, label) => list.find((x) => slug(label(x)) === w) || list.find((x) => slug(label(x)).startsWith(`${w}-`));
+const linkKeyNow = () => `${iso.part}|${iso.focus ? iso.focus.userData.label : ''}`;
+function linkOf() {
+  const kv = [];
+  if (iso.part) {
+    kv.push(['part', iso.part]);
+    if (iso.focus) kv.push(['piece', slug(iso.focus.userData.label)]);
+    if (state.pins.length) kv.push(['sheets', state.pins.map((x) => slug(x.sub)).join(',')]);
+    if (iso.apart) kv.push(['apart', '1']);
+    if (iso.section) kv.push(['section', '1']);
+  } else if (state.select) kv.push(['select', state.select]);
+  const az = (((goal.az % 360) + 540) % 360) - 180;
+  kv.push(['view', [az, goal.el, goal.zoom, goal.target.x, goal.target.y, goal.target.z].map((v) => +v.toFixed(2)).join(',')]);
+  if (LOOKS.includes(document.documentElement.dataset.theme)) kv.push(['theme', document.documentElement.dataset.theme]);
+  return `#${kv.map(([k, v]) => `${k}=${v}`).join('&')}`;
+}
+let linkKey = null, linkAt = 0;
+function writeLink() {
+  const h = linkOf();
+  if (h === location.hash) return;
+  const key = linkKeyNow();
+  if (linkKey !== null && key !== linkKey) history.pushState(null, '', h); else history.replaceState(null, '', h);
+  linkKey = key;
+}
+function applyLink(h) {
+  const q = new Map(h.replace(/^#/, '').split('&').filter((kv) => kv.includes('=')).map((kv) => { const i = kv.indexOf('='); return [kv.slice(0, i), decodeURIComponent(kv.slice(i + 1))]; }));
+  const theme = q.get('theme');
+  if (LOOKS.includes(theme) && theme !== themeName()) { document.documentElement.dataset.theme = theme; applyTheme(); }
+  const part = q.get('part');
+  if (part && partById.has(part)) {
+    const list = piecesOf.get(part) || [];
+    const ps = q.get('piece');
+    const pc = ps ? slugFind(list, ps, (x) => x.userData.label) || null : null;
+    if (iso.part !== part || (pc && iso.focus !== pc)) inspect(part, pc);
+    else if (!ps && iso.focus && !composite(part)) setFocus(null);
+    const subs = [...subsOf(part).keys()];
+    const want = (q.get('sheets') || q.get('sheet') || '').split(',').filter(Boolean).map((w) => slugFind(subs, w, (sub) => sub)).filter(Boolean);
+    for (const x of [...state.pins]) if (!want.includes(x.sub)) unpinSheet(x);
+    for (const sub of want) if (!isPinned({ part, sub })) pinSheet(part, sub);
+    if ((q.get('apart') === '1') !== iso.apart) setApart(q.get('apart') === '1');
+    if ((q.get('section') === '1') !== iso.section) setSection(q.get('section') === '1');
+  } else {
+    if (iso.part) endInspect();
+    const sel = q.get('select');
+    if ((sel || null) !== state.select) select(sel && partById.has(sel) ? sel : null);
+  }
+  const v = (q.get('view') || '').split(',').map(Number);
+  if (v.length === 6 && v.every(Number.isFinite)) lookFrom(v[0], v[1], { zoom: clamp(v[2], ZOOM_MIN, ZOOM_MAX), target: new V3(v[3], v[4], v[5]) });
+  linkKey = linkKeyNow();
+}
+window.addEventListener('popstate', () => applyLink(location.hash));
+$('bLink').addEventListener('click', async () => {
+  writeLink();
+  try { await navigator.clipboard.writeText(location.href); announce('Link copied.'); } catch { announce('The link could not be copied; it is in the address bar.'); }
+});
 
 // ---------- Modebar ----------
 function setPressed(id, on) { $(id).setAttribute('aria-pressed', on ? 'true' : 'false'); }
@@ -3363,6 +3562,7 @@ function setExplode(on) {
   if (iso.part) frameIsolated(false);
   else if (on) fitAll();
   else lookFrom(goal.az, goal.el, { zoom: 1, target: fit.centre });
+  announce(on ? 'Exploded: every component is off the machine.' : 'The machine is back together.');
   dirty = true;
 }
 $('sSpread').addEventListener('input', (e) => {
@@ -3414,10 +3614,13 @@ function applyTheme() {
   shadow.uniforms.uHolo.value = holo ? 1 : 0;
   shadow.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
   shadow.needsUpdate = true;
-  shared.uCut.value.copy(themeColor(pal.cut, t));
-  shared.uInk.value.copy(themeColor(pal.ink, t));
-  shared.uLitColor.value.copy(themeColor(pal.lit, t));
-  shared.uPaper.value.copy(themeColor(pal.paper, t));
+  shared.uCut.value.set(pal.cut);
+  shared.uInk.value.set(pal.ink);
+  shared.uLitColor.value.set(pal.lit);
+  // The colour drawing's fills for a selected or kept part: a deep teal, and a pale one for dark materials.
+  shared.uLitDark.value.set('#00261f');
+  shared.uLitLight.value.set('#9eebe0');
+  shared.uPaper.value.set(pal.paper);
   clearColor.copy(shared.uPaper.value);
   shared.uGhost.value = pal.ghost;
   shared.uGlass.value = pal.glass;
@@ -3460,6 +3663,8 @@ function drawTriad() {
     // In greyscale the axes are ink and told apart by their letters.
     const c = greyscale ? 'var(--ink)' : a.c;
     s += `<g class="ax" data-view="${a.view}" role="button" aria-label="Look from ${a.view}" opacity="${0.55 + 0.45 * (a.d * 0.5 + 0.5)}">`;
+    // A 24 px target round each end, whatever its drawn size.
+    s += `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="12" fill="transparent"/>`;
     if (!neg) s += `<line x1="0" y1="0" x2="${a.x.toFixed(1)}" y2="${a.y.toFixed(1)}" stroke="${c}" stroke-width="2"/>`;
     s += `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="${neg ? 4 : 7}" fill="${neg ? 'var(--card)' : c}" stroke="${c}" stroke-width="1.5"/>`;
     if (!neg) s += `<text x="${a.x.toFixed(1)}" y="${(a.y + 3.4).toFixed(1)}" text-anchor="middle" style="fill:${greyscale ? 'var(--card)' : '#fff'}">${a.k}</text>`;
@@ -3518,15 +3723,30 @@ function inSector(p) {
   if (state.cutZ > 40) return false;
   return p.z > state.cutZ && sectorPlanes[1].distanceToPoint(p) < 0 && sectorPlanes[2].distanceToPoint(p) < 0;
 }
-function pickMesh(ndc) {
+function rayHit(ndc, list) {
   raycaster.setFromCamera(ndc, camera);
-  const list = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost; });
-  const hits = raycaster.intersectObjects(list, false);
-  for (const h of hits) {
+  for (const h of raycaster.intersectObjects(list, false)) {
     if (!iso.part && h.object.userData.clip && inSector(h.point)) continue;
     return h.object;
   }
   return null;
+}
+const meshSize = (m) => { if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere(); return m.geometry.boundingSphere.radius; };
+// What is under a point, forgiving a near miss. With a mouse the exact hit wins, and only a miss looks round it, 12 px
+// out. A finger is wider than most small parts, so on touch the 24 px round it is always searched and the smallest
+// sub-part found wins: a tap just off a bolt picks the bolt, not the flange behind it. `exact` skips the search.
+function pickMesh(ndc, exact = false) {
+  const list = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost; });
+  const hit = rayHit(ndc, list);
+  const px = exact ? 0 : coarse ? 24 : hit ? 0 : 12;
+  if (!px) return hit;
+  let best = hit, size = hit ? meshSize(hit) : Infinity;
+  for (const f of [0.5, 1]) for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + f;
+    const m = rayHit(new THREE.Vector2(ndc.x + (Math.cos(a) * f * px * 2) / width, ndc.y + (Math.sin(a) * f * px * 2) / height), list);
+    if (m && meshSize(m) < size) { best = m; size = meshSize(m); }
+  }
+  return best;
 }
 const pick = (ndc) => pickMesh(ndc)?.userData.piece || null;
 
@@ -3573,7 +3793,8 @@ let tapped = false;
 function endPointer(e) {
   pointers.delete(e.pointerId);
   if (!drag) return;
-  tapped = drag.moved < 5 && pointers.size === 0 && e.type === 'pointerup' && e.button === 0;
+  // A press that moves less than 10 px is a click, so a shaky hand or a gloved finger still clicks.
+  tapped = drag.moved < 10 && pointers.size === 0 && e.type === 'pointerup' && e.button === 0;
   if (tapped && !iso.part) {
     const id = pick(ndcOf(e))?.userData.part || null;
     select(id && id === state.select ? null : id);
@@ -3585,20 +3806,23 @@ stage.addEventListener('pointerup', endPointer);
 stage.addEventListener('pointercancel', endPointer);
 stage.addEventListener('pointerleave', () => { cancelStop(); if (!drag) { hoverPending = null; setHover(null); } });
 stage.addEventListener('contextmenu', (e) => e.preventDefault());
+// Keyboard focus anywhere counts as a touch: the idle spin stops, so nothing moves while you read with the keyboard.
+document.addEventListener('focusin', () => { touched = true; });
 // In Inspect a click has one meaning at a time. With every piece shown, it picks the piece under it. With one piece
-// shown, it keeps the sub-part's sheet, or closes it if it is kept, from whichever piece. A tap previews instead (Keep
-// keeps). A click or tap on an empty spot clears the preview. The second click of a double-click does nothing.
+// shown, it keeps the sub-part's sheet, and on a kept one shows that sheet: it never closes a sheet (its × or its
+// Made of row does). A tap previews instead (Keep keeps), and never closes either. A click or tap on an empty spot
+// changes nothing, so a near miss keeps the preview. The second click of a double-click does nothing.
 stage.addEventListener('click', (e) => {
   if (!iso.part || !tapped || e.detail > 1) return;
   tapped = false;
   const m = pickMesh(ndcOf(e));
   const pc = m?.userData.piece || null;
-  if (!pc) return setLive(null);
+  if (!pc) return;
   if (allShown()) return setFocus(pc);
   if (!m.userData.sub) return;
   if (coarse) return stoppedOn(m);
   const x = { part: iso.part, sub: m.userData.sub };
-  if (isPinned(x)) unpinSheet(x); else pinSheet(x.part, x.sub);
+  if (isPinned(x)) { state.live = null; revealSheet(x); } else pinSheet(x.part, x.sub);
 });
 // Outside Inspect, a double-click inspects the part under it, or resets the view on empty space. Inside, it does nothing.
 stage.addEventListener('dblclick', (e) => {
@@ -3643,6 +3867,8 @@ function setHover(mesh) {
 window.addEventListener('keydown', (e) => {
   const tag = (e.target && e.target.tagName) || '';
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  // With single-letter keys off (Controls tab), only keys that are not characters act: arrows, Esc, Backspace.
+  if (!letterKeys && e.key.length === 1) return;
   const k = e.key.toLowerCase();
   const onStage = document.activeElement === stage;
   let used = true;
@@ -3663,7 +3889,7 @@ window.addEventListener('keydown', (e) => {
     if (iso.part && iso.apart) { iso.apartSpread = clamp(iso.apartSpread + dv, 0.4, 2.5); $('sApart').value = iso.apartSpread; $('oApart').textContent = fmtSpread(iso.apartSpread); }
     else { state.spread = clamp(state.spread + dv, 0.4, 2.5); $('sSpread').value = state.spread; $('oSpread').textContent = fmtSpread(state.spread); if (!state.explode) setExplode(true); }
   }
-  else if (k === 'g' && iso.part) { iso.context = !iso.context; refreshPieces(); updateIsoBar(); }
+  else if (k === 'g' && iso.part) setContext(!iso.context);
   else if (k === 'x' && iso.part) setSection(!iso.section);
   else if (k === 'h' && state.select) { setHidden([state.select], !hidden.has(state.select)); renderInspector(); }
   else if (k === 's' && iso.part) setScreens(!HUD.on);
@@ -3716,8 +3942,11 @@ function frame() {
   const dt = Math.min(0.05, now - lastT);
   lastT = now;
   let active = false;
+  if (now - linkAt > 0.3) { linkAt = now; writeLink(); }
+  const low = coarse && (pointers.size > 0 || !!glide);
+  if (low !== lowRes) { lowRes = low; resize(); }
 
-  // A slow turntable spin until the first touch, never after it.
+  // A slow turntable spin until the first touch or keyboard focus, never after it.
   if (!touched && !reduceMotion.matches && now - idleSince > 2.5) { goal.az += 5 * dt; active = true; }
 
   const k = reduceMotion.matches ? 1 : 1 - Math.exp(-dt * 16);
@@ -3849,11 +4078,14 @@ if (renderer) {
   resize();
 }
 applyTheme();
+if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
-  setTab, startTour, nextStop, joinOf, setSection,
+  setTab, startTour, nextStop, joinOf, setSection, setScale, setLetterKeys, dockLayout, linkOf,
+  // What a click or tap at a point of the page would pick, forgiving a near miss as the pointer does.
+  pickNear: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y })); return m ? { part: m.userData.part, sub: m.userData.sub || null } : null; },
   // What is drawn under a point of the page, for checks: its part, sub-part and piece.
-  pickAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y })); return m ? { part: m.userData.part, sub: m.userData.sub || null, piece: m.userData.piece?.userData.label || null } : null; },
+  pickAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y }), true); return m ? { part: m.userData.part, sub: m.userData.sub || null, piece: m.userData.piece?.userData.label || null } : null; },
 };
 </script>
 </body>
