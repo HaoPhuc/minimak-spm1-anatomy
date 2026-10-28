@@ -304,6 +304,11 @@
   .isobar .tour > span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .isobar button.next { background: var(--accent); color: var(--card); border-color: var(--accent); }
   .isobar button.next[hidden] { display: none; }
+  /* Steps: the arrows beside Take apart, and under the bar what the step shown takes off and how. */
+  .isobar .step #bSteps { min-width: 5.6em; font-variant-numeric: tabular-nums; }
+  .isobar > .stepcap { order: 10; flex: 1 0 100%; max-width: 44em; margin: 2px auto 0; padding: 5px 4px 2px; border-top: 1px solid var(--rule); font-size: 12.5px; line-height: 1.45; text-align: left; }
+  .isobar > .stepcap[hidden] { display: none; }
+  .isobar .stepcap b { font-weight: 600; margin-right: 4px; }
   /* Show me: where the framed sub-part is, each step up a link. It takes the place of the part's name. */
   .isobar .crumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 2px; font-size: 12.5px; margin-right: 6px; min-width: 0; }
   .isobar .crumbs[hidden] { display: none; }
@@ -327,6 +332,11 @@
   .overlay .compass { stroke: var(--ink); stroke-width: 1.75; }
   .overlay text.quarter { font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
   .overlay .trail .line { stroke-dasharray: 2 4; stroke-width: 1.75; }
+  /* A ring's star order, numbered on the heads; a number whose head is hidden is drawn faint. And a sample bolt's sizes. */
+  .overlay text.star { font: 700 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-anchor: middle; }
+  .overlay text.star.behind { opacity: 0.45; }
+  .overlay .dim .line { stroke-width: 1.25; }
+  .overlay text.dim { font: 600 11.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   .overlay .home { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
   .callouts { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   .callout {
@@ -617,7 +627,13 @@
         <button type="button" id="bNext" title="Next piece (.)" aria-label="Next piece">›</button>
       </span>
       <button type="button" id="bApart" aria-pressed="false" title="Take the part apart into its pieces (T)">Take apart</button>
+      <button type="button" id="bJoint" aria-pressed="false" hidden title="Open the joint step by step: the nuts, the bolts, the flanges apart, the gasket out (J)">Open this joint</button>
       <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
+      <span class="step" id="stepStep" role="group" aria-label="Steps in the order it comes apart" hidden>
+        <button type="button" id="bStepPrev" title="Previous step" aria-label="Previous step">‹</button>
+        <button type="button" id="bSteps" title="Step through the order it comes apart; fitting runs back up the steps">All</button>
+        <button type="button" id="bStepNext" title="Next step" aria-label="Next step">›</button>
+      </span>
       <button type="button" id="bTurn" hidden title="The parts come apart toward you, so they hide one another: turn the view to see them side by side">Turn to see</button>
       <button type="button" id="bSection" aria-pressed="false" title="Cut the part in half through its axis, with the parts round it (X)">Section</button>
       <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
@@ -628,6 +644,7 @@
       </span>
       <button type="button" id="bLink" class="icon" title="Copy a link to this part, piece, its sheets and the view" aria-label="Copy link"><svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
+      <div class="stepcap" id="stepCap" hidden></div>
     </div>
     <svg class="overlay" id="overlay" aria-hidden="true"></svg>
     <div class="callouts" id="callouts" aria-hidden="true"></div>
@@ -1228,6 +1245,40 @@ function meshBox(m, out) {
   } else out.union(g.boundingBox.clone().applyMatrix4(m.matrixWorld));
   return out;
 }
+// Triangles with their three corners in a line (where a lathe closes on its axis, or a ring meets itself) draw nothing,
+// but a ray that grazes one makes three.js r160 throw while it interpolates the normal (its barycentric solve divides
+// by zero). They are dropped once, at load, from every part's geometry.
+const cleaned = new WeakSet();
+function dropFlat(g) {
+  if (cleaned.has(g)) return;
+  cleaned.add(g);
+  const p = g.attributes.position, idx = g.index, n = (idx ? idx.count : p.count) / 3;
+  const a = new V3(), b = new V3(), c = new V3(), e0 = new V3(), e1 = new V3(), keep = [];
+  for (let t = 0; t < n; t++) {
+    const k = idx ? [idx.getX(3 * t), idx.getX(3 * t + 1), idx.getX(3 * t + 2)] : [3 * t, 3 * t + 1, 3 * t + 2];
+    a.fromBufferAttribute(p, k[0]); b.fromBufferAttribute(p, k[1]); c.fromBufferAttribute(p, k[2]);
+    e0.subVectors(c, a); e1.subVectors(b, a);
+    const d00 = e0.dot(e0), d01 = e0.dot(e1), d11 = e1.dot(e1);
+    if (d00 * d11 - d01 * d01 > d00 * d11 * 1e-9) keep.push(t);
+  }
+  if (keep.length === n) return;
+  if (idx) g.setIndex(keep.flatMap((t) => [idx.getX(3 * t), idx.getX(3 * t + 1), idx.getX(3 * t + 2)]));
+  else for (const [name, at] of Object.entries(g.attributes)) {
+    const w = at.itemSize * 3, out = new at.array.constructor(keep.length * w);
+    keep.forEach((t, i) => out.set(at.array.subarray(t * w, t * w + w), i * w));
+    g.setAttribute(name, new THREE.BufferAttribute(out, at.itemSize, at.normalized));
+  }
+  // Groups (an extruded nut's caps and sides) keep their triangles, in the same order.
+  const groups = [...g.groups].sort((x, y) => x.start - y.start);
+  g.clearGroups();
+  let at = 0;
+  for (const gr of groups) {
+    const kept = keep.filter((t) => t * 3 >= gr.start && t * 3 < gr.start + gr.count).length;
+    g.addGroup(at * 3, kept * 3, gr.materialIndex);
+    at += kept;
+  }
+}
+for (const pc of dev.instances) pc.traverse((o) => { if (o.isMesh) dropFlat(o.geometry); });
 dev.root.updateMatrixWorld(true);
 const pieces = dev.instances;
 const piecesOf = new Map();
@@ -1590,9 +1641,10 @@ function draw() {
     const u = m.userData.piece?.userData;
     const g = u ? ease(u.gNow) : 0;
     m.material = m.userData.inkMat;
-    // A part fading to a ghost loses its outline halfway; one turning solid gets its outline first, then its fill.
+    // A part fading to a ghost loses its outline halfway; one turning solid gets its outline first, then its fill. A
+    // mate keeps its outline while it is lit (the one a step's sub-parts bear on).
     // What Show me dims has no outline, so the framed sub-part's edges show through it.
-    m.visible = !((u && (u.ghost ? g > 0.5 : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
+    m.visible = !((u && (u.ghost ? g > 0.5 && !(u.mate && m.userData.lit > 0) : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
@@ -1770,21 +1822,24 @@ const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1,
 // `foldTree`: Inspect folded the assembly list to make room, so Done unfolds it. `tour`: the stop of the guided tour
 // (an index into TOUR), or null off the tour. `show`: the sub-part Show me frames, { pc, sub, saved }, `saved` being
 // the frame to go back to.
-const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null, section: false, secN: null, secFor: null, show: null };
+const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null, section: false, secN: null, secFor: null, show: null, step: null, joint: null };
 const hidden = new Set();
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
 function pieceOffset(pc) {
   const off = new V3();
   const e = state.explode ? state.spread : 0;
-  if (pc.userData.egroup) off.addScaledVector(pc.userData.egroup.offset, e);
+  if (pc.userData.egroup) off.addScaledVector(pc.userData.egroup.offset, e).add(jointGoal(pc.userData.egroup));
   off.addScaledVector(pc.userData.apart, e);
-  if (iso.part === pc.userData.part) off.add(pc.userData.detachVec);
+  if (iso.part === pc.userData.part && !inJoint(pc)) off.add(pc.userData.detachVec);
   return off;
 }
+// Whether a piece's sub-parts are off it: the piece taken apart, or a piece of the joint opened.
+const inJoint = (pc) => !!iso.joint && iso.joint.pcs.includes(pc);
+const takenApart = (pc) => (iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc)) || inJoint(pc);
 function boxOfPiece(pc) {
   const off = pieceOffset(pc);
-  const k = iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc) ? iso.apartSpread : 0;
+  const k = takenApart(pc) ? iso.apartSpread : 0;
   const b = new THREE.Box3();
   pc.traverse((m) => { if (m.isMesh) b.union(m.userData.restBox.clone().translate(off.clone().addScaledVector(m.userData.ex, k))); });
   return b;
@@ -1816,7 +1871,7 @@ function refreshPieces() {
   const mates = mateSet();
   for (const pc of pieces) {
     const part = pc.userData.part;
-    const ghost = !!iso.part && (part !== iso.part || (!!iso.focus && pc !== iso.focus));
+    const ghost = !!iso.part && !inJoint(pc) && (part !== iso.part || (!!iso.focus && pc !== iso.focus));
     pc.userData.ghost = ghost;
     pc.userData.mate = mates.has(pc);
     pc.visible = !hidden.has(part) && !(ghost && !iso.context);
@@ -1894,7 +1949,8 @@ function refreshSection() {
   dirty = true;
 }
 function setSection(on) {
-  if (!iso.part || !piecesOf.has(iso.part)) return;
+  // A joint opened moves three pieces of two parts, so Section waits until it is closed.
+  if (!iso.part || !piecesOf.has(iso.part) || (on && iso.joint)) return;
   iso.section = on;
   iso.secFor = null;
   refreshPieces();
@@ -1903,6 +1959,7 @@ function setSection(on) {
 }
 function refreshLit() {
   const t = themeName();
+  const bear = stepMates();
   for (const m of solids) {
     const pc = m.userData.piece;
     const p = m.userData.part;
@@ -1917,6 +1974,8 @@ function refreshLit() {
     if (sameSheet(state.hotSheet, here)) { lit = 0.55; code = 1; }
     else if (here && isPinned(here)) { lit = 0.42; code = 0.75; }
     else if (sameSheet(state.live, here)) { lit = 0.32; code = 0.5; }
+    else if (iso.step && stepNow().some((x) => x.pc === pc && x.sub === sub)) { lit = 0.3; code = 0.25; }
+    else if (pc && bear.has(pc)) { lit = 0.3; code = 0.25; }
     else if (!iso.part && p === state.select) { lit = 0.42; code = 0.75; }
     else if ((state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) || (state.rowPiece && pc === state.rowPiece) || pointed
       || (iso.part ? p === state.legendHot && p !== iso.part : p === state.hover || p === state.legendHot)) { lit = 0.3; code = 0.25; }
@@ -1988,9 +2047,10 @@ const MOVE = { lift: 0.3, fly: 1.2, piece: 0.9, apart: 0.8 };
 function snapshot() { return { az: goal.az, el: goal.el, zoom: goal.zoom, target: goal.target.clone() }; }
 function frameIsolated(reset, glideFor = 0, delay = 0) {
   stopGlide();
-  const b = iso.show ? boxOfSub(iso.show.pc, iso.show.sub) : iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
+  const b = iso.show ? boxOfSub(iso.show.pc, iso.show.sub) : iso.joint ? iso.joint.pcs.reduce((a, pc) => a.union(boxOfPiece(pc)), new THREE.Box3())
+    : iso.focus ? boxOfPiece(iso.focus) : boxOfPart(iso.part);
   // The frame keeps where the part rests in view, so the lift shows what it came off, taken apart or not.
-  if (!iso.show) for (const pc of iso.focus ? [iso.focus] : piecesOf.get(iso.part) || []) b.union(seatBox(pc, null));
+  if (!iso.show) for (const pc of iso.joint ? iso.joint.pcs : iso.focus ? [iso.focus] : piecesOf.get(iso.part) || []) b.union(seatBox(pc, null));
   if (reset) goal.el = clamp(goal.el, 14, 40);
   // Show me fills two thirds of the free view with the sub-part.
   frameBox(b, iso.show ? 1.5 : iso.focus ? 1.35 : 1.2, hudInsets());
@@ -2010,6 +2070,7 @@ function announceInspect() {
 function inspect(id, focusPiece = null, o = {}) {
   if (!id || !partById.has(id)) return;
   endShow(false);
+  if (iso.part !== id || iso.focus !== focusPiece) { iso.step = null; iso.joint = null; }
   // A part made of different objects (the gauge and its cable, the valve and its line) opens on its main object, so
   // the cable does not set the framing; All shows them all.
   if (!focusPiece && iso.part !== id && composite(id)) focusPiece = piecesOf.get(id)[0];
@@ -2085,6 +2146,8 @@ function endInspect() {
   iso.part = null;
   iso.focus = null;
   iso.apart = false;
+  iso.step = null;
+  iso.joint = null;
   iso.section = false;
   iso.history = [];
   iso.tour = null;
@@ -2110,6 +2173,8 @@ function endInspect() {
 function setFocus(pc) {
   endShow(false);
   iso.focus = pc;
+  iso.step = null;
+  iso.joint = null;
   if (!pc) iso.apart = false;
   state.live = null;
   refreshPieces();
@@ -2157,9 +2222,27 @@ function updateIsoBar() {
   $('bApart').textContent = iso.apart ? 'Put together' : 'Take apart';
   $('apartWrap').hidden = !iso.apart;
   showTurn(turnOffered());
+  // A gasket or a joint flange: Open this joint, the whole joint as one sequence.
+  const jb = $('bJoint');
+  jb.hidden = !iso.joint && !jointHere();
+  jb.setAttribute('aria-pressed', iso.joint ? 'true' : 'false');
+  jb.textContent = iso.joint ? 'Close the joint' : 'Open this joint';
+  // The steps, for a piece taken apart that comes off in more than one, or a joint opened; under the bar, what the
+  // step shown takes off.
+  const steps = stepList();
+  $('stepStep').hidden = steps.length < 2;
+  $('stepStep').setAttribute('aria-label', iso.joint ? `Steps to open the ${iso.joint.name}` : 'Steps in the order it comes apart');
+  $('bSteps').textContent = iso.step ? `Step ${iso.step} / ${steps.length}` : `All ${steps.length}`;
+  const cap = $('stepCap');
+  cap.hidden = !iso.step;
+  if (iso.step) {
+    const t = el('span', 'note', ` Order `);
+    cap.replaceChildren(el('b', null, `Step ${iso.step} of ${steps.length} · ${stepName()}`), stepSay(),
+      iso.step === steps.length ? (iso.joint ? ' To close it, run back from here to step 1 with the new gasket.' : ' Fitting runs back from here to step 1.') : '', t, refButton('assumed'));
+  }
   $('bContext').setAttribute('aria-pressed', iso.context ? 'true' : 'false');
   $('bSection').setAttribute('aria-pressed', iso.section ? 'true' : 'false');
-  $('bSection').disabled = !piecesOf.has(iso.part);
+  $('bSection').disabled = !piecesOf.has(iso.part) || !!iso.joint;
   $('bScreens').setAttribute('aria-pressed', HUD.on ? 'true' : 'false');
   $('bApart').disabled = !comesApart.has(iso.part);
   $('bApart').title = comesApart.has(iso.part) ? 'Take the part apart into its sub-parts (T)' : NO_APART;
@@ -2195,6 +2278,8 @@ function setApart(on) {
   if (!iso.part || (on && !comesApart.has(iso.part))) return;
   endShow(false);
   iso.apart = on;
+  iso.step = null;
+  if (iso.joint) { iso.joint = null; refreshPieces(); }
   state.live = null; // taking apart, or putting back, clears the preview
   // Pieces of one part sit close together (eight coils round one ring), so take apart one at a time: the nearest.
   const list = piecesOf.get(iso.part) || [];
@@ -2220,7 +2305,9 @@ $('sApart').addEventListener('change', () => { if (iso.section) refreshSection()
 $('bSection').addEventListener('click', () => setSection(!iso.section));
 // Turn to see: a piece taken apart along an axis that points at you has its sub-parts stacked behind one another. When
 // the axis is within 20° of the line of sight, the inspect bar offers to turn the view until it lies across it (15°
-// short of square, so it keeps some depth). The view never turns by itself; under reduced motion it cuts.
+// short of square, so it keeps some depth). A joint opened is offered it within 35°, and turned to a three-quarter view
+// (50° off its axis): its flanges are wide discs that hide what is behind them, and the star numbers on the heads want
+// some face. The view never turns by itself; under reduced motion it cuts.
 function apartPiece() {
   const list = piecesOf.get(iso.part) || [];
   return iso.part && iso.apart ? iso.focus || (list.length === 1 ? list[0] : null) : null;
@@ -2240,18 +2327,20 @@ function apartAxis(pc) {
   pc.userData.apartAxis = a;
   return a;
 }
+const stepAxis = () => (iso.joint ? iso.joint.axis : apartPiece() && apartAxis(apartPiece()));
 function turnOffered() {
-  const pc = apartPiece(), a = pc && apartAxis(pc);
-  return !!a && !iso.show && Math.abs(a.dot(basis(view.az, view.el).dir)) > Math.cos(20 * DEG);
+  const a = stepAxis();
+  return !!a && !iso.show && Math.abs(a.dot(basis(view.az, view.el).dir)) > Math.cos((iso.joint ? 35 : 20) * DEG);
 }
 function turnToSee() {
-  const pc = apartPiece(), a = pc && apartAxis(pc);
+  const a = stepAxis();
   if (!a) return;
   const d = basis(goal.az, goal.el).dir;
   let n = d.clone().addScaledVector(a, -d.dot(a));
   if (n.lengthSq() < 1e-4) n = new V3(0, 0, 1).addScaledVector(a, -a.z);
   if (n.lengthSq() < 1e-4) n.set(1, 0, 0);
-  n.normalize().multiplyScalar(Math.cos(15 * DEG)).addScaledVector(a, Math.sign(d.dot(a) || 1) * Math.sin(15 * DEG));
+  const off = (iso.joint ? 50 : 75) * DEG;
+  n.normalize().multiplyScalar(Math.sin(off)).addScaledVector(a, Math.sign(d.dot(a) || 1) * Math.cos(off));
   lookFrom(Math.atan2(n.y, n.x) / DEG, clamp(Math.asin(clamp(n.z, -1, 1)) / DEG, -80, 80));
   frameIsolated(false, MOVE.piece);
   showTurn(false);
@@ -2260,10 +2349,235 @@ function turnToSee() {
 // The button comes and goes with the view; focus on it as it goes moves to Take apart, not to the page.
 function showTurn(on) {
   const b = $('bTurn');
-  if (!on && document.activeElement === b) $('bApart').focus();
+  if (!on && document.activeElement === b) (iso.joint ? $('bJoint') : $('bApart')).focus();
   b.hidden = !on;
 }
 $('bTurn').addEventListener('click', turnToSee);
+
+// ---------- Steps: the order a part comes off, and goes back on ----------
+// Taken apart, a piece shows every sub-part off at once ("All"). The arrows beside it step through the order they come
+// off (ORDER in parts.js, or the rule below): at step n the first n steps' sub-parts are off and the rest still in
+// place. Fitting runs back up the steps. Each step says how: what to undo, with its thread, length and spanner from its
+// sheet, which way it faces, and that a CF gasket is new every time. Its sub-parts are outlined with their trail, and so
+// is the mate they bear on; a ring of bolts or nuts has its star order numbered on the heads, and the step is announced. No procedure is published, so
+// the order is tagged assumed.
+const isNut = (s) => /\bnuts?\b/i.test(s), isBolt = (s) => /\b(bolts?|screws?)\b/i.test(s);
+const isSeal = (s) => /gasket|centring ring|o-ring/i.test(s);
+// A piece's steps, each a list of its sub-parts that come off together. By rule: nuts, then bolts and screws, then the
+// rest in the reverse of the order they were built, a seal last.
+function stepsOf(pc) {
+  if (pc.userData.steps) return pc.userData.steps;
+  const part = pc.userData.part;
+  const moving = [...subsOf(part, pc).keys()].filter((s) => subMeshes(pc, s).some((m) => m.userData.ex.lengthSq() > 1e-6));
+  const rank = (s) => (isSeal(s) ? 3 : isNut(s) ? 0 : isBolt(s) ? 1 : 2);
+  let steps = DOCS.ORDER[part]?.map((g) => g.filter((s) => moving.includes(s))).filter((g) => g.length);
+  if (steps) {
+    const left = moving.filter((s) => !steps.some((g) => g.includes(s)));
+    if (left.length) console.warn(`ORDER for ${part} leaves out: ${left.join(', ')}.`);
+    steps.push(...left.map((s) => [s]));
+  } else steps = moving.map((s, i) => ({ s, i })).sort((a, b) => rank(a.s) - rank(b.s) || b.i - a.i).map(({ s }) => [s]);
+  pc.userData.steps = steps;
+  return steps;
+}
+// The steps shown, each a list of { pc, sub } that come off together: the piece taken apart, or the joint opened.
+function stepList() {
+  if (iso.joint) return iso.joint.steps;
+  const pc = apartPiece();
+  return pc ? stepsOf(pc).map((g) => g.map((sub) => ({ pc, sub }))) : [];
+}
+const stepNow = () => (iso.step ? stepList()[iso.step - 1] || [] : []);
+// The mates the step's sub-parts bear on where they rest (the port a viewport's nuts, bolts and gasket sit against),
+// outlined with the step.
+function stepMates() {
+  const out = new Set();
+  const g = iso.joint ? [] : stepNow();
+  if (!g.length) return out;
+  const boxes = g.flatMap(({ pc, sub }) => subMeshes(pc, sub).map((m) => m.userData.restBox.clone().expandByScalar(0.3)));
+  for (const pc of pieces) if (pc.userData.mate && pc.visible) pc.traverse((m) => { if (m.isMesh && boxes.some((b) => b.intersectsBox(m.userData.restBox))) out.add(pc); });
+  return out;
+}
+// The sub-parts the step shown takes off, and its name.
+const stepSubs = () => [...new Set(stepNow().map((x) => x.sub))];
+const stepName = () => (iso.joint ? iso.joint.names[iso.step - 1] : stepSubs().join(', '));
+// Whether a sub-part is off at the step shown (all of them with no step chosen).
+function subOff(pc, sub) {
+  if (iso.step == null || (iso.joint ? !inJoint(pc) : pc !== apartPiece())) return 1;
+  const i = stepList().findIndex((g) => g.some((x) => x.pc === pc && x.sub === sub)) + 1;
+  return i && i <= iso.step ? 1 : 0;
+}
+// What the step shown says to do. Parting a joint's flanges is the one step of two pieces.
+function stepSay() {
+  const g = stepNow();
+  if (!g.length) return '';
+  if (iso.joint && g.length > 1) return `Ease the ${iso.joint.sides.join(' and ')} quarters apart along the joint, a few millimetres, to free the gasket. Keep the knife edges off anything hard: a nicked edge no longer seals.`;
+  return stepText(g[0].pc, [...new Set(g.map((x) => x.sub))]);
+}
+function setStep(n) {
+  const N = stepList().length;
+  if (!N) return;
+  iso.step = n >= 1 && n <= N ? n : null;
+  // A joint is framed at each step: its gasket rises well clear, so one frame for all four would leave the first three
+  // small. A piece taken apart keeps one frame, with every sub-part off.
+  if (iso.joint) frameIsolated(false, MOVE.piece);
+  updateIsoBar();
+  refreshLit();
+  ov.dirty = true;
+  dirty = true;
+  announce(iso.step ? `Step ${iso.step} of ${N}: ${stepName()}. ${stepSay()}` : iso.joint ? `All ${N} steps: the ${iso.joint.name} is open.` : `All ${N} steps: every sub-part is off.`);
+}
+// The arrows go All, 1, 2, … n and round again, like the pieces'.
+function stepBy(d) {
+  const N = stepList().length;
+  if (!N) return;
+  setStep((((iso.step ?? 0) + d) % (N + 1) + N + 1) % (N + 1) || null);
+}
+$('bStepPrev').addEventListener('click', () => stepBy(-1));
+$('bStepNext').addEventListener('click', () => stepBy(1));
+$('bSteps').addEventListener('click', () => setStep(iso.step ? null : 1));
+// What a step says to do, from its sub-parts' names and their sheets' rows (thread, length, spanner).
+function stepText(pc, subs) {
+  const part = pc.userData.part, s = subs[0] || '';
+  const rows = subDocOf(part, s)?.rows || [];
+  const row = (k) => rows.find((r) => r[0] === k)?.[1];
+  const n = s.match(/^\d+/)?.[0];
+  const spanner = row('Spanner')?.split(' (')[0];
+  const size = row('Length')?.split(':')[0];
+  const low = (t) => (/^[A-Z]{2}/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1));
+  const name = low(s) + (subs.length > 1 ? `, with the ${subs.slice(1).map(low).join(' and the ')}` : '');
+  if (isNut(s) && n) return `Undo the ${n} nuts${spanner ? ` (${spanner} spanner)` : ''} in star order, as numbered on the heads, a little each round. To fit: run them on finger-tight, then draw them up in the same order in small steps until the flange faces meet evenly.`;
+  if (isBolt(s) && /into/i.test(s)) return `Unscrew the ${name} from their tapped holes${size ? `, ${size}` : ''}${spanner ? ` (${spanner} spanner)` : ''}, in star order. They need no nuts; to fit, start each one by hand.`;
+  if (isBolt(s) && n) return `Draw out the ${n} bolts${size ? `, ${size}` : ''}${spanner ? ` (${spanner} spanner)` : ''}. To fit, they go in from the side their heads are on, before the nuts.`;
+  if (/clamp/i.test(s)) return `Open the ${name}: undo its wing screw and swing it off the two flanges.`;
+  if (/centring ring|o-ring/i.test(s)) return `Lift out the ${name}. The O-ring is the seal, so check it for hairs and scratches before it goes back.`;
+  if (/gasket/i.test(s)) return `Take out the ${name}. Fit a new one: a copper CF gasket is never reused, as the knife edges have cut into it.`;
+  if (/flange/i.test(s) && rows.some((r) => /knife/i.test(r[0]))) return `Lift off the ${name}, its knife edge toward the gasket.`;
+  return `Take off the ${name}.`;
+}
+
+// ---------- Open this joint: a joint's flanges, gasket, bolts and nuts as one sequence ----------
+// A vessel joint is three pieces of two parts: a flange on each quarter, with the bolt heads on one and the nuts on the
+// other, and the copper gasket between them. Take apart takes one piece apart, so it cannot open a joint. Open this
+// joint (on a gasket or a joint flange, J) steps through it: the nuts off in star order, the bolts out, the two quarters
+// eased apart along the joint, and the gasket out last, to be replaced. Its three pieces are drawn solid, the rest of
+// the machine as a ghost; the quarters move with their elbows, as the flanges are welded on.
+function jointOf(pc) {
+  const name = pc?.userData.label?.match(/^(.*? joint)\b/)?.[1];
+  if (!name || (pc.userData.part !== 'gaskets' && pc.userData.part !== 'joints')) return null;
+  const gasket = (piecesOf.get('gaskets') || []).find((x) => x.userData.label === name);
+  const fl = (piecesOf.get('joints') || []).filter((x) => x.userData.label.startsWith(`${name}, `));
+  const subOf = (x, f) => x && [...subsOf(x.userData.part, x).keys()].find(f);
+  const bolts = fl.find((x) => subOf(x, isBolt)), nuts = fl.find((x) => subOf(x, isNut));
+  if (!gasket || !bolts || !nuts) return null;
+  const side = (x) => x.userData.label.split(', ')[1] || '';
+  const flange = (x) => subOf(x, (t) => /flange/i.test(t));
+  return {
+    name, gasket, bolts, nuts, pcs: [gasket, bolts, nuts], axis: gasket.userData.axis,
+    sides: [bolts, nuts].map((x) => side(x).replace(/ side$/, '')),
+    steps: [[{ pc: nuts, sub: subOf(nuts, isNut) }], [{ pc: bolts, sub: subOf(bolts, isBolt) }],
+      [{ pc: bolts, sub: flange(bolts) }, { pc: nuts, sub: flange(nuts) }], [{ pc: gasket, sub: subOf(gasket, () => true) }]],
+    names: [`${subOf(nuts, isNut)}, ${side(nuts)}`, `${subOf(bolts, isBolt)}, ${side(bolts)}`, `The two ${flange(bolts)}s`, subOf(gasket, () => true)],
+  };
+}
+// The joint the inspected gasket or flange belongs to: the piece shown, or the nearest of them.
+function jointHere() {
+  if (iso.part !== 'gaskets' && iso.part !== 'joints') return null;
+  const list = piecesOf.get(iso.part) || [];
+  return jointOf(iso.focus || (list.length ? nearestPiece(list) : null));
+}
+// Where a joint opened moves an explode group (a quarter, or the gasket's), from the step that moves it on; zero
+// otherwise.
+function jointGoal(g) {
+  const mv = iso.joint?.moves.get(g);
+  return mv && (iso.step == null || iso.step >= mv.step) ? mv.v.clone() : new V3();
+}
+function setJoint(on) {
+  if (!on) {
+    if (!iso.joint) return;
+    const name = iso.joint.name;
+    iso.joint = null;
+    iso.step = null;
+    refreshPieces();
+    frameIsolated(false, MOVE.apart);
+    updateIsoBar();
+    renderHud();
+    setHint();
+    ov.dirty = true;
+    dirty = true;
+    announce(`The ${name} is back together.`);
+    return;
+  }
+  const j = jointHere();
+  if (!j) return;
+  endShow(false);
+  // The quarters part along the joint, each away from it; the gasket then comes out upward, clear of both flanges.
+  const gap = 1.6;
+  const lift = (j.gasket.userData.restBox.getSize(new V3()).z + j.bolts.userData.restBox.getSize(new V3()).z) / 2 + 1.5;
+  j.moves = new Map();
+  for (const x of [j.bolts, j.nuts]) if (x.userData.egroup) j.moves.set(x.userData.egroup, { step: 3, v: x.userData.axis.clone().normalize().multiplyScalar(gap) });
+  if (j.gasket.userData.egroup) j.moves.set(j.gasket.userData.egroup, { step: 4, v: new V3(0, 0, lift) });
+  iso.focus = iso.part === 'gaskets' ? j.gasket : iso.focus && j.pcs.includes(iso.focus) ? iso.focus : j.bolts;
+  iso.apart = false;
+  iso.section = false;
+  state.live = null;
+  iso.joint = j;
+  iso.step = 1;
+  refreshPieces();
+  frameIsolated(false, MOVE.apart);
+  updateIsoBar();
+  renderInspector();
+  renderHud();
+  refreshLit();
+  setHint();
+  ov.dirty = true;
+  dirty = true;
+  announce(`Opening the ${j.name} in ${j.steps.length} steps. Step 1: ${stepName()}. ${stepSay()}`);
+}
+$('bJoint').addEventListener('click', () => setJoint(!iso.joint));
+
+// A ring of bolts or nuts: each one's place round the ring, numbered clockwise from the top as seen from the bolt heads
+// (top is up, or the back for a ring lying flat), and its turn in the star order: each next one across from the last,
+// then a quarter round, the legacy cross pattern of ASME PCC-1. Kept on the mesh.
+const STAR = {
+  4: [1, 3, 2, 4], 6: [1, 4, 2, 5, 3, 6], 8: [1, 5, 3, 7, 2, 6, 4, 8], 12: [1, 7, 4, 10, 2, 8, 5, 11, 3, 9, 6, 12],
+  16: [1, 9, 5, 13, 3, 11, 7, 15, 2, 10, 6, 14, 4, 12, 8, 16], 20: [1, 11, 6, 16, 3, 13, 8, 18, 2, 12, 7, 17, 4, 14, 9, 19, 5, 15, 10, 20],
+};
+function ringOf(m) {
+  if (m.userData.ring !== undefined) return m.userData.ring;
+  const s = m.userData.sub || '';
+  let ring = null;
+  if (m.isInstancedMesh && m.count > 2 && (isNut(s) || isBolt(s))) {
+    m.updateWorldMatrix(true, false);
+    const M = new THREE.Matrix4(), pos = [], a = new V3(), c = new V3();
+    for (let i = 0; i < m.count; i++) {
+      m.getMatrixAt(i, M);
+      M.premultiply(m.matrixWorld);
+      pos.push(new V3().setFromMatrixPosition(M));
+      a.add(new V3(0, 1, 0).transformDirection(M));
+    }
+    for (const p of pos) c.addScaledVector(p, 1 / pos.length);
+    // A nut's own axis points away from the heads.
+    a.normalize().multiplyScalar(isNut(s) ? -1 : 1);
+    const up = new V3(0, 0, 1).addScaledVector(a, -a.z);
+    if (up.lengthSq() < 0.1) up.set(0, 1, 0).addScaledVector(a, -a.y);
+    up.normalize();
+    const right = a.clone().negate().cross(up);
+    const turn = pos.map((p) => { const d = p.clone().sub(c); return (Math.atan2(d.dot(right), d.dot(up)) + 2 * Math.PI) % (2 * Math.PI); });
+    const order = turn.map((t, i) => i).sort((i, j) => turn[i] - turn[j]);
+    const place = [];
+    order.forEach((i, k) => { place[i] = k + 1; });
+    const seq = STAR[m.count];
+    ring = { n: m.count, place, star: place.map((p) => (seq ? seq.indexOf(p) + 1 : null)) };
+  }
+  m.userData.ring = ring;
+  return ring;
+}
+// One of a ring, by name: "Bolt 7 of 20 · star 3".
+function oneOf(m, i) {
+  const r = ringOf(m);
+  if (!r || i == null) return null;
+  const s = m.userData.sub;
+  return `${isNut(s) ? 'Nut' : /screw/i.test(s) ? 'Screw' : 'Bolt'} ${r.place[i]} of ${r.n}${r.star[i] ? ` · star ${r.star[i]}` : ''}`;
+}
 function setContext(on) {
   iso.context = on;
   refreshPieces();
@@ -2281,7 +2595,7 @@ $('bContext').addEventListener('click', () => setContext(!iso.context));
 const SHOW = '<svg viewBox="0 0 16 16"><path d="M2 5.5V2h3.5M10.5 2H14v3.5M14 10.5V14h-3.5M5.5 14H2v-3.5"/><circle cx="8" cy="8" r="2.3"/></svg>';
 // Where a piece's sub-part is headed now: lifted with its piece, and moved off it when the part is taken apart (`k`, the
 // take-apart spread, 0 for its place on the piece).
-function boxOfSub(pc, sub, k = iso.part === pc.userData.part && iso.apart && (!iso.focus || iso.focus === pc) ? iso.apartSpread : 0) {
+function boxOfSub(pc, sub, k = takenApart(pc) ? iso.apartSpread * subOff(pc, sub) : 0) {
   const off = pieceOffset(pc);
   const b = new THREE.Box3();
   for (const m of subMeshes(pc, sub)) b.union(m.userData.restBox.clone().translate(off.clone().addScaledVector(m.userData.ex, k)));
@@ -3173,6 +3487,8 @@ function layoutOverlay() {
   drawQuarters(free);
   const lead = drawLeader(free, occ);
   drawTrail(free);
+  drawStars(occ);
+  drawDims(free, occ);
   drawCallouts(free, occ, lead);
   showTurn(turnOffered());
   ov.shown = true;
@@ -3217,6 +3533,7 @@ function drawQuarters(free) {
 // The one trail: where the sub-part under the pointer (or its Made of row), else the one the leader line ends on, sits on
 // its piece, and the way it came off when the piece was taken apart. Never one per bolt.
 function trailSub() {
+  if (iso.joint && !iso.show) { const g = stepNow(); return g.length === 1 && g[0].pc !== iso.joint.gasket ? g[0] : null; }
   if (!iso.part || !iso.apart || iso.show) return null;
   const list = piecesOf.get(iso.part) || [];
   const pc = iso.focus || (list.length === 1 ? list[0] : null);
@@ -3224,6 +3541,7 @@ function trailSub() {
   const m = state.hoverMesh;
   if (m?.userData.piece === pc && m.userData.sub) return { pc, sub: m.userData.sub };
   if (state.hoverSub && subMeshes(pc, state.hoverSub).length) return { pc, sub: state.hoverSub };
+  if (iso.step && stepSubs().length) return { pc, sub: stepSubs()[0] };
   const x = leaderSheet();
   return x && x.part === iso.part && subMeshes(pc, x.sub).length ? { pc, sub: x.sub } : null;
 }
@@ -3240,12 +3558,109 @@ function drawTrail(free) {
   g.append(svgEl('circle', { cx: h.x, cy: h.y, r: 4 }, 'home'));
   ov.svg.append(g);
 }
+// Where one of a ring is, in the world: a point at height `y` on its own axis (its head's top, its tip...).
+const ringM = new THREE.Matrix4();
+function ringPoint(m, i, y, x = 0) {
+  m.getMatrixAt(i, ringM);
+  ringM.premultiply(m.matrixWorld);
+  return new V3(x, y, 0).applyMatrix4(ringM);
+}
+// The step shown, if it takes off a ring of bolts or nuts: each head numbered with its turn in the star order. A number
+// whose head is hidden behind something is drawn faint.
+function drawStars(occ) {
+  if (!iso.step) return;
+  const g = svgEl('g', {}, 'stars');
+  for (const { pc, sub } of stepNow()) for (const m of subMeshes(pc, sub)) {
+    const r = ringOf(m);
+    if (!r?.star[0]) continue;
+    m.updateWorldMatrix(true, false);
+    if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+    const top = m.geometry.boundingBox.max.y;
+    for (let i = 0; i < m.count; i++) {
+      const s = toScreen(ringPoint(m, i, top));
+      const seen = seenAt({ p: ringPoint(m, i, top * 0.5), mesh: m, inst: i }, s, occ);
+      const t = svgEl('text', { x: s.x, y: s.y + 4 }, seen ? 'star' : 'star behind');
+      t.textContent = String(r.star[i]);
+      g.append(t);
+    }
+  }
+  ov.svg.append(g);
+}
+// Show me on a ring of bolts: one sample bolt gets its sizes drawn on, from its sheet: its length (under the head to
+// the tip) with its thread, the grip it spans, and its head's width across flats. The sample is one seen nearly side-on,
+// and of those the one furthest out from the ring's middle, so the sizes, drawn on its outer side, cross no other bolt.
+function drawDims(free, occ) {
+  const s = iso.show;
+  if (!s || !isBolt(s.sub)) return;
+  const m = subMeshes(s.pc, s.sub).find((x) => ringOf(x));
+  if (!m) return;
+  const rows = subDocOf(s.pc.userData.part, s.sub)?.rows || [];
+  const row = (k) => rows.find((r) => r[0] === k)?.[1];
+  const size = row('Length')?.split(':')[0];
+  const grip = parseFloat(row('Grip')), af = parseFloat(row('Spanner'));
+  m.updateWorldMatrix(true, false);
+  if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+  const bb = m.geometry.boundingBox;
+  const dir = basis(view.az, view.el).dir;
+  const mid = { x: 0, y: 0 }, all = [];
+  for (let i = 0; i < m.count; i++) {
+    const base = ringPoint(m, i, 0), tip = ringPoint(m, i, bb.min.y);
+    const sb = toScreen(base), st = toScreen(tip);
+    mid.x += sb.x / m.count; mid.y += sb.y / m.count;
+    all.push({ i, sb, st, side: Math.abs(tip.clone().sub(base).normalize().dot(dir)) });
+  }
+  const seen = all.filter((c) => inRect(toScreen(ringPoint(m, c.i, bb.max.y)), free, 40) && inRect(c.st, free, 40)
+    && seenAt({ p: ringPoint(m, c.i, bb.max.y * 0.5), mesh: m, inst: c.i }, toScreen(ringPoint(m, c.i, bb.max.y)), occ));
+  if (!seen.length) return;
+  const least = Math.min(...seen.map((c) => c.side));
+  const out = (c) => Math.hypot((c.sb.x + c.st.x) / 2 - mid.x, (c.sb.y + c.st.y) / 2 - mid.y);
+  const { i, sb, st } = seen.filter((c) => c.side <= least + 0.12).sort((p, q) => out(q) - out(p))[0];
+  const L = Math.hypot(st.x - sb.x, st.y - sb.y);
+  if (L < 36) return;
+  const u = { x: (st.x - sb.x) / L, y: (st.y - sb.y) / L };
+  let n = { x: -u.y, y: u.x };
+  if (((sb.x + st.x) / 2 - mid.x) * n.x + ((sb.y + st.y) / 2 - mid.y) * n.y < 0) n = { x: -n.x, y: -n.y };
+  // As on a drawing, each size runs along its own line, on the outer side, turned to read upright: the length and the
+  // grip from under the head toward the tip, then the width across flats on a leader from the head, read back from it.
+  let ang = (Math.atan2(u.y, u.x) * 180) / Math.PI;
+  if (ang > 90) ang -= 180; else if (ang <= -90) ang += 180;
+  const up = { x: Math.sin(ang * DEG), y: -Math.cos(ang * DEG) };
+  const lift = up.x * n.x + up.y * n.y > 0 ? 4 : 12;
+  const fwd = Math.cos(ang * DEG) * u.x + Math.sin(ang * DEG) * u.y > 0;
+  const pxPerCm = height / (2 * halfNow());
+  const head = (af / 20 || 0.6) * pxPerCm;
+  const g = svgEl('g', {}, 'dim');
+  const label = (p, text, anchor = 'middle') => {
+    const x = p.x + n.x * lift, y = p.y + n.y * lift;
+    const t = svgEl('text', { x, y, 'text-anchor': anchor, transform: `rotate(${ang.toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)})` }, 'dim');
+    t.textContent = text;
+    g.append(t);
+  };
+  const off = (p, d) => ({ x: p.x + n.x * d, y: p.y + n.y * d });
+  const along = (a, b, d, text) => {
+    const p = off(a, d), q = off(b, d);
+    line(g, p, q);
+    for (const e of [p, q]) line(g, off(e, -5), off(e, 5));
+    label({ x: p.x + u.x * 8, y: p.y + u.y * 8 }, text, fwd ? 'start' : 'end');
+  };
+  if (size) along(sb, st, head + 10, size);
+  if (grip) along(sb, toScreen(ringPoint(m, i, -grip / 10)), head + 34, `grip ${grip} mm`);
+  if (af) {
+    const a = toScreen(ringPoint(m, i, bb.max.y * 0.5, af / 20)), b = toScreen(ringPoint(m, i, bb.max.y * 0.5, -af / 20));
+    line(g, a, b);
+    const e = (a.x - b.x) * n.x + (a.y - b.y) * n.y > 0 ? a : b;
+    const p = off(toScreen(ringPoint(m, i, bb.max.y)), head + 58);
+    line(g, e, p);
+    label({ x: p.x - u.x * 4, y: p.y - u.y * 4 }, `${af} mm across flats`, fwd ? 'end' : 'start');
+  }
+  ov.svg.append(g);
+}
 // The seat ring, its tether and, for a seat out of sight, the edge marker.
 function drawSeat(free) {
   const s = iso.show;
   const list = piecesOf.get(iso.part) || [];
   const pc = s ? s.pc : iso.focus || (list.length === 1 ? list[0] : null);
-  if (!pc || (!s && iso.apart)) return;
+  if (!pc || (!s && (iso.apart || iso.joint))) return;
   const now = screenRect(s ? boxOfSub(pc, s.sub) : boxOfPiece(pc));
   // A lifted piece sits down on the face of its place opposite the way it lifts (the gauge on its clamp, a viewport on
   // its port), so that face is ringed: the tenth of its box at that end.
@@ -3383,7 +3798,8 @@ function calloutEl(c, balloon) {
 function drawCallouts(free, occ, lead) {
   const list = piecesOf.get(iso.part) || [];
   const pc = iso.focus || (list.length === 1 ? list[0] : null);
-  if (!iso.apart || iso.show || !pc) return;
+  // While a step is shown, its caption and outline name what comes off instead.
+  if (!iso.apart || iso.show || iso.step || iso.joint || !pc) return;
   const kept = (c) => isPinned({ part: iso.part, sub: c.sub }) || sameSheet(state.live, { part: iso.part, sub: c.sub });
   // The sub-part the leader line ends on is named by its sheet, so it needs no callout.
   const chosen = calloutCands(pc, occ).filter((c) => c.sub !== lead?.sub).sort((a, b) => kept(b) - kept(a) || b.area - a.area).slice(0, Math.round(10 / uiScale));
@@ -4089,6 +4505,7 @@ function renderOverview(box) {
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
     'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades, a dashed ring marks where it sits in the machine, and the inspect bar says where it is. Esc goes back to the view you had.',
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all, and a dashed ring marks where it sits. The table’s edges are named Front, Right, Back and Left for the quarters above them, so you know which side you are looking from.',
+    'Taken apart, a part steps through the order it comes off with the arrows by “All”: nuts, then bolts, then the flange, the gasket last. Each step says how, with the bolt size and spanner, and a ring of bolts or nuts is numbered on the heads in star order. Fitting runs back up the steps. On a gasket or a vessel joint flange, “Open this joint” does the same for the whole joint: nuts, bolts, the two quarters apart, then the gasket out, never to be reused.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
     'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
@@ -4163,7 +4580,11 @@ function renderHelp(box) {
       ['Click near a small part', 'a click that hits nothing picks the smallest part within 12 px'],
       ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed and its seat ringed; the inspect bar says where it is. Esc goes back'],
       ['A callout on a part taken apart', 'preview its sheet; its number is the Made of row’s'],
-      ['Turn to see (inspect bar)', 'offered when a part taken apart comes apart toward you: turns the view so its sub-parts lie across it'],
+      ['Turn to see (inspect bar)', 'offered when a part taken apart, or a joint opened, comes apart toward you: turns the view so its sub-parts lie across it'],
+      ['‹ Step n / N › (inspect bar, taken apart)', 'step through the order it comes off: each step says how (size, spanner, star order) and its sub-parts light; “All” has every sub-part off. Fitting runs back up the steps'],
+      ['Open this joint (inspect bar, a gasket or a joint flange)', 'the joint’s nuts, bolts, flanges and gasket in four steps, the gasket last; Close the joint, or Esc, puts it back'],
+      ['Rest the pointer on one bolt or nut of a ring (inspecting)', 'name it: “Bolt 7 of 20 · star 3”, its place round the ring from the top and its turn in the star order; a click still keeps the ring’s sheet'],
+      ['Show me on a ring of bolts', 'one sample bolt has its length, grip and width across flats drawn on'],
       ['Link icon in the inspect bar', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
       ['Drag a sheet or the preview out of the column', 'it floats where you drop it, kept; drop it back on the column to return it'],
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
@@ -4208,6 +4629,7 @@ function renderHelp(box) {
       ['C', 'cutaway'],
       ['I', 'inspect the selected part'],
       ['T', 'take the inspected part apart'],
+      ['J', 'open the joint of the inspected gasket or joint flange, or close it'],
       [', .', 'previous or next piece of the inspected part'],
       ['G', 'context: the ghost of the rest of the machine on or off'],
       ['X', 'section: cut the inspected part in half through its axis, with the parts round it'],
@@ -4217,7 +4639,7 @@ function renderHelp(box) {
       ['Backspace', 'back to the part you came from by a link'],
       ['F', 'fold or unfold the side panels'],
       ['H', 'hide the selected part'],
-      ['Esc', 'step back: the preview, Show me, one piece, the part, then the selection. Kept sheets stay. On the tour it stops at every piece; Done leaves'],
+      ['Esc', 'step back: the preview, Show me, the joint opened, the step shown, one piece, the part, then the selection. Kept sheets stay. On the tour it stops at every piece; Done leaves'],
     ]],
   ];
   for (const [title, rows] of groups) {
@@ -4265,6 +4687,8 @@ function linkOf() {
     if (state.pins.length) kv.push(['sheets', state.pins.map((x) => slug(x.sub)).join(',')]);
     if (iso.apart) kv.push(['apart', '1']);
     if (iso.section) kv.push(['section', '1']);
+    if (iso.joint) kv.push(['joint', '1']);
+    if (iso.step) kv.push(['step', String(iso.step)]);
     if (iso.show) kv.push(['show', `${slug(iso.show.pc.userData.label)}.${slug(iso.show.sub)}`]);
   } else if (state.select) kv.push(['select', state.select]);
   const az = (((goal.az % 360) + 540) % 360) - 180;
@@ -4297,6 +4721,9 @@ function applyLink(h) {
     for (const sub of want) if (!isPinned({ part, sub })) pinSheet(part, sub);
     if ((q.get('apart') === '1') !== iso.apart) setApart(q.get('apart') === '1');
     if ((q.get('section') === '1') !== iso.section) setSection(q.get('section') === '1');
+    if ((q.get('joint') === '1') !== !!iso.joint) setJoint(q.get('joint') === '1');
+    const st = Math.round(+q.get('step')) || null;
+    if (st !== iso.step && stepList().length) setStep(st);
     // show=piece.sub-part: Show me on that sub-part of that piece (slugs have no dots).
     const [sp, ss] = (q.get('show') || '').split('.');
     const spc = sp && ss ? slugFind(list, sp, (x) => x.userData.label) : null;
@@ -4488,7 +4915,8 @@ function updateReadout() {
   const az = ((Math.round(view.az) % 360) + 540) % 360 - 180;
   const line1 = `az ${az}° · el ${Math.round(view.el)}° · ${view.zoom.toFixed(view.zoom < 10 ? 2 : 1)}×${state.explode ? ` · spread ${fmtSpread(state.spread)}` : ''}`;
   let line2;
-  if (state.pins.length) line2 = state.pins[state.pins.length - 1].sub;
+  if (state.hoverOne) line2 = `${state.hoverOne} · ${state.hoverMesh.userData.sub}`;
+  else if (state.pins.length) line2 = state.pins[state.pins.length - 1].sub;
   else if (iso.part) line2 = iso.focus ? iso.focus.userData.label : `${partById.get(iso.part).name}${partById.get(iso.part).count > 1 ? ` ×${partById.get(iso.part).count}` : ''}`;
   else if (state.select) line2 = partById.get(state.select).name;
   else line2 = `${DOCS.PARTS.length} components · ${pieces.length} pieces`;
@@ -4502,6 +4930,7 @@ const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []
 // While inspecting, the hint says what the pointer does now; outside, how to move and how to inspect.
 const HINT = () => (coarse ? (iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it' : 'Tap a sub-part to preview its sheet') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
   : iso.show ? 'Show me · drag to turn round it · Esc goes back'
+  : iso.joint ? 'Step through the joint with ‹ › · point at a bolt to name it · Esc closes the joint'
   : iso.part ? `Point at a sub-part to preview · ${allShown() ? 'click a piece to pick it' : 'click to keep · double-click to show it'} · Esc steps back`
     : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
       : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
@@ -4521,12 +4950,16 @@ function inSector(p) {
   if (state.cutZ > 40) return false;
   return p.z > state.cutZ && sectorPlanes[1].distanceToPoint(p) < 0 && sectorPlanes[2].distanceToPoint(p) < 0;
 }
+// The ray's hit, and which one of a ring it is (pickInst), so one bolt of 20 can be named.
+let pickInst = null;
 function rayHit(ndc, list) {
   raycaster.setFromCamera(ndc, camera);
   for (const h of raycaster.intersectObjects(list, false)) {
     if (!iso.part && h.object.userData.clip && inSector(h.point)) continue;
+    pickInst = h.instanceId ?? null;
     return h.object;
   }
+  pickInst = null;
   return null;
 }
 const meshSize = (m) => { if (!m.geometry.boundingSphere) m.geometry.computeBoundingSphere(); return m.geometry.boundingSphere.radius; };
@@ -4538,12 +4971,13 @@ function pickMesh(ndc, exact = false) {
   const hit = rayHit(ndc, list);
   const px = exact ? 0 : coarse ? 24 : hit ? 0 : 12;
   if (!px) return hit;
-  let best = hit, size = hit ? meshSize(hit) : Infinity;
+  let best = hit, size = hit ? meshSize(hit) : Infinity, inst = pickInst;
   for (const f of [0.5, 1]) for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2 + f;
     const m = rayHit(new THREE.Vector2(ndc.x + (Math.cos(a) * f * px * 2) / width, ndc.y + (Math.sin(a) * f * px * 2) / height), list);
-    if (m && meshSize(m) < size) { best = m; size = meshSize(m); }
+    if (m && meshSize(m) < size) { best = m; size = meshSize(m); inst = pickInst; }
   }
+  pickInst = inst;
   return best;
 }
 const pick = (ndc) => pickMesh(ndc)?.userData.piece || null;
@@ -4617,7 +5051,7 @@ stage.addEventListener('click', (e) => {
   const pc = m?.userData.piece || null;
   if (!pc) return;
   if (allShown()) return setFocus(pc);
-  if (!m.userData.sub) return;
+  if (!m.userData.sub || m.userData.part !== iso.part) return;
   if (coarse) return stoppedOn(m);
   const x = { part: iso.part, sub: m.userData.sub };
   if (isPinned(x)) { state.live = null; revealSheet(x); } else pinSheet(x.part, x.sub);
@@ -4641,25 +5075,29 @@ stage.addEventListener('wheel', (e) => {
   zoomBy(Math.exp(-clamp(dy, -240, 240) * 0.0016), ndcOf(e));
 }, { passive: false });
 
-function setHover(mesh) {
+function setHover(mesh, inst = null) {
   const pc = mesh?.userData.piece || null;
   const id = pc?.userData.part || null;
   const sub = mesh?.userData.sub || null;
-  if (pc === state.hoverPiece && id === state.hover && sub === (state.hoverMesh?.userData.sub || null)) return;
+  // One of a ring of bolts or nuts is named, not picked: "Bolt 7 of 20 · star 3". A click still keeps the ring's sheet.
+  const one = iso.part && (id === iso.part || inJoint(pc)) && !allShown() ? oneOf(mesh, inst) : null;
+  if (pc === state.hoverPiece && id === state.hover && sub === (state.hoverMesh?.userData.sub || null) && one === state.hoverOne) return;
   state.hover = id;
   state.hoverPiece = pc;
   state.hoverMesh = mesh;
+  state.hoverOne = one;
   stage.classList.toggle('pointing', !!pc);
   refreshLit();
-  // While inspecting, the sheets name the sub-part, so the tooltip only shows without them. A kept sheet lights up
-  // while its sub-part, on any piece, is under the pointer.
+  // While inspecting, the sheets name the sub-part, so the tooltip only shows without them, or to name one of a ring.
+  // A kept sheet lights up while its sub-part, on any piece, is under the pointer.
   const screens = iso.part && HUD.on;
   const hotKey = iso.part && id === iso.part && sub ? sheetKey({ part: id, sub }) : '';
   for (const [k, sc] of HUD.els) if (k.startsWith('pin|')) sc.classList.toggle('hot', k === hotKey);
-  if (pc && lastPointer && !coarse && !screens) {
+  if (pc && lastPointer && !coarse && (!screens || one)) {
     const r = stage.getBoundingClientRect();
     const p = partById.get(id);
-    if (iso.part) tip.replaceChildren(allShown() ? pc.userData.label : sub || pc.userData.label, el('small', null, allShown() ? 'click to pick this piece' : sub ? 'click to keep its sheet' : ''));
+    if (one) tip.replaceChildren(one, el('small', null, id === iso.part ? `${sub} · click to keep their sheet` : `${sub}, ${pc.userData.label}`));
+    else if (iso.part) tip.replaceChildren(allShown() ? pc.userData.label : sub || pc.userData.label, el('small', null, allShown() ? 'click to pick this piece' : sub ? 'click to keep its sheet' : ''));
     else tip.replaceChildren(p.name, el('small', null, 'double-click to inspect'));
     tip.style.left = `${lastPointer.clientX - r.left}px`;
     tip.style.top = `${lastPointer.clientY - r.top}px`;
@@ -4687,6 +5125,7 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'p') setDragMode('pan');
   else if (k === 'i' && state.select) inspect(state.select);
   else if (k === 't' && iso.part) setApart(!iso.apart);
+  else if (k === 'j' && (iso.joint || jointHere())) setJoint(!iso.joint);
   else if (k === '[' || k === ']') {
     const dv = k === ']' ? 0.2 : -0.2;
     if (iso.part && iso.apart) { iso.apartSpread = clamp(iso.apartSpread + dv, 0.4, 2.5); $('sApart').value = iso.apartSpread; $('oApart').textContent = fmtSpread(iso.apartSpread); }
@@ -4701,11 +5140,13 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'f') togglePanels();
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
   else if (k === 'z' && showCandidate()) { const c = showCandidate(); showMe(c.part, c.sub, c.pc); }
-  // Esc steps back, one rung at a time: the preview, the Show me frame, one piece to every piece, the part to the
-  // assembly, then the selection. It never closes a kept sheet. On the tour it stops at every piece: only Done leaves.
+  // Esc steps back, one rung at a time: the preview, the Show me frame, the joint opened, the step shown, one piece to
+  // every piece, the part to the assembly, then the selection. It never closes a kept sheet. On the tour it stops at every piece: only Done leaves.
   else if (k === 'escape') {
     if (state.live) setLive(null);
     else if (iso.show) endShow(true);
+    else if (iso.joint) setJoint(false);
+    else if (iso.step) setStep(null);
     else if (iso.focus) setFocus(null);
     else if (iso.part && iso.tour !== null) announce('On the tour: Done leaves it.');
     else if (iso.part) endInspect();
@@ -4794,7 +5235,17 @@ function frame() {
     const before = g.p;
     if (!(now - state.explodeAt < delay && !reduceMotion.matches)) g.p = follow(g.p, target, 4.2);
     else if (Math.abs(target - g.p) > 1e-4) moving = true;
-    if (g.p !== before || spreadMoved) { moving = true; g.obj.position.copy(g.offset).multiplyScalar(ease(g.p) * state.spreadNow); }
+    // A joint opened moves its quarters and gasket on top of the explode.
+    const jT = jointGoal(g);
+    if (!g.jNow) g.jNow = new V3();
+    let jMoved = false;
+    if (!g.jNow.equals(jT)) {
+      const d0 = g.jNow.distanceTo(jT);
+      if (reduceMotion.matches || d0 < 1e-3) g.jNow.copy(jT); else g.jNow.lerp(jT, 1 - Math.exp(-dt * 4.5));
+      shift = Math.max(shift, (d0 - g.jNow.distanceTo(jT)) / 10);
+      jMoved = true;
+    }
+    if (g.p !== before || spreadMoved || jMoved) { moving = true; g.obj.position.copy(g.offset).multiplyScalar(ease(g.p) * state.spreadNow).add(g.jNow); }
     shift = Math.max(shift, Math.abs(g.p - before));
   }
   const ep0 = state.ep;
@@ -4807,10 +5258,10 @@ function frame() {
   for (const pc of pieces) {
     const u = pc.userData;
     const d0 = u.dp, t0 = u.tp, g0 = u.gNow;
-    const out = iso.part === u.part ? 1 : 0;
+    const out = iso.part === u.part && !inJoint(pc) ? 1 : 0;
     if (now >= u.dHold) u.dp = follow(u.dp, out, 3.2);
     else active = true;
-    u.tp = follow(u.tp, iso.part === u.part && iso.apart && (!iso.focus || iso.focus === pc) ? 1 : 0, 4.5);
+    u.tp = follow(u.tp, takenApart(pc) ? 1 : 0, 4.5);
     shift = Math.max(shift, Math.abs(u.dp - d0), Math.abs(u.tp - t0));
     // Half a second to fade to a ghost, a little longer back to solid (after its hold), eased where it is drawn.
     const gT = u.ghost && !u.secCtx ? 1 : 0;
@@ -4826,9 +5277,20 @@ function frame() {
       pc.position.copy(u.detachVec).multiplyScalar(ease(u.dp)).addScaledVector(u.apart, ease(p) * state.spreadNow);
       moving = true;
     }
-    if (u.tp !== t0 || (apartMoved && u.tp > 0)) {
+    // Each sub-part comes off at its step (sp, 1 when off), within the piece's take-apart (tp).
+    let spMoved = false;
+    if (u.tp > 0 || t0 > 0 || u.spBusy) {
+      u.spBusy = false;
+      pc.traverse((m) => {
+        if (!m.isMesh) return;
+        const t = subOff(pc, m.userData.sub), s0 = m.userData.sp ?? 1, s = t0 < 1e-3 ? t : follow(s0, t, 4.5);
+        if (s !== s0) { m.userData.sp = s; spMoved = true; shift = Math.max(shift, Math.abs(s - s0)); }
+        if (s !== t) u.spBusy = true;
+      });
+    }
+    if (u.tp !== t0 || (apartMoved && u.tp > 0) || spMoved) {
       const k = ease(u.tp) * iso.apartNow;
-      pc.traverse((m) => { if (m.isMesh) m.position.copy(m.userData.ex).multiplyScalar(k); });
+      pc.traverse((m) => { if (m.isMesh) m.position.copy(m.userData.ex).multiplyScalar(k * ease(m.userData.sp ?? 1)); });
       moving = true;
     }
   }
@@ -4853,7 +5315,7 @@ function frame() {
   sectorPlanes[0].constant = state.cutZ >= 44.9 ? 1e6 : state.cutZ;
 
   if (hoverPending && !drag) {
-    setHover(pickMesh(hoverPending));
+    setHover(pickMesh(hoverPending), pickInst);
     hoverPending = null;
   }
 
@@ -4905,6 +5367,9 @@ requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
   setTab, startTour, nextStop, joinOf, setSection, setScale, setLetterKeys, dockLayout, linkOf,
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
+  setStep, stepBy, stepList, setJoint, jointHere, ringOf, oneOf, applyLink, subMeshes,
+  // One of a ring under a point of the page: its name ("Bolt 7 of 20 · star 3"), as the tooltip shows it.
+  oneAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y }), true); return m ? oneOf(m, pickInst) : null; },
   // What a click or tap at a point of the page would pick, forgiving a near miss as the pointer does.
   pickNear: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y })); return m ? { part: m.userData.part, sub: m.userData.sub || null } : null; },
   // What is drawn under a point of the page, for checks: its part, sub-part and piece.

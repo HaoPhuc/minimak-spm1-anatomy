@@ -578,6 +578,30 @@
     { part: 'plasma', text: 'The result: a cold glow of 1–5 eV filling the chamber, shaped by the coils. No fusion and no plasma current, but a tokamak’s magnets.', tags: ['S2'] },
   ];
 
+  // The order a part's sub-parts come off when it is taken apart, one list per step (what is in one step comes off
+  // together); fitting it runs back up the list. No assembly procedure is published (S4 gives only the order of a run),
+  // so every step is an assumption, shown tagged so. A joint comes undone nuts first, then bolts, then what they held,
+  // and its seal comes out last. A part not listed here takes its order by the same rule (index.html): nuts, then bolts
+  // and screws, then the rest in the reverse of the order it was built, a seal last. What does not come off (a weld, the
+  // winding a coil is built round) is no step.
+  const ORDER = {
+    viewport: [['16 nuts'], ['16 bolts'], ['Viewport flange', 'Window glass, sealed into the flange'], ['Copper gasket']],
+    laser: [['6 nuts'], ['6 bolts'], ['DN40CF viewport flange', 'Window glass'], ['Copper gasket']],
+    electrode: [['HV terminal cap'], ['6 nuts'], ['6 bolts'], ['HV feedthrough: flange, ceramic insulator, anode rod', 'Anode disc'], ['Copper gasket']],
+    probe: [['6 nuts'], ['6 bolts'], ['Bellows linear feedthrough', 'Micrometer drive and knob', 'Probe: shaft, ceramic sleeve, wire tip'], ['Copper gasket']],
+    needle: [['Outlet compression fitting'], ['6 nuts'], ['6 bolts'], ['DN40 inlet flange', 'Needle valve body', 'Needle stem and knob'], ['Copper gasket']],
+    pumpPort: [['KF40 clamp with wing nut'], ['Hose end flange, KF40'], ['KF40 centring ring and O-ring'], ['16 nuts'], ['16 bolts'], ['Zero-length reducer with KF40 stub'], ['Copper gasket']],
+    stack: [
+      ['6 nuts on the adaptor'], ['6 bolts on the adaptor'], ['DN40 to KF16 adaptor flange'],
+      ['6 nuts on the blank'], ['6 bolts on the blank'], ['DN40 blank flange'],
+      ['6 bolts into the reducer'], ['DN40 four-way cross'], ['3 DN40 gaskets'],
+      ['8 nuts'], ['8 bolts'], ['DN63 to DN40 reducer flange'], ['Copper gasket'],
+    ],
+    gauge: [['Cable connector'], ['KF16 clamp'], ['KF16 centring ring and O-ring'], ['Sensor tube nut'], ['Convectron ATM display module']],
+    pump: [['KF40 clamp'], ['Hose end flange, KF40'], ['KF40 centring ring and O-ring'], ['Exhaust oil-mist filter'], ['Motor terminal box'], ['Fan cover'], ['Electric motor'], ['Oil sight glass'], ['KF40 inlet port'], ['Base plate and rubber feet']],
+    tf: [['Terminal block and lead studs'], ['Copper cover band'], ['Copper former with fold-out tabs']],
+  };
+
   // Words a first-year student may not know. The first use of each on a page is underlined and opens its definition.
   // `match` finds a use; a match that also contains another term (DN160CF holds DN and CF) defines both at once.
   const GLOSSARY = [
@@ -1136,5 +1160,5 @@
   };
 
   PARTS.forEach((p, i) => { p.n = i + 1; });
-  root.SPM1_DOCS = { SOURCES, GROUPS, PARTS, NOT_DRAWN, JOINS, RUN, TOUR, GLOSSARY, SUBDOCS, SUBMAP };
+  root.SPM1_DOCS = { SOURCES, GROUPS, PARTS, NOT_DRAWN, JOINS, RUN, TOUR, ORDER, GLOSSARY, SUBDOCS, SUBMAP };
 })(typeof window !== 'undefined' ? window : globalThis);
