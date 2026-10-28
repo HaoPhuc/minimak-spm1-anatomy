@@ -473,6 +473,56 @@ last.
   from the app alone in under 2 minutes.
 - **Star order:** the Right–back joint opens in numbered steps, in a proper 20-bolt cross pattern.
 
+**Status: built** (October 2026). The star-order check passes in headless Chrome, at 1366×768 and 1440×900 with the
+column open, in Colour, Greyscale and Hologram; the fitting-order check needs a student and has not been run. The
+order is tagged *assumed* (open question 3).
+- **Fitting order:** not run. It needs a first-year who has not seen the app. What the app gives them for the
+  viewport, at four steps:
+  1. *16 nuts:* "Undo the 16 nuts (13 mm spanner) in star order, as numbered on the heads, a little each round", with
+     the numbers 1–16 on the heads.
+  2. *16 bolts:* "Draw out the 16 bolts, M8 × 50 mm (13 mm spanner)", numbered again.
+  3. *Viewport flange,* with its window.
+  4. *Copper gasket:* "Fit a new one: a copper CF gasket is never reused." Fitting runs back from here to step 1.
+- **Star order:** the Right–back joint opens in four steps from its gasket or either flange: the 20 nuts on the back
+  side, the 20 bolts on the right side, the two quarters eased apart, then the gasket out. Steps 1 and 2 number all 20
+  heads. Read in star order, the places run 1, 11, 6, 16, 3, 13, 8, 18, 2, 12, 7, 17, 4, 14, 9, 19, 5, 15, 10, 20 (the
+  legacy cross pattern of ASME PCC-1), the same for the nuts and the bolts, so each nut and its bolt share a number.
+- **Also checked:**
+  - Each step lights its sub-parts and the mate they bear on, draws its trail, hides the callouts, and is announced.
+    The stack comes apart in 13 steps, its first ring numbered 1–6.
+  - Pointing at one bolt names it in the tooltip and the readout: *Bolt 16 of 16 · star 16*, and on the joint *Nut 2
+    of 20 · star 9*. With sheets on, the tooltip shows only for one of a ring.
+  - Show me on the viewport's bolts draws *M8 × 50 mm*, *grip 41 mm* and *13 mm across flats* on one bolt; the stack's
+    8 bolts read *M8 × 45 mm* and *grip 36 mm*.
+  - Keyboard only: `J` opens the joint; Tab reaches ‹ › in three presses from Open this joint and four from Take
+    apart; Enter steps; Esc closes the joint, and on a piece taken apart goes back to All. Focus is never lost.
+  - Touch at 1024×768: Open this joint and the step arrows are 44 px; a tap steps.
+  - Reduced motion: the gasket is out at once, and back at once.
+  - Links: `joint=1&step=2` opens the joint at step 2, and `apart=1&step=3` takes the viewport apart at step 3;
+    both write themselves back the same.
+  - Phases 2 and 3's checks still pass. No console errors.
+
+What differs from the plan:
+- **The order is a list per part** (`ORDER` in `parts.js`, each step a list of sub-parts that come off together),
+  not an `order` on each sub-part: a step can hold two (the viewport flange with its window). A part with no list
+  falls back to a rule: nuts, then bolts and screws, then the rest in the reverse of the build, seals last.
+- **"All" stays the all-at-once view** and sits before step 1 on the arrows, as the pieces' arrows do; fitting is the
+  same steps read back up, said under the last one.
+- **The step's seat** is the trail's hollow ring, where the sub-part sat on its piece. **Its mate** is outlined: the
+  mate piece whose resting box its sub-parts touch (the port, for each of the viewport's steps).
+- **Star numbers** go on every ring a step takes off, nuts as well as bolts. A number whose head is hidden is drawn
+  faint. Places are counted clockwise from the top, seen from the bolt heads, so a nut and its bolt read the same.
+- **Dimension lines** go on the bolt seen most side-on, of those the one furthest out of the ring, and read along their
+  lines as on a drawing. The length is measured under the head. The thread is given in the length (*M8 × 50 mm*), not
+  on its own.
+- **Open this joint** is a button beside Take apart (and `J`), offered on a gasket or a joint flange. Its third step
+  moves the two quarters, with their elbows, as the flanges are welded on; the gasket then rises clear. The joint is
+  framed at each step, as the gasket rises well clear of the rest. Turn to see is offered within 35° of its axis (20°
+  for Take apart) and turns to 50° off it, a three-quarter view where the numbers and the parting both read. Section
+  is off while a joint is open.
+- **Flat triangles are dropped at load.** A ray grazing one (three corners in a line, where a lathe closes) made
+  three.js r160 throw while picking. Pointing at the joint's nuts found it; it was there before this phase.
+
 ### Phase 5: teach and find (S–M)
 
 | Item | Change |
@@ -490,7 +540,8 @@ last.
    it, no critic objected in round 3, and Lena added the touch clause. It fixes tremor and glove double-taps.
    *Phase 1 built it; the README says so.*
 3. **Fitting order (O1).** No procedure is published (S4 slides 16–27 give only a run order). Tag the steps
-   *assumed*, or ask Rideo Systems for their build order?
+   *assumed*, or ask Rideo Systems for their build order? *Phase 4 tags them assumed; asking Rideo Systems is still
+   open, and their order would replace `ORDER` in `parts.js`.*
 4. **Stock bolt lengths (T4).** Should the drawn bolts change to the derived stock length? Ruud: yes, or a student
    asks stores for a 53 mm bolt.
 
