@@ -532,6 +532,60 @@ What differs from the plan:
 | **L3** | **Words and toggles:** "Screens" becomes **Sheets**, "Context" becomes **Ghost**, and one label for Done. Toggles are drawn as switches, not as primary buttons. Take apart's tooltip says "sub-parts". `]` acts only on what is exploded. |
 | **L4** | **Long-press loupe on touch:** 3×, with the sub-part's name. Lifting the finger opens the preview. |
 
+The phase has no *done when* of its own, so it is checked against the panel's: Mai's ("M8" lists the M8 sheets and
+"led" lists no windows), Janssen's (his wording finds the Right–back gasket first, and a five-question round scores),
+Daniel's (you can tell which toggles are on, and `]` no longer reaches the exploded machine), and Lena's (a held finger
+shows a 3× loupe with the name, and lifting it opens the preview).
+
+**Status: built** (October 2026). All four pass in headless Chrome, at 1366×768 and 1440×900 with the column open, in
+Colour, Greyscale and Hologram, and the loupe on touch at 1024×768.
+- **Search (L1):**
+  - *the gasket between the right and back quarters* lists one row, *Right–back joint · OFHC copper gasket*, with
+    "Closest matches: nothing has “quarters”" under the box. A click on it inspects that gasket with its sheet kept.
+  - "M8" and "UNF" list the M8 bolt and nut rings of the joints and viewports (from their sheets); "o-ring" the three
+    KF centring rings; "joint bolt" the four joints' 20 bolts; "KF clamp" the three clamps.
+  - "led" finds nothing and says so ("sealed" still finds the windows by their own word). "xyzzy" says nothing
+    matches and suggests a name, a size or a word.
+- **Where does it go? (L2):** a round of five, answered once wrongly, then right, then four times by a real click
+  on the model, scores *4 of 5 right first time*. The part lifts above the machine from the table top up, which is
+  framed at 0.8–0.9× (the whole machine was 0.4×). A link, `#quiz=gauge,viewport,laser,needle,probe&q=2`, opens at
+  the second question. Esc ends it: the part is home, the cutaway is back, and the score is announced.
+- **Words and toggles (L3):** Explode, Cutaway, Panels, Take apart, Open this joint, Section, Ghost and Sheets are
+  switches. Their buttons keep their background when on; the switch fills with the theme's accent (teal, black in
+  Greyscale, blue in Hologram) and its knob moves right. Done and Next are the only filled buttons. Both Dones say
+  *Done*. Take apart and its Spread slider say "sub-parts". `]` while inspecting with nothing apart, or in the
+  assembly not exploded, changes nothing and says so; taken apart it spreads the part, exploded the machine.
+- **Loupe (L4):** not open after 250 ms, open after 450 ms. On the gauge it reads *Vacuum gauge*; at the viewport's
+  bolt step *Bolt 16 of 16 · star 16*. Sliding to the flange moves it (it then names a nut, as a tap there would).
+  Lifting previews *16 nuts*. Held and lifted over nothing, the preview stays. A quick tap opens no loupe.
+- **Also checked:**
+  - Keyboard only: Enter on *Where does it go?* puts focus on the first choice; Tab and Enter answer; focus moves to
+    *Next ›*, and Enter there to the next question's first choice. Esc ends the round with focus back on the
+    Machine tab's button. The search note is a status, and the box is described by it.
+  - Touch: the choices are 44 px tall, and a tap on a joint flange answers the gasket question.
+  - Reduced motion: the lifted part is up within 300 ms and home within 300 ms (the glide takes about 1.5 s).
+  - Phases 2, 3 and 4's checks still pass. The gauge's sensor nut shows 487 visible px at 1366×768 (546 before:
+    the switches widen the inspect bar, which now wraps), still over the 400 asked. No console errors.
+
+What differs from the plan:
+- **Search ranks by keeping the best, not by reordering.** The list keeps its groups, so the rows that score best are
+  the ones shown: a word in a name counts 3, in a sheet or description 1, each times how rare the word is among the
+  names. The rarest word decides, so the gasket beats the coils of the right and back quarters. A row found only
+  through its part's name is not listed (the part's own row says it). Search hits wrap instead of cutting off "· 20 …"
+  (Ruud).
+- **Where does it go? reads `connects` one way.** Joins have no direction, so `QUIZ` in `parts.js` names what each
+  of 13 parts sits on, each pair one of its `connects` (checked in development): a viewport goes on a lateral port,
+  not on the webcam. Parts that hang between two others (the bellows line) or stand apart from where they plug in
+  (the webcam, the spectrometer) are not asked. A place must also be within reach of where the part rests, so any of
+  the three viewport ports is right but the drawer the gauge's cable runs to is not. Four choices in the bar make it
+  work by keyboard, and one more try is given after a wrong answer. The cutaway is turned off while it runs.
+- **A toggle keeps one label.** Take apart no longer turns into *Put together*, nor Open this joint into *Close the
+  joint*; the switch says which. Orbit and Pan, and the theme, stay as segmented choices: they pick one of several,
+  they are not on or off. The Part tab's actions are buttons, not switches, and keep their verbs.
+- **The loupe is drawn again at 3×**, through the camera's view offset, rather than by stretching pixels, so edges
+  stay sharp. It names what a tap at its centre would pick (the 24 px rule), so lifting does what it says.
+- **Not done from Daniel's list:** "Resume at stop n" on the tour was not needed, as Esc already stays on the tour.
+
 ## 5. Open questions for you
 
 1. **The selection colour in Colour.** Teal, as a solid fill (Amara: amber fails 3:1 against copper), or amber in

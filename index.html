@@ -88,7 +88,14 @@
   .mb button { position: relative; border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1; white-space: nowrap; }
   .mb button + button { border-left: 1px solid var(--rule); }
   .mb button:hover { background: var(--soft); }
-  .mb button[aria-pressed="true"], .mb button[aria-checked="true"] { background: var(--ink); color: var(--card); }
+  .mb button[aria-pressed="true"]:not(.toggle), .mb button[aria-checked="true"] { background: var(--ink); color: var(--card); }
+  /* A toggle is a switch: the button stays as it is and its switch says on or off, by the knob's side and its fill, so
+     a toggle that is on never looks like an action (Done, Next), which alone is filled. */
+  .sw { position: relative; display: inline-block; flex: none; width: 22px; height: 12px; margin-left: 2px; border: 1.5px solid currentColor; border-radius: 7px; opacity: 0.6; vertical-align: -2px; box-sizing: border-box; }
+  .sw::after { content: ''; position: absolute; top: 1.5px; left: 1.5px; width: 6px; height: 6px; border-radius: 50%; background: currentColor; transition: transform 0.15s; }
+  [aria-pressed="true"] > .sw { opacity: 1; background: var(--accent); border-color: var(--accent); }
+  [aria-pressed="true"] > .sw::after { transform: translateX(10px); background: var(--card); }
+  @media (prefers-reduced-motion: reduce) { .sw::after { transition: none; } }
   .mb svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   /* Under 1440 px the theme buttons not chosen show only their icons, and under 1320 px the chosen one too, so the
      modebar keeps to one row on a laptop, Spread slider included. A label that is not shown still names its button. */
@@ -139,6 +146,9 @@
   /* ---------- Assembly tree ---------- */
   /* One Tab stop (the ARIA tree pattern): the groups and part rows are tree items that take focus in turn. */
   .tree { grid-area: tree; }
+  .search-note { margin: 5px 2px 0; font-size: 12px; line-height: 1.35; color: var(--muted); }
+  .search-note[hidden] { display: none; }
+  .search-note b { color: var(--ink); font-weight: 600; }
   .search { width: 100%; margin-top: 8px; font: inherit; font-size: 13px; color: var(--ink); background: var(--soft); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 9px; }
   .tree-root { list-style: none; margin: 0; padding: 0; }
   .tg { margin-top: 6px; }
@@ -158,7 +168,7 @@
   .ti .name span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ti .n { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); min-width: 1.6em; }
   .ti .cnt { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
-  .ti-hit { padding: 3px 4px 3px 52px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ti-hit { padding: 3px 4px 3px 52px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--ink); overflow-wrap: anywhere; }
   .ti-hit:hover { background: var(--soft); }
   .ti-hit.more { padding: 2px 4px 4px 52px; font-size: 11.5px; color: var(--muted); cursor: default; }
   .ti-hit.more:hover { background: none; }
@@ -179,7 +189,15 @@
 
   /* ---------- Viewer card ---------- */
   .view { grid-area: view; position: relative; margin: 0; background: var(--card); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; min-height: 0; }
-  .stage { position: absolute; inset: 0; cursor: grab; touch-action: none; outline: none; }
+  .stage { position: absolute; inset: 0; cursor: grab; touch-action: none; outline: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+  /* The loupe: a finger held still shows the view under it at 3×, with the name of what it is on, above the finger. */
+  .loupe { position: absolute; z-index: 6; width: 132px; display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none; }
+  .loupe[hidden] { display: none; }
+  .loupe canvas { width: 132px; height: 132px; border-radius: 50%; border: 2px solid var(--accent); background: var(--card); box-shadow: 0 6px 22px rgb(0 0 0 / 0.28); }
+  .loupe::after { content: ''; position: absolute; bottom: 66px; left: 66px; width: 12px; height: 12px; margin: 0 0 -6px -6px; border: 1.5px solid var(--accent); border-radius: 50%; box-shadow: 0 0 0 1.5px var(--card); }
+  .loupe span { max-width: 240px; padding: 3px 9px; border: 1px solid var(--rule); border-radius: 7px; background: var(--card); color: var(--ink); font-size: 13px; font-weight: 600; line-height: 1.3; text-align: center; box-shadow: 0 2px 8px rgb(0 0 0 / 0.12); }
+  .loupe span:empty { display: none; }
+  .loupe span small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
   .stage.pan { cursor: move; }
   .stage.dragging { cursor: grabbing; }
   .stage.pointing { cursor: pointer; }
@@ -287,7 +305,8 @@
   .isobar .lbl { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 6px; }
   .isobar .lbl b { font-weight: 600; }
   .isobar button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 4px 9px; font-size: 12px; cursor: pointer; white-space: nowrap; }
-  .isobar button[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .isobar button[aria-pressed="true"]:not(.toggle) { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .isobar button.toggle { display: inline-flex; align-items: center; gap: 6px; }
   .isobar button.done { background: var(--ink); color: var(--card); border-color: var(--ink); }
   .isobar #bBack { max-width: 13em; overflow: hidden; text-overflow: ellipsis; }
   .isobar button.icon { display: inline-grid; place-items: center; padding: 4px 6px; }
@@ -304,6 +323,11 @@
   .isobar .tour > span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .isobar button.next { background: var(--accent); color: var(--card); border-color: var(--accent); }
   .isobar button.next[hidden] { display: none; }
+  /* Where does it go?: the question, then the choices, which say right or wrong once answered. */
+  .quizbar .lbl { white-space: normal; max-width: 26em; }
+  .quizbar .choices { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  .quizbar .choices button.right { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .quizbar .choices button.wrong { text-decoration: line-through; opacity: 0.7; }
   /* Steps: the arrows beside Take apart, and under the bar what the step shown takes off and how. */
   .isobar .step #bSteps { min-width: 5.6em; font-variant-numeric: tabular-nums; }
   .isobar > .stepcap { order: 10; flex: 1 0 100%; max-width: 44em; margin: 2px auto 0; padding: 5px 4px 2px; border-top: 1px solid var(--rule); font-size: 12.5px; line-height: 1.45; text-align: left; }
@@ -514,7 +538,7 @@
   .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
   .holo .scale i { border-color: var(--accent); }
-  .holo .mb button[aria-pressed="true"], .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"], .holo .isobar button.done,
+  .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle), .holo .isobar button.done,
   .holo .isobar button.next, .holo .actions button.primary {
     background: rgb(90 170 225 / 0.16); color: #dcecf8; border-color: var(--accent);
     box-shadow: inset 0 0 0 1px rgb(90 170 225 / 0.6), 0 0 12px rgb(90 170 225 / 0.3);
@@ -587,11 +611,11 @@
         <button type="button" data-view="top" title="From above (4)">Top</button>
       </div>
       <div class="mb" role="group" aria-label="Model">
-        <button type="button" id="bExplode" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span></button>
+        <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="sw" aria-hidden="true"></span></button>
         <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
-        <button type="button" id="bCut" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span></button>
+        <button type="button" id="bCut" class="toggle" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="sw" aria-hidden="true"></span></button>
       </div>
-      <div class="mb"><button type="button" id="bPanels" aria-pressed="true" title="Show or hide the side panels (F)"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg><span class="lbl">Panels</span></button></div>
+      <div class="mb"><button type="button" id="bPanels" class="toggle" aria-pressed="true" title="Show or hide the side panels (F)"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg><span class="lbl">Panels</span><span class="sw" aria-hidden="true"></span></button></div>
       <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
         <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
@@ -604,7 +628,8 @@
     <button type="button" class="rail" data-panel="tree" title="Show the assembly list">Assembly</button>
     <div class="panel-head">
       <div class="head-row"><div class="eyebrow" id="treeTitle">Assembly</div><button type="button" class="fold" data-panel="tree" title="Hide the assembly list to make room (F hides both)" aria-label="Hide the assembly list">‹</button></div>
-      <input class="search" id="search" type="search" placeholder="Find a part…" aria-label="Find a part" autocomplete="off">
+      <input class="search" id="search" type="search" placeholder="Find a part, a size (M8), a seal…" aria-label="Find a part" aria-describedby="searchNote" autocomplete="off">
+      <p class="search-note" id="searchNote" role="status" hidden></p>
     </div>
     <div class="panel-body" id="tree"></div>
   </aside>
@@ -626,18 +651,18 @@
         <button type="button" id="bAll" title="Every piece, or pick one with the arrows">All</button>
         <button type="button" id="bNext" title="Next piece (.)" aria-label="Next piece">›</button>
       </span>
-      <button type="button" id="bApart" aria-pressed="false" title="Take the part apart into its pieces (T)">Take apart</button>
-      <button type="button" id="bJoint" aria-pressed="false" hidden title="Open the joint step by step: the nuts, the bolts, the flanges apart, the gasket out (J)">Open this joint</button>
-      <label class="slide" id="apartWrap" hidden title="How far the pieces move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
+      <button type="button" id="bApart" class="toggle" aria-pressed="false" title="Take the part apart into its sub-parts (T)">Take apart<span class="sw" aria-hidden="true"></span></button>
+      <button type="button" id="bJoint" class="toggle" aria-pressed="false" hidden title="Open the joint step by step: the nuts, the bolts, the flanges apart, the gasket out (J)">Open this joint<span class="sw" aria-hidden="true"></span></button>
+      <label class="slide" id="apartWrap" hidden title="How far the sub-parts move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
       <span class="step" id="stepStep" role="group" aria-label="Steps in the order it comes apart" hidden>
         <button type="button" id="bStepPrev" title="Previous step" aria-label="Previous step">‹</button>
         <button type="button" id="bSteps" title="Step through the order it comes apart; fitting runs back up the steps">All</button>
         <button type="button" id="bStepNext" title="Next step" aria-label="Next step">›</button>
       </span>
       <button type="button" id="bTurn" hidden title="The parts come apart toward you, so they hide one another: turn the view to see them side by side">Turn to see</button>
-      <button type="button" id="bSection" aria-pressed="false" title="Cut the part in half through its axis, with the parts round it (X)">Section</button>
-      <button type="button" id="bContext" aria-pressed="true" title="Show the rest of the machine as a ghost (G)">Context</button>
-      <button type="button" id="bScreens" aria-pressed="true" title="Sheets beside the part (S)">Screens</button>
+      <button type="button" id="bSection" class="toggle" aria-pressed="false" title="Cut the part in half through its axis, with the parts round it (X)">Section<span class="sw" aria-hidden="true"></span></button>
+      <button type="button" id="bContext" class="toggle" aria-pressed="true" title="The rest of the machine as a see-through ghost (G)">Ghost<span class="sw" aria-hidden="true"></span></button>
+      <button type="button" id="bScreens" class="toggle" aria-pressed="true" title="The sub-parts' sheets beside the part (S)">Sheets<span class="sw" aria-hidden="true"></span></button>
       <span class="tour" id="tourStep" role="group" aria-label="Tour" hidden>
         <span id="tourLabel"></span>
         <button type="button" class="next" id="bTourNext">Next ›</button>
@@ -645,6 +670,13 @@
       <button type="button" id="bLink" class="icon" title="Copy a link to this part, piece, its sheets and the view" aria-label="Copy link"><svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></button>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
       <div class="stepcap" id="stepCap" hidden></div>
+    </div>
+    <div class="isobar quizbar" id="quizbar" role="region" aria-label="Where does it go?">
+      <span class="lbl" id="quizQ"></span>
+      <span class="choices" id="quizChoices" role="group" aria-label="Or pick what it goes on"></span>
+      <button type="button" class="next" id="bQuizNext" hidden>Next ›</button>
+      <button type="button" class="done" id="bQuizDone" title="Leave the questions (Esc)">Done</button>
+      <div class="stepcap" id="quizSay" hidden></div>
     </div>
     <svg class="overlay" id="overlay" aria-hidden="true"></svg>
     <div class="callouts" id="callouts" aria-hidden="true"></div>
@@ -666,6 +698,7 @@
     </div>
     <p id="status" class="sr-only" aria-live="polite"></p>
     <div class="tip" id="tip"></div>
+    <div class="loupe" id="loupe" aria-hidden="true" hidden><span></span><canvas></canvas></div>
     <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><div class="hint" id="hint"></div></div>
     <div class="corner br" id="readout"></div>
   </figure>
@@ -1824,6 +1857,9 @@ const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1,
 // the frame to go back to.
 const iso = { part: null, apart: false, apartSpread: 1, apartNow: 1, context: true, saved: null, focus: null, history: [], foldTree: false, tour: null, section: false, secN: null, secFor: null, show: null, step: null, joint: null };
 const hidden = new Set();
+// Where does it go?: the parts asked (`list`), the one asked now (`i`), tries at it, how many came right first time,
+// whether it is answered, and the cutaway and view to give back when the questions end.
+const quiz = { on: false, list: [], i: 0, tries: 0, score: 0, answered: false, places: [], cutWas: true, saved: null };
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
 function pieceOffset(pc) {
@@ -1832,6 +1868,7 @@ function pieceOffset(pc) {
   if (pc.userData.egroup) off.addScaledVector(pc.userData.egroup.offset, e).add(jointGoal(pc.userData.egroup));
   off.addScaledVector(pc.userData.apart, e);
   if (iso.part === pc.userData.part && !inJoint(pc)) off.add(pc.userData.detachVec);
+  if (quizLifts(pc)) off.add(pc.userData.qv);
   return off;
 }
 // Whether a piece's sub-parts are off it: the piece taken apart, or a piece of the joint opened.
@@ -1976,7 +2013,8 @@ function refreshLit() {
     else if (sameSheet(state.live, here)) { lit = 0.32; code = 0.5; }
     else if (iso.step && stepNow().some((x) => x.pc === pc && x.sub === sub)) { lit = 0.3; code = 0.25; }
     else if (pc && bear.has(pc)) { lit = 0.3; code = 0.25; }
-    else if (!iso.part && p === state.select) { lit = 0.42; code = 0.75; }
+    else if (!iso.part && (p === state.select || (quiz.on && p === quiz.list[quiz.i]))) { lit = 0.42; code = 0.75; }
+    else if (quiz.on && quiz.answered && pc && quiz.places.includes(pc)) { lit = 0.3; code = 0.25; }
     else if ((state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) || (state.rowPiece && pc === state.rowPiece) || pointed
       || (iso.part ? p === state.legendHot && p !== iso.part : p === state.hover || p === state.legendHot)) { lit = 0.3; code = 0.25; }
     m.userData.lit = lit;
@@ -2069,6 +2107,7 @@ function announceInspect() {
 // part keeps its sheets for when you come back to it.
 function inspect(id, focusPiece = null, o = {}) {
   if (!id || !partById.has(id)) return;
+  endQuiz(false);
   endShow(false);
   if (iso.part !== id || iso.focus !== focusPiece) { iso.step = null; iso.joint = null; }
   // A part made of different objects (the gauge and its cable, the valve and its line) opens on its main object, so
@@ -2219,14 +2258,13 @@ function updateIsoBar() {
   $('bAll').textContent = iso.focus ? `${list.indexOf(iso.focus) + 1} / ${list.length}` : `All ${list.length}`;
   $('bAll').title = iso.focus ? 'Back to every piece (Esc)' : 'Every piece is shown: click for the nearest one, or step through them with the arrows';
   $('bApart').setAttribute('aria-pressed', iso.apart ? 'true' : 'false');
-  $('bApart').textContent = iso.apart ? 'Put together' : 'Take apart';
   $('apartWrap').hidden = !iso.apart;
   showTurn(turnOffered());
-  // A gasket or a joint flange: Open this joint, the whole joint as one sequence.
+  // A gasket or a joint flange: Open this joint, the whole joint as one sequence. A toggle keeps its label; its switch
+  // says whether it is on.
   const jb = $('bJoint');
   jb.hidden = !iso.joint && !jointHere();
   jb.setAttribute('aria-pressed', iso.joint ? 'true' : 'false');
-  jb.textContent = iso.joint ? 'Close the joint' : 'Open this joint';
   // The steps, for a piece taken apart that comes off in more than one, or a joint opened; under the bar, what the
   // step shown takes off.
   const steps = stepList();
@@ -2269,6 +2307,166 @@ function nextStop() {
   if (tab !== 'part') setTab('part');
 }
 $('bTourNext').addEventListener('click', nextStop);
+
+// ---------- Where does it go? ----------
+// A question at a time: one part is lifted out above the machine, and you click where it goes, or pick from four
+// parts in the bar. The answer is right on a part it sits on (QUIZ in parts.js, each one of its `connects`) within
+// reach of where it rests: the gauge on its stack, not the control drawer its cable runs to; any of the three ports a
+// viewport is on. A part made of different objects lifts its main one, and its cable follows. The machine from the
+// table top up is framed with the part above it. A wrong answer says what you clicked and gives one
+// more try; then the part flies home, its place is outlined, and the bar says how the two are joined (JOINS). Five
+// questions make a round, scored on first tries. A round is a link (quiz=gauge,viewport,…&q=2), so a lecturer can send
+// one. Esc or Done ends it, and the view goes back to where it was. Under reduced motion the part cuts.
+const QUIZ_N = 5;
+for (const [id, onto] of Object.entries(DOCS.QUIZ)) for (const x of onto) if (!partById.get(id)?.connects.includes(x)) console.warn(`QUIZ: ${id} sits on ${x}, which is not in its connects.`);
+// The pieces lifted for a question: the main object of a part made of several, else every piece.
+const quizPieces = (id) => (composite(id) ? [piecesOf.get(id)[0]] : piecesOf.get(id) || []);
+// The pieces a part goes on: pieces of the parts it sits on, within reach of where it rests.
+function placesOf(id) {
+  const onto = new Set(DOCS.QUIZ[id] || []);
+  const near = quizPieces(id).map((pc) => { const b = pc.userData.restBox.clone(); return b.expandByScalar(Math.max(3, 0.25 * b.getSize(new V3()).length())); });
+  return pieces.filter((pc) => onto.has(pc.userData.part) && near.some((b) => b.intersectsBox(pc.userData.restBox)));
+}
+// Whether a piece is lifted out for the question asked now.
+function quizLifts(pc) { return quiz.on && !quiz.answered && pc.userData.part === quiz.list[quiz.i] && !!pc.userData.qv && quizPieces(pc.userData.part).includes(pc); }
+function quizRound() {
+  const pool = Object.keys(DOCS.QUIZ).filter((id) => partById.has(id) && placesOf(id).length);
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return pool.slice(0, QUIZ_N);
+}
+function startQuiz(list = quizRound(), at = 0) {
+  list = list.filter((id) => DOCS.QUIZ[id] && partById.has(id) && placesOf(id).length);
+  if (!list.length) return;
+  if (iso.part) endInspect();
+  if (!quiz.on) { quiz.cutWas = state.cut; quiz.saved = snapshot(); }
+  if (state.explode) setExplode(false);
+  if (state.cut) setCut(false);
+  Object.assign(quiz, { on: true, list, i: clamp(at, 0, list.length - 1), score: 0 });
+  select(null);
+  setTab('machine');
+  askQuiz();
+}
+// Ask the current question: lift the part above the machine, and frame both.
+function askQuiz() {
+  const id = quiz.list[quiz.i];
+  quiz.tries = 0;
+  quiz.answered = false;
+  quiz.places = placesOf(id);
+  const all = quizRegion(), part = new THREE.Box3();
+  for (const pc of quizPieces(id)) part.union(pc.userData.restBox);
+  const size = part.getSize(new V3()), c = part.getCenter(new V3()), m = all.getCenter(new V3());
+  const v = new V3(m.x, m.y, all.max.z + size.z / 2 + 8).sub(c);
+  for (const pc of quizPieces(id)) pc.userData.qv = v.clone();
+  // The choices: the part it goes on, and three it is not joined to, in name order.
+  const right = [...new Set(quiz.places.map((pc) => pc.userData.part))];
+  const joined = new Set(partById.get(id).connects);
+  const others = DOCS.PARTS.map((p) => p.id).filter((x) => x !== id && !joined.has(x) && piecesOf.has(x) && x !== 'plasma');
+  for (let i = others.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [others[i], others[j]] = [others[j], others[i]]; }
+  const choices = [right[0], ...others.slice(0, 3)].sort((a, b) => partById.get(a).name.localeCompare(partById.get(b).name));
+  $('quizChoices').replaceChildren(...choices.map((x) => {
+    const b = el('button', null, partById.get(x).name);
+    b.type = 'button';
+    b.dataset.part = x;
+    b.addEventListener('click', () => answerQuiz(x, null, b));
+    return b;
+  }));
+  const p = partById.get(id);
+  $('quizQ').replaceChildren(`Question ${quiz.i + 1} of ${quiz.list.length} · `, el('b', null, p.name), ` · where ${p.count > 1 ? 'do they' : 'does it'} go? Click its place, or pick:`);
+  $('quizSay').hidden = true;
+  $('bQuizNext').hidden = true;
+  $('quizbar').classList.add('on');
+  refreshLit();
+  touched = true;
+  frameQuiz(MOVE.fly);
+  setHint();
+  announce(`Question ${quiz.i + 1} of ${quiz.list.length}: where ${p.count > 1 ? 'do the' : 'does the'} ${p.name} go? Click its place on the model, or pick one of ${choices.length} parts in the bar.`);
+  dirty = true;
+}
+// The machine from the table top up, where every place asked about is: what stands below it (the pump, the supplies)
+// would only make the places smaller.
+function quizRegion() {
+  const top = (piecesOf.get('table') || []).reduce((z, pc) => Math.max(z, pc.userData.restBox.max.z), -Infinity);
+  const b = new THREE.Box3();
+  for (const pc of pieces) if (pc.visible && pc.userData.restBox.min.z >= top - 2) b.union(pc.userData.restBox);
+  return b;
+}
+// That region and the part lifted above it, below the bar.
+function frameQuiz(glideFor = 0) {
+  const b = quizRegion();
+  for (const pc of quizPieces(quiz.list[quiz.i])) b.union(boxOfPiece(pc));
+  const bar = $('quizbar').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6;
+  frameBox(b, 1.08, { l: 0, r: 0, b: 0, t: bar });
+  if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000, dur: glideFor, from: null };
+}
+// An answer: a part named in the bar (`id`), or a piece clicked on the model (`pc`).
+function answerQuiz(id, pc, btn = null) {
+  if (!quiz.on || quiz.answered) return;
+  const ask = quiz.list[quiz.i], name = partById.get(ask).name;
+  if (id === ask) return sayQuiz(`That is the ${name} itself: click where it goes.`);
+  const right = pc ? quiz.places.includes(pc) : quiz.places.some((x) => x.userData.part === id);
+  const what = partById.get(id).name;
+  if (!right) {
+    quiz.tries++;
+    (btn || $('quizChoices').querySelector(`[data-part="${id}"]`))?.classList.add('wrong');
+    // Joined, but somewhere else: the gauge's cable runs to the control drawer, but the gauge sits on its stack.
+    const why = partById.get(ask).connects.includes(id) ? `The ${name} is joined to the ${what}, but it does not sit there.` : `${partById.get(id).count > 1 ? 'Those are' : 'That is'} the ${what}.`;
+    if (quiz.tries < 2) { sayQuiz(`Not there. ${why} Try again.`); return; }
+    return settleQuiz(false, `Not there either. ${why}`);
+  }
+  settleQuiz(true, '');
+}
+// The part flies home, its place is outlined, and the bar says how the two are joined.
+function settleQuiz(right, lead) {
+  const ask = quiz.list[quiz.i], p = partById.get(ask);
+  if (right && quiz.tries === 0) quiz.score++;
+  quiz.answered = true;
+  const onto = [...new Set(quiz.places.map((pc) => pc.userData.part))];
+  for (const b of $('quizChoices').children) { b.disabled = true; if (onto.includes(b.dataset.part)) b.classList.add('right'); }
+  const j = joinOf(ask, onto[0]);
+  const last = quiz.i === quiz.list.length - 1;
+  const where = `The ${p.name} ${p.count > 1 ? 'go' : 'goes'} on the ${onto.map((x) => partById.get(x).name).join(' and the ')}.`;
+  sayQuiz(`${right ? 'Right.' : lead} ${right ? '' : `${where} `}${j ? j.text : ''}${last ? ` Round done: ${quiz.score} of ${quiz.list.length} right first time.` : ''}`);
+  const next = $('bQuizNext');
+  next.textContent = last ? 'New round' : 'Next ›';
+  next.hidden = false;
+  if ($('quizbar').contains(document.activeElement) || document.activeElement === document.body) next.focus();
+  refreshLit();
+  dirty = true;
+}
+function sayQuiz(text) {
+  const say = $('quizSay');
+  say.textContent = text;
+  say.hidden = false;
+  announce(text);
+}
+function nextQuiz() {
+  if (!quiz.on) return;
+  if (quiz.i < quiz.list.length - 1) { quiz.i++; askQuiz(); }
+  else startQuiz();
+  $('quizChoices').querySelector('button')?.focus();
+}
+// Leave the questions: the part goes home, the cutaway and the view come back.
+function endQuiz(restore = true) {
+  if (!quiz.on) return;
+  const done = quiz.i + (quiz.answered ? 1 : 0);
+  quiz.on = false;
+  // Focus in the bar would be lost as it goes: it returns to the button that started the questions, else the view.
+  const lost = $('quizbar').contains(document.activeElement);
+  $('quizbar').classList.remove('on');
+  if (lost) { const b = $('inspBody').querySelector('[data-fk="act:quiz"]'); (b?.getClientRects().length ? b : stage).focus(); }
+  if (quiz.cutWas && !state.cut) setCut(true);
+  if (restore && quiz.saved) {
+    stopGlide();
+    goal.az = nearestAz(quiz.saved.az); goal.el = quiz.saved.el; goal.zoom = quiz.saved.zoom; goal.target.copy(quiz.saved.target);
+    glide = reduceMotion.matches ? null : { at: performance.now() / 1000, dur: MOVE.fly, from: null };
+  }
+  refreshLit();
+  setHint();
+  announce(done ? `Questions ended: ${quiz.score} of ${done} right first time.` : 'Questions ended.');
+  dirty = true;
+}
+$('bQuizNext').addEventListener('click', nextQuiz);
+$('bQuizDone').addEventListener('click', () => endQuiz());
 $('bDone').addEventListener('click', endInspect);
 $('bBack').addEventListener('click', goBack);
 $('bAll').addEventListener('click', () => setFocus(iso.focus ? null : nearestPiece(piecesOf.get(iso.part) || [])));
@@ -4008,7 +4206,6 @@ function buildTree() {
     for (const p of DOCS.PARTS.filter((x) => x.group === g.id)) {
       const li = treeItem(el('li', 'ti'));
       li.dataset.part = p.id;
-      li.dataset.text = norm(`${p.name} ${p.id} ${p.what} ${p.specs.map((s) => s.join(' ')).join(' ')}`);
       li.setAttribute('aria-selected', 'false');
       li.setAttribute('aria-label', p.count > 1 ? `${p.name}, ${p.count}` : p.name);
       li.title = 'Click to read · double-click to inspect on its own';
@@ -4070,41 +4267,85 @@ $('skip').addEventListener('click', (e) => {
   if (t) { setTreeCursor(t); t.focus(); }
 });
 const BASIS = Object.fromEntries(Object.entries(BASIS_SHORT).map(([k, v]) => [k, `Drawn from: ${v}`]));
-// Search: every typed word must appear. Under a part, rows name its pieces and sub-parts ("Left viewport (webcam) ·
-// 16 bolts"), each inspecting that piece and keeping that sheet. They show when a word names a piece or a sub-part
-// rather than only the part. Labels use en dashes (Right–back); a typed hyphen or dash matches any of them.
+// Search, as a selection filter. Under a part, rows name its pieces and sub-parts ("Left viewport (webcam) · 16 bolts"),
+// each inspecting that piece and keeping that sheet; they show when a word is found in the piece or sub-part, not only
+// in the part's name.
+// - Words like "the", "between" or "where" are dropped, so a question in plain words finds what it names: "the gasket
+//   between the right and back quarters" looks for gasket, right, back and quarters.
+// - A word matches from the start of a word, so "led" finds LEDs and not "sealed", and a plural finds its singular.
+//   Labels use en dashes (Right–back); a typed hyphen matches them.
+// - A sub-part's sheet is searched too: its material, rows and note ("M8", "UNF", "OFHC").
+// - Every part and row is scored (below) and only the best show, so a word can find nothing and the rest still lead
+//   somewhere. The line under the box says which words the rows shown lack, or that nothing matched at all.
 const norm = (t) => t.toLowerCase().replace(/[‐-―−]/g, '-');
-let searchRows = null;
+const STOP = new Set(('a about an and any are as at be between by can do does find for from go goes has have how i in into is it '
+  + 'its me my need of on onto or part parts show sit sits that the their them there these this to what where which with').split(' '));
+// The words of a query, without stop words (unless that leaves none), each a pattern matching at a word start.
+function searchWords(q) {
+  const all = norm(q).split(/\s+/).map((w) => w.replace(/^[^a-z0-9ø]+|[^a-z0-9ø]+$/g, '')).filter(Boolean);
+  const kept = all.filter((w) => !STOP.has(w));
+  return (kept.length ? kept : all).map((w) => {
+    const stem = w.length >= 4 && w.endsWith('s') && !/(ss|us|is|ns)$/.test(w) ? w.slice(0, -1) : w;
+    return { w, re: new RegExp(`(^|[^a-z0-9ø])${stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`) };
+  });
+}
+let searchRows = null, searchParts = null;
 function buildSearchRows() {
   searchRows = new Map();
+  searchParts = new Map();
+  const sheet = (d) => (d ? norm(`${d.title || ''} ${d.material || ''} ${(d.rows || []).map((r) => `${r[0]} ${r[1]}`).join(' ')} ${d.note || ''}`) : '');
   for (const p of DOCS.PARTS) {
+    const name = norm(`${p.name} ${p.id}`);
+    searchParts.set(p.id, { name, about: norm(`${p.what} ${p.specs.map((x) => x.join(' ')).join(' ')}`) });
     const rows = [];
     for (const pc of piecesOf.get(p.id) || []) {
-      for (const sub of subsOf(p.id, pc).keys()) {
-        const own = norm(`${pc.userData.label} ${sub} ${subDocOf(p.id, sub)?.title || ''}`);
-        rows.push({ pc, sub, own, text: norm(`${p.name} ${p.id} ${own}`) });
-      }
+      for (const sub of subsOf(p.id, pc).keys()) rows.push({ pc, sub, name, own: norm(`${pc.userData.label} ${sub}`), about: sheet(subDocOf(p.id, sub)) });
     }
     searchRows.set(p.id, rows);
   }
 }
+// How rare a word is among the names, so the rarest word decides: in "the gasket between the right and back quarters",
+// gasket outweighs quarter, and the gasket comes before the coils of the right and back quarters.
+function rarity(re) {
+  let df = 0, n = 0;
+  for (const rows of searchRows.values()) for (const r of rows) { n++; if (re.test(r.own) || re.test(r.name)) df++; }
+  return Math.log(1 + n / (1 + df));
+}
 const MAX_ROWS = 6;
 $('search').addEventListener('input', (e) => {
-  const q = norm(e.target.value.trim());
-  const words = q.split(/\s+/).filter(Boolean);
-  const has = (text) => words.every((w) => text.includes(w));
+  const q = e.target.value.trim();
+  const words = q ? searchWords(q) : [];
   if (words.length && !searchRows) buildSearchRows();
   for (const old of document.querySelectorAll('.ti-hit')) old.remove();
+  // Score every part and every row, then keep the best. A word scores 3 in a name (the row's piece and sub-part, or its
+  // part), 1 only in its sheet or description, times its rarity. A row needs a word its part's name does not have: one
+  // found only through the part's name says nothing the part's own row does not.
+  const rare = words.map(({ re }) => rarity(re));
+  const total = (sc) => sc.reduce((a, x, i) => a + x * rare[i], 0);
+  const scored = new Map();
+  let best = 0;
+  for (const p of DOCS.PARTS) {
+    if (!words.length) break;
+    const t = searchParts.get(p.id);
+    const ps = words.map(({ re }) => (re.test(t.name) ? 3 : re.test(t.about) ? 1 : 0));
+    const rows = searchRows.get(p.id).map((r) => ({ r, sc: words.map(({ re }) => (re.test(r.own) || re.test(r.name) ? 3 : re.test(r.about) ? 1 : 0)) }))
+      .filter((x) => words.some(({ re }) => !re.test(x.r.name) && (re.test(x.r.own) || re.test(x.r.about)))).map((x) => ({ ...x, n: total(x.sc) }));
+    scored.set(p.id, { ps, part: total(ps), rows });
+    best = Math.max(best, total(ps), ...rows.map((x) => x.n));
+  }
+  const top = (n) => best > 0 && n > best - 1e-9;
+  const found = new Set();
   for (const li of document.querySelectorAll('.ti')) {
     if (!words.length) { li.style.display = ''; continue; }
     const id = li.dataset.part;
-    const p = partById.get(id);
-    const name = norm(`${p.name} ${id}`);
-    // A row counts when one of the words is found in its piece or sub-part, not only in the part's name.
-    const hits = searchRows.get(id).filter((r) => has(r.text) && words.some((w) => r.own.includes(w) && !name.includes(w)));
-    li.style.display = has(li.dataset.text) || hits.length ? '' : 'none';
+    const sc = scored.get(id);
+    const hits = sc.rows.filter((x) => top(x.n));
+    const self = top(sc.part);
+    li.style.display = self || hits.length ? '' : 'none';
+    if (self) sc.ps.forEach((x, i) => { if (x) found.add(i); });
+    for (const x of hits) x.sc.forEach((v, i) => { if (v) found.add(i); });
     let after = li;
-    for (const r of hits.slice(0, MAX_ROWS)) {
+    for (const { r } of hits.slice(0, MAX_ROWS)) {
       const row = treeItem(el('li', 'ti-hit', `${r.pc.userData.label} · ${r.sub}`));
       row.title = 'Inspect this piece and keep this sheet';
       row.addEventListener('click', () => { setTreeCursor(row); keepSheet(id, r.sub, r.pc); });
@@ -4113,6 +4354,14 @@ $('search').addEventListener('input', (e) => {
       after = row;
     }
     if (hits.length > MAX_ROWS) { const more = el('li', 'ti-hit more', `${hits.length - MAX_ROWS} more: add a word`); after.after(more); }
+  }
+  // Say so when nothing matched, or which words the rows shown do not have.
+  const note = $('searchNote');
+  const missed = words.filter((_, i) => !found.has(i)).map((x) => `“${x.w}”`);
+  note.hidden = !words.length || (best > 0 && !missed.length);
+  if (!note.hidden) {
+    if (!best) note.replaceChildren('Nothing matches ', el('b', null, `“${q}”`), '. Try a part’s name, a size such as M8, or a word such as gasket.');
+    else note.replaceChildren('Closest matches: nothing has ', el('b', null, missed.join(', ')), '.');
   }
   for (const g of document.querySelectorAll('.tg[data-group]')) {
     const any = [...g.querySelectorAll('.ti')].some((li) => li.style.display !== 'none');
@@ -4220,7 +4469,9 @@ function renderPart(box, card) {
     // The actions come first, so "Inspect on its own" is the first control in the tab.
     const acts = el('div', 'actions');
     if (here) {
-      acts.append(action('Back to assembly', endInspect, true, 'act:done'));
+      const done = action('Done', endInspect, true, 'act:done');
+      done.title = 'Back to the assembly (Esc)';
+      acts.append(done);
       if (comesApart.has(p.id)) acts.append(action(iso.apart ? 'Put back together' : 'Take apart', () => setApart(!iso.apart), false, 'act:apart'));
     } else acts.append(action('Inspect on its own', () => inspect(p.id), true, 'act:inspect'), action('Zoom to it', () => zoomToPart(p.id), false, 'act:zoom'));
     acts.append(action(hidden.has(p.id) ? 'Show' : 'Hide', () => { setHidden([p.id], !hidden.has(p.id)); renderInspector(); }, false, 'act:hide'));
@@ -4459,8 +4710,8 @@ function renderOverview(box) {
   box.append(el('h2', null, 'MinimaK SPM1'));
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
   const acts = el('div', 'actions');
-  acts.append(action('Take the tour', startTour, true, 'act:tour'));
-  box.append(acts, el('p', 'note', `${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow. Next in the inspect bar goes on; Done leaves.`));
+  acts.append(action('Take the tour', startTour, true, 'act:tour'), action('Where does it go?', () => { startQuiz(); $('quizChoices').querySelector('button')?.focus(); }, false, 'act:quiz'));
+  box.append(acts, el('p', 'note', `The tour: ${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow; Next in the inspect bar goes on, Done leaves. Where does it go?: ${QUIZ_N} parts are lifted out in turn, and you click where each one goes.`));
   box.append(el('h3', null, 'How a run goes'));
   const ol = el('ol', 'run');
   for (const s of DOCS.RUN) {
@@ -4502,6 +4753,8 @@ function renderOverview(box) {
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
+    'The search box above the list finds names, sizes and seals (M8, o-ring) and takes plain words: “the gasket between the right and back quarters” finds that gasket. A switch on a button (Explode, Ghost, Sheets) says whether it is on.',
+    '“Where does it go?” lifts a part out above the machine: click where it goes. Five make a round, scored on first tries, and a round can be shared as a link. On a tablet, hold a finger still for a loupe that shows the view under it at 3× and names what it is on.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
     'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades, a dashed ring marks where it sits in the machine, and the inspect bar says where it is. Esc goes back to the view you had.',
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all, and a dashed ring marks where it sits. The table’s edges are named Front, Right, Back and Left for the quarters above them, so you know which side you are looking from.',
@@ -4591,6 +4844,8 @@ function renderHelp(box) {
       ['Hover a sheet', 'light its sub-part in the model'],
       ['Click a connected part', 'inspect it at the piece nearest this one; ← in the inspect bar goes back'],
       ['Take the tour (Machine tab)', 'inspect the parts in the order of a run; Next › in the inspect bar goes on, Done leaves'],
+      ['Where does it go? (Machine tab)', 'a part is lifted out: click its place on the model, or pick in the bar; five make a round, scored on first tries. Esc or Done ends it'],
+      ['Search box (assembly list)', 'names, sizes (M8) and seals (o-ring), in plain words; the best matches show, and a line says which words found nothing'],
       ['A word with a dotted underline', 'click it, or Tab onto it, for what it means; click again to close'],
       ['Drag a panel’s edge', 'size the panel; double-click the edge for the default'],
       ['Double-click empty space', 'reset the view'],
@@ -4602,6 +4857,7 @@ function renderHelp(box) {
       ['Double-tap', 'inspect'],
       ['Tap (inspecting)', 'with every piece shown, pick a piece; with one, preview a sub-part’s sheet, and Keep keeps it. A tap picks the smallest part within 24 px'],
       ['Show me (on a sheet’s bar or a Made of row)', 'frame the sub-part close up; the links in the inspect bar go back'],
+      ['Hold a finger still', 'a loupe shows the view under it at 3×, with the name of what it is on; slide to move it, lift to act as a tap there (preview the sheet, select, or answer). Lifting over nothing keeps the preview'],
     ]],
     ['Made of rows', [
       ['Click or Space', 'keep its sheet, or close it'],
@@ -4625,13 +4881,13 @@ function renderHelp(box) {
       ['1 2 3 4', 'iso, front, right, top'],
       ['O / P', 'left-drag turns / pans'],
       ['E', 'explode'],
-      ['[ ]', 'less or more spread (explode, or take apart)'],
+      ['[ ]', 'less or more spread of what is apart: the part taken apart, else the machine exploded'],
       ['C', 'cutaway'],
       ['I', 'inspect the selected part'],
       ['T', 'take the inspected part apart'],
       ['J', 'open the joint of the inspected gasket or joint flange, or close it'],
       [', .', 'previous or next piece of the inspected part'],
-      ['G', 'context: the ghost of the rest of the machine on or off'],
+      ['G', 'ghost: the rest of the machine as a see-through ghost, on or off'],
       ['X', 'section: cut the inspected part in half through its axis, with the parts round it'],
       ['S', 'sheets on or off'],
       ['Z', 'Show me: the Made of row or sheet in focus, else the sheet or sub-part under the pointer, the preview, or the sheet kept last'],
@@ -4690,7 +4946,8 @@ function linkOf() {
     if (iso.joint) kv.push(['joint', '1']);
     if (iso.step) kv.push(['step', String(iso.step)]);
     if (iso.show) kv.push(['show', `${slug(iso.show.pc.userData.label)}.${slug(iso.show.sub)}`]);
-  } else if (state.select) kv.push(['select', state.select]);
+  } else if (quiz.on) kv.push(['quiz', quiz.list.join(',')], ['q', String(quiz.i + 1)]);
+  else if (state.select) kv.push(['select', state.select]);
   const az = (((goal.az % 360) + 540) % 360) - 180;
   kv.push(['view', [az, goal.el, goal.zoom, goal.target.x, goal.target.y, goal.target.z].map((v) => +v.toFixed(2)).join(',')]);
   if (LOOKS.includes(document.documentElement.dataset.theme)) kv.push(['theme', document.documentElement.dataset.theme]);
@@ -4729,8 +4986,12 @@ function applyLink(h) {
     const spc = sp && ss ? slugFind(list, sp, (x) => x.userData.label) : null;
     const ssub = spc ? slugFind([...subsOf(part, spc).keys()], ss, (sub) => sub) : null;
     if (ssub) showMe(part, ssub, spc); else endShow(false);
+  } else if (q.get('quiz')) {
+    const list = q.get('quiz').split(',').filter((id) => partById.has(id)), at = Math.max(0, (+q.get('q') || 1) - 1);
+    if (!quiz.on || list.join() !== quiz.list.join() || at !== quiz.i) startQuiz(list, at);
   } else {
     if (iso.part) endInspect();
+    endQuiz(false);
     const sel = q.get('select');
     if ((sel || null) !== state.select) select(sel && partById.has(sel) ? sel : null);
   }
@@ -4928,9 +5189,10 @@ function updateReadout() {
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
 // While inspecting, the hint says what the pointer does now; outside, how to move and how to inspect.
-const HINT = () => (coarse ? (iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it' : 'Tap a sub-part to preview its sheet') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
   : iso.show ? 'Show me · drag to turn round it · Esc goes back'
   : iso.joint ? 'Step through the joint with ‹ › · point at a bolt to name it · Esc closes the joint'
+  : quiz.on ? 'Click where the lifted part goes, or pick in the bar · drag to turn · Esc ends the questions'
   : iso.part ? `Point at a sub-part to preview · ${allShown() ? 'click a piece to pick it' : 'click to keep · double-click to show it'} · Esc steps back`
     : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
       : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
@@ -4982,6 +5244,71 @@ function pickMesh(ndc, exact = false) {
 }
 const pick = (ndc) => pickMesh(ndc)?.userData.piece || null;
 
+// ---------- The loupe: hold a finger still for a 3× view under it ----------
+// A finger hides what it is on, and most small parts are narrower than a fingertip. Held still for half a second, a
+// finger opens a loupe above it: the view under it at 3×, drawn again by the renderer (not stretched pixels), with a
+// ring at the point and the name of what a tap there would pick. Sliding the finger moves it. Lifting the finger acts
+// as a tap there: inspecting, it previews that sub-part's sheet (or picks the piece, with every piece shown); outside,
+// it selects the part, or answers the question asked. Lifting over nothing changes nothing, so a preview stays.
+const LOUPE = { d: 132, x: 3, hold: 0.45 };
+const loupe = { on: false, timer: 0, x: 0, y: 0, el: $('loupe'), cv: $('loupe').querySelector('canvas') };
+function openLoupe(x, y) {
+  loupe.timer = 0;
+  if (!drag || pointers.size !== 1) return;
+  loupe.on = true;
+  drag.mode = 'loupe';
+  loupe.el.hidden = false;
+  moveLoupe(x, y);
+}
+function moveLoupe(x, y) {
+  const r = stage.getBoundingClientRect();
+  loupe.x = clamp(x - r.left, 0, width);
+  loupe.y = clamp(y - r.top, 0, height);
+  const size = Math.round(LOUPE.d * dpr);
+  if (loupe.cv.width !== size) { loupe.cv.width = size; loupe.cv.height = size; }
+  // What a tap here would pick, named as the tooltip names it.
+  const m = pickMesh(ndcOf({ clientX: x, clientY: y }));
+  const one = m && iso.part && m.userData.part === iso.part && !allShown() ? oneOf(m, pickInst) : null;
+  const pc = m?.userData.piece;
+  const name = !m ? '' : iso.part ? (allShown() || !m.userData.sub ? pc.userData.label : one || m.userData.sub) : partById.get(m.userData.part)?.name || '';
+  const sub = one ? m.userData.sub : iso.part && m && !allShown() && m.userData.part !== iso.part ? pc.userData.label : '';
+  loupe.el.firstElementChild.replaceChildren(name, sub ? el('small', null, sub) : '');
+  // Above the finger, or below it at the top of the view; kept inside the view.
+  const h = loupe.el.offsetHeight || LOUPE.d + 30;
+  const above = loupe.y - h - 44;
+  loupe.el.style.left = `${clamp(loupe.x - LOUPE.d / 2, 4, width - LOUPE.d - 4)}px`;
+  loupe.el.style.top = `${above >= 4 ? above : Math.min(loupe.y + 44, height - h - 4)}px`;
+  dirty = true;
+}
+function closeLoupe() {
+  clearTimeout(loupe.timer);
+  loupe.timer = 0;
+  loupe.on = false;
+  loupe.el.hidden = true;
+}
+// Lifting the finger: a tap where the loupe points.
+function liftLoupe() {
+  const r = stage.getBoundingClientRect();
+  const at = { clientX: r.left + loupe.x, clientY: r.top + loupe.y };
+  closeLoupe();
+  const m = pickMesh(ndcOf(at)), pc = m?.userData.piece;
+  if (!pc) return;
+  if (iso.part) {
+    if (allShown()) setFocus(pc);
+    else if (m.userData.sub && m.userData.part === iso.part) stoppedOn(m);
+  } else if (quiz.on) answerQuiz(pc.userData.part, pc);
+  else select(pc.userData.part);
+}
+// Drawn in the frame, before the view: the view's middle third around the point, filling the canvas, is copied into
+// the loupe, and the view is then drawn as usual over it.
+function drawLoupe() {
+  camera.setViewOffset(width, height, loupe.x - width / (2 * LOUPE.x), loupe.y - height / (2 * LOUPE.x), width / LOUPE.x, height / LOUPE.x);
+  draw();
+  const c = loupe.cv, src = LOUPE.d * dpr;
+  c.getContext('2d').drawImage(renderer.domElement, (width * dpr - src) / 2, (height * dpr - src) / 2, src, src, 0, 0, c.width, c.height);
+  camera.clearViewOffset();
+}
+
 stage.addEventListener('pointerdown', (e) => {
   stage.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -4996,11 +5323,15 @@ stage.addEventListener('pointerdown', (e) => {
   tip.classList.remove('on');
   cancelStop();
   touched = true;
+  closeLoupe();
+  if (e.pointerType === 'touch' && pointers.size === 1) { const { clientX: x, clientY: y } = e; loupe.timer = setTimeout(() => openLoupe(x, y), LOUPE.hold * 1000); }
 });
 stage.addEventListener('pointermove', (e) => {
   if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   lastPointer = e;
   if (drag) {
+    if (loupe.on) { moveLoupe(e.clientX, e.clientY); return; }
+    if (loupe.timer && (pointers.size > 1 || drag.moved > 8)) { clearTimeout(loupe.timer); loupe.timer = 0; }
     if (pointers.size === 2 && drag.pinch) {
       const [a, b] = [...pointers.values()];
       const d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
@@ -5025,9 +5356,22 @@ let tapped = false;
 function endPointer(e) {
   pointers.delete(e.pointerId);
   if (!drag) return;
+  // The loupe was open: lifting the finger acts where it points, and is no tap.
+  if (drag.mode === 'loupe') {
+    if (loupe.on && e.type === 'pointerup') liftLoupe(); else closeLoupe();
+    tapped = false;
+    drag = null;
+    stage.classList.remove('dragging');
+    return;
+  }
+  clearTimeout(loupe.timer);
+  loupe.timer = 0;
   // A press that moves less than 10 px is a click, so a shaky hand or a gloved finger still clicks.
   tapped = drag.moved < 10 && pointers.size === 0 && e.type === 'pointerup' && e.button === 0;
-  if (tapped && !iso.part) {
+  if (tapped && !iso.part && quiz.on) {
+    const pc = pick(ndcOf(e));
+    if (pc) answerQuiz(pc.userData.part, pc);
+  } else if (tapped && !iso.part) {
     const id = pick(ndcOf(e))?.userData.part || null;
     select(id && id === state.select ? null : id);
   }
@@ -5064,6 +5408,7 @@ stage.addEventListener('dblclick', (e) => {
     if (m?.userData.sub && m.userData.part === iso.part) showMe(iso.part, m.userData.sub, m.userData.piece);
     return;
   }
+  if (quiz.on) return;
   const pc = pick(ndcOf(e));
   if (!pc) return resetView();
   inspect(pc.userData.part);
@@ -5126,10 +5471,13 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'i' && state.select) inspect(state.select);
   else if (k === 't' && iso.part) setApart(!iso.apart);
   else if (k === 'j' && (iso.joint || jointHere())) setJoint(!iso.joint);
+  // [ and ] spread only what is apart: the part taken apart (or its joint opened), else the machine exploded. With
+  // nothing apart they say so, rather than exploding a machine that is hidden behind the part.
   else if (k === '[' || k === ']') {
     const dv = k === ']' ? 0.2 : -0.2;
-    if (iso.part && iso.apart) { iso.apartSpread = clamp(iso.apartSpread + dv, 0.4, 2.5); $('sApart').value = iso.apartSpread; $('oApart').textContent = fmtSpread(iso.apartSpread); }
-    else { state.spread = clamp(state.spread + dv, 0.4, 2.5); $('sSpread').value = state.spread; $('oSpread').textContent = fmtSpread(state.spread); if (!state.explode) setExplode(true); }
+    if (iso.part && (iso.apart || iso.joint)) { iso.apartSpread = clamp(iso.apartSpread + dv, 0.4, 2.5); $('sApart').value = iso.apartSpread; $('oApart').textContent = fmtSpread(iso.apartSpread); }
+    else if (state.explode) { state.spread = clamp(state.spread + dv, 0.4, 2.5); $('sSpread').value = state.spread; $('oSpread').textContent = fmtSpread(state.spread); }
+    else announce(iso.part ? 'Nothing is apart: T takes the part apart.' : 'Nothing is apart: E explodes the machine.');
   }
   else if (k === 'g' && iso.part) setContext(!iso.context);
   else if (k === 'x' && iso.part) setSection(!iso.section);
@@ -5150,6 +5498,7 @@ window.addEventListener('keydown', (e) => {
     else if (iso.focus) setFocus(null);
     else if (iso.part && iso.tour !== null) announce('On the tour: Done leaves it.');
     else if (iso.part) endInspect();
+    else if (quiz.on) endQuiz();
     else select(null);
   }
   else if (onStage && k.startsWith('arrow')) {
@@ -5257,12 +5606,13 @@ function frame() {
   // for its sub-parts before it flies home, and the ghosts wait for it before they turn solid.
   for (const pc of pieces) {
     const u = pc.userData;
-    const d0 = u.dp, t0 = u.tp, g0 = u.gNow;
+    const d0 = u.dp, t0 = u.tp, g0 = u.gNow, q0 = u.qp || 0;
     const out = iso.part === u.part && !inJoint(pc) ? 1 : 0;
     if (now >= u.dHold) u.dp = follow(u.dp, out, 3.2);
     else active = true;
     u.tp = follow(u.tp, takenApart(pc) ? 1 : 0, 4.5);
-    shift = Math.max(shift, Math.abs(u.dp - d0), Math.abs(u.tp - t0));
+    u.qp = follow(q0, quizLifts(pc) ? 1 : 0, 2.6);
+    shift = Math.max(shift, Math.abs(u.dp - d0), Math.abs(u.tp - t0), Math.abs(u.qp - q0));
     // Half a second to fade to a ghost, a little longer back to solid (after its hold), eased where it is drawn.
     const gT = u.ghost && !u.secCtx ? 1 : 0;
     if (u.gNow !== gT) {
@@ -5273,8 +5623,9 @@ function frame() {
     }
     if (u.gNow !== g0) moving = true;
     const p = u.egroup ? u.egroup.p : state.ep;
-    if (u.dp !== d0 || moving) {
+    if (u.dp !== d0 || u.qp !== q0 || moving) {
       pc.position.copy(u.detachVec).multiplyScalar(ease(u.dp)).addScaledVector(u.apart, ease(p) * state.spreadNow);
+      if (u.qv) pc.position.addScaledVector(u.qv, ease(u.qp));
       moving = true;
     }
     // Each sub-part comes off at its step (sp, 1 when off), within the piece's take-apart (tp).
@@ -5340,6 +5691,7 @@ function frame() {
   shared.uTime.value = still ? 0 : now % 1000;
   shared.uSweep.value = still ? -1e3 : DIMS.table.floor - 8 + (40 - DIMS.table.floor) * ((now % 7) / 7);
   shared.uScan.value = height / (5 * 2 * halfNow());
+  if (loupe.on) drawLoupe();
   draw();
   drawTriad();
   drawScale();
@@ -5367,7 +5719,7 @@ requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
   setTab, startTour, nextStop, joinOf, setSection, setScale, setLetterKeys, dockLayout, linkOf,
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
-  setStep, stepBy, stepList, setJoint, jointHere, ringOf, oneOf, applyLink, subMeshes,
+  setStep, stepBy, stepList, setJoint, jointHere, loupe, quiz, startQuiz, endQuiz, answerQuiz, placesOf, nextQuiz, ringOf, oneOf, applyLink, subMeshes,
   // One of a ring under a point of the page: its name ("Bolt 7 of 20 · star 3"), as the tooltip shows it.
   oneAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y }), true); return m ? oneOf(m, pickInst) : null; },
   // What a click or tap at a point of the page would pick, forgiving a near miss as the pointer does.
