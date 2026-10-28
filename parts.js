@@ -584,6 +584,15 @@
   // and its seal comes out last. A part not listed here takes its order by the same rule (index.html): nuts, then bolts
   // and screws, then the rest in the reverse of the order it was built, a seal last. What does not come off (a weld, the
   // winding a coil is built round) is no step.
+  // Where does it go? (index.html): the parts it asks about, each with the parts it sits on. Each pair is one of the
+  // part's `connects` (checked in development), read one way: a viewport goes on a lateral port, not on the webcam that
+  // looks through it. Parts that hang between two others (the bellows line) or stand apart from where they plug in
+  // (the webcam, the spectrometer) are not asked.
+  const QUIZ = {
+    gauge: ['stack'], viewport: ['lateral'], laser: ['diagPorts'], probe: ['diagPorts'], electrode: ['diagPorts'],
+    stack: ['diagPorts'], needle: ['stack'], pumpPort: ['lateral'], gaskets: ['joints'], solenoid: ['former'],
+    pfInner: ['former'], pfOuter: ['posts'], satellite: ['table', 'posts'],
+  };
   const ORDER = {
     viewport: [['16 nuts'], ['16 bolts'], ['Viewport flange', 'Window glass, sealed into the flange'], ['Copper gasket']],
     laser: [['6 nuts'], ['6 bolts'], ['DN40CF viewport flange', 'Window glass'], ['Copper gasket']],
@@ -1160,5 +1169,5 @@
   };
 
   PARTS.forEach((p, i) => { p.n = i + 1; });
-  root.SPM1_DOCS = { SOURCES, GROUPS, PARTS, NOT_DRAWN, JOINS, RUN, TOUR, ORDER, GLOSSARY, SUBDOCS, SUBMAP };
+  root.SPM1_DOCS = { SOURCES, GROUPS, PARTS, NOT_DRAWN, JOINS, RUN, TOUR, ORDER, QUIZ, GLOSSARY, SUBDOCS, SUBMAP };
 })(typeof window !== 'undefined' ? window : globalThis);
