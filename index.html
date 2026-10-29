@@ -2023,7 +2023,7 @@ function refreshLit() {
     else if (sameSheet(state.live, here)) { lit = 0.32; code = 0.5; }
     else if (iso.step && stepNow().some((x) => x.pc === pc && x.sub === sub)) { lit = 0.3; code = 0.25; }
     else if (pc && bear.has(pc)) { lit = 0.3; code = 0.25; }
-    else if (!iso.part && (p === state.select || (quiz.on && p === quiz.list[quiz.i]))) { lit = 0.42; code = 0.75; }
+    else if (!iso.part && (p === state.select || (quiz.on && p === quiz.list[quiz.i] && (quiz.answered || quizLifts(pc))))) { lit = 0.42; code = 0.75; }
     else if (quiz.on && quiz.answered && pc && quiz.places.includes(pc)) { lit = 0.3; code = 0.25; }
     else if ((state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) || (state.rowPiece && pc === state.rowPiece) || pointed
       || (iso.part ? p === state.legendHot && p !== iso.part : p === state.hover || p === state.legendHot)) { lit = 0.3; code = 0.25; }
@@ -2338,6 +2338,9 @@ function placesOf(id) {
   return pieces.filter((pc) => onto.has(pc.userData.part) && near.some((b) => b.intersectsBox(pc.userData.restBox)));
 }
 // Whether a piece is lifted out for the question asked now.
+// What stays behind of the part asked about (the gauge's cable clamp and cable, the needle valve's fitting and line)
+// must not give the answer away: it is not lit, and the pointer passes through it until the question is answered.
+function quizLeftover(pc) { return quiz.on && !quiz.answered && pc.userData.part === quiz.list[quiz.i] && !quizLifts(pc); }
 function quizLifts(pc) { return quiz.on && !quiz.answered && pc.userData.part === quiz.list[quiz.i] && !!pc.userData.qv && quizPieces(pc.userData.part).includes(pc); }
 function quizRound() {
   const pool = Object.keys(DOCS.QUIZ).filter((id) => partById.has(id) && placesOf(id).length);
@@ -5277,7 +5280,7 @@ const meshSize = (m) => { if (!m.geometry.boundingSphere) m.geometry.computeBoun
 // out. A finger is wider than most small parts, so on touch the 24 px round it is always searched and the smallest
 // sub-part found wins: a tap just off a bolt picks the bolt, not the flange behind it. `exact` skips the search.
 function pickMesh(ndc, exact = false) {
-  const list = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost; });
+  const list = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost && !quizLeftover(pc); });
   const hit = rayHit(ndc, list);
   const px = exact ? 0 : coarse ? 24 : hit ? 0 : 12;
   if (!px) return hit;
