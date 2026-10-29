@@ -627,12 +627,19 @@ every part (fixed in #25). Its three changes, most effect first:
      343 px panel, pushing what each key does out of sight (the key column now wraps); and the scale bar's length sat
      unbacked on the drawing, unreadable over the dark drawer (it now has the hint's backing).
    - **The inspector**, Colour theme, 1440, 768 and 390: no findings, against 3 fails (tracked capitals, text at the
-     window's edge, no title) and 2 warnings (cream ground, figures not tabular) before. The Hologram keeps its own
-     two fails and two warnings (text and button glows, bright panel borders, colour share), which a flat hologram
-     chrome would answer; that was offered as a smaller suggestion and is not done.
+     window's edge, no title) and 2 warnings (cream ground, figures not tabular) before. The Hologram kept its own
+     two fails and two warnings (text and button glows, bright panel borders, colour share), answered below.
    - **The cost:** the margins and the taller title take a little of the view. The gauge's sensor nut shows 514
      visible px at 1366×768 (546 before) and 759 at 1440×900 (790), still over the 400 asked. Phases 2–5's checks
      still pass, with no console errors.
+4. **Flat Hologram controls** (a smaller suggestion of the review). *Done:* the glow is the model's alone (its
+   shaders, the projector's floor, the plasma). The panels, bars, sheets and buttons are flat: opaque surfaces one step
+   off the black (#06121e on #03080f), rules about 1.5:1 against it (#16314a, they were a bright blue), ice-blue text,
+   and no glow, glass, corner brackets, scan line or grid. A choice is a pale blue tint; an action (Done, Next, the
+   Part tab's first button) is the ink on black, inverted. The inspector, Hologram, 1440 and 768: no findings, against
+   2 fails (text glows, button glows) and 2 warnings (bright panel borders, colour share) before; at 390 one warning
+   is left, 12% of the phone's screen strongly coloured, which is the blue model filling a small screen (the drawing,
+   not the frame). Colour is unchanged and still clean.
 
 ## 5. Open questions for you
 
