@@ -129,11 +129,15 @@ The Part tab shows the part's basis as *Drawn from: published spec*, *photos* or
   - Each sheet says when the SPM1's own part is not published.
 - **Coils, electrodes, the gauge and the control parts** carry what the sources and photos show. Where nothing is published, the sheet says so rather than guessing.
 
+### The frame
+
+The drawing is the only thing on the page with colour and character; the frame round it stays quiet. The page's title, its one `h1`, is the machine's name with what this is under it. Labels are in sentence case, never tracked capitals; a tab's name is its own label, and a part's group and number sit under its name. There is one typeface, with tabular figures wherever numbers line up or change (the readout, the scale, the counts). The quarters' names in the view keep the capitals of the letters printed on the table. The colour drawing sits on a neutral stone ground (#f1f1ef, panels #fafaf9), and the page keeps 16 px from the window's edges.
+
 ### Themes
 
 The theme buttons at the right of the modebar pick one of three drawings, and the page remembers the choice. With none chosen, a dark system theme opens the hologram and a light one the colour drawing. The buttons are one Tab stop: ← and → move to the next theme. Under 1440 px only the chosen theme keeps its label, and under 1320 px none do, so the modebar stays on one row.
 
-- **Colour**: the light drawing, solid shaded parts in their own colours with inked outlines.
+- **Colour**: the light drawing, solid shaded parts in their own colours with inked outlines, on a neutral stone ground.
 - **Greyscale**: the same drawing in greys, shaded like a CAD rendering (below).
 - **Hologram**: glowing blue on black (below).
 
