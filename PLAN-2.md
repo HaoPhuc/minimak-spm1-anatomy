@@ -587,6 +587,34 @@ What differs from the plan:
   stay sharp. It names what a tap at its centre would pick (the 24 px rule), so lifting does what it says.
 - **Not done from Daniel's list:** "Resume at stop n" on the tour was not needed, as Esc already stays on the tour.
 
+### After the phases: a taste review
+
+The app was reviewed with the design-taste-frontend skill (its app-screen rules and inspector), for how easy the
+machine is to explore and how satisfying it looks. The drawing held up; the frame round it read as a kit, the
+machine got half the window, and inspecting on a phone covered the part. It also found *Open this joint* showing on
+every part (fixed in #25). Its three changes, most effect first:
+
+1. **Give the machine the screen:** 70% or more of the width on a first visit, the controls fewer and on the canvas,
+   the home view fitting the whole machine. *Not started.*
+2. **Inspecting on a phone:** a one-row inspect bar, sheets in a bottom sheet that peeks, the part framed above it.
+   *Not started.*
+3. **The frame as considered as the drawing.** *Done:*
+   - **A title:** "MinimaK SPM1" is the page's `h1` at 20 px, 16 px from the window's edge (it was 16 px, 10 px in).
+   - **Sentence-case labels:** no tracked capitals (12 before); the redundant *Machine* and *Part* labels above the
+     tabs' headings are gone, and a part's group and number moved under its name.
+   - **One typeface:** no monospace anywhere (21 uses before); tabular figures where numbers line up or change.
+   - **A neutral ground:** stone #f1f1ef with panels #fafaf9, in place of the yellow cream #f2f0e9 / #fbfaf6.
+   - **Two frame faults found on the way, both already on main:** the Controls tab's key table was 551 px wide in a
+     343 px panel, pushing what each key does out of sight (the key column now wraps); and the scale bar's length sat
+     unbacked on the drawing, unreadable over the dark drawer (it now has the hint's backing).
+   - **The inspector**, Colour theme, 1440, 768 and 390: no findings, against 3 fails (tracked capitals, text at the
+     window's edge, no title) and 2 warnings (cream ground, figures not tabular) before. The Hologram keeps its own
+     two fails and two warnings (text and button glows, bright panel borders, colour share), which a flat hologram
+     chrome would answer; that was offered as a smaller suggestion and is not done.
+   - **The cost:** the margins and the taller title take a little of the view. The gauge's sensor nut shows 514
+     visible px at 1366×768 (546 before) and 759 at 1440×900 (790), still over the 400 asked. Phases 2–5's checks
+     still pass, with no console errors.
+
 ## 5. Open questions for you
 
 1. **The selection colour in Colour.** Teal, as a solid fill (Amara: amber fails 3:1 against copper), or amber in

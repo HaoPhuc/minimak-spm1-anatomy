@@ -7,17 +7,17 @@
 <meta name="description" content="An interactive anatomy of the MinimaK SPM1 simple magnetised torus: turn it like a turntable, take it apart, inspect each component on its own and read where every number comes from.">
 <style>
   :root {
-    --paper: #f2f0e9;
-    --card: #fbfaf6;
+    --paper: #f1f1ef;
+    --card: #fafaf9;
     --ink: #1c1c1a;
-    --muted: #5e5d57;
-    --rule: #dad7cd;
-    --soft: #efede5;
-    --chip: #e8e5da;
+    --muted: #5c5c59;
+    --rule: #d9d9d5;
+    --soft: #eeeeeb;
+    --chip: #e6e6e2;
     --accent: #0a736e;
     --spec: #2b8a6e;
     --photo: #9a6a0f;
-    --assumed: #7c7a74;
+    --assumed: #787873;
     color-scheme: light;
   }
   /* The dark theme is a hologram. The class is set before first paint (script below) and by applyTheme. */
@@ -63,7 +63,6 @@
     font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .mono, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   button { font: inherit; color: inherit; }
   a { color: inherit; }
   /* Read by screen readers, never seen: the one status line. Pinned to the top-left corner of its containing block, so
@@ -73,15 +72,16 @@
   /* ---------- App shell: tree | viewer | inspector, each scrolls on its own ---------- */
   .app {
     --tw: 260px; --iw: 360px;
-    display: grid; height: 100vh; height: 100dvh; row-gap: 10px; padding: 10px;
+    display: grid; height: 100vh; height: 100dvh; row-gap: 12px; padding: 12px 16px 16px;
     grid-template-columns: var(--tw) 10px minmax(0, 1fr) 10px var(--iw);
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas: "top top top top top" "tree gl view gr insp";
   }
   .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
   .brand { flex: none; line-height: 1.2; }
-  .brand b { font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
-  .brand span { display: block; color: var(--muted); font-size: 12px; }
+  /* The page's one h1: the machine's name, then what this is. */
+  .brand h1 { margin: 0; font-size: 20px; line-height: 1.15; font-weight: 650; letter-spacing: -0.01em; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
   /* The tools wrap to a second row rather than scroll out of sight. */
   .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
   .mb { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); overflow: hidden; flex: none; }
@@ -133,11 +133,12 @@
   .app.fold-tree { --tw: 34px; }
   .app.fold-insp { --iw: 34px; }
   .panel.folded > :not(.rail) { display: none; }
-  .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding: 12px 0; }
+  .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 12px 0; }
   .panel.folded .rail:hover { color: var(--ink); background: var(--soft); }
   .panel-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--rule); }
   .panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 8px 12px 14px; flex: 1; min-height: 0; }
-  .eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  /* A small label: sentence case in the muted ink, never tracked capitals. */
+  .eyebrow { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 
   /* The first Tab stop: hidden until focused, it jumps to the assembly list. */
   .skip { position: absolute; left: 10px; top: -60px; z-index: 10; background: var(--ink); color: var(--card); padding: 6px 12px; border-radius: 8px; font-size: 13px; text-decoration: none; }
@@ -154,7 +155,7 @@
   .tg { margin-top: 6px; }
   .tg-head { display: flex; align-items: center; gap: 2px; border-radius: 7px; }
   .tree-root .tg-head { cursor: pointer; }
-  .tg-head .caret { flex: 1; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 6px 2px; cursor: pointer; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+  .tg-head .caret { flex: 1; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 6px 2px; cursor: pointer; text-align: left; font-size: 12.5px; color: var(--muted); font-weight: 600; }
   .tg-head .caret::before { content: ""; width: 0; height: 0; border-left: 4px solid currentColor; border-top: 4px solid transparent; border-bottom: 4px solid transparent; transition: transform .15s; transform: rotate(90deg); }
   .tg.closed .tg-head .caret::before { transform: rotate(0); }
   .tg.closed ul { display: none; }
@@ -166,8 +167,8 @@
   .ti.sel { background: var(--chip); }
   .ti .name { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 7px; padding: 5px 4px; text-align: left; font-size: 13px; }
   .ti .name span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ti .n { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); min-width: 1.6em; }
-  .ti .cnt { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
+  .ti .n { font-size: 11.5px; color: var(--muted); min-width: 1.4em; text-align: right; font-variant-numeric: tabular-nums; }
+  .ti .cnt { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
   .ti-hit { padding: 3px 4px 3px 52px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--ink); overflow-wrap: anywhere; }
   .ti-hit:hover { background: var(--soft); }
   .ti-hit.more { padding: 2px 4px 4px 52px; font-size: 11.5px; color: var(--muted); cursor: default; }
@@ -202,17 +203,18 @@
   .stage.dragging { cursor: grabbing; }
   .stage.pointing { cursor: pointer; }
   canvas { display: block; width: 100%; height: 100%; }
-  .corner { position: absolute; font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); pointer-events: none; }
+  .corner { position: absolute; font-size: 12px; line-height: 1.35; font-variant-numeric: tabular-nums; color: var(--muted); pointer-events: none; }
   .corner.tl { top: 12px; left: 14px; color: var(--ink); }
   .corner.tl span { color: var(--muted); }
   /* The hint stops short of the sheet column (--hud-r). Lengths on a zoomed box are scaled by its zoom, so the inset is divided back. */
   .corner.bl { --bl-max: 60%; bottom: 10px; left: 12px; max-width: min(var(--bl-max), calc(100% - (var(--hud-r, 0px) + 24px) / var(--ui-scale, 1))); }
   .corner.br { bottom: 10px; right: 12px; text-align: right; color: var(--ink); max-width: 38%; }
   .corner.bl .hint, .corner.br { background: color-mix(in srgb, var(--card) 84%, transparent); padding: 3px 6px; border-radius: 6px; }
-  .scale { display: flex; align-items: flex-end; gap: 6px; margin: 0 0 6px 6px; color: var(--ink); }
+  /* The scale bar on the same backing as the hint, so its length reads over a dark part of the machine. */
+  .scale { display: flex; align-items: flex-end; gap: 6px; width: fit-content; margin: 0 0 6px; padding: 3px 6px; border-radius: 6px; background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); }
   .scale i { display: block; height: 7px; border: 1.5px solid var(--ink); border-top: 0; }
   .triad { position: absolute; top: 8px; right: 8px; width: 84px; height: 84px; }
-  .triad text { font: 600 10px ui-monospace, Menlo, Consolas, monospace; fill: var(--ink); cursor: pointer; }
+  .triad text { font-size: 10px; font-weight: 650; fill: var(--ink); cursor: pointer; }
   .triad .ax { cursor: pointer; }
   .triad .ax:hover circle { stroke-width: 2.4; }
   .triad .ring { fill: color-mix(in srgb, var(--card) 70%, transparent); stroke: var(--rule); }
@@ -234,7 +236,7 @@
   }
   .sheets-head[hidden], .sheets-head [hidden] { display: none; }
   .sheets-head .eyebrow { margin-right: auto; }
-  .sheets-head .eyebrow b { font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--ink); margin-left: 3px; }
+  .sheets-head .eyebrow b { font-weight: 650; color: var(--ink); margin-left: 3px; font-variant-numeric: tabular-nums; }
   .sheets-head button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 3px 8px; font-size: 12px; cursor: pointer; white-space: nowrap; }
   .sheets-head button:disabled { opacity: 0.45; cursor: default; }
   .dockstep { display: inline-flex; align-items: center; gap: 2px; }
@@ -271,7 +273,7 @@
   .screen .bar .ttl { flex: 1 1 0; min-width: 0; font-weight: 600; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
   .screen .bar .line2 { order: 1; flex: 1 0 100%; min-width: 0; font-weight: 400; line-height: 16px; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
   .screen .bar .fold-btn ~ .line2 { padding-left: 30px; }
-  .screen .bar .state { margin-right: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+  .screen .bar .state { margin-right: 8px; font-weight: 600; }
   .screen .bar button { flex: none; width: 24px; height: 22px; margin: -2px 0; border: 0; background: none; border-radius: 5px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
   .screen .bar button:hover { background: var(--chip); color: var(--ink); }
   .screen .bar button svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -280,7 +282,7 @@
   .screen .bar button.keep { width: auto; padding: 0 8px; border: 1px solid var(--rule); background: var(--soft); color: var(--ink); font-size: 12px; font-weight: 600; }
   .screen h4 { margin: 0 0 2px; font-size: 15px; font-weight: 650; line-height: 1.25; }
   .screen h4:focus-visible, .screen .bar .ttl:focus-visible, .doc h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
-  .screen h5 { margin: 10px 0 4px; font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .screen h5 { margin: 10px 0 4px; font-size: 12.5px; font-weight: 650; color: var(--muted); }
   .screen .from { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
   .screen p { margin: 6px 0 0; }
   .screen .mat { margin: 0 0 6px; }
@@ -355,13 +357,14 @@
   /* The quarter names pinned to the view's edge, in the letters printed on the table, and the trail of a sub-part taken
      off its piece: dashed, from a hollow ring where it sits. */
   .overlay .compass { stroke: var(--ink); stroke-width: 1.75; }
-  .overlay text.quarter { font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
+  /* The quarters' names echo the letters printed on the table, so they keep its capitals. */
+  .overlay text.quarter { font-size: 12px; font-weight: 650; letter-spacing: 0.1em; }
   .overlay .trail .line { stroke-dasharray: 2 4; stroke-width: 1.75; }
   /* A ring's star order, numbered on the heads; a number whose head is hidden is drawn faint. And a sample bolt's sizes. */
-  .overlay text.star { font: 700 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-anchor: middle; }
+  .overlay text.star { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; text-anchor: middle; }
   .overlay text.star.behind { opacity: 0.45; }
   .overlay .dim .line { stroke-width: 1.25; }
-  .overlay text.dim { font: 600 11.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .overlay text.dim { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .overlay .home { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
   .callouts { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   .callout {
@@ -369,14 +372,14 @@
     font: 12px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: calc(12px * var(--ui-scale, 1)); color: var(--ink);
     background: color-mix(in srgb, var(--card) 92%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
   }
-  .callout b { font: 600 1em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--muted); margin-right: 4px; }
-  .callout.balloon { display: grid; place-items: center; padding: 0; border-radius: 50%; width: calc(20px * var(--ui-scale, 1)); height: calc(20px * var(--ui-scale, 1)); font: 600 calc(11.5px * var(--ui-scale, 1))/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border-color: var(--accent); }
+  .callout b { font-weight: 650; color: var(--muted); margin-right: 4px; font-variant-numeric: tabular-nums; }
+  .callout.balloon { display: grid; place-items: center; padding: 0; border-radius: 50%; width: calc(20px * var(--ui-scale, 1)); height: calc(20px * var(--ui-scale, 1)); font-size: calc(11.5px * var(--ui-scale, 1)); font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; border-color: var(--accent); }
   .callout.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
   .callout:hover { border-color: var(--accent); }
   .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
   .slide[hidden] { display: none; }
   .slide input { width: 92px; accent-color: var(--accent); }
-  .slide output { font: 11.5px ui-monospace, Menlo, Consolas, monospace; color: var(--ink); min-width: 3em; }
+  .slide output { font-size: 11.5px; color: var(--ink); min-width: 3em; font-variant-numeric: tabular-nums; }
   .mb .slide { border-left: 1px solid var(--rule); }
   .mb button[aria-disabled="true"] { opacity: 0.4; }
   .subs { list-style: none; margin: 0; padding: 0; }
@@ -387,8 +390,8 @@
   .subs button.sub.on { background: var(--chip); }
   .subs button.sub.on .nm { font-weight: 600; }
   .subs .nm { flex: 1; min-width: 0; }
-  .subs .no { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); min-width: 1.4em; }
-  .subs .k { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); white-space: nowrap; }
+  .subs .no { font-size: 12px; color: var(--muted); min-width: 1.4em; font-variant-numeric: tabular-nums; }
+  .subs .k { font-size: 12px; color: var(--muted); white-space: nowrap; }
   .subs button.show, .screen .bar button.show { flex: none; width: 28px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
   .subs button.show:hover, .subs button.show:focus-visible { color: var(--ink); background: var(--chip); }
   .subs button.show svg, .screen .bar button.show svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -402,8 +405,8 @@
   .tabs button { border: 0; background: none; padding: 5px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--muted); }
   .tabs button[aria-selected="true"] { background: var(--chip); color: var(--ink); }
   .doc h2 { font-size: 19px; line-height: 1.25; margin: 2px 0 8px; font-weight: 650; }
-  .doc h2 .count { font: 13px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); font-weight: 400; }
-  .doc h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 16px 0 6px; font-weight: 600; }
+  .doc h2 .count { font-size: 13px; color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+  .doc h3 { font-size: 14px; line-height: 1.3; color: var(--ink); margin: 18px 0 6px; font-weight: 650; }
   .doc p { margin: 0 0 10px; }
   .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
   .chip { font-size: 12px; background: var(--chip); border-radius: 999px; padding: 2px 9px; color: var(--muted); display: inline-flex; align-items: center; border: 0; }
@@ -419,14 +422,15 @@
   table.specs td:first-child { color: var(--muted); padding-right: 10px; width: 38%; }
   table.specs td:last-child { text-align: right; padding-left: 8px; overflow-wrap: anywhere; }
   table.specs .ref { white-space: nowrap; margin-left: 2px; }
-  .ref { font: 11.5px ui-monospace, Menlo, Consolas, monospace; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
+  .ref { font-size: 11.5px; font-variant-numeric: tabular-nums; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
   .ref:hover { border-color: var(--muted); }
   .ref.derived, .ref.photo, .ref.assumed, .ref.none { cursor: default; color: var(--muted); }
   .ref.assumed, .ref.std { border-style: dashed; }
   .tagkey { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
-  .tagkey b { font: 600 12px ui-monospace, Menlo, Consolas, monospace; }
+  .tagkey b { font-size: 12px; font-weight: 650; }
   .know { border-left: 3px solid var(--accent); padding-left: 10px; }
   .doc .piece-of { margin: -4px 0 8px; color: var(--muted); }
+  .doc h2.gap { margin-top: 24px; }
   .doc .note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
   /* The Pieces table: one row per piece of a repeated part; the current one is marked, a click goes to it. */
   table.ptab { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -443,14 +447,16 @@
   .srclist { list-style: none; margin: 0; padding: 0; }
   .srclist li { padding: 10px 0; border-top: 1px solid var(--rule); }
   .srclist li:first-child { border-top: 0; }
-  .srclist .sid { font: 600 12px ui-monospace, Menlo, Consolas, monospace; margin-right: 6px; }
+  .srclist .sid { font-size: 12px; font-weight: 650; margin-right: 6px; }
   .srclist .who { color: var(--muted); font-size: 12.5px; }
   .srclist p { margin: 6px 0; font-size: 13px; color: var(--muted); }
   .srclist li.flash { animation: flash 1.2s; }
   @keyframes flash { 0% { background: var(--chip); } 100% { background: transparent; } }
-  table.keys { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.keys td { padding: 5px 0; border-top: 1px solid var(--rule); vertical-align: top; }
-  table.keys td:first-child { white-space: nowrap; padding-right: 12px; color: var(--muted); }
+  /* The key or gesture wraps in its own column, so a long one ("Double-click a sub-part (inspecting), or …") never
+     pushes what it does out of the panel. */
+  table.keys { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  table.keys td { padding: 5px 0; border-top: 1px solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
+  table.keys td:first-child { width: 42%; padding-right: 12px; color: var(--muted); }
   kbd { font-size: 12px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--soft); }
   .stat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 12px; }
   .stat div { background: var(--soft); border-radius: 8px; padding: 8px; }
@@ -464,7 +470,7 @@
   /* How a run goes: numbered steps, each with the parts it uses. */
   .run { list-style: none; margin: 0 0 4px; padding: 0; counter-reset: run; }
   .run li { counter-increment: run; position: relative; padding: 0 0 10px 30px; }
-  .run li::before { content: counter(run); position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--chip); font: 600 12px/20px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: center; }
+  .run li::before { content: counter(run); position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--chip); font-size: 12px; font-weight: 650; line-height: 20px; font-variant-numeric: tabular-nums; text-align: center; }
   .run b { display: block; font-weight: 600; }
   .run p { margin: 2px 0 6px; font-size: 13px; }
   .run .chips { margin-bottom: 0; }
@@ -535,8 +541,8 @@
       linear-gradient(var(--c), var(--c)) right bottom / 14px 2px, linear-gradient(var(--c), var(--c)) right bottom / 2px 14px;
     background-repeat: no-repeat;
   }
-  .holo .brand b, .holo .doc h2, .holo .screen h4 { color: #dcecf8; text-shadow: 0 0 10px var(--glow); }
-  .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: 0.14em; }
+  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; text-shadow: 0 0 10px var(--glow); }
+  .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); }
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle), .holo .isobar button.done,
@@ -593,7 +599,7 @@
 <a class="skip" id="skip" href="#tree">Skip to the assembly</a>
 <div class="app">
   <header class="top">
-    <div class="brand"><b>MinimaK SPM1</b><span>anatomy of a tabletop magnetised torus</span></div>
+    <div class="brand"><h1>MinimaK SPM1</h1><p>Anatomy of a tabletop magnetised torus</p></div>
     <nav class="modebar" aria-label="View tools">
       <div class="mb" role="group" aria-label="Left-drag does">
         <button type="button" data-drag="orbit" aria-pressed="true" title="Left-drag turns the model like a turntable (O)"><svg viewBox="0 0 16 16"><path d="M13.5 8A5.5 5.5 0 1 1 11.6 3.8"/><path d="M13.6 1.8v3h-3"/></svg><span class="lbl">Orbit</span></button>
@@ -778,7 +784,7 @@ const TONES = {
 // Colours show exactly as given (colour management is off). The greyscale drawing has its own light, raked further
 // in from the upper left so the cast shadows fall clear of the parts that cast them.
 const THEME = {
-  light: { paper: '#fbfaf6', cut: '#f2ecdc', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#3a3830', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
   greyscale: { paper: '#cbcbc7', cut: '#9a9a96', ink: '#0e0e0e', lit: '#e8901c', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
   dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff9a3c', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
@@ -4213,7 +4219,7 @@ function buildTree() {
       const eye = eyeButton(`Show or hide ${p.name}`);
       eye.addEventListener('click', (e) => { e.stopPropagation(); setHidden([p.id], !hidden.has(p.id)); });
       const name = el('span', 'name');
-      name.append(el('span', 'n', String(p.n).padStart(2, '0')), el('span', null, p.name));
+      name.append(el('span', 'n', String(p.n)), el('span', null, p.name));
       if (p.count > 1) name.append(el('span', 'cnt', `×${p.count}`));
       li.addEventListener('click', (e) => {
         if (e.target.closest('.eye')) return;
@@ -4451,7 +4457,7 @@ function renderInspector() {
   if (tab === 'machine') renderOverview(box);
   else if (tab === 'sources') renderSources(box);
   else if (tab === 'help') renderHelp(box);
-  else if (!state.select) box.append(el('div', 'eyebrow', 'Part'), el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
+  else if (!state.select) box.append(el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
   else renderPart(box, false);
   if (fk) (box.querySelector(`[data-fk="${CSS.escape(fk)}"]`) || box.querySelector('h2'))?.focus({ preventScroll: true });
 }
@@ -4478,14 +4484,14 @@ function renderPart(box, card) {
     acts.append(action(hidden.has(p.id) ? 'Show' : 'Hide', () => { setHidden([p.id], !hidden.has(p.id)); renderInspector(); }, false, 'act:hide'));
     box.append(acts);
     const grp = DOCS.GROUPS.find((g) => g.id === p.group);
-    box.append(el('div', 'eyebrow', `${grp.name} · part ${p.n} of ${DOCS.PARTS.length}`));
     const h = el('h2', null, p.name);
     h.tabIndex = -1;
     h.dataset.fk = 'name';
     if (p.count > 1 && !(here && iso.focus)) h.append(' ', el('span', 'count', `×${p.count}`));
     box.append(h);
+    // Under the name: its group and number, and the piece in view.
     const line = pieceLine(p);
-    if (line) box.append(el('div', 'piece-of', line));
+    box.append(el('div', 'piece-of', `${grp.name} · part ${p.n} of ${DOCS.PARTS.length}${line ? ` · ${line}` : ''}`));
   }
   const chips = el('div', 'chips');
   const c = el('span', 'chip');
@@ -4707,7 +4713,6 @@ const citedBy = (() => {
 // The Machine tab: what the machine is, how a run goes (each step names the parts it uses), the tour, the headline
 // numbers and how to use the page.
 function renderOverview(box) {
-  box.append(el('div', 'eyebrow', 'Machine'));
   box.append(el('h2', null, 'MinimaK SPM1'));
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
   const acts = el('div', 'actions');
@@ -4767,7 +4772,7 @@ function renderOverview(box) {
   markTerms(box, 'machine');
 }
 function renderSources(box) {
-  box.append(el('div', 'eyebrow', 'Where the numbers come from'));
+  box.append(el('h2', null, 'Where the numbers come from'));
   box.append(el('p', null, 'A row that names one of these is published there. Otherwise its tag says how it was arrived at: “photo” scaled from the webinar photos, “std” the CF standard (S9) where the SPM1’s own part is not published, “derived” worked out from tagged numbers, “assumed” not published and picked for the drawing.'));
   const ul = el('ul', 'srclist');
   for (const s of DOCS.SOURCES) {
@@ -4797,7 +4802,7 @@ function renderSources(box) {
   box.append(ul);
 }
 function renderHelp(box) {
-  box.append(el('div', 'eyebrow', 'Settings'));
+  box.append(el('h2', null, 'Settings'));
   box.append(el('h3', null, 'Text size: the sheets, the inspect bar and the view’s labels'));
   const sizes = el('div', 'actions');
   sizes.setAttribute('role', 'radiogroup');
@@ -4820,7 +4825,7 @@ function renderHelp(box) {
   cb.addEventListener('change', () => setLetterKeys(cb.checked));
   sw.append(cb, el('span', null, 'Single-letter keys (E, C, I, T, X and the rest). Turn them off if they get pressed by accident, or with speech input; the arrows, Esc and Backspace still work.'));
   box.append(sw);
-  box.append(el('div', 'eyebrow', 'Moving around'));
+  box.append(el('h2', 'gap', 'Moving around'));
   const groups = [
     ['Mouse', [
       ['Left-drag', 'turn (turntable): sideways spins about the vertical, up and down tilts'],
