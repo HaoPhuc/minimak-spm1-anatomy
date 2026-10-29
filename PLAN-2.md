@@ -564,8 +564,9 @@ Colour, Greyscale and Hologram, and the loupe on touch at 1024×768.
     Machine tab's button. The search note is a status, and the box is described by it.
   - Touch: the choices are 44 px tall, and a tap on a joint flange answers the gasket question.
   - Reduced motion: the lifted part is up within 300 ms and home within 300 ms (the glide takes about 1.5 s).
-  - Phases 2, 3 and 4's checks still pass. The gauge's sensor nut shows 487 visible px at 1366×768 (546 before:
-    the switches widen the inspect bar, which now wraps), still over the 400 asked. No console errors.
+  - Phases 2, 3 and 4's checks still pass, with no console errors. The gauge's sensor nut shows 546 visible px at
+    1366×768 and 790 at 1440×900, as before. (As merged, the switch style overrode `hidden`, so *Open this joint*
+    showed on every part and wrapped the inspect bar, and the nut fell to 487; fixed after the taste review.)
 
 What differs from the plan:
 - **Search ranks by keeping the best, not by reordering.** The list keeps its groups, so the rows that score best are
