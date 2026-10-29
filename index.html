@@ -306,7 +306,8 @@
   .isobar .lbl b { font-weight: 600; }
   .isobar button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 4px 9px; font-size: 12px; cursor: pointer; white-space: nowrap; }
   .isobar button[aria-pressed="true"]:not(.toggle) { background: var(--ink); color: var(--card); border-color: var(--ink); }
-  .isobar button.toggle { display: inline-flex; align-items: center; gap: 6px; }
+  /* Laid out as a row only while shown: a display here would otherwise beat [hidden] (Open this joint on a gauge). */
+  .isobar button.toggle:not([hidden]) { display: inline-flex; align-items: center; gap: 6px; }
   .isobar button.done { background: var(--ink); color: var(--card); border-color: var(--ink); }
   .isobar #bBack { max-width: 13em; overflow: hidden; text-overflow: ellipsis; }
   .isobar button.icon { display: inline-grid; place-items: center; padding: 4px 6px; }
