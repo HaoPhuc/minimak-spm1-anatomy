@@ -166,7 +166,7 @@ The palette is the soft ice blue of the displays in Tony Stark's workshop: `#4f9
 - The selection glows amber, so it stands apart from the blue machine, and stays visible through whatever is in front of it. So do the sub-parts whose sheets you keep. A hovered part gets an amber outline, and a preview a dashed one.
 - Edges glow softly in the same blue.
 - Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
-- The panels and the sheets are drawn as a HUD, with blue corner brackets and a slow scan passing down each sheet.
+- The glow is the model's alone. The panels, bars, sheets and buttons are flat, as in the other themes: opaque surfaces one step off the black, dim rules, ice-blue text, a pale blue tint for a choice, and an action (**Done**, **Next ›**, the Part tab's first button) drawn inverted, ink on black. No glow, glass, corner brackets, scan or grid.
 
 The animation runs at 30 frames a second while the page is idle, and stands still with reduced motion.
 

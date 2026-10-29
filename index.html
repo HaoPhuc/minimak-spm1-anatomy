@@ -33,7 +33,6 @@
     --spec: #3cf0b4;
     --photo: #ffb54d;
     --assumed: #6a8ea8;
-    --glow: rgb(90 170 225 / 0.35);
     color-scheme: dark;
     scrollbar-color: #1b3a55 transparent;
   }
@@ -529,66 +528,32 @@
     .corner.bl .hint { display: none; }
   }
 
-  /* ---------- Hologram: glass panels on a dark grid, cyan rules and corner brackets, glowing pressed states ---------- */
-  .holo body {
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 30%, rgb(50 115 180 / 0.12), transparent 70%),
-      linear-gradient(rgb(90 170 225 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
-      linear-gradient(90deg, rgb(90 170 225 / 0.04) 1px, transparent 1px) 0 0 / 32px 32px,
-      var(--paper);
-  }
-  .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head {
-    background: color-mix(in srgb, var(--card) 80%, transparent);
-    border-color: rgb(90 170 225 / 0.3);
-    box-shadow: 0 0 18px rgb(90 170 225 / 0.08), inset 0 0 28px rgb(90 170 225 / 0.05);
-  }
-  .holo .panel, .holo .view { border-radius: 4px; position: relative; }
-  .holo .mb, .holo .isobar, .holo .sheets-head { border-radius: 4px; }
-  .holo .sheets-head { background: rgb(5 18 32 / 0.85); }
-  .holo .panel::after, .holo .view::after, .holo .screen::after {
-    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-    --c: rgb(90 170 225 / 0.95);
-    background:
-      linear-gradient(var(--c), var(--c)) left top / 14px 2px, linear-gradient(var(--c), var(--c)) left top / 2px 14px,
-      linear-gradient(var(--c), var(--c)) right top / 14px 2px, linear-gradient(var(--c), var(--c)) right top / 2px 14px,
-      linear-gradient(var(--c), var(--c)) left bottom / 14px 2px, linear-gradient(var(--c), var(--c)) left bottom / 2px 14px,
-      linear-gradient(var(--c), var(--c)) right bottom / 14px 2px, linear-gradient(var(--c), var(--c)) right bottom / 2px 14px;
-    background-repeat: no-repeat;
-  }
-  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; text-shadow: 0 0 10px var(--glow); }
+  /* ---------- Hologram: the model glows, the frame does not ----------
+     The glow is the model's: its shaders, the projector's floor, the plasma. The panels, bars, sheets and buttons are
+     flat, as in the other themes: opaque surfaces one step off the black, rules about 1.5:1 against it, ice-blue text,
+     and no glow, glass, brackets, scan or grid. A choice is a pale blue tint; an action (Done, Next, the Part tab's
+     first button) is the ink on black, inverted. */
+  .holo body { background: var(--paper); }
+  .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head { background: var(--card); border-color: var(--rule); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head { border-radius: 6px; }
+  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; }
   .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); }
-  .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); text-shadow: 0 0 8px var(--glow); }
+  .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); }
   .holo .scale i { border-color: var(--accent); }
-  .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle), .holo .isobar button.done,
-  .holo .isobar button.next, .holo .actions button.primary {
-    background: rgb(90 170 225 / 0.16); color: #dcecf8; border-color: var(--accent);
-    box-shadow: inset 0 0 0 1px rgb(90 170 225 / 0.6), 0 0 12px rgb(90 170 225 / 0.3);
-  }
+  .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle),
   .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: none; }
+  .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: none; }
   .holo .ti.sel, .holo table.ptab tr.on { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--accent); }
-  .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--accent); }
+  .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: none; }
   .holo .know { border-left-color: var(--accent); }
-  .holo .tip { background: rgb(6 22 38 / 0.9); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.6); box-shadow: 0 0 12px rgb(90 170 225 / 0.25); }
-  /* Screens: tinted glass with corner brackets and a slow scan passing down them. */
-  .holo .screen {
-    border-radius: 3px;
-    background: rgb(5 18 32 / 0.85);
-    border-color: rgb(90 170 225 / 0.42);
-    box-shadow: 0 0 22px rgb(90 170 225 / 0.14), inset 0 0 24px rgb(90 170 225 / 0.06);
-  }
-  .holo .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 26px rgb(90 170 225 / 0.3), inset 0 0 24px rgb(90 170 225 / 0.1); }
-  .holo .callout { background: rgb(5 18 32 / 0.88); border-color: rgb(90 170 225 / 0.42); border-radius: 3px; }
+  .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.35); box-shadow: none; }
+  .holo .screen { border-radius: 6px; background: var(--card); border-color: var(--rule); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .holo .screen.hot { border-color: var(--accent); box-shadow: none; outline: 1px solid var(--accent); }
+  .holo .callout { background: var(--card); border-color: rgb(90 170 225 / 0.35); border-radius: 4px; box-shadow: none; }
   .holo .callout.balloon { border-radius: 50%; border-color: var(--accent); }
-  .holo .screen::before {
-    content: ""; position: absolute; left: 0; right: 0; top: -60px; height: 60px; pointer-events: none;
-    background: linear-gradient(transparent, rgb(90 170 225 / 0.07), transparent);
-    animation: screen-scan 6s linear infinite;
-  }
-  @keyframes screen-scan { to { top: 100%; } }
-  .holo .screen .bar { border-bottom: 1px solid rgb(90 170 225 / 0.2); padding-bottom: 4px; margin-bottom: 8px; }
+  .holo .screen .bar { border-bottom: 1px solid var(--rule); padding-bottom: 4px; margin-bottom: 8px; }
   .holo .screen.folded .bar { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
-  @media (prefers-reduced-motion: reduce) { .holo .screen::before { animation: none; display: none; } }
-  .holo .triad .ring { fill: rgb(5 15 27 / 0.7); stroke: rgb(90 170 225 / 0.35); }
+  .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
 
   /* ---------- Greyscale: the light drawing's chrome in greys. The selection is marked in amber as in the model, on an
      ink edge so the mark stands out from the grey. ---------- */
