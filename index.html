@@ -71,7 +71,7 @@
 
   /* ---------- App shell: tree | viewer | inspector, each scrolls on its own ---------- */
   .app {
-    --tw: 260px; --iw: 360px;
+    --tw: 260px; --iw: clamp(300px, 23vw, 360px);
     display: grid; height: 100vh; height: 100dvh; row-gap: 12px; padding: 12px 16px 16px;
     grid-template-columns: var(--tw) 10px minmax(0, 1fr) 10px var(--iw);
     grid-template-rows: auto minmax(0, 1fr);
@@ -121,7 +121,10 @@
   .head-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
   .fold { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 17px; line-height: 1; }
   .fold:hover { background: var(--chip); color: var(--ink); }
-  .rail { display: none; }
+  .rail, .rail-search { display: none; }
+  .panel.folded .rail-search { display: grid; place-items: center; height: 34px; margin: 6px 4px 0; border: 0; border-radius: 7px; background: none; color: var(--muted); cursor: pointer; }
+  .panel.folded .rail-search:hover { background: var(--soft); color: var(--ink); }
+  .rail-search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   /* The grip between a panel and the view sizes the panel; a line shows while it is hovered or dragged. */
   .grip { position: relative; cursor: col-resize; touch-action: none; outline: none; }
   .grip.left { grid-area: gl; }
@@ -132,7 +135,7 @@
   body.resizing .stage { pointer-events: none; }
   .app.fold-tree { --tw: 34px; }
   .app.fold-insp { --iw: 34px; }
-  .panel.folded > :not(.rail) { display: none; }
+  .panel.folded > :not(.rail):not(.rail-search) { display: none; }
   .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 12px 0; }
   .panel.folded .rail:hover { color: var(--ink); background: var(--soft); }
   .panel-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--rule); }
@@ -214,6 +217,18 @@
   .scale { display: flex; align-items: flex-end; gap: 6px; width: fit-content; margin: 0 0 6px; padding: 3px 6px; border-radius: 6px; background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); }
   .scale i { display: block; height: 7px; border: 1.5px solid var(--ink); border-top: 0; }
   .triad { position: absolute; top: 8px; right: 8px; width: 84px; height: 84px; }
+  /* The view's own controls, at its left edge and clear of what is framed: zoom, the home view, Views, pan, panels. */
+  .navcluster { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); z-index: 3; display: flex; flex-direction: column; gap: 8px; }
+  .navcluster .mb { flex-direction: column; }
+  .navcluster .mb button { justify-content: center; padding: 8px; }
+  .navcluster .mb button + button { border-left: 0; border-top: 1px solid var(--rule); }
+  .navcluster .mb button[aria-pressed="true"] { background: var(--chip); color: var(--ink); }
+  .vmenu { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; min-width: 150px; padding: 4px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); box-shadow: 0 6px 20px rgb(0 0 0 / 0.14); }
+  .vmenu[hidden] { display: none; }
+  .vmenu button { display: flex; justify-content: space-between; gap: 16px; padding: 6px 10px; border: 0; border-radius: 6px; background: none; text-align: left; font-size: 13px; cursor: pointer; }
+  .vmenu button:hover, .vmenu button:focus-visible { background: var(--soft); outline: none; }
+  .vmenu button span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  @media (pointer: coarse) { .navcluster .zoom { display: none; } }
   .triad text { font-size: 10px; font-weight: 650; fill: var(--ink); cursor: pointer; }
   .triad .ax { cursor: pointer; }
   .triad .ax:hover circle { stroke-width: 2.4; }
@@ -497,9 +512,8 @@
   @media (max-width: 960px) {
     html, body { height: auto; }
     .app, .app.fold-tree, .app.fold-insp { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "top" "view" "insp" "tree"; }
-    .panel.folded > :not(.rail) { display: revert; }
-    .panel.folded .rail, .fold, #bPanels, .grip { display: none; }
-    .mb:has(#bPanels) { display: none; }
+    .panel.folded > :not(.rail):not(.rail-search) { display: revert; }
+    .panel.folded .rail, .panel.folded .rail-search, .fold, #bPanels, .grip { display: none; }
     .top { flex-wrap: wrap; }
     .modebar { margin-left: 0; width: 100%; justify-content: flex-start; }
     .view { height: 64vh; min-height: 360px; }
@@ -550,6 +564,7 @@
     background: rgb(90 170 225 / 0.16); color: #dcecf8; border-color: var(--accent);
     box-shadow: inset 0 0 0 1px rgb(90 170 225 / 0.6), 0 0 12px rgb(90 170 225 / 0.3);
   }
+  .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: none; }
   .holo .ti.sel, .holo table.ptab tr.on { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--accent); }
   .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--accent); }
   .holo .know { border-left-color: var(--accent); }
@@ -601,28 +616,11 @@
   <header class="top">
     <div class="brand"><h1>MinimaK SPM1</h1><p>Anatomy of a tabletop magnetised torus</p></div>
     <nav class="modebar" aria-label="View tools">
-      <div class="mb" role="group" aria-label="Left-drag does">
-        <button type="button" data-drag="orbit" aria-pressed="true" title="Left-drag turns the model like a turntable (O)"><svg viewBox="0 0 16 16"><path d="M13.5 8A5.5 5.5 0 1 1 11.6 3.8"/><path d="M13.6 1.8v3h-3"/></svg><span class="lbl">Orbit</span></button>
-        <button type="button" data-drag="pan" aria-pressed="false" title="Left-drag slides the view (P)"><svg viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M6 3.5l2-2 2 2M6 12.5l2 2 2-2M3.5 6l-2 2 2 2M12.5 6l2 2-2 2"/></svg><span class="lbl">Pan</span></button>
-      </div>
-      <div class="mb" role="group" aria-label="Zoom">
-        <button type="button" id="bZoomIn" title="Zoom in (+)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4M7 5v4"/></svg></button>
-        <button type="button" id="bZoomOut" title="Zoom out (−)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4"/></svg></button>
-        <button type="button" id="bHome" title="Reset view (0, or double-click empty space)"><svg viewBox="0 0 16 16"><path d="M2 7.5L8 2l6 5.5M3.8 6v8h8.4V6"/></svg></button>
-        <button type="button" id="bFitAll" title="Fit the whole system, stand and pump included (A)"><svg viewBox="0 0 16 16"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg></button>
-      </div>
-      <div class="mb" role="group" aria-label="Look from">
-        <button type="button" data-view="iso" title="Three-quarter view (1)">Iso</button>
-        <button type="button" data-view="front" title="From the front (2)">Front</button>
-        <button type="button" data-view="right" title="From the right (3)">Right</button>
-        <button type="button" data-view="top" title="From above (4)">Top</button>
-      </div>
       <div class="mb" role="group" aria-label="Model">
         <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="sw" aria-hidden="true"></span></button>
         <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
         <button type="button" id="bCut" class="toggle" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="sw" aria-hidden="true"></span></button>
       </div>
-      <div class="mb"><button type="button" id="bPanels" class="toggle" aria-pressed="true" title="Show or hide the side panels (F)"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg><span class="lbl">Panels</span><span class="sw" aria-hidden="true"></span></button></div>
       <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
         <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
@@ -632,6 +630,7 @@
   </header>
 
   <aside class="panel tree" id="treePanel" aria-labelledby="treeTitle">
+    <button type="button" class="rail-search" title="Find a part (/)" aria-label="Find a part"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></svg></button>
     <button type="button" class="rail" data-panel="tree" title="Show the assembly list">Assembly</button>
     <div class="panel-head">
       <div class="head-row"><div class="eyebrow" id="treeTitle">Assembly</div><button type="button" class="fold" data-panel="tree" title="Hide the assembly list to make room (F hides both)" aria-label="Hide the assembly list">‹</button></div>
@@ -648,6 +647,27 @@
     </div>
     <div class="fallback" id="fallback">This figure needs WebGL. The parts list and the sources still work.</div>
     <div class="corner tl">Fig 1 <span>· SPM1, Rideo Systems</span></div>
+    <div class="navcluster" id="navCluster" role="group" aria-label="View">
+      <div class="mb zoom" role="group" aria-label="Zoom">
+        <button type="button" id="bZoomIn" title="Zoom in (+)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4M7 5v4"/></svg></button>
+        <button type="button" id="bZoomOut" title="Zoom out (−)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4"/></svg></button>
+      </div>
+      <div class="mb">
+        <button type="button" id="bHome" title="Home view: the whole machine, stand and pump included (0, or double-click empty space)" aria-label="Home view"><svg viewBox="0 0 16 16"><path d="M2 7.5L8 2l6 5.5M3.8 6v8h8.4V6"/></svg></button>
+        <button type="button" id="bViews" aria-haspopup="menu" aria-expanded="false" aria-controls="viewMenu" title="Look from a side (1–4), as a click on an axis of the triad does" aria-label="Look from a side"><svg viewBox="0 0 16 16"><path d="M8 1.8l5.5 3.1v6.2L8 14.2l-5.5-3.1V4.9z"/><path d="M2.5 4.9L8 8l5.5-3.1M8 8v6.2"/></svg></button>
+        <button type="button" data-drag="pan" aria-pressed="false" title="Left-drag pans the view rather than turning it (P; shift-drag always pans)" aria-label="Pan with left-drag"><svg viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M6 3.5l2-2 2 2M6 12.5l2 2 2-2M3.5 6l-2 2 2 2M12.5 6l2 2-2 2"/></svg></button>
+        <button type="button" id="bPanels" aria-pressed="true" title="Side panels: hide both to give the view the window (F)" aria-label="Side panels"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg></button>
+      </div>
+      <div class="vmenu" id="viewMenu" role="menu" aria-label="Look from" hidden>
+        <button type="button" role="menuitem" data-view="iso">Three-quarter <span>1</span></button>
+        <button type="button" role="menuitem" data-view="front">Front <span>2</span></button>
+        <button type="button" role="menuitem" data-view="right">Right <span>3</span></button>
+        <button type="button" role="menuitem" data-view="top">Above <span>4</span></button>
+        <button type="button" role="menuitem" data-view="back">Back</button>
+        <button type="button" role="menuitem" data-view="left">Left</button>
+        <button type="button" role="menuitem" data-view="bottom">Below</button>
+      </div>
+    </div>
     <svg class="triad" id="triad" viewBox="-42 -42 84 84" aria-label="Orientation. Click an axis to look along it." role="group"></svg>
     <div class="isobar" id="isobar">
       <button type="button" id="bBack" hidden title="Back to the part you came from (Backspace)"></button>
@@ -1771,12 +1791,30 @@ function frameOf(points, az, elv, pad = 1.1, share = 1, vshare = 1) {
   centre.addScaledVector(dir, mean);
   return { half, centre };
 }
+// Zoom 1 frames the vessel on its table top (dev.fit), the scale every zoom, link and limit is measured on. The home
+// view is its own zoom and centre: the whole machine, stand and pump included, clear of the controls at the view's left
+// edge and of the labels in its corners. The readout gives zoom against the home view, so it reads 1.00× there.
+let machinePts = null;
+const home = { zoom: 1, centre: new V3() };
 function fitView() {
-  const f = frameOf(dev.fit, HOME.az, HOME.el, 1.12);
+  const z = frameOf(dev.fit, HOME.az, HOME.el, 1.12);
+  if (!machinePts) {
+    const b = new THREE.Box3();
+    for (const pc of pieces) b.union(pc.userData.restBox);
+    machinePts = [];
+    for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) machinePts.push(new V3(x, y, z));
+  }
+  // The machine is framed in the room right of the controls, a little in from the other edges.
+  const side = Math.max(navReserve(), 16), far = 16, edge = 56;
+  const f = frameOf(machinePts, HOME.az, HOME.el, 1.03, Math.max(0.5, 1 - (side + far) / width), Math.max(0.5, 1 - (2 * edge) / height));
+  f.centre.addScaledVector(basis(HOME.az, HOME.el).right, -((side - far) / 2) * ((2 * f.half) / height));
   const first = fit.half === 100;
-  fit = f;
+  fit = z;
+  home.zoom = z.half / f.half;
+  home.centre.copy(f.centre);
   if (first) {
     view.target.copy(f.centre); goal.target.copy(f.centre);
+    view.zoom = goal.zoom = home.zoom;
   }
 }
 const halfNow = () => fit.half / view.zoom;
@@ -1800,12 +1838,12 @@ function lookFrom(az, elv, o = {}) {
 }
 function resetView() {
   if (iso.part) { endShow(false); return frameIsolated(true); }
-  lookFrom(HOME.az, HOME.el, { zoom: 1, target: fit.centre });
+  lookFrom(HOME.az, HOME.el, { zoom: home.zoom, target: home.centre });
 }
 function fitAll() {
   const b = new THREE.Box3();
   for (const pc of pieces) if (pc.visible && !pc.userData.ghost) b.union(boxOfPiece(pc));
-  if (!b.isEmpty()) frameBox(b, 1.08);
+  if (!b.isEmpty()) frameBox(b, 1.08, hudInsets());
 }
 const VIEWS = {
   iso: [HOME.az, HOME.el],
@@ -2402,7 +2440,7 @@ function frameQuiz(glideFor = 0) {
   const b = quizRegion();
   for (const pc of quizPieces(quiz.list[quiz.i])) b.union(boxOfPiece(pc));
   const bar = $('quizbar').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6;
-  frameBox(b, 1.08, { l: 0, r: 0, b: 0, t: bar });
+  frameBox(b, 1.08, { l: navReserve(), r: 0, b: 0, t: bar });
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000, dur: glideFor, from: null };
 }
 // An answer: a part named in the bar (`id`), or a piece clicked on the model (`pc`).
@@ -2916,7 +2954,10 @@ function crumbs() {
 const PANEL = { tree: { min: 180, max: 520, w: 'tw' }, insp: { min: 240, max: 640, w: 'iw' } };
 const panels = { tree: true, insp: true, tw: 0, iw: 0 }; // a width of 0 keeps the default from the CSS
 {
-  const folded = (store.get('spm1-panels') || '').split(',');
+  // A first visit opens on the machine: the assembly list starts folded to its rail (its search one click away, or /).
+  // Once someone opens or folds a panel, that choice is kept.
+  const saved = store.get('spm1-panels');
+  const folded = (saved == null ? 'tree' : saved).split(',');
   panels.tree = !folded.includes('tree');
   panels.insp = !folded.includes('insp');
   panels.tw = +store.get('spm1-tw') || 0;
@@ -2944,6 +2985,13 @@ function setPanel(which, show) { panels[which] = show; applyPanels(); }
 function togglePanels() { const show = !(panels.tree || panels.insp); panels.tree = panels.insp = show; applyPanels(); }
 for (const b of document.querySelectorAll('.fold')) b.addEventListener('click', () => setPanel(b.dataset.panel, false));
 for (const b of document.querySelectorAll('.rail')) b.addEventListener('click', () => setPanel(b.dataset.panel, true));
+// Find a part: open the list and put the cursor in its search box.
+function findPart() {
+  if (!panels.tree && !stacked()) setPanel('tree', true);
+  $('search').focus();
+  $('search').select();
+}
+document.querySelector('.rail-search').addEventListener('click', findPart);
 $('bPanels').addEventListener('click', togglePanels);
 // Size a panel to `w` px, leaving the view at least 360 px; well under its minimum it folds to its rail.
 function sizePanel(which, w) {
@@ -3027,10 +3075,16 @@ function barBottom() {
   const bar = $('isobar');
   return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
 }
+// The view's controls take its left edge: what is framed stays clear of them.
+function navReserve() {
+  const c = $('navCluster');
+  if (!c?.getClientRects().length) return 0;
+  return Math.max(0, Math.round(c.getBoundingClientRect().right - $('card').getBoundingClientRect().left + 8));
+}
 function hudInsets() {
-  const t = barBottom();
-  if (!iso.part || !HUD.on) return { l: 0, r: 0, b: 0, t };
-  return dockLayout() ? { l: 0, r: 0, b: Math.round(height * DOCK_H) + 8, t } : { l: 0, r: SCREEN_W * uiScale + 20, b: 0, t };
+  const t = barBottom(), l = navReserve();
+  if (!iso.part || !HUD.on) return { l, r: 0, b: 0, t };
+  return dockLayout() ? { l, r: 0, b: Math.round(height * DOCK_H) + 8, t } : { l, r: SCREEN_W * uiScale + 20, b: 0, t };
 }
 function setScreens(on) {
   HUD.on = on;
@@ -4755,7 +4809,8 @@ function renderOverview(box) {
   box.append(t);
   box.append(el('h3', null, 'How to use it'));
   for (const s of [
-    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is.',
+    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The buttons at the view’s left edge zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, and fold the side panels.',
+    'The assembly list starts folded to its rail, so the machine has the room: the magnifier at the top of the rail, or /, opens it to search.',
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
@@ -4831,6 +4886,7 @@ function renderHelp(box) {
       ['Left-drag', 'turn (turntable): sideways spins about the vertical, up and down tilts'],
       ['Right-drag, Shift-drag, middle-drag', 'pan'],
       ['Wheel', 'zoom toward the pointer'],
+      ['The buttons at the view’s left edge', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, and the side panels'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
       ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
@@ -4882,9 +4938,10 @@ function renderHelp(box) {
       ['← → ↑ ↓', 'turn'],
       ['Shift + arrows', 'pan'],
       ['+ −', 'zoom'],
-      ['0', 'reset view'],
-      ['A', 'fit the whole system'],
-      ['1 2 3 4', 'iso, front, right, top'],
+      ['0', 'home view: the whole machine (inspecting, the part)'],
+      ['A', 'fit everything shown, at this angle'],
+      ['1 2 3 4', 'three-quarter, front, right, above'],
+      ['/', 'find a part: open the assembly list with the cursor in its search box'],
       ['O / P', 'left-drag turns / pans'],
       ['E', 'explode'],
       ['[ ]', 'less or more spread of what is apart: the part taken apart, else the machine exploded'],
@@ -5020,12 +5077,31 @@ function setDragMode(m) {
   stage.classList.toggle('pan', m === 'pan');
   setHint();
 }
-for (const b of document.querySelectorAll('[data-drag]')) b.addEventListener('click', () => setDragMode(b.dataset.drag));
+for (const b of document.querySelectorAll('[data-drag]')) b.addEventListener('click', () => setDragMode(dragMode === 'pan' ? 'orbit' : 'pan'));
 for (const b of document.querySelectorAll('[data-view]')) b.addEventListener('click', () => { touched = true; lookFrom(...VIEWS[b.dataset.view]); });
+// Views: the sides to look from, the triad's axes for the keyboard. Arrows move, Enter picks, Esc or Tab closes.
+const viewMenu = $('viewMenu'), bViews = $('bViews');
+function setViewMenu(open, focus = true) {
+  viewMenu.hidden = !open;
+  bViews.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open && focus) viewMenu.querySelector('button').focus();
+}
+bViews.addEventListener('click', () => setViewMenu(viewMenu.hidden));
+viewMenu.addEventListener('click', (e) => { if (e.target.closest('[data-view]')) { setViewMenu(false, false); bViews.focus(); } });
+viewMenu.addEventListener('keydown', (e) => {
+  const items = [...viewMenu.querySelectorAll('button')], i = items.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') items[(i + (e.key === 'ArrowDown' ? 1 : items.length - 1)) % items.length].focus();
+  else if (e.key === 'Home' || e.key === 'End') items[e.key === 'Home' ? 0 : items.length - 1].focus();
+  else if (e.key === 'Escape') { setViewMenu(false, false); bViews.focus(); }
+  else if (e.key === 'Tab') { setViewMenu(false, false); return; }
+  else return;
+  e.preventDefault();
+  e.stopPropagation();
+});
+document.addEventListener('pointerdown', (e) => { if (!viewMenu.hidden && !viewMenu.contains(e.target) && !bViews.contains(e.target)) setViewMenu(false, false); });
 $('bZoomIn').addEventListener('click', () => { touched = true; zoomBy(1.35); });
 $('bZoomOut').addEventListener('click', () => { touched = true; zoomBy(1 / 1.35); });
 $('bHome').addEventListener('click', () => { touched = true; resetView(); });
-$('bFitAll').addEventListener('click', () => { touched = true; fitAll(); });
 function setExplode(on) {
   state.explode = on;
   state.explodeAt = performance.now() / 1000;
@@ -5035,7 +5111,7 @@ function setExplode(on) {
   touched = true;
   if (iso.part) frameIsolated(false);
   else if (on) fitAll();
-  else lookFrom(goal.az, goal.el, { zoom: 1, target: fit.centre });
+  else lookFrom(goal.az, goal.el, { zoom: home.zoom, target: home.centre });
   announce(on ? 'Exploded: every component is off the machine.' : 'The machine is back together.');
   dirty = true;
 }
@@ -5180,7 +5256,8 @@ function describeView() {
 }
 function updateReadout() {
   const az = ((Math.round(view.az) % 360) + 540) % 360 - 180;
-  const line1 = `az ${az}° · el ${Math.round(view.el)}° · ${view.zoom.toFixed(view.zoom < 10 ? 2 : 1)}×${state.explode ? ` · spread ${fmtSpread(state.spread)}` : ''}`;
+  const zr = view.zoom / home.zoom;
+  const line1 = `az ${az}° · el ${Math.round(view.el)}° · ${zr.toFixed(zr < 10 ? 2 : 1)}×${state.explode ? ` · spread ${fmtSpread(state.spread)}` : ''}`;
   let line2;
   if (state.hoverOne) line2 = `${state.hoverOne} · ${state.hoverMesh.userData.sub}`;
   else if (state.pins.length) line2 = state.pins[state.pins.length - 1].sub;
@@ -5492,6 +5569,7 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'l' && iso.part) tidySheets();
   else if (k === 'backspace' && iso.history.length) goBack();
   else if (k === 'f') togglePanels();
+  else if (k === '/') findPart();
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
   else if (k === 'z' && showCandidate()) { const c = showCandidate(); showMe(c.part, c.sub, c.pc); }
   // Esc steps back, one rung at a time: the preview, the Show me frame, the joint opened, the step shown, one piece to
