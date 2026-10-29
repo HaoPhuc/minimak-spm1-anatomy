@@ -594,8 +594,27 @@ machine is to explore and how satisfying it looks. The drawing held up; the fram
 machine got half the window, and inspecting on a phone covered the part. It also found *Open this joint* showing on
 every part (fixed in #25). Its three changes, most effect first:
 
-1. **Give the machine the screen:** 70% or more of the width on a first visit, the controls fewer and on the canvas,
-   the home view fitting the whole machine. *Not started.*
+1. **Give the machine the screen.** *Done:*
+   - **The width:** on a first visit the assembly list starts folded to its rail (a magnifier on the rail, or `/`,
+     opens it to search; once opened or folded, the choice is kept), and the inspector is 23% of the window between
+     300 and 360 px. The view is 71% of the window at 1440×900 and 1366×768 (it was 53% and 51%), 77% at 1920×1080
+     and 70% at 1280×800.
+   - **The home view** fits the whole machine, stand and pump included (it cut off below the table top), framed in
+     the room right of the view's controls and clear of every label: at 1280–1920 px, on a 1024 px tablet and on a
+     390 px phone, no pixel of the machine is under the controls, the hint, the readout, the triad or the caption.
+     Zoom 1 keeps its meaning (the vessel on its table top), so links, the zoom limits and every framing are as they
+     were; the home view is its own zoom (about 0.5), and the readout gives zoom against it, so it reads 1.00× there.
+   - **Fewer controls:** the top bar keeps what changes the machine: Explode (with its Spread), Cutaway and the
+     theme, 5 buttons where there were 16. The view's own controls are a small cluster at its left edge: zoom (not on
+     touch, where you pinch), the home view, **Views** (a menu of the sides, the triad's axes for the keyboard),
+     left-drag pans (one button, a mode, where Orbit and Pan were two), and the side panels. Iso, Front, Right and
+     Top are in Views and on the triad; *Fit the whole system* went, as the home view now is that (`A` still fits
+     what is shown).
+   - **Checked:** Views by keyboard (Enter opens on the first side, ↓ moves, Enter picks Front, Esc and a click
+     outside close it, focus back on its button); Home; Pan on and off; the rail's magnifier and `/`; the panels
+     button (92% of the width with both folded); touch targets 44 px; inspecting the stack, no callout on the cluster;
+     Colour, Greyscale and Hologram. Phases 2–5's checks still pass, with no console errors; the sensor nut shows 514
+     visible px at 1366×768 and 764 at 1440×900.
 2. **Inspecting on a phone:** a one-row inspect bar, sheets in a bottom sheet that peeks, the part framed above it.
    *Not started.*
 3. **The frame as considered as the drawing.** *Done:*
