@@ -112,7 +112,7 @@ While inspecting, each sub-part has a technical sheet, and the sheets sit in a c
 - **Mouse or touch.** The gestures follow the input, not the width. With a mouse, resting on a sub-part previews it and a click keeps it, in the column and in the bottom sheet alike. On touch, a tap previews, **Keep** keeps, and a tap on a kept sub-part shows its sheet. With every piece shown, a click or a tap picks a piece instead.
 - **Linking.** Hovering a sheet lights its sub-part in the model, and pointing at a kept sub-part lights its sheet. A row under **Made of** or **Pieces**, a row of the assembly list or the search, and a part's name under **How it attaches** light their part too, on hover and on keyboard focus alike.
 - **The leader line.** One line runs from a sheet to its sub-part, ending on a point of it you can see: the sheet under the pointer or keyboard focus, else the sheet kept last (in the bottom sheet, the card it shows). Like the callouts it is drawn only while the view is still, so nothing moves as you turn; when you stop, it is drawn again to where the sub-part now is.
-- **What the light means.** In every theme a kept sub-part, or a selected part, is filled with the selection colour and outlined; the one whose sheet is under the pointer is filled brighter. A preview has a dashed outline, and a part under the pointer a plain one. In Colour the selection colour is teal: a dark teal fill on pale materials and a pale one on dark materials, so it stands out 3:1 or more against steel and copper alike. Greyscale and the hologram use amber.
+- **What the light means.** The part carries the highlight, and a thin line in the selection colour, as thin as the drawing's ink, gives it a clean edge. In every theme a kept sub-part, or a selected part, is filled with the selection colour and keeps its shading, so it still reads as a solid; the one whose sheet is under the pointer is filled brighter. A part under the pointer takes a light wash of the colour over its own, with a plain line, and a preview the same wash with a dashed line. In Colour the selection colour is teal: a mid teal fill on pale materials (steel, aluminium), a deeper one on mid materials (bolts, copper, bronze, cable) and a pale one on dark materials, so a kept part stands out 3:1 or more from the same part unkept on the metals and the black parts. Greyscale and the hologram use amber.
 - **Coming back.** Each part keeps its sheets, folds and places, so going back to it by a link, or inspecting it again later, brings them back.
 
 A sheet gives the material, the dimensions and notes, with a tag on every row. Which port carries the probe, and which viewport serves the webcam, the spectrometer or the eye, is not published, so those Pieces rows are tagged assumed. A source id (S1–S10) means the number is published there; a click opens the source. The other tags say how a number was arrived at, and one key at the foot of each sheet and of the Part tab explains the ones it uses:
@@ -151,9 +151,9 @@ Black and white with shades, like a rendering from a CAD package, on dimmed pape
 - Parts cast hard shadows on each other and on the table. They come from a 4096 × 4096 shadow map that covers only what the view shows, so they stay sharp when you zoom in. A shadow takes a lit face to the shade of a face just turned away.
 - Each material keeps its own grey: steel and ceramic pale, copper a mid grey set between steel's shades, the black parts dark.
 - Two things are in colour. The plasma glows pink-violet, the colour nitrogen glows, as in the colour drawing: a grey glow could not be seen on the grey parts. The selection is amber, as in the hologram:
-  - solid amber, keeping its shade, with an amber outline, on a selected part or a kept sheet's sub-part;
+  - solid amber, keeping its shade, with a thin amber edge, on a selected part or a kept sheet's sub-part;
   - brighter amber on the sub-part whose sheet is under the pointer;
-  - an amber outline round a part under the pointer, dashed round a preview.
+  - a pale amber wash over its greys, with a thin amber edge, on a part under the pointer; the edge is dashed on a preview.
 
   The plasma turns amber too while it is selected, but keeps its pink-violet while you inspect it.
 - The panels are the colour drawing's, in greys. Amber marks the selection there too, on an ink edge so it shows on the grey. Focus rings and the axis triad are ink.
@@ -165,7 +165,7 @@ The palette is the soft ice blue of the displays in Tony Stark's workshop: `#4f9
 - Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
 - The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
 - The whole machine is one blue, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (violet, pale at its core), and the selection in amber.
-- The selection glows amber, so it stands apart from the blue machine, and stays visible through whatever is in front of it. So do the sub-parts whose sheets you keep. A hovered part gets an amber outline, and a preview a dashed one.
+- The selection glows amber, so it stands apart from the blue machine, and stays visible through whatever is in front of it. So do the sub-parts whose sheets you keep. A hovered part takes a faint amber with a thin amber edge, and a preview the same with a dashed edge.
 - Edges glow softly in the same blue.
 - Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
 - The glow is the model's alone. The panels, bars, sheets and buttons are flat, as in the other themes: opaque surfaces one step off the black, dim rules, ice-blue text, a pale blue tint for a choice, and an action (**Done**, **Next ›**, the Part tab's first button) drawn inverted, ink on black. No glow, glass, corner brackets, scan or grid.
