@@ -666,6 +666,21 @@ every part (fixed in #25). Its three changes, most effect first:
    2 fails (text glows, button glows) and 2 warnings (bright panel borders, colour share) before; at 390 one warning
    is left, 12% of the phone's screen strongly coloured, which is the blue model filling a small screen (the drawing,
    not the frame). Colour is unchanged and still clean.
+5. **A quieter highlight** (asked for after the review: the 4 px bands round a part under the pointer were too
+   heavy, and the older wash read better). *Done:* the outline is as thin as the ink, one ink width each side of the
+   part's edge where it was two, so it gives the part a clean edge without a band. The part carries the highlight:
+   - **Under the pointer, or previewed:** a light wash of the selection colour over the part's own colour and shading
+     (teal toward the paper in Colour, the pale amber wash Greyscale had before Phase 1, a faint amber in the
+     hologram), with the thin line, dashed for a preview.
+   - **Selected or kept:** in Colour the fill keeps the part's shading, where it was a flat near-black teal (#00261f)
+     that made a bolt a dark blob. It takes three steps by the material's brightness, so it stays 3:1 or more from the
+     same face unkept on the metals (V1): mid teal #0b6e68 on steel and aluminium (3.4–4.0:1), deeper #054a45 on
+     bolts, copper, bronze and cable (3.2–4.8:1), pale #9eebe0 on the black parts, red and blue (2.8–13:1). The
+     weakest are a part's holes and slots (2.4–3.1:1, against the old fill's 2.3:1 on the PSU panel). Greyscale and
+     the hologram keep their amber fills.
+   - **Checked:** a real hover on the satellite coils and the viewports, a selected viewport, and the stack inspected
+     with a kept sheet and a preview, in Colour, Greyscale and Hologram, before and after; the inspect, loupe and
+     hidden-part checks give the same results as main.
 
 ## 5. Open questions for you
 
