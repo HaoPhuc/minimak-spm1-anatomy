@@ -615,8 +615,34 @@ every part (fixed in #25). Its three changes, most effect first:
      button (92% of the width with both folded); touch targets 44 px; inspecting the stack, no callout on the cluster;
      Colour, Greyscale and Hologram. Phases 2–5's checks still pass, with no console errors; the sensor nut shows 514
      visible px at 1366×768 and 764 at 1440×900.
-2. **Inspecting on a phone:** a one-row inspect bar, sheets in a bottom sheet that peeks, the part framed above it.
-   *Not started.*
+2. **Inspecting on a phone.** *Done,* for any view under 660 px (the width that already chose the dock):
+   - **One row:** the inspect bar runs across the top of the view with the part's name (two lines at most), one way
+     to step (the tour's Next, else the steps once it is apart, else the pieces), **⋯** and Done: 54 px high at
+     390×844, where it wrapped into six rows, 221 px (293 px taken apart), under the view's buttons. **⋯** opens the
+     rest under the bar as a two-column panel: Take apart and its Spread, Open this joint, Turn to see, Section,
+     Ghost, Sheets, Copy link, the pieces when the steps have the row, and ← back. They are the same controls,
+     moved, so each keeps its handler, its key and its state; a wider view puts them back in the bar's order. A pick
+     closes it, and so do a tap outside and Esc; opened from the keyboard, focus goes in and comes back to ⋯. The
+     view's caption gives the bar its place, and the triad sits under it. While Turn to see is offered, ⋯ carries a
+     dot. In Show me the breadcrumb takes the row, scrolled to its end, the sub-part (changing piece ends Show me, so
+     the pieces wait under ⋯); a step's caption sits under the row, and the part is framed below it.
+   - **A bottom sheet that peeks:** the dock (42% of the view, a box under the model) is a sheet across the foot of
+     the view, 30% high: the card's head, name and first lines. A drag on its head, a tap there or ⌃ pulls it up to
+     72% to read; down again the same ways, or by Esc. The camera never moves for it, and another part lets it peek.
+     A touch near the head's buttons lands on one of them (the browser's touch targeting), so a drag may start on a
+     button and still pulls the sheet; a tap stays the button's. The head shows ‹ › only with something to step
+     through and Close all only with a sheet kept, where it showed three disabled buttons on the part card alone.
+   - **The part framed in the room left:** at 390×844 the gauge stack has 276×300 px of the 343×540 view, where the
+     bar and the dock left it 276×40 px, and nothing at all once taken apart; at 640×800 (a narrow window, by mouse)
+     539×296 px, where it had 539×175. At 768×1024 and 1440×900 the bar, the column and the free view are the same as
+     before, to the pixel.
+   - **Checked:** by touch at 390×844: ⋯ by a tap and by the keyboard (focus goes in; Esc closes it, back on ⋯,
+     with the part still inspected), Take apart from it, a tap outside it; the sheet pulled up by a drag on its head,
+     down by a tap there, up by ⌃ from the keyboard and down by Esc; the tour's row (*1 of 8*, Next), the TF coils'
+     pieces, a step's caption, Show me's breadcrumb, a joint opened with Turn to see's dot; Colour and Hologram. The
+     inspector, at 390 on the stack taken apart: no findings. Phases 2–5's checks and the machine-first ones give the
+     same results as main, but for the quiz's random rounds and Show me in a narrow window, which fills two thirds of
+     a taller free view; no console errors.
 3. **The frame as considered as the drawing.** *Done:*
    - **A title:** "MinimaK SPM1" is the page's `h1` at 20 px, 16 px from the window's edge (it was 16 px, 10 px in).
    - **Sentence-case labels:** no tracked capitals (12 before); the redundant *Machine* and *Part* labels above the

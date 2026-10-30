@@ -238,7 +238,7 @@
   /* Information screens. While inspecting, the sheet column on the right of the view holds, in order, the part card
      (when the Part tab is not beside the view), the kept sheets and the preview. Its room is kept even while it is
      empty, so nothing in it moves the camera. It scrolls; nothing in it folds or closes by itself. A view under 660 px
-     has a dock under the model instead, one card at a time. A sheet dragged out floats where it is dropped. */
+     has a bottom sheet instead, one card at a time. A sheet dragged out floats where it is dropped. */
   .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
   .hud[hidden] { display: none; }
   .sheets { position: absolute; top: 80px; right: 12px; bottom: 8px; width: calc(280px * var(--ui-scale, 1)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
@@ -307,13 +307,31 @@
   .screen table.specs td:first-child { width: 42%; }
   .screen .srcs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; align-items: center; font-size: 12px; color: var(--muted); }
   .screen .subs button { font-size: 12.5px; padding: 3px 6px; }
-  /* In a view under 660 px the column becomes a dock under the model: at most 42 % of the view, one card at a time. */
-  .sheets.dock { top: auto; left: 8px; width: auto; max-height: 42%; }
-  .sheets.dock .sheets-body { flex: 0 1 auto; }
-  .sheets.dock .fold-btn { display: none; }
-  .sheets.dock .screen .bar.grab { cursor: default; touch-action: auto; }
-  .sheets.dock .screen .bar .line2 { padding-left: 0; }
+  /* In a view under 660 px the column becomes a bottom sheet, one card at a time. It peeks: 30 % of the view, enough
+     for the card's name and its first lines, with the part framed in the room above it. Pulled up (a drag on its head,
+     a tap there, or ⌃) it takes 72 % to read; pushed down it peeks again. The camera never moves for it. */
+  .hud .sheets.dock { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 30%; gap: 0; padding-top: 12px; pointer-events: auto; touch-action: none;
+    background: var(--card); border-top: 1px solid var(--rule); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 20px rgb(0 0 0 / 0.08); transition: max-height .28s ease; }
+  .hud .sheets.dock.up { max-height: 72%; }
+  .hud .sheets.dock.none { display: none; }
+  .hud .sheets.dock::before { content: ''; position: absolute; top: 5px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--rule); }
+  .hud .sheets.dock .sheets-head { padding: 0 8px 0 10px; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; flex-wrap: nowrap; cursor: ns-resize; -webkit-user-select: none; user-select: none; }
+  .hud .sheets.dock .sheets-head .eyebrow { display: none; }
+  .hud .sheets.dock .dockstep { margin-right: auto; }
+  .hud .sheets.dock .sheets-body { flex: 0 1 auto; }
+  .hud .sheets.dock .screen { padding: 10px 14px 14px; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; outline: 0; }
+  .hud .sheets.dock .sheets-list { border-top: 1px solid var(--rule); margin: 4px 0 0; padding: 0; }
+  .hud .sheets.dock .fold-btn { display: none; }
+  .hud .sheets.dock .screen .bar.grab { cursor: default; touch-action: auto; }
+  .hud .sheets.dock .screen .bar .line2 { padding-left: 0; }
+  .sheets-head #bSheetUp { display: inline-grid; place-items: center; padding: 3px 6px; }
+  .sheets-head #bSheetUp[hidden] { display: none; }
+  .sheets-head #bSheetUp svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
+  .sheets.up #bSheetUp svg { transform: rotate(180deg); }
   .view.docked .corner.bl, .view.docked .corner.br { display: none; }
+  /* Pulled up, the sheet is over the view's own controls, under the bar. */
+  .view.sheet-up .hud { z-index: 4; }
+  @media (prefers-reduced-motion: reduce) { .hud .sheets.dock, .sheets-head #bSheetUp svg { transition: none; } }
   @media (prefers-reduced-motion: reduce) { .screen.enter { animation: none; } }
   .isobar { position: absolute; top: 36px; left: 0; right: 0; width: fit-content; margin-inline: auto; display: none; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 4px 4px 4px 12px; box-shadow: 0 4px 18px rgb(0 0 0 / 0.08); max-width: calc(100% - 200px); flex-wrap: wrap; justify-content: center; row-gap: 4px; z-index: 2; }
   .isobar.on { display: flex; }
@@ -357,6 +375,39 @@
   .isobar .crumbs button:hover { background: var(--soft); }
   .isobar .crumbs .sep { color: var(--muted); padding: 0 1px; }
   .isobar .crumbs [aria-current] { font-weight: 600; padding: 2px 3px; }
+  .isobar #bLink .say { display: none; }
+  .isobar button.icon[hidden] { display: none; }
+  .isobar #bMore { position: relative; }
+  .isobar #bMore.dot::after { content: ''; position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--card); }
+  /* A view under 660 px (a phone): the bar is one row across the top of the view, the name (up to two lines), one way
+     to step (the tour's Next, else the steps, else the pieces), ⋯ and Done. ⋯ opens the rest under the bar, as the same
+     controls; a pick closes it. The view's caption gives the bar its place, and the triad sits under it. */
+  .isobar.compact { top: 8px; left: 8px; right: 8px; width: auto; max-width: none; margin: 0; justify-content: flex-start; padding: 4px 4px 4px 10px; z-index: 5; }
+  .isobar.compact > .lbl, .isobar.compact > .crumbs { flex: 1 1 0; min-width: 0; margin-right: 2px; }
+  .isobar.compact > .lbl { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; line-height: 16px; overflow-wrap: anywhere; }
+  .isobar.compact > .lbl[hidden], .isobar.compact > .crumbs[hidden] { display: none; }
+  .isobar.compact > .crumbs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+  .isobar.compact > .crumbs > * { flex: none; }
+  .isobar.compact > .crumbs.cut { -webkit-mask-image: linear-gradient(to right, transparent, #000 18px); mask-image: linear-gradient(to right, transparent, #000 18px); }
+  .isobar.compact .step #bAll, .isobar.compact .step #bSteps { min-width: 3.4em; padding-inline: 6px; }
+  .isobar.compact .tour { padding-left: 4px; border-left: 0; }
+  .isobar .isomore { position: absolute; top: calc(100% + 6px); left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: row dense; gap: 6px; padding: 8px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.14); }
+  .isobar .isomore[hidden] { display: none; }
+  .isomore > button { justify-content: space-between; min-height: 36px; padding-inline: 10px; text-align: left; }
+  .isomore > button.toggle:not([hidden]) { display: flex; }
+  .isomore > button[hidden] { display: none; }
+  .isomore #bLink { display: flex; justify-content: flex-start; gap: 8px; }
+  .isomore #bLink .say { display: inline; }
+  .isomore > .slide, .isomore > .step, .isomore > #bBack, .isomore > #bTurn { grid-column: 1 / -1; }
+  .isomore > #bBack { max-width: none; }
+  .isomore > .slide { padding: 4px 2px; }
+  .isomore > .slide input { flex: 1 1 auto; width: auto; }
+  .isomore > .step { display: flex; align-items: center; }
+  .isomore > .step[hidden] { display: none; }
+  .isomore > .step::before { content: 'Piece'; flex: 1 1 auto; font-size: 12px; color: var(--muted); }
+  .isomore > .step button:first-child { border-radius: 7px 0 0 7px; }
+  .view.compact-iso .corner.tl { visibility: hidden; }
+  .view.compact-iso .triad { top: var(--bar-b, 64px); width: 56px; height: 56px; }
   /* The model's own labels, drawn only while the view is still: the seat ring and its tether, the leader line from a
      sheet to its sub-part, and the callouts on a part taken apart. Each line has a band of the card under it, so it
      reads on any surface. */
@@ -536,6 +587,7 @@
   .holo body { background: var(--paper); }
   .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head { background: var(--card); border-color: var(--rule); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
   .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head { border-radius: 6px; }
+  .holo .isobar .isomore, .holo .hud .sheets.dock { box-shadow: none; }
   .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; }
   .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); }
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); }
@@ -659,7 +711,9 @@
         <span id="tourLabel"></span>
         <button type="button" class="next" id="bTourNext">Next ›</button>
       </span>
-      <button type="button" id="bLink" class="icon" title="Copy a link to this part, piece, its sheets and the view" aria-label="Copy link"><svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg></button>
+      <button type="button" id="bLink" class="icon" title="Copy a link to this part, piece, its sheets and the view" aria-label="Copy link"><svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg><span class="say">Copy link</span></button>
+      <button type="button" id="bMore" class="icon" hidden aria-expanded="false" aria-controls="isoMore" title="Take apart, Section, Ghost, Sheets and the link" aria-label="More for this part"><svg viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="1.2"/><circle cx="8" cy="8" r="1.2"/><circle cx="12.5" cy="8" r="1.2"/></svg></button>
+      <div class="isomore" id="isoMore" role="group" aria-label="More for this part" hidden></div>
       <button type="button" class="done" id="bDone" title="Back to the assembly (Esc)">Done</button>
       <div class="stepcap" id="stepCap" hidden></div>
     </div>
@@ -684,6 +738,7 @@
           <button type="button" id="bTidy" hidden title="Put the floating sheets back in the column (L)">Tidy</button>
           <button type="button" id="bFoldAll" title="Fold every card to its top bar">Fold all</button>
           <button type="button" id="bCloseAll" title="Close every kept sheet">Close all</button>
+          <button type="button" id="bSheetUp" class="icon" hidden aria-expanded="false" aria-controls="sheetBody" title="Pull the sheet up to read it" aria-label="Pull the sheet up"><svg viewBox="0 0 16 16"><path d="M3.5 10l4.5-4.5 4.5 4.5"/></svg></button>
         </div>
         <div class="sheets-body" id="sheetBody"><div class="sheets-list" id="sheetList"></div></div>
       </section>
@@ -2140,7 +2195,7 @@ function inspect(id, focusPiece = null, o = {}) {
   // On the tour, a stop's part, however it is reached (Next, ← back, a link), becomes the current stop.
   if (iso.tour !== null) { const j = DOCS.TOUR.findIndex((s) => s.part === id); if (j >= 0) iso.tour = j; }
   if (iso.part && iso.part !== id && !o.back) iso.history = [...iso.history, { part: iso.part, focus: iso.focus }].slice(-20);
-  if (iso.part !== id) { iso.apart = false; clearSheets(); restoreSheets(id); }
+  if (iso.part !== id) { iso.apart = false; HUD.up = false; clearSheets(); restoreSheets(id); }
   else if (iso.focus !== focusPiece) state.live = null; // any change of piece clears the preview
   for (const pc of pieces) {
     pc.userData.dHold = slow && pc.userData.part === id && pc.userData.dp < 0.5 ? now + MOVE.lift : 0;
@@ -2251,7 +2306,8 @@ function stepPiece(d) {
 function updateIsoBar() {
   const bar = $('isobar');
   bar.classList.toggle('on', !!iso.part);
-  if (!iso.part) return;
+  if (!iso.part) { setMore(false); placeBar(); return; }
+  const compact = dockLayout();
   const p = partById.get(iso.part);
   const list = piecesOf.get(iso.part) || [];
   const lbl = $('isoLabel');
@@ -2280,7 +2336,7 @@ function updateIsoBar() {
   const steps = stepList();
   $('stepStep').hidden = steps.length < 2;
   $('stepStep').setAttribute('aria-label', iso.joint ? `Steps to open the ${iso.joint.name}` : 'Steps in the order it comes apart');
-  $('bSteps').textContent = iso.step ? `Step ${iso.step} / ${steps.length}` : `All ${steps.length}`;
+  $('bSteps').textContent = iso.step ? `${compact ? '' : 'Step '}${iso.step} / ${steps.length}` : `All ${steps.length}`;
   const cap = $('stepCap');
   cap.hidden = !iso.step;
   if (iso.step) {
@@ -2298,11 +2354,71 @@ function updateIsoBar() {
   $('tourStep').hidden = iso.tour === null;
   if (iso.tour !== null) {
     const n = DOCS.TOUR.length, next = DOCS.TOUR[iso.tour + 1];
-    $('tourLabel').textContent = `Stop ${iso.tour + 1} of ${n}`;
+    $('tourLabel').textContent = `${compact ? '' : 'Stop '}${iso.tour + 1} of ${n}`;
+    $('tourLabel').title = `Stop ${iso.tour + 1} of ${n} on the tour`;
     $('bTourNext').hidden = !next;
     if (next) $('bTourNext').title = `Next stop: ${partById.get(next.part).name}`;
   }
+  placeBar();
 }
+// A view under 660 px (a phone) has the bar in one row: the name, one way to step (the tour's Next, else the steps,
+// else the pieces), ⋯ and Done. The rest goes under ⋯ as the same controls, moved, so each keeps its handler, its key
+// and its state; a wider view puts them back in the bar's own order.
+const BAR_ORDER = ['bBack', 'isoLabel', 'crumbs', 'pieceStep', 'bApart', 'bJoint', 'apartWrap', 'stepStep', 'bTurn', 'bSection', 'bContext', 'bScreens', 'tourStep', 'bLink', 'bMore', 'isoMore', 'bDone', 'stepCap'];
+const MORE_ORDER = ['bApart', 'bJoint', 'apartWrap', 'stepStep', 'bTurn', 'bSection', 'bContext', 'bScreens', 'bLink', 'pieceStep', 'bBack'];
+function placeBar() {
+  const bar = $('isobar'), more = $('isoMore'), card = $('card');
+  const compact = !!iso.part && dockLayout();
+  bar.classList.toggle('compact', compact);
+  card.classList.toggle('compact-iso', compact);
+  $('bMore').hidden = !compact;
+  if (!compact) setMore(false);
+  const shown = (id) => !$(id).hidden;
+  // In Show me the breadcrumb has the room (changing piece ends Show me anyway).
+  const step = !compact ? null : iso.tour !== null ? 'tourStep' : iso.show ? null : shown('stepStep') ? 'stepStep' : 'pieceStep';
+  const under = new Set(compact ? MORE_ORDER.filter((id) => id !== step) : []);
+  const a = document.activeElement;
+  const put = (parent, ids) => ids.map($).forEach((e, i) => { if (parent.children[i] !== e) parent.insertBefore(e, parent.children[i] || null); });
+  put(more, MORE_ORDER.filter((id) => under.has(id)));
+  put(bar, BAR_ORDER.filter((id) => !under.has(id)));
+  // Moving a control takes the focus off it; it goes back.
+  if (a && a !== document.activeElement && a.isConnected && bar.contains(a)) a.focus({ preventScroll: true });
+  // What the triad sits under, and nothing to open under ⋯ is not offered.
+  card.style.setProperty('--bar-b', `${Math.round(barBottom())}px`);
+  if (compact) $('bMore').disabled = ![...more.children].some((e) => !e.hidden);
+  markMore();
+  // A breadcrumb too long for the row shows its end, the sub-part, and fades out at the start.
+  const cr = $('crumbs');
+  if (compact && iso.show) cr.scrollLeft = cr.scrollWidth;
+  cr.classList.toggle('cut', compact && !!iso.show && cr.scrollLeft > 0);
+}
+// ⋯ opens the rest under the bar; a pick in it, a press outside it or Esc closes it. Opened from the keyboard, focus
+// goes into it, and back to ⋯ when it closes from there.
+function setMore(open, focus = false) {
+  const m = $('isoMore'), b = $('bMore');
+  if (m.hidden === !open) return;
+  m.hidden = !open;
+  b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open && focus) m.querySelector('button:not([hidden]):not(:disabled), input:not([hidden])')?.focus();
+}
+$('bMore').addEventListener('click', (e) => setMore($('isoMore').hidden, e.detail === 0));
+$('crumbs').addEventListener('scroll', (e) => e.target.classList.toggle('cut', $('isobar').classList.contains('compact') && e.target.scrollLeft > 0), { passive: true });
+$('isoMore').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  // The steppers stay open for the next press.
+  if (!b || b.closest('.step')) return;
+  const keys = e.detail === 0;
+  setMore(false);
+  if (keys && $('bMore').isConnected && !$('bMore').hidden) $('bMore').focus();
+});
+$('isobar').addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || $('isoMore').hidden) return;
+  setMore(false);
+  $('bMore').focus();
+  e.preventDefault();
+  e.stopPropagation();
+});
+document.addEventListener('pointerdown', (e) => { if (!$('isoMore').hidden && !$('isoMore').contains(e.target) && !$('bMore').contains(e.target)) setMore(false); });
 // The guided tour: inspect each stop's part in turn. Done, or Esc back to the assembly, ends it.
 function startTour() {
   iso.tour = 0;
@@ -2562,6 +2678,13 @@ function showTurn(on) {
   const b = $('bTurn');
   if (!on && document.activeElement === b) (iso.joint ? $('bJoint') : $('bApart')).focus();
   b.hidden = !on;
+  markMore();
+}
+// On a phone, Turn to see is under ⋯, so ⋯ carries a dot while it is offered.
+function markMore() {
+  const m = $('bMore'), on = !m.hidden && !$('bTurn').hidden && $('isoMore').contains($('bTurn'));
+  m.classList.toggle('dot', on);
+  m.setAttribute('aria-label', on ? 'More for this part: Turn to see is offered' : 'More for this part');
 }
 $('bTurn').addEventListener('click', turnToSee);
 
@@ -3006,19 +3129,20 @@ for (const g of document.querySelectorAll('.grip')) {
 // ---------- Information screens beside the part ----------
 // While inspecting, sub-part sheets sit in a column on the right of the view: the part card first when the
 // inspector's Part tab is not beside the view, then the sheets you kept, in the order you kept them, then the preview
-// of the sub-part the pointer stopped on. A view under 660 px has a dock under the model instead, one card at a time.
+// of the sub-part the pointer stopped on. A view under 660 px has a bottom sheet instead, one card at a time.
 // The room for either is kept even while it is empty, so nothing in it moves the camera, and nothing in it folds or
 // closes by itself: the column scrolls. A sheet dragged out of the column floats where it is dropped.
 const hud = $('hud');
-const HUD = { on: store.get('spm1-screens') !== 'off', els: new Map(), pos: new Map(), folded: new Set(), kept: new Map(), z: 1, card: null, shown: null, reveal: null };
+const HUD = { on: store.get('spm1-screens') !== 'off', els: new Map(), pos: new Map(), folded: new Set(), kept: new Map(), z: 1, card: null, shown: null, reveal: null, up: false };
 const CHEVRON = '<svg viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg>';
 // What the drawn shape and position of a part rest on: the same words on the inspector's chip, the tree's dots and
 // its legend.
 const BASIS_SHORT = { spec: 'published spec', photo: 'photos', assumed: 'a guess' };
 const BASIS_TIP = 'How far to trust the drawn shape and position. Each number carries its own tag.';
 // Width picks the layout, never the gestures: a view of 660 px or more has the 300 px column, which leaves the model
-// at least 360 px; a smaller view has the dock, at most 42 % of its height. Gestures follow the input (`coarse`).
-const SCREEN_W = 280, COLUMN_MIN = 660, DOCK_H = 0.42;
+// at least 360 px; a smaller view has the bottom sheet, which peeks at 30 % of its height, the room kept under the part
+// (pulled up to read, it takes more, and the camera stays). Gestures follow the input (`coarse`).
+const SCREEN_W = 280, COLUMN_MIN = 660, DOCK_H = 0.30;
 const stackedMQ = matchMedia('(max-width: 960px)');
 const stacked = () => stackedMQ.matches;
 const dockLayout = () => width < COLUMN_MIN + SCREEN_W * (uiScale - 1);
@@ -3038,7 +3162,7 @@ function nearestPiece(list) {
   const { dir } = basis(view.az, view.el);
   return list.reduce((a, b) => (boxOfPiece(b).getCenter(new V3()).dot(dir) > boxOfPiece(a).getCenter(new V3()).dot(dir) ? b : a));
 }
-// The inspect bar takes the top of the view, so a part is framed below it; the sheet column or the dock takes a side.
+// The inspect bar takes the top of the view, so a part is framed below it; the sheet column or the bottom sheet takes a side.
 function barBottom() {
   const bar = $('isobar');
   return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
@@ -3459,15 +3583,21 @@ function renderHud() {
   $('dockStep').hidden = !dock;
   if (dock) {
     const i = keys.indexOf(HUD.card);
-    $('cardLabel').textContent = state.live ? 'Preview' : HUD.card === 'part' ? 'Part' : i >= 0 ? `kept ${state.pins.findIndex((x) => sheetKey(x) === HUD.card) + 1} of ${n}` : '';
+    $('cardLabel').textContent = state.live ? 'Preview' : HUD.card === 'part' ? (n ? `Part · ${n} kept` : 'Part') : i >= 0 ? `Kept ${state.pins.findIndex((x) => sheetKey(x) === HUD.card) + 1} of ${n}` : '';
     $('bCardPrev').disabled = !state.live && i <= 0;
     $('bCardNext').disabled = !state.live && i >= keys.length - 1;
+    // One card and no preview: nothing to step through.
+    $('bCardPrev').hidden = $('bCardNext').hidden = !state.live && keys.length < 2;
   }
+  // In the bottom sheet, Close all shows once a sheet is kept.
+  $('bCloseAll').hidden = dock && !n;
   const col = $('sheets');
   col.classList.toggle('dock', dock);
+  col.classList.toggle('none', dock && !listed.length);
   col.style.top = dock ? '' : `${hudTop()}px`;
   $('card').style.setProperty('--hud-r', `${hudInsets().r}px`);
   $('card').classList.toggle('docked', dock && listed.length > 0);
+  setSheetUp(HUD.up, false);
   // A new card in the dock starts at its top; a sheet just kept or pointed at is scrolled into view in the column.
   const shown = dock ? listed[0]?.dataset.key || null : null;
   if (shown !== HUD.shown) { HUD.shown = shown; list.scrollTop = 0; }
@@ -3580,6 +3710,56 @@ $('bFoldAll').addEventListener('click', foldAllSheets);
 $('bCloseAll').addEventListener('click', closeAllSheets);
 $('bCardPrev').addEventListener('click', () => dockStep(-1));
 $('bCardNext').addEventListener('click', () => dockStep(1));
+// The bottom sheet peeks, with the part framed above it; pulled up, it is there to read. A drag on its head (or the
+// strip above it) follows the finger and settles on the nearer of the two; a tap there, or ⌃, switches. Inspecting
+// another part lets it peek again. The camera never moves for it.
+function setSheetUp(up, say = true) {
+  const col = $('sheets'), dock = col.classList.contains('dock') && !col.classList.contains('none') && !hud.hidden;
+  HUD.up = !!up;
+  col.classList.toggle('up', HUD.up && dock);
+  $('card').classList.toggle('sheet-up', HUD.up && dock);
+  const b = $('bSheetUp');
+  b.hidden = !dock;
+  b.setAttribute('aria-expanded', HUD.up ? 'true' : 'false');
+  b.title = HUD.up ? 'Let the sheet down, to see the part' : 'Pull the sheet up to read it';
+  b.setAttribute('aria-label', HUD.up ? 'Let the sheet down' : 'Pull the sheet up');
+  if (say && dock) announce(HUD.up ? 'Sheet up.' : 'Sheet down: the part is in view.');
+}
+$('bSheetUp').addEventListener('click', () => setSheetUp(!HUD.up));
+// A touch near the head's buttons lands on one of them (the browser's touch targeting), so a drag may start on a button:
+// once it moves it is a drag, and the click it would have made is dropped. A tap on a button stays that button's.
+let sheetDragged = false;
+$('sheets').addEventListener('pointerdown', (e) => {
+  const col = $('sheets');
+  sheetDragged = false;
+  if (!col.classList.contains('dock') || e.button !== 0 || e.target.closest('input, a, .sheets-body')) return;
+  const btn = e.target.closest('button:not(:disabled)');
+  const y0 = e.clientY, h0 = col.getBoundingClientRect().height, H = hud.getBoundingClientRect().height;
+  const lo = Math.min(h0, H * DOCK_H), hi = H * 0.72;
+  let moved = false;
+  const move = (ev) => {
+    if (ev.pointerId !== e.pointerId) return;
+    const dy = ev.clientY - y0;
+    if (!moved && Math.abs(dy) < 6) return;
+    moved = sheetDragged = true;
+    col.style.transition = 'none';
+    col.style.maxHeight = `${clamp(h0 - dy, lo, hi)}px`;
+  };
+  const up = (ev) => {
+    if (ev.pointerId !== e.pointerId) return;
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', up);
+    const h = col.getBoundingClientRect().height;
+    col.style.transition = col.style.maxHeight = '';
+    if (!moved) { if (!btn && ev.type === 'pointerup') setSheetUp(!HUD.up); }
+    else setSheetUp(ev.type === 'pointerup' ? h > (lo + hi) / 2 : HUD.up);
+  };
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', up);
+});
+$('sheets').addEventListener('click', (e) => { if (sheetDragged) { sheetDragged = false; e.stopPropagation(); e.preventDefault(); } }, true);
 // Where a world box lands on screen once the camera settles at `goal` (the camera is orthographic).
 function screenBoxOf(box) {
   const { right, up } = basis(goal.az, goal.el);
@@ -5542,8 +5722,11 @@ window.addEventListener('keydown', (e) => {
   else if (k === 'z' && showCandidate()) { const c = showCandidate(); showMe(c.part, c.sub, c.pc); }
   // Esc steps back, one rung at a time: the preview, the Show me frame, the joint opened, the step shown, one piece to
   // every piece, the part to the assembly, then the selection. It never closes a kept sheet. On the tour it stops at every piece: only Done leaves.
+  // On a phone, ⋯ open closes first, then a sheet pulled up comes down.
   else if (k === 'escape') {
-    if (state.live) setLive(null);
+    if (!$('isoMore').hidden) setMore(false);
+    else if (HUD.up && $('card').classList.contains('sheet-up')) setSheetUp(false);
+    else if (state.live) setLive(null);
     else if (iso.show) endShow(true);
     else if (iso.joint) setJoint(false);
     else if (iso.step) setStep(null);
