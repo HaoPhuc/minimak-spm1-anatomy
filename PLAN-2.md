@@ -706,6 +706,19 @@ every part (fixed in #25). Its three changes, most effect first:
    - **Checked:** a real hover on the satellite coils, the viewports and the TF coils, the TF coils selected (3× crops),
      and the stack inspected with a kept sheet and a preview, in Colour, Greyscale and Hologram. The regression checks
      give the same results as main.
+7. **An outline, and less see-through** (asked for after #32: a thin border should mark what is lit, and the glass
+   should be a little less see-through than the hologram). *Done:*
+   - **The outline:** a line just inside the lit part's silhouette, sampled at one and a half ink widths (about 1.5 px
+     at 1×), and also where the lit part lies over another lit part 2 cm or more farther off, so overlapping coils
+     each keep theirs. It is a shade deeper than the glass (the selection colour 45% toward the ink in Colour and
+     Greyscale, bright amber in the hologram), solid under the pointer and when kept, dashed on a preview, and hidden
+     where a solid part is in front. Inside it the part's inner edges stay light (40%). The hologram's lit parts get
+     it too: they stay in its ink pass and are also drawn in the lit-only pass.
+   - **Less see-through:** the glass is 45% opaque under the pointer and 72% kept or selected (it was 28% and 58%),
+     more where the surface turns away; lines seen through it are softened more (55%).
+   - **Checked:** a real hover on the satellite coils, the viewports and the TF coils, the TF coils selected (3×
+     crops), and the stack inspected with a kept sheet and a preview, in all three themes; the regression checks give
+     the same results as main.
 
 ## 5. Open questions for you
 
