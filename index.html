@@ -875,9 +875,6 @@ const shared = {
   uInk: { value: new THREE.Color() },
   uLitColor: { value: new THREE.Color() },
   // The colour drawing's fill for a selected or kept part: dark on light materials, pale on the rest.
-  uLitDark: { value: new THREE.Color() },
-  uLitDeep: { value: new THREE.Color() },
-  uLitLight: { value: new THREE.Color() },
   uPaper: { value: new THREE.Color() },
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
@@ -945,19 +942,14 @@ const FRAG_COLOR = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
   uniform vec3 uColor;
-  uniform float uLit;
-  uniform vec3 uLitDark;
-  uniform vec3 uLitDeep;
-  uniform vec3 uLitLight;
   uniform vec3 uEmit;
   uniform vec3 uLight;
   uniform vec3 uCut;
   uniform vec3 uInk;
-  uniform vec3 uPaper;
-  uniform vec3 uLitColor;
   uniform float uDpr;
   varying vec3 vNv;
   varying vec3 vNw;
+  // A lit part is not drawn here: in Colour and Greyscale it is glass (FRAG_LIT).
   void main() {
     #include <clipping_planes_fragment>
     #ifdef HOLES
@@ -974,18 +966,6 @@ const FRAG_COLOR = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
     vec3 c = uColor * tone;
-    // A selected or kept part (levels 0.42 and up) fills in teal and keeps its shading, so it still reads as a solid,
-    // 3:1 or more from the same face unlit on the parts' metals: a mid teal on a light material (steel, aluminium), a
-    // deeper one on a mid material (bolts, copper, bronze, cable), a pale teal on a dark one (the black parts, red, blue).
-    // The hot sheet's sub-part (0.55) is a little lighter. Under the pointer or previewed (0.3, 0.32) a part takes a
-    // light teal wash toward the paper, keeping its own colour and shading. The post pass gives each a thin edge.
-    if (uLit > 0.4) {
-      float l = dot(uColor, vec3(0.2126, 0.7152, 0.0722));
-      vec3 fill = l > 0.78 ? uLitDark : l > 0.5 ? uLitDeep : uLitLight;
-      c = fill * (0.62 + 0.5 * w + 0.06 * top) + (uLit > 0.5 ? 0.06 : 0.0);
-    } else if (uLit > 0.2) {
-      c = mix(c, mix(uPaper, uLitColor, 0.55) * (0.86 + 0.18 * w), 0.42);
-    }
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -1065,8 +1045,8 @@ const FRAG_HOLO = /* glsl */`
     vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
     // The selection fills in amber, so it stands apart from the blue, and never goes white; under the pointer or
     // previewed a part takes a fainter amber.
-    float lit = uLit > 0.4 ? clamp(uLit * 1.5, 0.0, 0.75) : uLit > 0.2 ? 0.32 : 0.0;
-    c = mix(c, uLitColor * (0.15 + 0.24 * rim) * (0.8 + 0.2 * band), lit);
+    float lit = uLit > 0.4 ? clamp(uLit * 1.5, 0.0, 0.75) : uLit > 0.2 ? 0.45 : 0.0;
+    c = mix(c, uLitColor * (0.2 + 0.36 * rim) * (0.8 + 0.2 * band), lit);
     float vis = max(mix(1.0, 0.12, behind), lit * 0.45);
     gl_FragColor = vec4((c * vis + uEmit) * uDim, 1.0);
   }
@@ -1137,11 +1117,7 @@ const FRAG_GREY = /* glsl */`
     float fs = fwidth(s) + 1e-3;
     if (k > 0.0) q = mix(0.25, q, smoothstep(0.5 - fs, 0.5 + fs, s));
     vec3 c = uColor * (0.42 + 0.58 * q);
-    // Selected or kept (0.42 and up) a part fills in amber, keeping its shade, and the one whose sheet is hot (0.55) is
-    // brighter still. Under the pointer, or previewed, it takes a pale amber wash over its greys. The post pass gives
-    // each a thin edge.
-    if (uLit > 0.4) c = mix(c, uLitColor * (0.62 + 0.42 * q + 0.12 * step(0.5, uLit)), 0.9);
-    else if (uLit > 0.2) c = mix(c, mix(uLitColor, vec3(1.0), 0.4) * (0.82 + 0.18 * q), 0.4);
+    // A lit part is not drawn here: it is glass (FRAG_LIT).
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -1182,7 +1158,7 @@ function colorMat(tone, clip, sec = null) {
   const glass = tone === 'glass';
   const m = new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 }, uLitDark: shared.uLitDark, uLitDeep: shared.uLitDeep, uLitLight: shared.uLitLight,
+      uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
       uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
       tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
@@ -1238,6 +1214,56 @@ const FRAG_DIM = /* glsl */`
     gl_FragColor = vec4(mix(uPaper, c, 0.5), 0.42);
   }
 `;
+// A lit part in Colour and Greyscale is glass, as every part is in the hologram: its own colour, shaded, tinted with
+// the selection colour and see-through, so what is behind and inside it shows, with its lines. The tint and the
+// opacity are lighter under the pointer or previewed (levels 0.3, 0.32), stronger selected or kept (0.42) and
+// strongest on the hot sheet's sub-part (0.55); both thicken where the surface turns away, so its form reads. Its own
+// edges are drawn by the post pass from a pass of the lit parts alone, thin, in the selection colour. It writes no
+// depth, so a part behind it is drawn and outlined; a part in front of it still hides it.
+const FRAG_LIT = /* glsl */`
+  #include <clipping_planes_pars_fragment>
+  ${HOLES}
+  uniform vec3 uColor;
+  uniform float uLit;
+  uniform vec3 uEmit;
+  uniform vec3 uLitColor;
+  uniform vec3 uLight;
+  varying vec3 vNv;
+  varying vec3 vNw;
+  void main() {
+    #include <clipping_planes_fragment>
+    #ifdef HOLES
+      holes();
+    #endif
+    vec3 n = normalize(vNv);
+    float w = smoothstep(-0.4, 1.0, dot(n, uLight) * (gl_FrontFacing ? 1.0 : -1.0));
+    float rim = pow(1.0 - abs(n.z), 2.0);
+    float kept = step(0.4, uLit), hot = step(0.5, uLit);
+    vec3 own = uColor * (mix(0.66, 1.05, w) + 0.06 * smoothstep(0.6, 1.0, vNw.z));
+    vec3 tint = uLitColor * (0.8 + 0.3 * w);
+    vec3 c = mix(own, tint, mix(0.45, 0.78, kept) + 0.08 * hot);
+    float a = mix(0.28, 0.58, kept) + 0.08 * hot + 0.3 * rim;
+    // The far side shows fainter through the near one.
+    if (!gl_FrontFacing) a *= 0.55;
+    gl_FragColor = vec4(c + uEmit, clamp(a, 0.0, 0.85));
+  }
+`;
+const litMats = new Map();
+function litMat(base) {
+  if (litMats.has(base)) return litMats.get(base);
+  const m = new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 }, uLitColor: shared.uLitColor, uLight: shared.uLight },
+    vertexShader: VERT, fragmentShader: FRAG_LIT, transparent: true, depthWrite: false, side: THREE.DoubleSide, clipping: true,
+  });
+  if (base.defines?.HOLES) { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
+  m.userData.lit = true;
+  m.userData.clip = base.userData.clip;
+  m.userData.section = base.userData.section;
+  m.clippingPlanes = base.clippingPlanes;
+  m.clipIntersection = base.clipIntersection;
+  litMats.set(base, m);
+  return m;
+}
 const dimMats = new Map();
 function dimMat(sec) {
   if (dimMats.has(sec)) return dimMats.get(sec);
@@ -1266,6 +1292,8 @@ function perMesh(r, s, c, g, material) {
     u.uSolid.value = this.userData.solid;
   } else if (material.userData.ink) { u.uId.value = this.userData.inkId; u.uLitS.value = this.userData.litCode; }
   else {
+    // Glass for a lit part takes the part's own colour, in the theme's tones.
+    if (material.userData.lit) u.uColor.value.copy(this.userData.colorMat.uniforms.uColor.value);
     u.uLit.value = this.userData.lit;
     u.uEmit.value.copy(this.userData.emit);
     u.uDim.value = this.userData.dim;
@@ -1539,7 +1567,7 @@ const tableLabels = QUARTERS.map(([name, deg]) => {
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
-      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null },
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, tLitNid: { value: null }, tLitDepth: { value: null }, uLitOn: { value: 0 },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
@@ -1549,6 +1577,9 @@ const post = (() => {
       uniform sampler2D tColor;
       uniform sampler2D tNid;
       uniform sampler2D tDepth;
+      uniform sampler2D tLitNid;
+      uniform sampler2D tLitDepth;
+      uniform float uLitOn;
       uniform vec2 uTexel;
       uniform float uThick;
       uniform vec3 uInk;
@@ -1559,53 +1590,66 @@ const post = (() => {
       uniform float uDpr;
       uniform vec3 uLitColor;
       varying vec2 vUv;
-      float dep(vec2 uv) { return texture2D(tDepth, uv).x * uRange; }
+      float dep(sampler2D d, vec2 uv) { return texture2D(d, uv).x * uRange; }
       vec3 nrm(vec4 t) {
         if (t.a <= 0.0) return vec3(0.0);
         vec2 xy = t.xy * 2.0 - 1.0;
         return vec3(xy, sqrt(max(0.0, 1.0 - dot(xy, xy))));
       }
-      // A lit part's outline: where its lit state differs from a pixel one ink width away, the higher state draws a
-      // line in the accent as thin as the ink's, half inside the part and half outside. The part itself carries the
-      // highlight (a wash under the pointer, a fill when kept); the line only gives it a clean edge. Hover and kept
-      // are solid; the preview is dashed. Returns the line's strength.
-      float litLine() {
-        float r = uThick, c0 = texture2D(tNid, vUv).b, hi = c0, lo = c0;
-        for (int i = 0; i < 8; i++) {
-          float a = float(i) * 0.785398;
-          float b = texture2D(tNid, vUv + vec2(cos(a), sin(a)) * uTexel * r).b;
-          hi = max(hi, b); lo = min(lo, b);
-        }
-        if (hi < 0.1 || hi - lo < 0.1) return 0.0;
-        float dash = abs(hi - 0.5) < 0.1 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 10.0 * uDpr), 6.0 * uDpr) : 1.0;
-        return dash;
-      }
-      void probe(vec2 uv, vec4 c, vec3 nc, inout float lap, inout float ne, inout float ide) {
-        vec4 t = texture2D(tNid, uv);
-        lap += dep(uv);
+      void probe(sampler2D n, sampler2D d, vec2 uv, vec4 c, vec3 nc, inout float lap, inout float ne, inout float ide) {
+        vec4 t = texture2D(n, uv);
+        lap += dep(d, uv);
         if (c.a > 0.0 && t.a > 0.0) ne = max(ne, 1.0 - dot(nc, nrm(t)));
         ide = max(ide, step(0.0015, abs(t.a - c.a)));
       }
-      float edge(float s) {
+      // The ink's edges, from an ink pass's normals, ids and depth: where depth jumps, the normal turns or the part
+      // changes.
+      float edgeOf(sampler2D n, sampler2D d, float s) {
         vec2 ox = vec2(uTexel.x * s, 0.0);
         vec2 oy = vec2(0.0, uTexel.y * s);
-        vec4 c = texture2D(tNid, vUv);
+        vec4 c = texture2D(n, vUv);
         vec3 nc = nrm(c);
         float lap = 0.0, ne = 0.0, ide = 0.0;
-        probe(vUv + ox, c, nc, lap, ne, ide);
-        probe(vUv - ox, c, nc, lap, ne, ide);
-        probe(vUv + oy, c, nc, lap, ne, ide);
-        probe(vUv - oy, c, nc, lap, ne, ide);
-        lap = abs(lap - 4.0 * dep(vUv));
+        probe(n, d, vUv + ox, c, nc, lap, ne, ide);
+        probe(n, d, vUv - ox, c, nc, lap, ne, ide);
+        probe(n, d, vUv + oy, c, nc, lap, ne, ide);
+        probe(n, d, vUv - oy, c, nc, lap, ne, ide);
+        lap = abs(lap - 4.0 * dep(d, vUv));
         float eD = smoothstep(uDepthT, uDepthT * 3.0, lap);
         float eN = smoothstep(0.2, 0.55, ne) * 0.72;
         return clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
       }
+      float edge(float s) { return edgeOf(tNid, tDepth, s); }
+      // A lit part's own edges, from the pass of the lit parts alone: as thin as the ink, in the selection colour,
+      // solid under the pointer and when kept, dashed on a preview. They hide where a solid part is in front of the lit
+      // one, as the glass does. \`through\` says the pixel shows something behind a lit part, whose lines are softened.
+      float litEdge(out float through) {
+        through = 0.0;
+        if (uLitOn < 0.5) return 0.0;
+        float md = dep(tDepth, vUv), ld = 1e9, code = 0.0;
+        vec4 c = texture2D(tLitNid, vUv);
+        if (c.a > 0.0) { ld = dep(tLitDepth, vUv); code = c.b; through = step(ld + 0.3, md); }
+        for (int i = 0; i < 4; i++) {
+          vec2 o = vec2(i == 0 ? 1.0 : i == 1 ? -1.0 : 0.0, i == 2 ? 1.0 : i == 3 ? -1.0 : 0.0) * uTexel * uThick * 1.5;
+          vec4 t = texture2D(tLitNid, vUv + o);
+          if (t.a > 0.0) { float z = dep(tLitDepth, vUv + o); if (z < ld) { ld = z; code = t.b; } }
+        }
+        if (ld > 1e8 || md + 0.3 < ld) return 0.0;
+        // Stronger on a kept part than under the pointer; the preview between, dashed.
+        float preview = step(abs(code - 0.5), 0.1);
+        float dash = preview > 0.5 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 8.0 * uDpr), 5.0 * uDpr) : 1.0;
+        return edgeOf(tLitNid, tLitDepth, uThick) * dash * (code > 0.6 ? 0.8 : preview > 0.5 ? 0.65 : 0.5);
+      }
       void main() {
         float e = edge(uThick);
         vec3 col = texture2D(tColor, vUv).rgb;
-        float lit = litLine();
-        if (uHolo < 0.5) { gl_FragColor = vec4(mix(mix(col, uInk, e * uInkAlpha), uLitColor, lit), 1.0); return; }
+        if (uHolo < 0.5) {
+          float through;
+          float le = litEdge(through);
+          vec3 c = mix(col, uInk, e * uInkAlpha * (1.0 - 0.45 * through));
+          gl_FragColor = vec4(mix(c, uLitColor, le), 1.0);
+          return;
+        }
         // Hologram: a dark blue field with a faint grid, the added light toned down so it never clips, and edges that
         // glow in the colour of the part they belong to, with a soft halo.
         vec2 p = (vUv - 0.5) * vec2(uTexel.y / uTexel.x, 1.0);
@@ -1620,7 +1664,6 @@ const post = (() => {
         c += ec * 0.85 * (e * uInkAlpha + halo * 0.18);
         c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
-        c = mix(c, uLitColor * 1.15, lit);
         gl_FragColor = vec4(c, 1.0);
       }
     `,
@@ -1687,7 +1730,7 @@ function aimShadow() {
   shared.uShadowBias.value = (1.5 * cm) / (shadowCam.far - shadowCam.near);
 }
 
-let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
+let rtColor = null, rtInk = null, rtLit = null, dpr = 1, width = 1, height = 1;
 // On a touch screen, while a finger is down or the camera glides, the view renders at 1x and without the greyscale
 // drawing's shadows, so it keeps up on a tablet; it sharpens again when it is still.
 let lowRes = false;
@@ -1709,6 +1752,10 @@ function resize() {
   rtInk?.dispose();
   rtColor = new THREE.WebGLRenderTarget(w, h, { samples: 4 });
   rtInk = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthTexture: new THREE.DepthTexture(w, h) });
+  rtLit?.dispose();
+  rtLit = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthTexture: new THREE.DepthTexture(w, h) });
+  post.mat.uniforms.tLitNid.value = rtLit.texture;
+  post.mat.uniforms.tLitDepth.value = rtLit.depthTexture;
   post.mat.uniforms.tColor.value = rtColor.texture;
   post.mat.uniforms.tNid.value = rtInk.texture;
   post.mat.uniforms.tDepth.value = rtInk.depthTexture;
@@ -1726,9 +1773,13 @@ function resize() {
 }
 
 // The ink pass goes first: the hologram's colour pass reads its depth to tell the nearest surface from the ones behind.
+// A lit part drawn as glass (Colour and Greyscale): solid, not a ghost, not dimmed by Show me, not a window.
+const glassLit = (m) => !holo && m.userData.lit > 0 && m.userData.tone !== 'glass' && !m.userData.dimmed && !(m.userData.piece && ease(m.userData.piece.userData.gNow) > 0);
 function draw() {
   const pal = THEME[themeName()];
   camera.layers.set(0);
+  const inked = new Set();
+  let anyLit = false;
   for (const m of solids) {
     const u = m.userData.piece?.userData;
     const g = u ? ease(u.gNow) : 0;
@@ -1736,13 +1787,28 @@ function draw() {
     // A part fading to a ghost loses its outline halfway; one turning solid gets its outline first, then its fill. A
     // mate keeps its outline while it is lit (the one a step's sub-parts bear on).
     // What Show me dims has no outline, so the framed sub-part's edges show through it.
-    m.visible = !((u && (u.ghost ? g > 0.5 && !(u.mate && m.userData.lit > 0) : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
+    const shown = !((u && (u.ghost ? g > 0.5 && !(u.mate && m.userData.lit > 0) : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
+    if (shown) inked.add(m);
+    // A lit part is glass: it leaves this pass, so what is behind it keeps its lines, and gets its own below.
+    const glass = shown && glassLit(m);
+    if (glass) anyLit = true;
+    m.visible = shown && !glass;
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
   renderer.clear();
   renderer.render(scene, camera);
-  // The greyscale drawing's shadows come from the same parts as the outlines, but not from the window glass.
+  // The lit parts alone, for their own edges.
+  post.mat.uniforms.uLitOn.value = anyLit ? 1 : 0;
+  if (anyLit) {
+    for (const m of solids) m.visible = inked.has(m) && glassLit(m);
+    renderer.setRenderTarget(rtLit);
+    renderer.clear();
+    renderer.render(scene, camera);
+  }
+  for (const m of solids) m.visible = inked.has(m);
+  // The greyscale drawing's shadows come from the same parts as the outlines, lit ones included, but not from the
+  // window glass.
   shared.uShadowOn.value = greyscale && !lowRes ? 1 : 0;
   if (greyscale && !lowRes) {
     for (const m of solids) if (m.userData.tone === 'glass') m.visible = false;
@@ -1760,7 +1826,7 @@ function draw() {
     if (g <= 0 && m.userData.dimmed) {
       if (holo) { m.material = m.userData.colorMat; m.userData.dim = 0.25; }
       else m.material = dimMat(m.userData.colorMat.userData.section);
-    } else if (g <= 0) m.material = m.userData.colorMat;
+    } else if (g <= 0) m.material = glassLit(m) ? litMat(m.userData.colorMat) : m.userData.colorMat;
     // A mate fades only halfway, and keeps its fasteners.
     else if (holo) { const mate = m.userData.piece.userData.mate; m.material = m.userData.colorMat; m.userData.dim = lit || mate ? Math.max(mate ? 0.5 : 0.6, 1 - (1 - pal.ghost) * g) : 1 - (1 - pal.ghost) * g; m.visible = lit || mate || !(g >= 1 && FINE.has(m.userData.tone)); }
     else if (m.userData.piece.userData.mate) { m.material = GHOST_FADE; m.userData.solid = Math.max(0.5, 1 - g); }
@@ -1971,7 +2037,7 @@ function applyClip() {
   const key = iso.part ? 'none' : 'sector';
   if (key === clipKey) return;
   clipKey = key;
-  const mats = [...colorMats.values(), ...Object.values(INK)].filter((m) => !m.userData.section);
+  const mats = [...colorMats.values(), ...litMats.values(), ...Object.values(INK)].filter((m) => !m.userData.section);
   for (const m of mats) {
     if (key === 'sector' && m.userData.clip) { m.clippingPlanes = sectorPlanes; m.clipIntersection = true; }
     else m.clippingPlanes = [];
@@ -5327,11 +5393,6 @@ function applyTheme() {
   shared.uCut.value.set(pal.cut);
   shared.uInk.value.set(pal.ink);
   shared.uLitColor.value.set(pal.lit);
-  // The colour drawing's fills for a selected or kept part, shaded: a mid teal on light materials, a deeper one on mid
-  // materials, and a pale one on dark materials.
-  shared.uLitDark.value.set('#0b6e68');
-  shared.uLitDeep.value.set('#054a45');
-  shared.uLitLight.value.set('#9eebe0');
   shared.uPaper.value.set(pal.paper);
   clearColor.copy(shared.uPaper.value);
   shared.uGhost.value = pal.ghost;
