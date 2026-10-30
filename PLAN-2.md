@@ -681,6 +681,31 @@ every part (fixed in #25). Its three changes, most effect first:
    - **Checked:** a real hover on the satellite coils and the viewports, a selected viewport, and the stack inspected
      with a kept sheet and a preview, in Colour, Greyscale and Hologram, before and after; the inspect, loupe and
      hidden-part checks give the same results as main.
+6. **The highlight as glass** (asked for after #31: the edges still read as thick borders, on the TF coils' winding
+   teeth above all; the part inside should be see-through, as the whole machine is in the hologram; the colours chosen
+   with the taste skill). *Done:*
+   - **Glass:** in Colour and Greyscale a lit part leaves the ink pass, so what is behind it keeps its lines, and is
+     drawn as glass: its own colour and shading tinted with the selection colour and see-through, both sides, the far
+     one fainter, more opaque where the surface turns away. A pass of the lit parts alone gives their own edges, drawn
+     thin and light in the selection colour (at most 80%), dashed on a preview; they hide where a solid part is in front,
+     as the glass does, and lines seen through the glass are softened. Kept and selected parts are tinted 78% and 58%
+     opaque, under the pointer and previewed 45% and 28%, so the states still read apart. The hologram keeps its own
+     see-through look; the band round a lit part is gone there too, and a part under the pointer turns a warmer amber
+     where it had turned darker.
+   - **No borders:** the 2–4 px accent band round a lit part (the post pass's `litLine`) is gone in every theme.
+   - **The colours,** by the taste skill's rules (one accent, a hue the picture does not use, no violet) and a measure:
+     the drawing's coloured materials sit at OKLCh hues 29 (red), 58–91 (copper, bronze, brass, oil, yellow), 153 (the
+     PCB), 239–256 (cable, gauge), 314 (plasma) and 357 (pink). The widest gap, 86°, is 153–239, and teal (188) is in
+     it, the same hue as Colour's interface accent; so Colour stays teal. The hologram's machine is blue and its plasma
+     violet, so its selection stays amber, their opposite, and Greyscale shares it (its only other colour is the
+     plasma). Violet and magenta scored as far from the materials, but violet is a banned accent and both sit on the
+     plasma. Under simulated deuteranopia and protanopia, teal is nearest the pink parts (ΔE 0.034 OKLab); a glass
+     tint over the part's own colour keeps that apart.
+   - **V1** (each lit state 3:1 from the part unlit) gives way here: the owner asked for see-through parts without
+     borders. A lit part reads by its tint and by what shows through it; kept stays stronger than hover.
+   - **Checked:** a real hover on the satellite coils, the viewports and the TF coils, the TF coils selected (3× crops),
+     and the stack inspected with a kept sheet and a preview, in Colour, Greyscale and Hologram. The regression checks
+     give the same results as main.
 
 ## 5. Open questions for you
 
