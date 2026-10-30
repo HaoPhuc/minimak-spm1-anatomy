@@ -1241,11 +1241,12 @@ const FRAG_LIT = /* glsl */`
     float kept = step(0.4, uLit), hot = step(0.5, uLit);
     vec3 own = uColor * (mix(0.66, 1.05, w) + 0.06 * smoothstep(0.6, 1.0, vNw.z));
     vec3 tint = uLitColor * (0.8 + 0.3 * w);
-    vec3 c = mix(own, tint, mix(0.45, 0.78, kept) + 0.08 * hot);
-    float a = mix(0.28, 0.58, kept) + 0.08 * hot + 0.3 * rim;
+    vec3 c = mix(own, tint, mix(0.45, 0.72, kept) + 0.08 * hot);
+    // Less see-through than the hologram: what is behind shows, but the part reads first.
+    float a = mix(0.45, 0.72, kept) + 0.06 * hot + 0.22 * rim;
     // The far side shows fainter through the near one.
     if (!gl_FrontFacing) a *= 0.55;
-    gl_FragColor = vec4(c + uEmit, clamp(a, 0.0, 0.85));
+    gl_FragColor = vec4(c + uEmit, clamp(a, 0.0, 0.92));
   }
 `;
 const litMats = new Map();
@@ -1623,31 +1624,41 @@ const post = (() => {
       // A lit part's own edges, from the pass of the lit parts alone: as thin as the ink, in the selection colour,
       // solid under the pointer and when kept, dashed on a preview. They hide where a solid part is in front of the lit
       // one, as the glass does. \`through\` says the pixel shows something behind a lit part, whose lines are softened.
-      float litEdge(out float through) {
-        through = 0.0;
-        if (uLitOn < 0.5) return 0.0;
-        float md = dep(tDepth, vUv), ld = 1e9, code = 0.0;
+      // A lit part's outline and its inner edges, from the pass of the lit parts alone. The outline runs just inside
+      // its silhouette, about one and a half ink widths, and where it lies over another lit part farther off: solid
+      // under the pointer and when kept, dashed on a preview. Its inner edges are drawn lighter. Both hide where a
+      // solid part is in front of the lit one, as the glass does. \`through\` says the pixel shows something behind
+      // a lit part, whose lines are softened.
+      void litEdges(out float outline, out float inner, out float through) {
+        outline = 0.0; inner = 0.0; through = 0.0;
+        if (uLitOn < 0.5) return;
         vec4 c = texture2D(tLitNid, vUv);
-        if (c.a > 0.0) { ld = dep(tLitDepth, vUv); code = c.b; through = step(ld + 0.3, md); }
-        for (int i = 0; i < 4; i++) {
-          vec2 o = vec2(i == 0 ? 1.0 : i == 1 ? -1.0 : 0.0, i == 2 ? 1.0 : i == 3 ? -1.0 : 0.0) * uTexel * uThick * 1.5;
-          vec4 t = texture2D(tLitNid, vUv + o);
-          if (t.a > 0.0) { float z = dep(tLitDepth, vUv + o); if (z < ld) { ld = z; code = t.b; } }
+        if (c.a <= 0.0) return;
+        float md = dep(tDepth, vUv), ld = dep(tLitDepth, vUv);
+        if (md + 0.3 < ld) return;
+        through = step(ld + 0.3, md);
+        float rim = 0.0;
+        for (int i = 0; i < 8; i++) {
+          float ang = float(i) * 0.785398;
+          vec2 uv = vUv + vec2(cos(ang), sin(ang)) * uTexel * uThick * 1.5;
+          vec4 t = texture2D(tLitNid, uv);
+          rim = max(rim, t.a <= 0.0 ? 1.0 : step(ld + 2.0, dep(tLitDepth, uv)));
         }
-        if (ld > 1e8 || md + 0.3 < ld) return 0.0;
-        // Stronger on a kept part than under the pointer; the preview between, dashed.
-        float preview = step(abs(code - 0.5), 0.1);
+        float preview = step(abs(c.b - 0.5), 0.1);
         float dash = preview > 0.5 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 8.0 * uDpr), 5.0 * uDpr) : 1.0;
-        return edgeOf(tLitNid, tLitDepth, uThick) * dash * (code > 0.6 ? 0.8 : preview > 0.5 ? 0.65 : 0.5);
+        outline = rim * dash;
+        inner = (1.0 - rim) * edgeOf(tLitNid, tLitDepth, uThick) * 0.4;
       }
       void main() {
         float e = edge(uThick);
         vec3 col = texture2D(tColor, vUv).rgb;
+        float outline, inner, through;
+        litEdges(outline, inner, through);
         if (uHolo < 0.5) {
-          float through;
-          float le = litEdge(through);
-          vec3 c = mix(col, uInk, e * uInkAlpha * (1.0 - 0.45 * through));
-          gl_FragColor = vec4(mix(c, uLitColor, le), 1.0);
+          vec3 c = mix(col, uInk, e * uInkAlpha * (1.0 - 0.55 * through));
+          c = mix(c, uLitColor, inner);
+          // The outline a shade deeper than the glass, so it reads as a line on it and on the ground.
+          gl_FragColor = vec4(mix(c, mix(uLitColor, uInk, 0.45), outline * 0.95), 1.0);
           return;
         }
         // Hologram: a dark blue field with a faint grid, the added light toned down so it never clips, and edges that
@@ -1664,6 +1675,8 @@ const post = (() => {
         c += ec * 0.85 * (e * uInkAlpha + halo * 0.18);
         c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
+        // A lit part's outline, in amber, as in the other themes.
+        c = mix(c, uLitColor * 1.1, outline * 0.85);
         gl_FragColor = vec4(c, 1.0);
       }
     `,
@@ -1773,8 +1786,10 @@ function resize() {
 }
 
 // The ink pass goes first: the hologram's colour pass reads its depth to tell the nearest surface from the ones behind.
-// A lit part drawn as glass (Colour and Greyscale): solid, not a ghost, not dimmed by Show me, not a window.
-const glassLit = (m) => !holo && m.userData.lit > 0 && m.userData.tone !== 'glass' && !m.userData.dimmed && !(m.userData.piece && ease(m.userData.piece.userData.gNow) > 0);
+// A lit part that is solid, not a ghost, not dimmed by Show me, not a window: it gets an outline in every theme, and
+// in Colour and Greyscale it is drawn as glass.
+const outlined = (m) => m.userData.lit > 0 && m.userData.tone !== 'glass' && !m.userData.dimmed && !(m.userData.piece && ease(m.userData.piece.userData.gNow) > 0);
+const glassLit = (m) => !holo && outlined(m);
 function draw() {
   const pal = THEME[themeName()];
   camera.layers.set(0);
@@ -1791,17 +1806,17 @@ function draw() {
     if (shown) inked.add(m);
     // A lit part is glass: it leaves this pass, so what is behind it keeps its lines, and gets its own below.
     const glass = shown && glassLit(m);
-    if (glass) anyLit = true;
+    if (shown && outlined(m)) anyLit = true;
     m.visible = shown && !glass;
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
   renderer.clear();
   renderer.render(scene, camera);
-  // The lit parts alone, for their own edges.
+  // The lit parts alone, for their outlines.
   post.mat.uniforms.uLitOn.value = anyLit ? 1 : 0;
   if (anyLit) {
-    for (const m of solids) m.visible = inked.has(m) && glassLit(m);
+    for (const m of solids) m.visible = inked.has(m) && outlined(m);
     renderer.setRenderTarget(rtLit);
     renderer.clear();
     renderer.render(scene, camera);
