@@ -142,6 +142,8 @@ The drawing is the only thing on the page with colour and character; the frame r
 
 The theme buttons at the right of the modebar pick one of four drawings, and the page remembers the choice. With none chosen, a dark system theme opens the hologram and a light one the colour drawing. The buttons are one Tab stop: ← and → move to the next theme. Under 1440 px only the chosen theme keeps its label, and under 1320 px none do, so the modebar stays on one row.
 
+In every theme the lines keep their width on screen, so zoomed out the lines inside a part (its creases, bolt heads, the coils' wrap, panel seams) would crowd into dark bands. They fade as you zoom out, to 45% at the home view (70% in Greyscale, whose white parts lean on their lines), while each part's outline stays full, as an illustrator draws a figure seen from further off. From about twice the home zoom inward every line is full, and a selected or kept part always keeps all its lines.
+
 - **Colour**: the light drawing, solid shaded parts in their own colours with inked outlines, on a neutral stone ground. Its interface accent (switches, focus rings, **Next ›**) is the selection's teal, a step deeper so it reads on the ground.
 - **Greyscale**: the same drawing in white, shaded like a CAD rendering (below).
 - **Night**: light lines on near-black parts, lit by the plasma, like the anatomy kit's dark figures (below).
