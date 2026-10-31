@@ -840,6 +840,21 @@ every part (fixed in #25). Its three changes, most effect first:
     before the saved choice, so the first framing has the link's controls, and a link no longer flashes the saved
     theme first. In Colour and in Blueprint (by link, by an old `theme=night` link, or saved), the first view, Home
     after a resize, and a view opened tiny and widened now have the same target and zoom.
+17. **A grid on the paper, and dimensions that move** (asked for after #41: "the unit measurements should be
+    movable", and whether a grid like a blueprint's would be too busy). *Done,* mocked up first at four strengths:
+    - **The grid** (`uGrid` in the post pass): ruled on the paper only, where the ink pass drew nothing, so it never
+      crosses the drawing; inside the inner frame, from its top left corner, a line every 16 px and a firmer one every
+      fifth, in the ink colour. At the reference's strength its lines were as heavy as the dimension lines and the 850
+      got lost among them, so it is soft: `draft.grid` 0.6, about 4% and 8% ink. It is fixed to the sheet, as grid
+      paper is, so it does not move while the machine turns or zooms.
+    - **The dimensions** (`draft.dims`): each has `k`, how far its line is set off (1 as first drawn, 0.35 to 4), and
+      `u`, where its figure sits along the line (−0.2 to 1.2). Dragging the line changes `k`; dragging the figure
+      changes both. A move is split into the dimension's two directions on screen (in this view the offset is not
+      square to the line), so a line dragged along itself stays put. A double-click puts it back, and the places are
+      kept in `spm1-dims`. The line's target is 14 px wide, 32 px for a finger (`touch-action: none`); a dimension
+      whitens under the pointer, and its tooltip says how to move it.
+    - **Checked** in headless Chrome: mouse and touch drags, a drag along the line, a reload, a double-click, and
+      turning the model from the paper next to a dimension; no errors.
 
 ## 5. Open questions for you
 

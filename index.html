@@ -651,6 +651,14 @@
   .draft .dl { fill: none; stroke: var(--bp-line); stroke-width: 1; }
   .draft .arrow { fill: var(--bp-line); }
   .draft text.dim { font-size: 11.5px; font-variant-numeric: tabular-nums; dominant-baseline: auto; }
+  /* A dimension can be dragged: by its line (a 14 px target, 32 px for a finger) or its figure. It whitens under the
+     pointer. */
+  .draft .dh { stroke: transparent; stroke-width: 14px; pointer-events: stroke; cursor: grab; touch-action: none; }
+  .draft text.dim { pointer-events: auto; cursor: grab; touch-action: none; }
+  @media (pointer: coarse) { .draft .dh { stroke-width: 32px; } }
+  .draft .dg:hover { --bp-line: #fff; }
+  body.dimming { cursor: grabbing; user-select: none; }
+  body.dimming .draft .dh, body.dimming .draft text.dim { cursor: grabbing; }
   /* The sheet's frame takes the view's edge, so the view's own labels move inside it, and the caption moves into the
      title block. */
   .blueprint .corner.tl { display: none; }
@@ -1685,7 +1693,7 @@ const tableLabels = QUARTERS.map(([name, deg]) => {
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
-      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uDetail: { value: 1 }, uBlue: { value: 0 },
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uDetail: { value: 1 }, uBlue: { value: 0 }, uGrid: { value: 0 },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
@@ -1698,6 +1706,7 @@ const post = (() => {
       uniform float uFocus;
       uniform float uDetail;
       uniform float uBlue;
+      uniform float uGrid;
       uniform vec2 uTexel;
       uniform float uThick;
       uniform vec3 uInk;
@@ -1793,6 +1802,16 @@ const post = (() => {
             float mott = 0.5 + 0.5 * sin(gl_FragCoord.x * 0.009 / uDpr + 2.0 * sin(gl_FragCoord.y * 0.006 / uDpr));
             col *= (1.06 - 0.32 * dot(d2, d2)) * (0.985 + 0.03 * grain) * (0.985 + 0.03 * mott);
             e = max(e, edge(uThick * 2.2) * 0.18 * uDetail);
+            // The sheet's grid, ruled on the paper only, so it never crosses the drawing: a line every 16 px from the
+            // inner frame's top left corner, and a firmer one every fifth. \`uGrid\` is its strength, 0 for none.
+            if (uGrid > 0.0 && texture2D(tNid, vUv).a <= 0.0) {
+              vec2 size = 1.0 / (uTexel * uDpr), px = gl_FragCoord.xy / uDpr;
+              vec2 q = vec2(px.x - 22.0, size.y - 22.0 - px.y);
+              if (min(q.x, q.y) >= 0.0 && px.x <= size.x - 22.0 && px.y >= 22.0) {
+                vec2 minor = step(mod(q, 16.0), vec2(1.0)), major = step(mod(q, 80.0), vec2(1.0));
+                col = mix(col, uInk, uGrid * max(0.07 * max(minor.x, minor.y), 0.14 * max(major.x, major.y)));
+              }
+            }
           }
           vec3 c = mix(col, uInk, e * uInkAlpha);
           // Two tones of one hue: a soft light glow outside the part, a crisp line on its edge, pale under the pointer
@@ -5377,6 +5396,7 @@ function applyTheme() {
   document.documentElement.classList.toggle('greyscale', greyscale);
   document.documentElement.classList.toggle('blueprint', blueprint);
   post.mat.uniforms.uBlue.value = blueprint ? 1 : 0;
+  post.mat.uniforms.uGrid.value = blueprint ? draft.grid : 0;
   shared.uFlat.value = blueprint ? 1 : 0;
   shared.uRedline.value = blueprint ? 1 : 0;
   $('readout').dataset.sc = 'x';
@@ -5454,33 +5474,82 @@ function updateDraft() {
     if (k > 0 && k < ny) parts.push(`<line class="tick" x1="${o}" y1="${y}" x2="${i}" y2="${y}"/><line class="tick" x1="${W - i}" y1="${y}" x2="${W - o}" y2="${y}"/>`);
     if (k < ny) { const cy = y + (H - 2 * i) / ny / 2, L = 'ABCD'[k]; parts.push(`<text x="${(o + i) / 2}" y="${cy}">${L}</text><text x="${W - (o + i) / 2}" y="${cy}">${L}</text>`); }
   }
-  // A dimension from a to b (world points), its line set off by `off` (a world vector), labelled `text`.
-  const dim = (a, b, off, text) => {
-    const A = toScreen(a), B = toScreen(b), A2 = toScreen(a.clone().add(off)), B2 = toScreen(b.clone().add(off));
-    const ov = toScreen(a.clone().add(off.clone().multiplyScalar(1.18)));
+  // Dimension `j` from a to b (world points), its line set off by `off` (a world vector) times its `k`, labelled `text`
+  // at its `u` along the line. The view is orthographic, so the offset is one screen vector `s` per unit of `k`.
+  const dim = (j, a, b, off, text) => {
+    const { k, u: at } = draft.dims[j];
+    const A = toScreen(a), B = toScreen(b), O = toScreen(a.clone().add(off)), s = { x: O.x - A.x, y: O.y - A.y };
+    const by = (p, f) => ({ x: p.x + s.x * f, y: p.y + s.y * f });
+    const A2 = by(A, k), B2 = by(B, k);
     const ex = (p, q) => parts.push(`<line class="dl" x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>`);
     const L = Math.hypot(B2.x - A2.x, B2.y - A2.y);
     if (L < 40) return;
-    ex(A, ov); ex(B, toScreen(b.clone().add(off.clone().multiplyScalar(1.18)))); ex(A2, B2);
+    dimAt[j] = { A, B, s };
+    parts.push(`<g class="dg" data-dim="${j}"><title>Drag to move it · double-click to put it back</title>`);
+    ex(A, by(A, k + 0.18)); ex(B, by(B, k + 0.18)); ex(A2, B2);
     const u = { x: (B2.x - A2.x) / L, y: (B2.y - A2.y) / L }, n = { x: -u.y, y: u.x };
-    for (const [p, s] of [[A2, 1], [B2, -1]]) {
-      const t = { x: p.x + u.x * 8 * s, y: p.y + u.y * 8 * s };
+    for (const [p, sg] of [[A2, 1], [B2, -1]]) {
+      const t = { x: p.x + u.x * 8 * sg, y: p.y + u.y * 8 * sg };
       parts.push(`<polygon class="arrow" points="${P(p.x, p.y)} ${P(t.x + n.x * 2.6, t.y + n.y * 2.6)} ${P(t.x - n.x * 2.6, t.y - n.y * 2.6)}"/>`);
     }
+    parts.push(`<line class="dh" x1="${A2.x.toFixed(1)}" y1="${A2.y.toFixed(1)}" x2="${B2.x.toFixed(1)}" y2="${B2.y.toFixed(1)}"/>`);
     let ang = (Math.atan2(u.y, u.x) * 180) / Math.PI;
     if (ang > 90) ang -= 180; else if (ang <= -90) ang += 180;
     const up = { x: Math.sin(ang * DEG), y: -Math.cos(ang * DEG) };
-    const m = { x: (A2.x + B2.x) / 2 + up.x * 5, y: (A2.y + B2.y) / 2 + up.y * 5 };
-    parts.push(`<text class="dim" x="${m.x.toFixed(1)}" y="${m.y.toFixed(1)}" transform="rotate(${ang.toFixed(1)} ${m.x.toFixed(1)} ${m.y.toFixed(1)})">${text}</text>`);
+    const m = { x: A2.x + (B2.x - A2.x) * at + up.x * 5, y: A2.y + (B2.y - A2.y) * at + up.y * 5 };
+    parts.push(`<text class="dim" x="${m.x.toFixed(1)}" y="${m.y.toFixed(1)}" transform="rotate(${ang.toFixed(1)} ${m.x.toFixed(1)} ${m.y.toFixed(1)})">${text}</text></g>`);
   };
   if (W >= 520 && !iso.part && !quiz.on && state.ep < 0.02 && !hidden.has('table')) {
     const T = DIMS.table, h = T.half;
-    dim(new V3(-h, -h, T.floor), new V3(-h, -h, T.top), new V3(-14, 0, 0), String(Math.round((T.top - T.floor) * 10)));
-    dim(new V3(-h, -h, T.floor), new V3(h, -h, T.floor), new V3(0, 0, -12), String(Math.round(2 * h * 10)));
-    dim(new V3(-R0, 0, 0), new V3(R0, 0, 0), new V3(0, 0, Math.max(34, boxOfPart('gauge').max.z + 8)), `Ø${Math.round(2 * R0 * 10)}`);
+    dim(0, new V3(-h, -h, T.floor), new V3(-h, -h, T.top), new V3(-14, 0, 0), String(Math.round((T.top - T.floor) * 10)));
+    dim(1, new V3(-h, -h, T.floor), new V3(h, -h, T.floor), new V3(0, 0, -12), String(Math.round(2 * h * 10)));
+    dim(2, new V3(-R0, 0, 0), new V3(R0, 0, 0), new V3(0, 0, Math.max(34, boxOfPart('gauge').max.z + 8)), `Ø${Math.round(2 * R0 * 10)}`);
   }
   svg.innerHTML = parts.join('');
 }
+// The grid's strength (0 none), and where each dimension sits: how far off what it measures (`k`, 1 as first drawn) and
+// where its figure is along it (`u`, 0.5 the middle). The page remembers the places. `dimAt` keeps each dimension's
+// screen points for a drag.
+const placeDim = (d) => ({ k: clamp(d.k, 0.35, 4), u: clamp(d.u, -0.2, 1.2) });
+const draft = { grid: 0.6, dims: [0, 1, 2].map(() => ({ k: 1, u: 0.5 })) };
+try {
+  JSON.parse(store.get('spm1-dims'))?.forEach((d, j) => { if (draft.dims[j] && Number.isFinite(d?.k) && Number.isFinite(d?.u)) draft.dims[j] = placeDim(d); });
+} catch { /* none saved */ }
+const saveDims = () => store.set('spm1-dims', JSON.stringify(draft.dims.map((d) => ({ k: +d.k.toFixed(3), u: +d.u.toFixed(3) }))));
+const dimAt = [];
+// A dimension moves as on a drawing: drag its line to set it further off or nearer, or drag its figure to slide it along
+// the line too. A double-click puts it back. A move is split into the two directions the dimension has on screen, so a
+// line dragged along itself stays where it is.
+let dimDrag = null;
+$('draft').addEventListener('pointerdown', (e) => {
+  const g = e.target.closest('[data-dim]');
+  if (!g || e.button !== 0) return;
+  e.preventDefault();
+  touched = true;
+  const j = +g.dataset.dim;
+  dimDrag = { j, figure: e.target.classList.contains('dim'), id: e.pointerId, x: e.clientX, y: e.clientY, ...draft.dims[j] };
+  document.body.classList.add('dimming');
+});
+window.addEventListener('pointermove', (e) => {
+  if (!dimDrag || e.pointerId !== dimDrag.id) return;
+  const { A, B, s } = dimAt[dimDrag.j], bx = B.x - A.x, by = B.y - A.y, det = s.x * by - s.y * bx;
+  if (Math.abs(det) < 1e-6) return;
+  const dx = e.clientX - dimDrag.x, dy = e.clientY - dimDrag.y, at = draft.dims[dimDrag.j];
+  Object.assign(at, placeDim({ k: dimDrag.k + (dx * by - dy * bx) / det, u: dimDrag.figure ? dimDrag.u + (s.x * dy - s.y * dx) / det : at.u }));
+  dirty = true;
+});
+const endDimDrag = (e) => {
+  if (!dimDrag || e.pointerId !== dimDrag.id) return;
+  dimDrag = null;
+  document.body.classList.remove('dimming');
+  saveDims();
+};
+window.addEventListener('pointerup', endDimDrag);
+window.addEventListener('pointercancel', endDimDrag);
+$('draft').addEventListener('dblclick', (e) => {
+  const g = e.target.closest('[data-dim]');
+  if (g) { draft.dims[+g.dataset.dim] = { k: 1, u: 0.5 }; saveDims(); dirty = true; }
+});
 
 // ---------- Orientation triad and scale bar ----------
 const triad = $('triad');
@@ -6091,7 +6160,8 @@ applyTheme();
 if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
-  lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf,
+  lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf, draft, dimAt,
+  setGrid: (v) => { draft.grid = v; applyTheme(); },
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
   setStep, stepBy, stepList, setJoint, jointHere, loupe, quiz, startQuiz, endQuiz, answerQuiz, placesOf, nextQuiz, ringOf, oneOf, applyLink, subMeshes,
   // One of a ring under a point of the page: its name ("Bolt 7 of 20 · star 3"), as the tooltip shows it.
