@@ -60,7 +60,7 @@
     scrollbar-color: #333338 transparent;
   }
   /* The greyscale drawing: a white CAD line rendering, every part white and shaded in greys and black, on a white
-     page. The teal marks the selection, as in Colour, and nothing else, so the accent (focus rings, the
+     page. The orange marks the selection, as in the hologram, and nothing else, so the accent (focus rings, the
      tour's rule) is ink. The basis dots keep their shapes. */
   :root.greyscale {
     --paper: #f2f2f2;
@@ -72,7 +72,7 @@
     --chip: #e6e6e6;
     --accent: #121212;
     --accent-ink: var(--card);
-    --sel: #008080;
+    --sel: #e25f0c;
     --spec: #1f1f1e;
     --photo: #1f1f1e;
     --assumed: #555555;
@@ -632,7 +632,7 @@
   .holo .screen.folded .bar { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
 
-  /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the teal as in the model, on an
+  /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
      ink edge so the mark stands out from the white. ---------- */
   .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--sel); }
   .greyscale .screen.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel), 0 0 0 2px var(--ink); }
@@ -859,17 +859,18 @@ const TONES = {
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 // Colours show exactly as given (colour management is off). The greyscale drawing has its own light, raked further
 // in from the upper left so the cast shadows fall clear of the parts that cast them. The selection (`lit`) is teal in
-// Colour and Greyscale: the copper's opposite is blue, but the cable, the window glass and the gauge hold blue, so it
+// Colour and Night: the copper's opposite is blue, but the cable, the window glass and the gauge hold blue, so it
 // takes the split-complement on the free side, the widest empty band of hue in the drawing, between the circuit board's
 // green and the cable's blue: #008080, the owner's pick, dark enough to be the interface's accent too. It stays 0.134
 // or more from the cable and the glass in OKLab (cyan came within 0.077 of the cable, and 0.012 for a protanope), 0.030
-// at worst under simulated colour blindness. The hologram's machine is
+// at worst under simulated colour blindness. Greyscale's selection is the hologram's orange, the one warm colour on its
+// white and greys. The hologram's machine is
 // blue, so its selection is orange, the blue's opposite: teal, the blue's neighbour, read there as a brighter blue.
 // Night is the anatomy kit's dark plate: near-black parts, light grey lines (`ink`), and the plasma's light on them. Its
 // teal is brightened for the dark (7:1 on the panels).
 const THEME = {
   light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#008080', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
+  greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
   night: { paper: '#0c0d10', cut: '#1a1b1f', ink: '#b9bcc3', lit: '#2bb8ae', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.82, ghost: 0.12, glass: 0.22 },
   dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
@@ -1163,7 +1164,7 @@ const FRAG_HOLO = /* glsl */`
 `;
 
 // The greyscale drawing, shaded like a CAD rendering: the light falls into five flat shades, and the parts cast
-// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: teal.
+// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: orange.
 const FRAG_GREY = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
@@ -2273,7 +2274,7 @@ function applyLook() {
     // Night: the plasma's light on the machine follows the glow, without the pointer's boost.
     shared.uPlasmaLight.value = t === 'night' ? I / boost : 0;
     // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on the white and grey parts
-    // could not be seen. It turns teal while it is selected or under the pointer, but not while it is inspected, as
+    // could not be seen. It turns amber while it is selected or under the pointer, but not while it is inspected, as
     // an inspected part keeps its own look.
     if (t === 'greyscale') {
       if (boost > 1 && !iso.part) { u.uCore.value.set('#f0a540'); u.uRim.value.set('#b8650f'); }
