@@ -754,7 +754,7 @@ every part (fixed in #25). Its three changes, most effect first:
    blindness; cyan (hue 215) came within 0.077 of the cable, and 0.012 for a protanope. The hologram keeps orange: its
    machine is blue, and teal there, the blue's neighbour, read as a brighter blue on the kept bolts. The glass layer's
    ramp now follows the colour's own lightness (it was set for the orange's), so a darker teal is not washed toward white.
-10. **A Night theme** (asked for after #35, from the anatomy skill's Raptor engine figure). *Done:* a fourth theme,
+10. **A Night theme** (asked for after #35, from the anatomy skill's Raptor engine figure). *Removed in 15.* *Done:* a fourth theme,
     between Greyscale and Hologram, in the anatomy kit's dark style:
     - **The drawing:** every material a near-black grey (0.075 + 0.1 × its lightness), in the colour pass's shading;
       light grey lines (`#b9bcc3`) that take the light of the surface they are on (ink × 0.62 + surface × 1.4), so lines
@@ -793,9 +793,38 @@ every part (fixed in #25). Its three changes, most effect first:
     in front of another) is an outline and always full; a crease, a change of mesh on the same surface, or a small step
     (a bolt head on its flange, under about 2 cm) is inside. Inside lines fade with the view's scale: full at 0.12 cm per
     screen pixel (about twice the home zoom) and inward, down to the theme's `lineFar` at the home view's 0.24 and
-    beyond, eased: 0.45 in Colour, Night and the hologram, 0.7 in Greyscale (its white parts lean on their lines; at 0.45
+    beyond, eased: 0.45 in Colour, Night and the hologram (Blueprint, in 15, 0.55), 0.7 in Greyscale (its white parts lean on their lines; at 0.45
     its drawer handles and frame edges went faint). A lit part keeps all its lines (`edgeFull`). Mocked up first in all
     four themes against the current lines; at 3× the two are the same to the pixel.
+15. **Blueprint, in place of Night** (asked for after #39: a more blueprint-like look, keeping the hologram; then "the
+    night theme... I don't think it's doing anything"). *Done:* Mocked up first; Night is removed and Blueprint takes
+    its place in the four themes (Colour, Greyscale, Blueprint, Hologram):
+    - **The drawing:** `THEME.blueprint`: paper `#1d4f8c`, lines `#eef4ff` at 0.9, `lineFar` 0.55. Each material
+      becomes the paper's blue × (1.02 + 0.08 × its lightness), and `uFlat` flattens the colour pass's shading to
+      0.95–1.06, so the lines carry the drawing. The post pass (`uBlue`) lightens the middle, adds grain and mottle, and
+      bleeds the lines a little (a wider edge at 0.18).
+    - **The sheet** (`#draft`, `updateDraft()` each frame): a frame inside the view's edge with zones 1–6 and A–D; the
+      triad, navcluster and corners move inside it. The readout becomes a title block (title, scale 1:N from the zoom,
+      view, shows, figure source).
+    - **Centre lines** (`CL_VERT`/`CL_FRAG`): dash-dot in screen pixels at every zoom; the torus's axis and centre
+      circle on the machine at rest, and each round piece's axis as a child of the piece.
+    - **Dimensions:** table height 850, width 900, and Ø460 for the centre circle, from `DIMS`; shown only on the
+      whole machine at rest, with the table shown, outside the quiz, and at 520 px or wider.
+    - **The selection** (`uRedline` in `LIT_LAYER`): a red pencil wash (`#ff5a4a`) with 45° hatching, 9 px under the
+      pointer and 6 px kept; the outer glow at 0.3 of the other themes'. **The plasma** is stippled (`uStip`), a 5 px
+      grid of dots, denser at its core.
+    - **Night removed:** its CSS, button, palette, `uLitDark`, `plasmaLight` and its uniforms, `uNight` and its
+      lines that took the surface's light, and its focus and glow factors. A saved `spm1-theme` of `night`, the
+      pre-paint script and a `theme=night` link open Blueprint (`LOOK_GONE`), and the saved choice is rewritten.
+    - **Narrow views:** below 760 px of view `updateDraft` sets `.tight` on the view; the title block keeps its title
+      and scale, moves to the top left, and hides while the inspect bar or the quiz is on (`:has(.isobar.on)`). Under
+      88 px (a hidden pane) there is no sheet, so no negative sizes. The corners sit over the sheet (`z-index: 2`), so
+      the 900 dimension's end runs under the hint.
+    - **Centre lines and boxes:** each line's geometry has an empty bounding box, so the lines that run past their parts
+      never widen `setFromObject(dev.root)`, the Greyscale shadow map's reach.
+    - **Checked:** the regression suites against main, twice; the differences are random quiz picks, the harness's
+      hang on `Browser.close`, and timing on this machine's software renderer (1 to 5 frames a second; the same 4
+      frames in 4 s on both while turning). Old Night links and saved choices open Blueprint.
 
 ## 5. Open questions for you
 

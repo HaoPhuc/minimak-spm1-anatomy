@@ -40,24 +40,24 @@
     color-scheme: dark;
     scrollbar-color: #1b3a55 transparent;
   }
-  /* Night: the anatomy kit's dark plate. Near-black panels one step off the page, light grey text, whisper rules, and the
-     selection's teal brightened for the dark. */
-  :root.night {
-    --paper: #0b0b0c;
-    --card: #131315;
-    --ink: #e6e6e8;
-    --muted: #8e8e93;
-    --rule: #26262a;
-    --soft: #1b1b1e;
-    --chip: #232327;
-    --accent: #2bb8ae;
-    --accent-ink: #0b0b0c;
-    --sel: #2bb8ae;
-    --spec: #4cc38a;
-    --photo: #d9a441;
-    --assumed: #8e8e93;
+  /* Blueprint: the chrome in the blue of the print, light text, and the red of a red pencil for the selection. */
+  :root.blueprint {
+    --paper: #0f2a4d;
+    --card: #15375f;
+    --ink: #eaf2ff;
+    --muted: #a9bfdc;
+    --rule: #2b5584;
+    --soft: #1b4170;
+    --chip: #234b7c;
+    --accent: #eaf2ff;
+    --accent-ink: #15375f;
+    --sel: #ff7466;
+    --spec: #9fe0c4;
+    --photo: #f3cf86;
+    --assumed: #a9bfdc;
+    --bp-line: rgb(234 242 255 / 0.88);
     color-scheme: dark;
-    scrollbar-color: #333338 transparent;
+    scrollbar-color: #2f5d90 transparent;
   }
   /* The greyscale drawing: a white CAD line rendering, every part white and shaded in greys and black, on a white
      page. The orange marks the selection, as in the hologram, and nothing else, so the accent (focus rings, the
@@ -634,21 +634,50 @@
   .greyscale .search::placeholder { color: var(--muted); opacity: 1; }
   .greyscale .ti.off .name, .greyscale .eye[aria-pressed="false"] { opacity: 0.7; }
 
-  /* ---------- Night: the panels are flat on the dark, as in the hologram; a choice is a pale tint, an action is the
-     ink, inverted. ---------- */
-  .night .panel, .night .view, .night .mb, .night .isobar, .night .sheets-head { box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .night .screen { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .night .mb button[aria-pressed="true"]:not(.toggle), .night .navcluster .mb button[aria-pressed="true"] { background: rgb(255 255 255 / 0.1); color: var(--ink); }
-  .night .ti.sel, .night table.ptab tr.on { background: rgb(255 255 255 / 0.06); box-shadow: inset 2px 0 0 var(--sel); }
-  .night .tip { background: var(--card); color: var(--ink); border: 1px solid var(--rule); }
-  .night .triad .ring { fill: var(--card); stroke: var(--rule); }
+
+  /* ---------- Blueprint: flat chrome; the view is a drawing sheet with a frame, zones and a title block. ---------- */
+  .blueprint .panel, .blueprint .view, .blueprint .mb, .blueprint .isobar, .blueprint .sheets-head { box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .blueprint .screen { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .blueprint .mb button[aria-pressed="true"]:not(.toggle), .blueprint .navcluster .mb button[aria-pressed="true"] { background: rgb(255 255 255 / 0.12); color: var(--ink); }
+  .blueprint .ti.sel, .blueprint table.ptab tr.on { background: rgb(255 255 255 / 0.08); box-shadow: inset 2px 0 0 var(--sel); }
+  .blueprint .tip { background: var(--card); color: var(--ink); border: 1px solid var(--rule); }
+  .blueprint .triad .ring { fill: var(--card); stroke: var(--rule); }
+  .draft { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; display: none; }
+  .blueprint .draft { display: block; }
+  .draft .frame { fill: none; stroke: var(--bp-line); stroke-width: 1; }
+  .draft .frame.in { stroke-width: 1.6; }
+  .draft .tick { stroke: var(--bp-line); stroke-width: 1; }
+  .draft text { font: 600 10px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--bp-line); text-anchor: middle; dominant-baseline: middle; }
+  .draft .dl { fill: none; stroke: var(--bp-line); stroke-width: 1; }
+  .draft .arrow { fill: var(--bp-line); }
+  .draft text.dim { font-size: 11.5px; font-variant-numeric: tabular-nums; dominant-baseline: auto; }
+  /* The sheet's frame takes the view's edge, so the view's own labels move inside it, and the caption moves into the
+     title block. */
+  .blueprint .corner.tl { display: none; }
+  .blueprint .corner { z-index: 2; }
+  .blueprint .triad { top: 26px; right: 26px; }
+  .blueprint .navcluster { left: 26px; }
+  .blueprint .corner.bl { bottom: 26px; left: 26px; }
+  .blueprint .corner.br { bottom: 26px; right: 26px; padding: 0; border-radius: 0; background: var(--card); border: 1.5px solid var(--bp-line); text-align: left; font-size: 11px; min-width: 250px; }
+  .blueprint .corner.br > div { padding: 3px 8px; }
+  .blueprint .corner.br > div + div { border-top: 1px solid var(--bp-line); }
+  .blueprint .corner.br .tb-title { font-size: 13px; font-weight: 650; padding: 5px 8px; }
+  .blueprint .corner.br .tb-row { display: flex; justify-content: space-between; gap: 12px; }
+  .blueprint .corner.br .tb-row span:first-child { color: var(--muted); }
+  /* A narrow view (a phone, a narrow window or pane: updateDraft sets .tight) has no room for the full title block
+     beside the scale bar and the hint. It keeps its title and scale and moves to the empty top left, and gives way to
+     the inspect bar and the quiz, which take the top. */
+  .blueprint .view.tight .corner.br { min-width: 0; max-width: none; top: 26px; left: 26px; bottom: auto; right: auto; font-size: 10.5px; white-space: nowrap; }
+  .blueprint .view.tight .corner.br .tb-title { font-size: 12px; }
+  .blueprint .view.tight .corner.br > div:nth-child(n+3) { display: none; }
+  .blueprint .view.tight:has(.isobar.on) .corner.br { display: none; }
 </style>
 <script>
   // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash.
   try {
     const t = localStorage.getItem('spm1-theme');
     if (t === 'greyscale') document.documentElement.classList.add('greyscale');
-    else if (t === 'night') document.documentElement.classList.add('night');
+    else if (t === 'blueprint' || t === 'night') document.documentElement.classList.add('blueprint');
     else if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('holo');
   } catch { if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('holo'); }
 </script>
@@ -670,7 +699,7 @@
       <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
         <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
-        <button type="button" role="radio" data-look="night" aria-checked="false" tabindex="-1" title="Night: light lines on black, lit by the plasma"><svg viewBox="0 0 16 16"><path d="M12.6 10.4A5.4 5.4 0 0 1 5.6 3.4a5.4 5.4 0 1 0 7 7z"/></svg><span class="lbl">Night</span></button>
+        <button type="button" role="radio" data-look="blueprint" aria-checked="false" tabindex="-1" title="Blueprint: white drafting lines on blue paper, with centre lines and dimensions"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M9.5 13.5v-3h5M4 6h5M4 6v4"/></svg><span class="lbl">Blueprint</span></button>
         <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on black"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
       </div>
     </nav>
@@ -754,6 +783,7 @@
       <div class="stepcap" id="quizSay" hidden></div>
     </div>
     <svg class="overlay" id="overlay" aria-hidden="true"></svg>
+    <svg class="draft" id="draft" aria-hidden="true"></svg>
     <div class="callouts" id="callouts" aria-hidden="true"></div>
     <div class="hud" id="hud" hidden>
       <section class="sheets" id="sheets" aria-label="Sheets">
@@ -830,15 +860,17 @@ const SCALES = [1, 1.5, 2];
 let uiScale = SCALES.includes(+store.get('spm1-scale')) ? +store.get('spm1-scale') : 1;
 let letterKeys = store.get('spm1-keys') !== 'off';
 document.documentElement.style.setProperty('--ui-scale', String(uiScale));
-// 'light' is the drawing in colour, 'greyscale' the greyscale drawing, 'night' the dark line drawing and 'dark' the
+// 'light' is the drawing in colour, 'greyscale' the greyscale drawing, 'blueprint' the blueprint and 'dark' the
 // hologram. With no choice saved, the system's light or dark setting picks between the light drawing and the hologram.
-const LOOKS = ['light', 'greyscale', 'night', 'dark'];
+// A theme that has gone (Night) maps to the one that took its place, in a saved choice and in a link.
+const LOOKS = ['light', 'greyscale', 'blueprint', 'dark'];
+const LOOK_GONE = { night: 'blueprint' };
 function themeName() {
   const t = document.documentElement.dataset.theme;
   return LOOKS.includes(t) ? t : systemDark.matches ? 'dark' : 'light';
 }
-const savedTheme = store.get('spm1-theme');
-if (LOOKS.includes(savedTheme)) document.documentElement.dataset.theme = savedTheme;
+const savedTheme = LOOK_GONE[store.get('spm1-theme')] || store.get('spm1-theme');
+if (LOOKS.includes(savedTheme)) { document.documentElement.dataset.theme = savedTheme; store.set('spm1-theme', savedTheme); }
 
 const TONES = {
   steel: '#d9dad5', vessel: '#d9dad5', steel2: '#cbcdc8', bolt: '#b3b5b0', copper: '#d79e72', black: '#4a4b4c', ink: '#2b2b29',
@@ -852,21 +884,20 @@ const TONES = {
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 // Colours show exactly as given (colour management is off). The greyscale drawing has its own light, raked further
 // in from the upper left so the cast shadows fall clear of the parts that cast them. The selection (`lit`) is teal in
-// Colour and Night: the copper's opposite is blue, but the cable, the window glass and the gauge hold blue, so it
+// Colour: the copper's opposite is blue, but the cable, the window glass and the gauge hold blue, so it
 // takes the split-complement on the free side, the widest empty band of hue in the drawing, between the circuit board's
 // green and the cable's blue: #008080, the owner's pick, dark enough to be the interface's accent too. It stays 0.134
 // or more from the cable and the glass in OKLab (cyan came within 0.077 of the cable, and 0.012 for a protanope), 0.030
 // at worst under simulated colour blindness. Greyscale's selection is the hologram's orange, the one warm colour on its
-// white and greys. The hologram's machine is
-// blue, so its selection is orange, the blue's opposite: teal, the blue's neighbour, read there as a brighter blue.
+// white and greys. The hologram's machine is blue, so its selection is orange, the blue's opposite: teal, the blue's
+// neighbour, read there as a brighter blue. Blueprint's is red, as engineers mark up a print with a red pencil.
 // `lineFar` is how strong the lines inside a part are when zoomed out (see draw): Greyscale's parts are white, so its
 // lines carry more and fade less.
-// Night is the anatomy kit's dark plate: near-black parts, light grey lines (`ink`), and the plasma's light on them. Its
-// teal is brightened for the dark (7:1 on the panels).
+// Blueprint is a contact print: Prussian-blue paper, white drafting lines (`ink`), faces nearly flat (uFlat).
 const THEME = {
   light: { lineFar: 0.45, paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
   greyscale: { lineFar: 0.7, paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
-  night: { lineFar: 0.45, paper: '#0c0d10', cut: '#1a1b1f', ink: '#b9bcc3', lit: '#2bb8ae', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.82, ghost: 0.12, glass: 0.22 },
+  blueprint: { lineFar: 0.55, paper: '#1d4f8c', cut: '#2b5f9e', ink: '#eef4ff', lit: '#ff5a4a', shadow: 0, shadowInk: '#0a2546', inkAlpha: 0.9, ghost: 0.14, glass: 0.16 },
   dark: { lineFar: 0.45, paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 const LIGHT = [-0.42, 0.58, 0.7];
@@ -874,18 +905,17 @@ const LIGHT = [-0.42, 0.58, 0.7];
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
 // selection is orange (THEME.dark.lit), the blue's opposite.
 const HOLO = new THREE.Color('#4f9fd6');
-let holo = false, greyscale = false, night = false;
+let holo = false, greyscale = false, blueprint = false;
 const clearColor = new THREE.Color();
 // The greyscale drawing is white, like a CAD line rendering: every material is white, and its greys and black come only
 // from the light's shades, the cast shadows and the ink. What would vanish in white keeps a grey: holes and slots, the
 // printed lines, the dark screens and LEDs.
 const GREY_KEEP = { ink: 0.12, tapeline: 0.3, hole: 0.55, slot: 0.55, lcd: 0.25, hvlcd: 0.25, led: 0.3, tip: 0.2 };
-// Night keeps how light each material is, squeezed into a few near-black greys, as the anatomy kit's dark shades are:
-// steel a little lighter than the black parts. Colour is the plasma's light alone.
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
   if (theme === 'greyscale') { const g = GREY_KEEP[name] ?? 1; return c.setRGB(g, g, g); }
-  if (theme === 'night') { const g = 0.075 + 0.1 * (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b); return c.setRGB(g, g, g * 1.06); }
+  // Blueprint: every material is the paper, a shade lighter by how light it is, so the white lines carry the drawing.
+  if (theme === 'blueprint') { const p = new THREE.Color(THEME.blueprint.paper); return p.multiplyScalar(1.02 + 0.08 * (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b)); }
   if (theme !== 'dark') return c;
   const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
   return HOLO.clone().multiplyScalar(0.55 + 0.45 * l);
@@ -921,13 +951,9 @@ const shared = {
   uGlass: { value: 0.28 },
   // While a part is selected or kept, how far the rest fades toward the paper (Colour and Greyscale).
   uFocus: { value: 0 },
-  // Night: how bright the plasma's light is on the machine (0 in the other themes), its colour, and the plasma's ring
-  // radius and the vessel's inner and outer minor radii (set once the device is built).
-  uPlasmaLight: { value: 0 },
-  // Night: the selection's glass layer is dark, not lifted toward the colour's own lightness.
-  uLitDark: { value: 0 },
-  uPlasmaCol: { value: new THREE.Color('#c86ae0') },
-  uPlasmaGeo: { value: new THREE.Vector3(23, 7.5, 7.7) },
+  // Blueprint: faces nearly flat (1), and the selection drawn as red-pencil hatching (1).
+  uFlat: { value: 0 },
+  uRedline: { value: 0 },
   // Hologram: the nearest surface's depth, the target size, time, scan-line density (per cm) and the sweep's height.
   tFront: { value: null },
   uRes: { value: new THREE.Vector2(1, 1) },
@@ -999,46 +1025,26 @@ const LIT_LAYER = /* glsl */`
   uniform float uFocus;
   uniform vec3 uLitColor;
   uniform vec3 uPaper;
-  uniform float uLitDark;
+  uniform float uRedline;
   vec3 litLayer(vec3 c, vec3 n, vec3 light) {
     c = mix(c, uPaper, uFocus * (1.0 - step(0.4, uLit)));
     if (uLit < 0.2) return c;
+    // Blueprint: red-pencil markup, a faint red wash and hatching, closer when selected or kept than under the pointer.
+    if (uRedline > 0.5) {
+      float kr = step(0.4, uLit);
+      float sp = mix(9.0, 6.0, kr) * uDpr;
+      float hr = step(mod(gl_FragCoord.x + gl_FragCoord.y, sp), 1.15 * uDpr);
+      c = mix(c, uLitColor, mix(0.1, 0.18, kr));
+      return mix(c, uLitColor, hr * mix(0.6, 0.9, kr));
+    }
     float kept = step(0.4, uLit);
     vec3 Y = vec3(0.2126, 0.7152, 0.0722);
-    // On a dark drawing (Night) the layer is a dark teal glass, a shade of the colour well below its own lightness,
-    // with a faint sheen: the bright line and the glow mark the part, and a lit part never floods the dark.
-    if (uLitDark > 0.5) {
-      float lt = mix(0.2, 0.27, kept), rimD = pow(1.0 - abs(n.z), 2.0);
-      c = mix(c, uLitColor * (lt / max(dot(uLitColor, Y), 0.01)), mix(0.62, 0.78, kept));
-      return c + uLitColor * 0.14 * rimD + vec3(0.1) * pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 24.0);
-    }
     float la = dot(uLitColor, Y), l = clamp(dot(c, Y), la, mix(1.0, la + 0.5 * (1.0 - la), kept));
     vec3 hue = l < la ? uLitColor * (l / la) : mix(uLitColor, vec3(1.0), (l - la) / max(1.0 - la, 0.01));
     float rim = pow(1.0 - abs(n.z), 2.0), glint = pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 24.0);
     c = mix(c, hue, mix(0.42, 0.58, kept));
     c = mix(c, mix(uLitColor, vec3(1.0), 0.6), 0.13);
     return c + mix(uLitColor, vec3(1.0), 0.35) * 0.32 * rim + vec3(0.26) * glint + vec3(0.1) * smoothstep(0.2, 1.0, n.y);
-  }
-`;
-
-// Night: the plasma lights the drawing, as the Raptor's exhaust lights its nozzle and the floor. The light falls off from
-// the plasma's ring and lands on faces turned toward it: full inside the vessel (the cavity that holds it), and a faint
-// spill outside, on the coils and the table top, that reaches zero within about 40 cm. In the other themes it is 0.
-const PLASMA_LIGHT = /* glsl */`
-  uniform float uPlasmaLight;
-  uniform vec3 uPlasmaCol;
-  uniform vec3 uPlasmaGeo;
-  varying vec3 vWp;
-  vec3 plasmaLight(vec3 nw) {
-    if (uPlasmaLight <= 0.0) return vec3(0.0);
-    float rr = length(vWp.xy);
-    vec3 q = vec3(vWp.xy / max(rr, 1e-3) * uPlasmaGeo.x, 0.0);
-    vec3 d = q - vWp;
-    float rho = length(d);
-    float facing = max(dot(normalize(nw), d / max(rho, 1e-3)), 0.0);
-    float inside = 1.0 - smoothstep(uPlasmaGeo.y - 0.4, uPlasmaGeo.z + 0.4, rho);
-    float spill = (1.0 - inside) * exp(-(rho - uPlasmaGeo.z) / 11.0) * (1.0 - smoothstep(30.0, 42.0, rho));
-    return uPlasmaCol * uPlasmaLight * facing * (0.62 * inside + 0.3 * spill) + uPlasmaCol * uPlasmaLight * 0.06 * inside;
   }
 `;
 
@@ -1051,8 +1057,8 @@ const FRAG_COLOR = /* glsl */`
   uniform vec3 uCut;
   uniform vec3 uInk;
   uniform float uDpr;
+  uniform float uFlat;
   ${LIT_LAYER}
-  ${PLASMA_LIGHT}
   varying vec3 vNv;
   varying vec3 vNw;
   void main() {
@@ -1069,8 +1075,8 @@ const FRAG_COLOR = /* glsl */`
     float k = dot(n, uLight);
     float w = smoothstep(-0.4, 1.0, k);
     float top = smoothstep(0.6, 1.0, vNw.z);
-    float tone = mix(0.66, 1.05, w) + 0.06 * top;
-    vec3 c = uColor * tone + plasmaLight(vNw);
+    float tone = mix(mix(0.66, 1.05, w) + 0.06 * top, 0.95 + 0.09 * w + 0.02 * top, uFlat);
+    vec3 c = uColor * tone;
     c = litLayer(c, n, uLight);
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
@@ -1259,7 +1265,7 @@ function colorMat(tone, clip) {
   const m = new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
-      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uLitDark: shared.uLitDark, uPlasmaLight: shared.uPlasmaLight, uPlasmaCol: shared.uPlasmaCol, uPlasmaGeo: shared.uPlasmaGeo, uLoose: { value: 0 },
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uFlat: shared.uFlat, uRedline: shared.uRedline, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
       tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
     },
@@ -1385,7 +1391,6 @@ dev.holes.slice(0, 12).forEach((h, i) => {
   shared.uHoleP.value[i].set(h.p.x, h.p.y, h.p.z, h.len);
 });
 const R0 = DIMS.R0;
-shared.uPlasmaGeo.value.set(R0, DIMS.aIn, DIMS.aOut);
 {
   const a0 = DIMS.cut[0] * DEG, a1 = DIMS.cut[1] * DEG;
   sectorPlanes[1].set(new V3(Math.sin(a0), -Math.cos(a0), 0), 0);
@@ -1515,6 +1520,7 @@ const GLOW_FRAG = /* glsl */`
   uniform vec3 uRim;
   uniform float uI;
   uniform float uTime;
+  uniform float uStip;
   varying vec3 vNv;
   varying float vPhi;
   void main() {
@@ -1522,13 +1528,20 @@ const GLOW_FRAG = /* glsl */`
     float core = pow(f, 1.6);
     float s = 1.0 - 0.12 * (0.5 - 0.5 * cos(vPhi * 22.0 - uTime * 0.8));
     float a = clamp(uI * (0.16 + 0.84 * core) * s, 0.0, 0.95);
+    // Blueprint: a drawing cannot glow, so the plasma is stippled, denser at its core.
+    if (uStip > 0.5) {
+      vec2 q = mod(gl_FragCoord.xy, 5.0) - 2.5;
+      float dotm = step(length(q), 0.7 + 0.9 * core);
+      gl_FragColor = vec4(0.93, 0.96, 1.0, dotm * clamp(uI * (0.35 + 0.65 * core), 0.0, 0.9));
+      return;
+    }
     gl_FragColor = vec4(mix(uRim, uCore, core * core), a);
   }
 `;
 const torusUnit = new THREE.TorusGeometry(R0, 1, 40, 320);
 const glow = [[1, 5.0], [1.38, 5.0]].map(([sc, minor], i) => {
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uR0: { value: R0 }, uMinor: { value: minor * sc }, uCore: { value: new THREE.Color('#ffe2f6') }, uRim: { value: new THREE.Color('#b84ad6') }, uI: { value: 0 }, uTime: { value: 0 } },
+    uniforms: { uR0: { value: R0 }, uMinor: { value: minor * sc }, uCore: { value: new THREE.Color('#ffe2f6') }, uRim: { value: new THREE.Color('#b84ad6') }, uI: { value: 0 }, uTime: { value: 0 }, uStip: { value: 0 } },
     vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthWrite: false,
   });
   mat.userData.scale = sc;
@@ -1538,6 +1551,67 @@ const glow = [[1, 5.0], [1.38, 5.0]].map(([sc, minor], i) => {
   scene.add(mesh);
   return mesh;
 });
+
+// Blueprint: centre lines. Each line keeps its dash-dot pattern in screen pixels at every zoom (uCmPx).
+const CL_VERT = /* glsl */`
+  attribute float lineDistance;
+  attribute float aLift;
+  varying float vD;
+  void main() {
+    vD = lineDistance;
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    mv.z += aLift;
+    gl_Position = projectionMatrix * mv;
+  }
+`;
+const CL_FRAG = /* glsl */`
+  uniform vec3 uColor;
+  uniform float uCmPx;
+  varying float vD;
+  void main() {
+    float p = mod(vD / max(uCmPx, 1e-4), 24.0);
+    if (!(p < 14.0 || (p > 17.0 && p < 19.5))) discard;
+    gl_FragColor = vec4(uColor, 0.72);
+  }
+`;
+const clMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#eef4ff') }, uCmPx: { value: 0.25 } }, vertexShader: CL_VERT, fragmentShader: CL_FRAG, transparent: true, depthWrite: false });
+function clLine(points, lift, loop = false) {
+  const pos = [], dist = [], lifts = [];
+  let d = 0;
+  const pts = loop ? [...points, points[0]] : points;
+  pts.forEach((p, i) => { if (i) d += p.distanceTo(pts[i - 1]); pos.push(p.x, p.y, p.z); dist.push(d); lifts.push(lift); });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('lineDistance', new THREE.Float32BufferAttribute(dist, 1));
+  g.setAttribute('aLift', new THREE.Float32BufferAttribute(lifts, 1));
+  // An empty box: a centre line runs past its part, and must not widen the machine's box (the shadow map's reach).
+  g.boundingBox = new THREE.Box3();
+  const l = new THREE.Line(g, clMat);
+  l.layers.set(1);
+  l.frustumCulled = false;
+  l.visible = false;
+  return l;
+}
+// The machine's own: the torus's axis, through the central former, and its centre circle, the plasma's path.
+const clMachine = [
+  clLine([new V3(0, 0, DIMS.table.top), new V3(0, 0, 30)], 12),
+  clLine(Array.from({ length: 160 }, (_, i) => new V3(R0 * Math.cos((i / 160) * Math.PI * 2), R0 * Math.sin((i / 160) * Math.PI * 2), 0)), DIMS.aOut + 1, true),
+];
+for (const l of clMachine) scene.add(l);
+// Each round part's axis, through its middle and a little past each end, carried with the piece as it moves.
+const clPieces = [];
+dev.root.updateMatrixWorld(true);
+for (const pc of pieces) {
+  const ax = pc.userData.axis;
+  if (!ax) continue;
+  const b = new THREE.Box3().setFromObject(pc), c = b.getCenter(new V3()), h = b.getSize(new V3()).multiplyScalar(0.5);
+  const along = Math.abs(h.x * ax.x) + Math.abs(h.y * ax.y) + Math.abs(h.z * ax.z);
+  const across = Math.max(h.x * Math.sqrt(1 - ax.x * ax.x), h.y * Math.sqrt(1 - ax.y * ax.y), h.z * Math.sqrt(1 - ax.z * ax.z));
+  const a = pc.worldToLocal(c.clone().addScaledVector(ax, -(along + 3))), z = pc.worldToLocal(c.clone().addScaledVector(ax, along + 3));
+  const l = clLine([a, z], across + 0.5);
+  pc.add(l);
+  clPieces.push({ l, pc });
+}
 
 // In the hologram the shadow becomes the projector's floor: rings every 10 cm, spokes, and a pulse running outward.
 const shadow = (() => {
@@ -1610,7 +1684,7 @@ const tableLabels = QUARTERS.map(([name, deg]) => {
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
-      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uNight: { value: 0 }, uDetail: { value: 1 },
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uDetail: { value: 1 }, uBlue: { value: 0 },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
@@ -1621,8 +1695,8 @@ const post = (() => {
       uniform sampler2D tNid;
       uniform sampler2D tDepth;
       uniform float uFocus;
-      uniform float uNight;
       uniform float uDetail;
+      uniform float uBlue;
       uniform vec2 uTexel;
       uniform float uThick;
       uniform vec3 uInk;
@@ -1710,12 +1784,19 @@ const post = (() => {
         selection(e, ctx, outline, glow, hov);
         e = min(e * ctx, 1.0 / max(uInkAlpha, 0.01));
         if (uHolo < 0.5) {
-          // Night's lines take the light of the surface they are on, so the lit inside reads first.
-          vec3 inkC = uNight > 0.5 ? min(uInk * 0.62 + col * 1.4, vec3(1.0)) : uInk;
-          vec3 c = mix(col, inkC, e * uInkAlpha);
+          // Blueprint: the print's paper is a little lighter in the middle, with a fine grain and a faint mottle, and its
+          // lines bleed a little, as a contact print does.
+          if (uBlue > 0.5) {
+            vec2 d2 = vUv - 0.5;
+            float grain = fract(sin(dot(floor(gl_FragCoord.xy / uDpr), vec2(12.9898, 78.233))) * 43758.5453);
+            float mott = 0.5 + 0.5 * sin(gl_FragCoord.x * 0.009 / uDpr + 2.0 * sin(gl_FragCoord.y * 0.006 / uDpr));
+            col *= (1.06 - 0.32 * dot(d2, d2)) * (0.985 + 0.03 * grain) * (0.985 + 0.03 * mott);
+            e = max(e, edge(uThick * 2.2) * 0.18 * uDetail);
+          }
+          vec3 c = mix(col, uInk, e * uInkAlpha);
           // Two tones of one hue: a soft light glow outside the part, a crisp line on its edge, pale under the pointer
           // (the glass's own edge) and deep selected or kept.
-          c = mix(c, mix(uLitColor, vec3(1.0), 0.3), glow * 0.7);
+          c = mix(c, mix(uLitColor, vec3(1.0), 0.3), glow * (uBlue > 0.5 ? 0.3 : 0.7));
           vec3 lineC = hov > 0.5 ? mix(uLitColor, vec3(1.0), 0.15) : mix(uLitColor, uInk, 0.3);
           gl_FragColor = vec4(mix(c, lineC, outline * 0.95), 1.0);
           return;
@@ -1850,6 +1931,9 @@ const lineInfo = { cmPx: 0, detail: 1 };
 function draw() {
   const pal = THEME[themeName()];
   lineInfo.cmPx = (2 * halfNow()) / height;
+  clMat.uniforms.uCmPx.value = lineInfo.cmPx;
+  for (const l of clMachine) l.visible = blueprint && !iso.part && state.ep < 0.02 && !quiz.on;
+  for (const { l, pc } of clPieces) l.visible = blueprint && !pc.userData.ghost && !quiz.on;
   { const t = Math.min(1, Math.max(0, (lineInfo.cmPx - 0.12) / 0.12)); lineInfo.detail = 1 - (1 - (pal.lineFar ?? 1)) * t * t * (3 - 2 * t); }
   post.mat.uniforms.uDetail.value = lineInfo.detail;
   camera.layers.set(0);
@@ -1870,7 +1954,7 @@ function draw() {
   renderer.render(scene, camera);
   // While a part is selected or kept, the rest fades back: halfway on the machine, less while inspecting (the
   // context is a ghost already). The hologram is never dimmed.
-  shared.uFocus.value = focusNow && !holo ? (iso.part ? 0.3 : 0.5) * (night ? 0.6 : 1) : 0;
+  shared.uFocus.value = focusNow && !holo ? (iso.part ? 0.3 : 0.5) : 0;
   // The greyscale drawing's shadows come from the same parts as the outlines, but not from the window glass.
   shared.uShadowOn.value = greyscale && !lowRes ? 1 : 0;
   if (greyscale && !lowRes) {
@@ -2203,13 +2287,11 @@ function applyLook() {
   const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
   const apart = Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p));
   const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost;
-  const glowI = I * (t === 'dark' ? 0.3 : t === 'night' ? 0.8 : 1);
+  const glowI = I * (t === 'dark' ? 0.3 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
     u.uI.value = sc > 1 ? glowI * 0.32 : glowI;
     g.visible = state.pNow > 0;
-    // Night: the plasma's light on the machine follows the glow, without the pointer's boost.
-    shared.uPlasmaLight.value = t === 'night' ? I / boost : 0;
     // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on the white and grey parts
     // could not be seen. It turns amber while it is selected or under the pointer, but not while it is inspected, as
     // an inspected part keeps its own look.
@@ -4956,7 +5038,7 @@ function renderOverview(box) {
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all. The table’s edges are named Front, Right, Back and Left for the quarters above them, printed on the table top, so you know which side you are looking from.',
     'Taken apart, a part steps through the order it comes off with the arrows by “All”: nuts, then bolts, then the flange, the gasket last. Each step says how, with the bolt size and spanner, and a ring of bolts or nuts is numbered on the heads in star order. Fitting runs back up the steps. On a gasket or a vessel joint flange, “Open this joint” does the same for the whole joint: nuts, bolts, the two quarters apart, then the gasket out, never to be reused.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
-    'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, at night (light lines on black, lit by the plasma), or as a hologram.',
+    'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, as a blueprint (white drafting lines on blue paper, with centre lines and dimensions), or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
   ]) box.append(el('p', null, s));
   markTerms(box, 'machine');
@@ -5159,7 +5241,7 @@ function writeLink() {
 }
 function applyLink(h) {
   const q = new Map(h.replace(/^#/, '').split('&').filter((kv) => kv.includes('=')).map((kv) => { const i = kv.indexOf('='); return [kv.slice(0, i), decodeURIComponent(kv.slice(i + 1))]; }));
-  const theme = q.get('theme');
+  const theme = LOOK_GONE[q.get('theme')] || q.get('theme');
   if (LOOKS.includes(theme) && theme !== themeName()) { document.documentElement.dataset.theme = theme; applyTheme(); }
   const part = q.get('part');
   if (part && partById.has(part)) {
@@ -5280,12 +5362,14 @@ function applyTheme() {
   const pal = THEME[t];
   holo = t === 'dark';
   greyscale = t === 'greyscale';
-  night = t === 'night';
+  blueprint = t === 'blueprint';
   document.documentElement.classList.toggle('holo', holo);
   document.documentElement.classList.toggle('greyscale', greyscale);
-  document.documentElement.classList.toggle('night', night);
-  post.mat.uniforms.uNight.value = night ? 1 : 0;
-  shared.uLitDark.value = night ? 1 : 0;
+  document.documentElement.classList.toggle('blueprint', blueprint);
+  post.mat.uniforms.uBlue.value = blueprint ? 1 : 0;
+  shared.uFlat.value = blueprint ? 1 : 0;
+  shared.uRedline.value = blueprint ? 1 : 0;
+  $('readout').dataset.sc = 'x';
   shared.uLight.value.set(...(pal.light || LIGHT)).normalize();
   for (const m of colorMats.values()) {
     const glass = m.userData.tone === 'glass';
@@ -5313,17 +5397,17 @@ function applyTheme() {
   // The quarter names are printed in ink, and glow in the hologram's blue.
   for (const l of tableLabels) {
     l.material.color.set(holo ? '#5aaae0' : pal.ink);
-    l.material.opacity = holo ? 0.85 : night ? 0.5 : 0.7;
+    l.material.opacity = holo ? 0.85 : blueprint ? 0.62 : 0.7;
     l.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     l.material.needsUpdate = true;
   }
-  // The plasma is the one thing that glows: pink in the drawing and in greyscale (applyLook), brighter in the hologram.
-  // In Night it is drawn over the interior it already lights, so it stays a saturated body with a pale core; adding it
-  // on top burned the lit interior to white.
+  // The plasma is the one thing that glows: pink in the drawing and in greyscale (applyLook), brighter in the hologram,
+  // and stippled in Blueprint, where nothing glows.
   for (const g of glow) {
     const u = g.material.uniforms;
-    u.uCore.value.set(holo ? '#ff8fe8' : night ? '#ffa8ea' : '#ffe2f6');
-    u.uRim.value.set(holo ? '#b03cff' : night ? '#9a3ad4' : '#b84ad6');
+    u.uStip.value = blueprint ? 1 : 0;
+    u.uCore.value.set(holo ? '#ff8fe8' : '#ffe2f6');
+    u.uRim.value.set(holo ? '#b03cff' : '#b84ad6');
     g.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     g.material.needsUpdate = true;
   }
@@ -5333,6 +5417,59 @@ function applyTheme() {
   }
   applyLook();
   dirty = true;
+}
+
+// ---------- Blueprint: the drawing sheet ----------
+// A frame inside the view's edge with zone marks (1–6 across, A–D down), and three true dimensions in millimetres on the
+// whole machine at rest: the table's height and width, and the diameter of the torus's centre circle. They come from
+// the model's own sizes (DIMS) and are drawn with extension lines and arrows, as on a drawing.
+function updateDraft() {
+  const svg = $('draft');
+  if (!blueprint) { if (svg.firstChild) svg.replaceChildren(); $('card').classList.remove('tight'); return; }
+  const W = width, H = height, o = 8, i = 22;
+  $('card').classList.toggle('tight', W < 760);
+  // A view with no room for the frame (a hidden or collapsed pane) gets no sheet until it has.
+  if (W < 4 * i || H < 4 * i) { if (svg.firstChild) svg.replaceChildren(); return; }
+  const parts = [];
+  const P = (x, y) => `${x.toFixed(1)},${y.toFixed(1)}`;
+  parts.push(`<rect class="frame" x="${o}" y="${o}" width="${W - 2 * o}" height="${H - 2 * o}"/>`, `<rect class="frame in" x="${i}" y="${i}" width="${W - 2 * i}" height="${H - 2 * i}"/>`);
+  const nx = 6, ny = 4;
+  for (let k = 0; k <= nx; k++) {
+    const x = i + ((W - 2 * i) * k) / nx;
+    if (k > 0 && k < nx) parts.push(`<line class="tick" x1="${x}" y1="${o}" x2="${x}" y2="${i}"/><line class="tick" x1="${x}" y1="${H - i}" x2="${x}" y2="${H - o}"/>`);
+    if (k < nx) { const cx = x + (W - 2 * i) / nx / 2; parts.push(`<text x="${cx}" y="${(o + i) / 2}">${k + 1}</text><text x="${cx}" y="${H - (o + i) / 2}">${k + 1}</text>`); }
+  }
+  for (let k = 0; k <= ny; k++) {
+    const y = i + ((H - 2 * i) * k) / ny;
+    if (k > 0 && k < ny) parts.push(`<line class="tick" x1="${o}" y1="${y}" x2="${i}" y2="${y}"/><line class="tick" x1="${W - i}" y1="${y}" x2="${W - o}" y2="${y}"/>`);
+    if (k < ny) { const cy = y + (H - 2 * i) / ny / 2, L = 'ABCD'[k]; parts.push(`<text x="${(o + i) / 2}" y="${cy}">${L}</text><text x="${W - (o + i) / 2}" y="${cy}">${L}</text>`); }
+  }
+  // A dimension from a to b (world points), its line set off by `off` (a world vector), labelled `text`.
+  const dim = (a, b, off, text) => {
+    const A = toScreen(a), B = toScreen(b), A2 = toScreen(a.clone().add(off)), B2 = toScreen(b.clone().add(off));
+    const ov = toScreen(a.clone().add(off.clone().multiplyScalar(1.18)));
+    const ex = (p, q) => parts.push(`<line class="dl" x1="${p.x.toFixed(1)}" y1="${p.y.toFixed(1)}" x2="${q.x.toFixed(1)}" y2="${q.y.toFixed(1)}"/>`);
+    const L = Math.hypot(B2.x - A2.x, B2.y - A2.y);
+    if (L < 40) return;
+    ex(A, ov); ex(B, toScreen(b.clone().add(off.clone().multiplyScalar(1.18)))); ex(A2, B2);
+    const u = { x: (B2.x - A2.x) / L, y: (B2.y - A2.y) / L }, n = { x: -u.y, y: u.x };
+    for (const [p, s] of [[A2, 1], [B2, -1]]) {
+      const t = { x: p.x + u.x * 8 * s, y: p.y + u.y * 8 * s };
+      parts.push(`<polygon class="arrow" points="${P(p.x, p.y)} ${P(t.x + n.x * 2.6, t.y + n.y * 2.6)} ${P(t.x - n.x * 2.6, t.y - n.y * 2.6)}"/>`);
+    }
+    let ang = (Math.atan2(u.y, u.x) * 180) / Math.PI;
+    if (ang > 90) ang -= 180; else if (ang <= -90) ang += 180;
+    const up = { x: Math.sin(ang * DEG), y: -Math.cos(ang * DEG) };
+    const m = { x: (A2.x + B2.x) / 2 + up.x * 5, y: (A2.y + B2.y) / 2 + up.y * 5 };
+    parts.push(`<text class="dim" x="${m.x.toFixed(1)}" y="${m.y.toFixed(1)}" transform="rotate(${ang.toFixed(1)} ${m.x.toFixed(1)} ${m.y.toFixed(1)})">${text}</text>`);
+  };
+  if (W >= 520 && !iso.part && !quiz.on && state.ep < 0.02 && !hidden.has('table')) {
+    const T = DIMS.table, h = T.half;
+    dim(new V3(-h, -h, T.floor), new V3(-h, -h, T.top), new V3(-14, 0, 0), String(Math.round((T.top - T.floor) * 10)));
+    dim(new V3(-h, -h, T.floor), new V3(h, -h, T.floor), new V3(0, 0, -12), String(Math.round(2 * h * 10)));
+    dim(new V3(-R0, 0, 0), new V3(R0, 0, 0), new V3(0, 0, Math.max(34, boxOfPart('gauge').max.z + 8)), `Ø${Math.round(2 * R0 * 10)}`);
+  }
+  svg.innerHTML = parts.join('');
 }
 
 // ---------- Orientation triad and scale bar ----------
@@ -5353,13 +5490,13 @@ function drawTriad() {
   for (const a of items) {
     const neg = a.k.startsWith('−');
     // In greyscale the axes are ink and told apart by their letters.
-    const c = greyscale ? 'var(--ink)' : a.c;
+    const c = greyscale || blueprint ? 'var(--ink)' : a.c;
     s += `<g class="ax" data-view="${a.view}" role="button" aria-label="Look from ${a.view}" opacity="${0.55 + 0.45 * (a.d * 0.5 + 0.5)}">`;
     // A 24 px target round each end, whatever its drawn size.
     s += `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="12" fill="transparent"/>`;
     if (!neg) s += `<line x1="0" y1="0" x2="${a.x.toFixed(1)}" y2="${a.y.toFixed(1)}" stroke="${c}" stroke-width="2"/>`;
     s += `<circle cx="${a.x.toFixed(1)}" cy="${a.y.toFixed(1)}" r="${neg ? 4 : 7}" fill="${neg ? 'var(--card)' : c}" stroke="${c}" stroke-width="1.5"/>`;
-    if (!neg) s += `<text x="${a.x.toFixed(1)}" y="${(a.y + 3.4).toFixed(1)}" text-anchor="middle" style="fill:${greyscale ? 'var(--card)' : '#fff'}">${a.k}</text>`;
+    if (!neg) s += `<text x="${a.x.toFixed(1)}" y="${(a.y + 3.4).toFixed(1)}" text-anchor="middle" style="fill:${greyscale || blueprint ? 'var(--card)' : '#fff'}">${a.k}</text>`;
     s += '</g>';
   }
   triad.innerHTML = s;
@@ -5400,9 +5537,14 @@ function updateReadout() {
   else if (state.select) line2 = partById.get(state.select).name;
   else line2 = `${DOCS.PARTS.length} components · ${pieces.length} pieces`;
   const r = $('readout');
-  if (r.dataset.l1 === line1 && r.dataset.l2 === line2) return;
-  r.dataset.l1 = line1; r.dataset.l2 = line2;
-  r.replaceChildren(el('div', null, line1), el('div', null, line2));
+  // Blueprint: the readout is the sheet's title block, with the scale the drawing is at on this screen (96 px to the
+  // inch) and the units of its dimensions.
+  const scale = blueprint ? `1:${Math.max(1, Math.round(37.8 / (height / (2 * halfNow()))))}` : '';
+  if (r.dataset.l1 === line1 && r.dataset.l2 === line2 && r.dataset.sc === scale) return;
+  r.dataset.l1 = line1; r.dataset.l2 = line2; r.dataset.sc = scale;
+  if (!blueprint) { r.replaceChildren(el('div', null, line1), el('div', null, line2)); return; }
+  const row = (k, v) => { const d = el('div', 'tb-row'); d.append(el('span', null, k), el('span', null, v)); return d; };
+  r.replaceChildren(el('div', 'tb-title', 'MinimaK SPM1 · Anatomy'), row('Scale', `${scale} · dimensions in mm`), row('View', line1), row('Shows', line2), row('Fig', '1 · after Rideo Systems photos and specs'));
 }
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
@@ -5914,6 +6056,7 @@ function frame() {
   shared.uScan.value = height / (5 * 2 * halfNow());
   if (loupe.on) drawLoupe();
   draw();
+  updateDraft();
   drawTriad();
   drawScale();
   updateReadout();
