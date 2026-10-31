@@ -859,13 +859,15 @@ const TONES = {
 // at worst under simulated colour blindness. Greyscale's selection is the hologram's orange, the one warm colour on its
 // white and greys. The hologram's machine is
 // blue, so its selection is orange, the blue's opposite: teal, the blue's neighbour, read there as a brighter blue.
+// `lineFar` is how strong the lines inside a part are when zoomed out (see draw): Greyscale's parts are white, so its
+// lines carry more and fade less.
 // Night is the anatomy kit's dark plate: near-black parts, light grey lines (`ink`), and the plasma's light on them. Its
 // teal is brightened for the dark (7:1 on the panels).
 const THEME = {
-  light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
-  night: { paper: '#0c0d10', cut: '#1a1b1f', ink: '#b9bcc3', lit: '#2bb8ae', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.82, ghost: 0.12, glass: 0.22 },
-  dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
+  light: { lineFar: 0.45, paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  greyscale: { lineFar: 0.7, paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
+  night: { lineFar: 0.45, paper: '#0c0d10', cut: '#1a1b1f', ink: '#b9bcc3', lit: '#2bb8ae', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.82, ghost: 0.12, glass: 0.22 },
+  dark: { lineFar: 0.45, paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 const LIGHT = [-0.42, 0.58, 0.7];
 // The hologram is one soft ice blue, like the displays in Tony Stark's workshop, a little brighter for parts
@@ -1608,7 +1610,7 @@ const tableLabels = QUARTERS.map(([name, deg]) => {
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
-      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uNight: { value: 0 },
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uNight: { value: 0 }, uDetail: { value: 1 },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
@@ -1620,6 +1622,7 @@ const post = (() => {
       uniform sampler2D tDepth;
       uniform float uFocus;
       uniform float uNight;
+      uniform float uDetail;
       uniform vec2 uTexel;
       uniform float uThick;
       uniform vec3 uInk;
@@ -1643,8 +1646,10 @@ const post = (() => {
         ide = max(ide, step(0.0015, abs(t.a - c.a)));
       }
       // The ink's edges, from an ink pass's normals, ids and depth: where depth jumps, the normal turns or the part
-      // changes.
-      float edgeOf(sampler2D n, sampler2D d, float s) {
+      // changes. \`detail\` (0–1) is how strong the lines inside a part are: a crease, a change of mesh on the same
+      // surface, or a small step such as a bolt head on its flange (a depth jump under about 2 cm). An outline, a jump
+      // of 4 cm or more (a part against the background, or a part well in front of another), is always full.
+      float edgeOf(sampler2D n, sampler2D d, float s, float detail) {
         vec2 ox = vec2(uTexel.x * s, 0.0);
         vec2 oy = vec2(0.0, uTexel.y * s);
         vec4 c = texture2D(n, vUv);
@@ -1657,9 +1662,12 @@ const post = (() => {
         lap = abs(lap - 4.0 * dep(d, vUv));
         float eD = smoothstep(uDepthT, uDepthT * 3.0, lap);
         float eN = smoothstep(0.2, 0.55, ne) * 0.72;
-        return clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
+        float full = clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
+        float outline = max(eD, ide * 0.95) * smoothstep(1.5, 4.0, lap);
+        return mix(outline, full, detail);
       }
-      float edge(float s) { return edgeOf(tNid, tDepth, s); }
+      float edge(float s) { return edgeOf(tNid, tDepth, s, uDetail); }
+      float edgeFull(float s) { return edgeOf(tNid, tDepth, s, 1.0); }
       // The highlight's marks, from the lit state the ink pass writes (0 none, 1/4 under the pointer or named by a row,
       // 2/4 previewed, 3/4 selected or kept, 1 the hot sheet's sub-part). A lit part's own lines go to full ink and a
       // little heavier; while a part is selected or kept, the other lines grey. A line in the selection colour runs just
@@ -1676,7 +1684,7 @@ const post = (() => {
           cmax = max(cmax, b);
           if (dep(tDepth, uv) > d0 + 0.5) cmin = min(cmin, b);
         }
-        if (cmax > 0.2) e = max(e, edge(uThick * 1.45) / max(uInkAlpha, 0.01));
+        if (cmax > 0.2) e = max(e, edgeFull(uThick * 1.45) / max(uInkAlpha, 0.01));
         ctx = uFocus > 0.0 && cmax < 0.4 ? 0.4 : 1.0;
         float dash = abs(c0 - 0.5) < 0.1 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 8.0 * uDpr), 5.0 * uDpr) : 1.0;
         outl = c0 >= 0.2 && cmin < c0 - 0.1 ? dash : 0.0;
@@ -1834,8 +1842,16 @@ function resize() {
 }
 
 // The ink pass goes first: the hologram's colour pass reads its depth to tell the nearest surface from the ones behind.
+// Zoomed out, the lines inside a part fade and its outline stays, as an illustrator draws a figure seen from further off:
+// at the same width on screen, the inside lines of a small machine crowd into dark bands (the coils, the bolt rings, the
+// frame). Full from 0.12 cm per screen pixel (about twice the home view) inward, down to the theme's `lineFar` at the
+// home view's 0.24 and beyond, eased between. A lit part keeps all its lines.
+const lineInfo = { cmPx: 0, detail: 1 };
 function draw() {
   const pal = THEME[themeName()];
+  lineInfo.cmPx = (2 * halfNow()) / height;
+  { const t = Math.min(1, Math.max(0, (lineInfo.cmPx - 0.12) / 0.12)); lineInfo.detail = 1 - (1 - (pal.lineFar ?? 1)) * t * t * (3 - 2 * t); }
+  post.mat.uniforms.uDetail.value = lineInfo.detail;
   camera.layers.set(0);
   let focusNow = false;
   for (const m of solids) {
@@ -5922,7 +5938,7 @@ applyTheme();
 if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
 window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
-  setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf,
+  lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf,
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
   setStep, stepBy, stepList, setJoint, jointHere, loupe, quiz, startQuiz, endQuiz, answerQuiz, placesOf, nextQuiz, ringOf, oneOf, applyLink, subMeshes,
   // One of a ring under a point of the page: its name ("Bolt 7 of 20 · star 3"), as the tooltip shows it.

@@ -786,6 +786,16 @@ every part (fixed in #25). Its three changes, most effect first:
     view while inspecting, with their arrows. The names printed on the table top stay in the assembly view, but hide
     while another part is inspected, as the table is only a ghost then and they stood out of it. The callouts, the
     leader line, the trail, the star order and the bolt sizes are unchanged.
+14. **Lighter inside lines when zoomed out** (asked about after #38: "when zoomed out the lines look a bit too
+    thick; zoomed in they are perfect"). *Done:* the ink keeps one width on screen (`uThick`), so a smaller machine
+    packs the same lines closer, and the coils, bolt rings and frame went to dark bands at the home view. The edge pass
+    now tells an outline from a line inside a part: a depth jump of 4 cm or more (a part against the background, or well
+    in front of another) is an outline and always full; a crease, a change of mesh on the same surface, or a small step
+    (a bolt head on its flange, under about 2 cm) is inside. Inside lines fade with the view's scale: full at 0.12 cm per
+    screen pixel (about twice the home zoom) and inward, down to the theme's `lineFar` at the home view's 0.24 and
+    beyond, eased: 0.45 in Colour, Night and the hologram, 0.7 in Greyscale (its white parts lean on their lines; at 0.45
+    its drawer handles and frame edges went faint). A lit part keeps all its lines (`edgeFull`). Mocked up first in all
+    four themes against the current lines; at 3× the two are the same to the pixel.
 
 ## 5. Open questions for you
 
