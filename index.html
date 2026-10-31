@@ -14,7 +14,9 @@
     --rule: #d9d9d5;
     --soft: #eeeeeb;
     --chip: #e6e6e2;
-    --accent: #0a736e;
+    --accent: #e25f0c;
+    --accent-ink: #1c1c1a;
+    --sel: #e25f0c;
     --spec: #2b8a6e;
     --photo: #9a6a0f;
     --assumed: #787873;
@@ -30,29 +32,33 @@
     --soft: #0a1b2a;
     --chip: #0e2436;
     --accent: #6fb8e8;
+    --accent-ink: var(--card);
+    --sel: #ff7a1a;
     --spec: #3cf0b4;
     --photo: #ffb54d;
     --assumed: #6a8ea8;
     color-scheme: dark;
     scrollbar-color: #1b3a55 transparent;
   }
-  /* The greyscale drawing: a shaded black-and-white rendering on dimmed paper. Amber marks the selection, as in the
-     hologram, and nothing else, so the accent (focus rings, the tour's rule) is ink. The basis dots keep their shapes. */
+  /* The greyscale drawing: a white CAD line rendering, every part white and shaded in greys and black, on a white
+     page. The orange marks the selection, as in the other themes, and nothing else, so the accent (focus rings, the
+     tour's rule) is ink. The basis dots keep their shapes. */
   :root.greyscale {
-    --paper: #b9b9b5;
-    --card: #cbcbc7;
+    --paper: #f2f2f2;
+    --card: #ffffff;
     --ink: #121212;
-    --muted: #3f3f3d;
-    --rule: #a5a5a1;
-    --soft: #c1c1bd;
-    --chip: #b5b5b1;
+    --muted: #4a4a4a;
+    --rule: #e4e4e4;
+    --soft: #f0f0f0;
+    --chip: #e6e6e6;
     --accent: #121212;
+    --accent-ink: var(--card);
+    --sel: #e25f0c;
     --spec: #1f1f1e;
     --photo: #1f1f1e;
-    --assumed: #3f3f3d;
-    --amber: #e8901c;
+    --assumed: #555555;
     color-scheme: light;
-    scrollbar-color: #8f8f8b transparent;
+    scrollbar-color: #bdbdbd transparent;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -272,7 +278,7 @@
   .screen.enter { animation: screen-in .32s ease-out backwards; }
   @keyframes screen-in { from { opacity: 0; transform: translateY(8px); clip-path: inset(0 0 85% 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
   .screen.live { border-style: dashed; }
-  .screen.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .screen.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel); }
   .screen.dragging { opacity: 0.9; }
   /* A folded sheet keeps only its top bar; its chevron opens it again. */
   .screen.folded { padding-bottom: 6px; }
@@ -356,7 +362,7 @@
   .isobar .tour { display: inline-flex; align-items: center; gap: 6px; padding-left: 8px; border-left: 1px solid var(--rule); }
   .isobar .tour[hidden] { display: none; }
   .isobar .tour > span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .isobar button.next { background: var(--accent); color: var(--card); border-color: var(--accent); }
+  .isobar button.next { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .isobar button.next[hidden] { display: none; }
   /* Where does it go?: the question, then the choices, which say right or wrong once answered. */
   .quizbar .lbl { white-space: normal; max-width: 26em; }
@@ -413,11 +419,11 @@
      reads on any surface. */
   .overlay { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: visible; }
   .overlay .halo { fill: none; stroke: var(--card); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: 0.92; }
-  .overlay .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .overlay .line { fill: none; stroke: var(--sel); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .overlay .stub { stroke-width: 1.5; }
   .overlay .seat .line { stroke-dasharray: 6 4; stroke-linecap: butt; }
-  .overlay .dot { fill: var(--accent); stroke: var(--card); stroke-width: 2; }
-  .overlay .edge { fill: var(--accent); stroke: var(--card); stroke-width: 2; stroke-linejoin: round; }
+  .overlay .dot { fill: var(--sel); stroke: var(--card); stroke-width: 2; }
+  .overlay .edge { fill: var(--sel); stroke: var(--card); stroke-width: 2; stroke-linejoin: round; }
   .overlay text { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
   /* The quarter names pinned to the view's edge, in the letters printed on the table, and the trail of a sub-part taken
      off its piece: dashed, from a hollow ring where it sits. */
@@ -430,7 +436,7 @@
   .overlay text.star.behind { opacity: 0.45; }
   .overlay .dim .line { stroke-width: 1.25; }
   .overlay text.dim { font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .overlay .home { fill: var(--card); stroke: var(--accent); stroke-width: 2; }
+  .overlay .home { fill: var(--card); stroke: var(--sel); stroke-width: 2; }
   .callouts { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   .callout {
     position: absolute; pointer-events: auto; cursor: pointer; padding: 2px 6px; border-radius: 6px; white-space: normal; overflow-wrap: anywhere;
@@ -439,8 +445,8 @@
   }
   .callout b { font-weight: 650; color: var(--muted); margin-right: 4px; font-variant-numeric: tabular-nums; }
   .callout.balloon { display: grid; place-items: center; padding: 0; border-radius: 50%; width: calc(20px * var(--ui-scale, 1)); height: calc(20px * var(--ui-scale, 1)); font-size: calc(11.5px * var(--ui-scale, 1)); font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; border-color: var(--accent); }
-  .callout.hot { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-  .callout:hover { border-color: var(--accent); }
+  .callout.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel); }
+  .callout:hover { border-color: var(--sel); }
   .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
   .slide[hidden] { display: none; }
   .slide input { width: 92px; accent-color: var(--accent); }
@@ -595,23 +601,23 @@
   .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle),
   .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: none; }
   .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: none; }
-  .holo .ti.sel, .holo table.ptab tr.on { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--accent); }
+  .holo .ti.sel, .holo table.ptab tr.on { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--sel); }
   .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: none; }
   .holo .know { border-left-color: var(--accent); }
   .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.35); box-shadow: none; }
   .holo .screen { border-radius: 6px; background: var(--card); border-color: var(--rule); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .holo .screen.hot { border-color: var(--accent); box-shadow: none; outline: 1px solid var(--accent); }
+  .holo .screen.hot { border-color: var(--sel); box-shadow: none; outline: 1px solid var(--sel); }
   .holo .callout { background: var(--card); border-color: rgb(90 170 225 / 0.35); border-radius: 4px; box-shadow: none; }
-  .holo .callout.balloon { border-radius: 50%; border-color: var(--accent); }
+  .holo .callout.balloon { border-radius: 50%; border-color: var(--sel); }
   .holo .screen .bar { border-bottom: 1px solid var(--rule); padding-bottom: 4px; margin-bottom: 8px; }
   .holo .screen.folded .bar { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
 
-  /* ---------- Greyscale: the light drawing's chrome in greys. The selection is marked in amber as in the model, on an
-     ink edge so the mark stands out from the grey. ---------- */
-  .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--amber); }
-  .greyscale .screen.hot { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber), 0 0 0 2px var(--ink); }
-  .greyscale .tabs button[aria-selected="true"] { background: var(--ink); color: var(--card); box-shadow: inset 0 -3px 0 var(--amber); }
+  /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
+     ink edge so the mark stands out from the white. ---------- */
+  .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--sel); }
+  .greyscale .screen.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel), 0 0 0 2px var(--ink); }
+  .greyscale .tabs button[aria-selected="true"] { background: var(--ink); color: var(--card); box-shadow: inset 0 -3px 0 var(--sel); }
   .greyscale .search::placeholder { color: var(--muted); opacity: 1; }
   .greyscale .ti.off .name, .greyscale .eye[aria-pressed="false"] { opacity: 0.7; }
 </style>
@@ -822,29 +828,27 @@ const TONES = {
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 // Colours show exactly as given (colour management is off). The greyscale drawing has its own light, raked further
-// in from the upper left so the cast shadows fall clear of the parts that cast them.
+// in from the upper left so the cast shadows fall clear of the parts that cast them. The selection (`lit`) is one
+// orange in every theme, saturated enough to stand apart from the copper (0.10 from it in OKLab).
 const THEME = {
-  light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#0f9e96', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  greyscale: { paper: '#cbcbc7', cut: '#9a9a96', ink: '#0e0e0e', lit: '#e8901c', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
-  dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff9a3c', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
+  light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#ff7a1a', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
+  dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 const LIGHT = [-0.42, 0.58, 0.7];
 // The hologram is one soft ice blue, like the displays in Tony Stark's workshop, a little brighter for parts
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
-// selection glows amber (THEME.dark.lit) so it stands apart from the blue.
+// selection is orange (THEME.dark.lit), the blue's opposite.
 const HOLO = new THREE.Color('#4f9fd6');
 let holo = false, greyscale = false;
 const clearColor = new THREE.Color();
-// The greyscale drawing keeps how light each material is, squeezed toward the middle so nothing is white: steel and
-// ceramic come out a pale grey, copper a mid grey and the black parts a dark one. Copper and its alloys get a grey of
-// their own, set between steel's shades: from its lightness alone, lit copper is steel one shade down.
-const GREYS = { copper: 0.62, bronze: 0.6, brass: 0.68 };
+// The greyscale drawing is white, like a CAD line rendering: every material is white, and its greys and black come only
+// from the light's shades, the cast shadows and the ink. What would vanish in white keeps a grey: holes and slots, the
+// printed lines, the dark screens and LEDs.
+const GREY_KEEP = { ink: 0.12, tapeline: 0.3, hole: 0.55, slot: 0.55, lcd: 0.25, hvlcd: 0.25, led: 0.3, tip: 0.2 };
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
-  if (theme === 'greyscale') {
-    const g = GREYS[name] ?? 0.2 + 0.72 * (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b);
-    return c.setRGB(g, g, g);
-  }
+  if (theme === 'greyscale') { const g = GREY_KEEP[name] ?? 1; return c.setRGB(g, g, g); }
   if (theme !== 'dark') return c;
   const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
   return HOLO.clone().multiplyScalar(0.55 + 0.45 * l);
@@ -874,11 +878,12 @@ const shared = {
   uCut: { value: new THREE.Color() },
   uInk: { value: new THREE.Color() },
   uLitColor: { value: new THREE.Color() },
-  // The colour drawing's fill for a selected or kept part: dark on light materials, pale on the rest.
   uPaper: { value: new THREE.Color() },
   uDpr: { value: 1 },
   uGhost: { value: 0.15 },
   uGlass: { value: 0.28 },
+  // While a part is selected or kept, how far the rest fades toward the paper (Colour and Greyscale).
+  uFocus: { value: 0 },
   // Hologram: the nearest surface's depth, the target size, time, scan-line density (per cm) and the sweep's height.
   tFront: { value: null },
   uRes: { value: new THREE.Vector2(1, 1) },
@@ -938,6 +943,32 @@ const VERT = /* glsl */`
   }
 `;
 
+// The highlight on a part, in Colour and Greyscale (levels from refreshLit: 0.3 under the pointer or named by a row, 0.32
+// previewed, 0.42 selected or kept, 0.55 the hot sheet's). The part stays solid and keeps its own light and shade under
+// a thin layer of coloured glass: tinted by a ramp of the selection colour at its own lightness (dark to pale, kept
+// between the colour's own lightness and white, so a dark part turns orange, not brown), with a little of the colour's
+// pale tint, a sheen where the surface turns away or faces up, and a glint. It never multiplies: over copper that goes
+// grey. Selected or kept the layer is fuller, and a light part is kept below white, so it turns a real orange. While
+// a part is selected or kept, the rest fades toward the paper (uFocus). The post pass draws the line and the glow.
+const LIT_LAYER = /* glsl */`
+  uniform float uLit;
+  uniform float uFocus;
+  uniform vec3 uLitColor;
+  uniform vec3 uPaper;
+  vec3 litLayer(vec3 c, vec3 n, vec3 light) {
+    c = mix(c, uPaper, uFocus * (1.0 - step(0.4, uLit)));
+    if (uLit < 0.2) return c;
+    float kept = step(0.4, uLit);
+    vec3 Y = vec3(0.2126, 0.7152, 0.0722);
+    float l = clamp(dot(c, Y), 0.56, mix(1.0, 0.78, kept)), la = dot(uLitColor, Y);
+    vec3 hue = l < la ? uLitColor * (l / la) : mix(uLitColor, vec3(1.0), (l - la) / max(1.0 - la, 0.01));
+    float rim = pow(1.0 - abs(n.z), 2.0), glint = pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 24.0);
+    c = mix(c, hue, mix(0.42, 0.58, kept));
+    c = mix(c, mix(uLitColor, vec3(1.0), 0.6), 0.13);
+    return c + mix(uLitColor, vec3(1.0), 0.35) * 0.32 * rim + vec3(0.26) * glint + vec3(0.1) * smoothstep(0.2, 1.0, n.y);
+  }
+`;
+
 const FRAG_COLOR = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
@@ -947,9 +978,9 @@ const FRAG_COLOR = /* glsl */`
   uniform vec3 uCut;
   uniform vec3 uInk;
   uniform float uDpr;
+  ${LIT_LAYER}
   varying vec3 vNv;
   varying vec3 vNw;
-  // A lit part is not drawn here: in Colour and Greyscale it is glass (FRAG_LIT).
   void main() {
     #include <clipping_planes_fragment>
     #ifdef HOLES
@@ -966,6 +997,7 @@ const FRAG_COLOR = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
     vec3 c = uColor * tone;
+    c = litLayer(c, n, uLight);
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -1043,28 +1075,27 @@ const FRAG_HOLO = /* glsl */`
     float band = pow(fract(vWp.z * uScan - uTime * 0.35), 3.0);
     float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
     vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
-    // The selection fills in amber, so it stands apart from the blue, and never goes white; under the pointer or
-    // previewed a part takes a fainter amber.
-    float lit = uLit > 0.4 ? clamp(uLit * 1.5, 0.0, 0.75) : uLit > 0.2 ? 0.45 : 0.0;
-    c = mix(c, uLitColor * (0.2 + 0.36 * rim) * (0.8 + 0.2 * band), lit);
-    float vis = max(mix(1.0, 0.12, behind), lit * 0.45);
+    // The highlight: brighter, under a thin orange layer, fuller selected or kept; the rest of the machine is never
+    // dimmed. Selected or kept, it still shows faintly through what is in front of it.
+    float kept = step(0.4, uLit);
+    if (uLit > 0.2) c = c * mix(1.25, 1.7, kept) * mix(vec3(1.0), uLitColor, mix(0.35, 0.45, kept)) + uLitColor * (0.02 + mix(0.12, 0.18, kept) * rim);
+    float vis = max(mix(1.0, 0.12, behind), 0.32 * kept);
     gl_FragColor = vec4((c * vis + uEmit) * uDim, 1.0);
   }
 `;
 
 // The greyscale drawing, shaded like a CAD rendering: the light falls into five flat shades, and the parts cast
-// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: amber.
+// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: orange.
 const FRAG_GREY = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
   uniform vec3 uColor;
-  uniform vec3 uLitColor;
-  uniform float uLit;
   uniform vec3 uEmit;
   uniform vec3 uLight;
   uniform vec3 uCut;
   uniform vec3 uInk;
   uniform float uDpr;
+  ${LIT_LAYER}
   uniform sampler2D tShadow;
   uniform mat4 uShadowM;
   uniform float uShadowTexel;
@@ -1117,7 +1148,7 @@ const FRAG_GREY = /* glsl */`
     float fs = fwidth(s) + 1e-3;
     if (k > 0.0) q = mix(0.25, q, smoothstep(0.5 - fs, 0.5 + fs, s));
     vec3 c = uColor * (0.42 + 0.58 * q);
-    // A lit part is not drawn here: it is glass (FRAG_LIT).
+    c = litLayer(c, n, uLight);
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
 `;
@@ -1159,7 +1190,7 @@ function colorMat(tone, clip, sec = null) {
   const m = new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
-      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uLoose: { value: 0 },
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
       tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
     },
@@ -1214,57 +1245,6 @@ const FRAG_DIM = /* glsl */`
     gl_FragColor = vec4(mix(uPaper, c, 0.5), 0.42);
   }
 `;
-// A lit part in Colour and Greyscale is glass, as every part is in the hologram: its own colour, shaded, tinted with
-// the selection colour and see-through, so what is behind and inside it shows, with its lines. The tint and the
-// opacity are lighter under the pointer or previewed (levels 0.3, 0.32), stronger selected or kept (0.42) and
-// strongest on the hot sheet's sub-part (0.55); both thicken where the surface turns away, so its form reads. Its own
-// edges are drawn by the post pass from a pass of the lit parts alone, thin, in the selection colour. It writes no
-// depth, so a part behind it is drawn and outlined; a part in front of it still hides it.
-const FRAG_LIT = /* glsl */`
-  #include <clipping_planes_pars_fragment>
-  ${HOLES}
-  uniform vec3 uColor;
-  uniform float uLit;
-  uniform vec3 uEmit;
-  uniform vec3 uLitColor;
-  uniform vec3 uLight;
-  varying vec3 vNv;
-  varying vec3 vNw;
-  void main() {
-    #include <clipping_planes_fragment>
-    #ifdef HOLES
-      holes();
-    #endif
-    vec3 n = normalize(vNv);
-    float w = smoothstep(-0.4, 1.0, dot(n, uLight) * (gl_FrontFacing ? 1.0 : -1.0));
-    float rim = pow(1.0 - abs(n.z), 2.0);
-    float kept = step(0.4, uLit), hot = step(0.5, uLit);
-    vec3 own = uColor * (mix(0.66, 1.05, w) + 0.06 * smoothstep(0.6, 1.0, vNw.z));
-    vec3 tint = uLitColor * (0.8 + 0.3 * w);
-    vec3 c = mix(own, tint, mix(0.45, 0.72, kept) + 0.08 * hot);
-    // Less see-through than the hologram: what is behind shows, but the part reads first.
-    float a = mix(0.45, 0.72, kept) + 0.06 * hot + 0.22 * rim;
-    // The far side shows fainter through the near one.
-    if (!gl_FrontFacing) a *= 0.55;
-    gl_FragColor = vec4(c + uEmit, clamp(a, 0.0, 0.92));
-  }
-`;
-const litMats = new Map();
-function litMat(base) {
-  if (litMats.has(base)) return litMats.get(base);
-  const m = new THREE.ShaderMaterial({
-    uniforms: { uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 }, uLitColor: shared.uLitColor, uLight: shared.uLight },
-    vertexShader: VERT, fragmentShader: FRAG_LIT, transparent: true, depthWrite: false, side: THREE.DoubleSide, clipping: true,
-  });
-  if (base.defines?.HOLES) { m.defines = { HOLES: 1 }; m.uniforms.uHoleA = shared.uHoleA; m.uniforms.uHoleP = shared.uHoleP; }
-  m.userData.lit = true;
-  m.userData.clip = base.userData.clip;
-  m.userData.section = base.userData.section;
-  m.clippingPlanes = base.clippingPlanes;
-  m.clipIntersection = base.clipIntersection;
-  litMats.set(base, m);
-  return m;
-}
 const dimMats = new Map();
 function dimMat(sec) {
   if (dimMats.has(sec)) return dimMats.get(sec);
@@ -1568,7 +1548,7 @@ const tableLabels = QUARTERS.map(([name, deg]) => {
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
-      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, tLitNid: { value: null }, tLitDepth: { value: null }, uLitOn: { value: 0 },
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus,
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
@@ -1578,9 +1558,7 @@ const post = (() => {
       uniform sampler2D tColor;
       uniform sampler2D tNid;
       uniform sampler2D tDepth;
-      uniform sampler2D tLitNid;
-      uniform sampler2D tLitDepth;
-      uniform float uLitOn;
+      uniform float uFocus;
       uniform vec2 uTexel;
       uniform float uThick;
       uniform vec3 uInk;
@@ -1621,44 +1599,54 @@ const post = (() => {
         return clamp(max(max(eD, eN), ide * 0.95), 0.0, 1.0);
       }
       float edge(float s) { return edgeOf(tNid, tDepth, s); }
-      // A lit part's own edges, from the pass of the lit parts alone: as thin as the ink, in the selection colour,
-      // solid under the pointer and when kept, dashed on a preview. They hide where a solid part is in front of the lit
-      // one, as the glass does. \`through\` says the pixel shows something behind a lit part, whose lines are softened.
-      // A lit part's outline and its inner edges, from the pass of the lit parts alone. The outline runs just inside
-      // its silhouette, about one and a half ink widths, and where it lies over another lit part farther off: solid
-      // under the pointer and when kept, dashed on a preview. Its inner edges are drawn lighter. Both hide where a
-      // solid part is in front of the lit one, as the glass does. \`through\` says the pixel shows something behind
-      // a lit part, whose lines are softened.
-      void litEdges(out float outline, out float inner, out float through) {
-        outline = 0.0; inner = 0.0; through = 0.0;
-        if (uLitOn < 0.5) return;
-        vec4 c = texture2D(tLitNid, vUv);
-        if (c.a <= 0.0) return;
-        float md = dep(tDepth, vUv), ld = dep(tLitDepth, vUv);
-        if (md + 0.3 < ld) return;
-        through = step(ld + 0.3, md);
-        float rim = 0.0;
+      // The highlight's marks, from the lit state the ink pass writes (0 none, 1/4 under the pointer or named by a row,
+      // 2/4 previewed, 3/4 selected or kept, 1 the hot sheet's sub-part). A lit part's own lines go to full ink and a
+      // little heavier; while a part is selected or kept, the other lines grey. A line in the selection colour runs just
+      // inside a lit part's silhouette, about one and a half ink widths: pale under the pointer, deep selected or kept,
+      // dashed on a preview. Outside a selected or kept part a soft glow fades over about 7 px (fainter round a
+      // preview, none under the pointer). Only true edges: the line where what is beside the part is behind it, the
+      // glow on what is behind the part, never on a part in front of it (the machine standing on the table).
+      void selection(inout float e, out float ctx, out float outl, out float glow, out float hov) {
+        float c0 = texture2D(tNid, vUv).b, cmax = c0, cmin = c0, d0 = dep(tDepth, vUv);
         for (int i = 0; i < 8; i++) {
           float ang = float(i) * 0.785398;
           vec2 uv = vUv + vec2(cos(ang), sin(ang)) * uTexel * uThick * 1.5;
-          vec4 t = texture2D(tLitNid, uv);
-          rim = max(rim, t.a <= 0.0 ? 1.0 : step(ld + 2.0, dep(tLitDepth, uv)));
+          float b = texture2D(tNid, uv).b;
+          cmax = max(cmax, b);
+          if (dep(tDepth, uv) > d0 + 0.5) cmin = min(cmin, b);
         }
-        float preview = step(abs(c.b - 0.5), 0.1);
-        float dash = preview > 0.5 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 8.0 * uDpr), 5.0 * uDpr) : 1.0;
-        outline = rim * dash;
-        inner = (1.0 - rim) * edgeOf(tLitNid, tLitDepth, uThick) * 0.4;
+        if (cmax > 0.2) e = max(e, edge(uThick * 1.45) / max(uInkAlpha, 0.01));
+        ctx = uFocus > 0.0 && cmax < 0.4 ? 0.4 : 1.0;
+        float dash = abs(c0 - 0.5) < 0.1 ? step(mod(gl_FragCoord.x + gl_FragCoord.y, 8.0 * uDpr), 5.0 * uDpr) : 1.0;
+        outl = c0 >= 0.2 && cmin < c0 - 0.1 ? dash : 0.0;
+        hov = c0 > 0.2 && c0 < 0.4 ? 1.0 : 0.0;
+        glow = 0.0;
+        if (c0 < 0.2) {
+          float R = 7.0 * uDpr;
+          for (int k = 1; k <= 4; k++) {
+            float fall = pow(1.0 - (float(k) - 1.0) / 4.0, 1.8);
+            for (int i = 0; i < 8; i++) {
+              float ang = (float(i) + 0.5 * float(k)) * 0.785398;
+              vec2 uv = vUv + vec2(cos(ang), sin(ang)) * uTexel * R * float(k) / 4.0;
+              float b = texture2D(tNid, uv).b;
+              if (b > 0.2 && d0 > dep(tDepth, uv) + 0.5) glow = max(glow, (b > 0.6 ? 1.0 : b > 0.4 ? 0.45 : 0.0) * fall);
+            }
+          }
+        }
       }
       void main() {
         float e = edge(uThick);
         vec3 col = texture2D(tColor, vUv).rgb;
-        float outline, inner, through;
-        litEdges(outline, inner, through);
+        float ctx, outline, glow, hov;
+        selection(e, ctx, outline, glow, hov);
+        e = min(e * ctx, 1.0 / max(uInkAlpha, 0.01));
         if (uHolo < 0.5) {
-          vec3 c = mix(col, uInk, e * uInkAlpha * (1.0 - 0.55 * through));
-          c = mix(c, uLitColor, inner);
-          // The outline a shade deeper than the glass, so it reads as a line on it and on the ground.
-          gl_FragColor = vec4(mix(c, mix(uLitColor, uInk, 0.45), outline * 0.95), 1.0);
+          vec3 c = mix(col, uInk, e * uInkAlpha);
+          // Two tones of one hue: a soft light glow outside the part, a crisp line on its edge, pale under the pointer
+          // (the glass's own edge) and deep selected or kept.
+          c = mix(c, mix(uLitColor, vec3(1.0), 0.3), glow * 0.7);
+          vec3 lineC = hov > 0.5 ? mix(uLitColor, vec3(1.0), 0.15) : mix(uLitColor, uInk, 0.3);
+          gl_FragColor = vec4(mix(c, lineC, outline * 0.95), 1.0);
           return;
         }
         // Hologram: a dark blue field with a faint grid, the added light toned down so it never clips, and edges that
@@ -1672,10 +1660,11 @@ const post = (() => {
         float m = max(max(col.r, col.g), col.b);
         vec3 ec = m > 0.03 ? col / m : uInk;
         vec3 c = bg + (1.0 - exp(-col * 1.1));
-        c += ec * 0.85 * (e * uInkAlpha + halo * 0.18);
+        c += ec * 0.85 * (e * uInkAlpha + halo * 0.18 * ctx);
         c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
-        // A lit part's outline, in amber, as in the other themes.
+        // The highlight's glow adds light, and its line is orange, as in the other themes.
+        c += uLitColor * glow * 0.55;
         c = mix(c, uLitColor * 1.1, outline * 0.85);
         gl_FragColor = vec4(c, 1.0);
       }
@@ -1743,7 +1732,7 @@ function aimShadow() {
   shared.uShadowBias.value = (1.5 * cm) / (shadowCam.far - shadowCam.near);
 }
 
-let rtColor = null, rtInk = null, rtLit = null, dpr = 1, width = 1, height = 1;
+let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
 // On a touch screen, while a finger is down or the camera glides, the view renders at 1x and without the greyscale
 // drawing's shadows, so it keeps up on a tablet; it sharpens again when it is still.
 let lowRes = false;
@@ -1765,10 +1754,6 @@ function resize() {
   rtInk?.dispose();
   rtColor = new THREE.WebGLRenderTarget(w, h, { samples: 4 });
   rtInk = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthTexture: new THREE.DepthTexture(w, h) });
-  rtLit?.dispose();
-  rtLit = new THREE.WebGLRenderTarget(w, h, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, depthTexture: new THREE.DepthTexture(w, h) });
-  post.mat.uniforms.tLitNid.value = rtLit.texture;
-  post.mat.uniforms.tLitDepth.value = rtLit.depthTexture;
   post.mat.uniforms.tColor.value = rtColor.texture;
   post.mat.uniforms.tNid.value = rtInk.texture;
   post.mat.uniforms.tDepth.value = rtInk.depthTexture;
@@ -1786,15 +1771,10 @@ function resize() {
 }
 
 // The ink pass goes first: the hologram's colour pass reads its depth to tell the nearest surface from the ones behind.
-// A lit part that is solid, not a ghost, not dimmed by Show me, not a window: it gets an outline in every theme, and
-// in Colour and Greyscale it is drawn as glass.
-const outlined = (m) => m.userData.lit > 0 && m.userData.tone !== 'glass' && !m.userData.dimmed && !(m.userData.piece && ease(m.userData.piece.userData.gNow) > 0);
-const glassLit = (m) => !holo && outlined(m);
 function draw() {
   const pal = THEME[themeName()];
   camera.layers.set(0);
-  const inked = new Set();
-  let anyLit = false;
+  let focusNow = false;
   for (const m of solids) {
     const u = m.userData.piece?.userData;
     const g = u ? ease(u.gNow) : 0;
@@ -1802,28 +1782,17 @@ function draw() {
     // A part fading to a ghost loses its outline halfway; one turning solid gets its outline first, then its fill. A
     // mate keeps its outline while it is lit (the one a step's sub-parts bear on).
     // What Show me dims has no outline, so the framed sub-part's edges show through it.
-    const shown = !((u && (u.ghost ? g > 0.5 && !(u.mate && m.userData.lit > 0) : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
-    if (shown) inked.add(m);
-    // A lit part is glass: it leaves this pass, so what is behind it keeps its lines, and gets its own below.
-    const glass = shown && glassLit(m);
-    if (shown && outlined(m)) anyLit = true;
-    m.visible = shown && !glass;
+    m.visible = !((u && (u.ghost ? g > 0.5 && !(u.mate && m.userData.lit > 0) : g >= 1)) || (m.userData.tone === 'glass' && m.position.lengthSq() < 1e-4) || (m.userData.dimmed && g <= 0));
+    if (m.visible && m.userData.lit > 0.4) focusNow = true;
   }
   renderer.setRenderTarget(rtInk);
   renderer.setClearColor(0x000000, 0);
   renderer.clear();
   renderer.render(scene, camera);
-  // The lit parts alone, for their outlines.
-  post.mat.uniforms.uLitOn.value = anyLit ? 1 : 0;
-  if (anyLit) {
-    for (const m of solids) m.visible = inked.has(m) && outlined(m);
-    renderer.setRenderTarget(rtLit);
-    renderer.clear();
-    renderer.render(scene, camera);
-  }
-  for (const m of solids) m.visible = inked.has(m);
-  // The greyscale drawing's shadows come from the same parts as the outlines, lit ones included, but not from the
-  // window glass.
+  // While a part is selected or kept, the rest fades back: halfway on the machine, less while inspecting (the
+  // context is a ghost already). The hologram is never dimmed.
+  shared.uFocus.value = focusNow && !holo ? (iso.part ? 0.3 : 0.5) : 0;
+  // The greyscale drawing's shadows come from the same parts as the outlines, but not from the window glass.
   shared.uShadowOn.value = greyscale && !lowRes ? 1 : 0;
   if (greyscale && !lowRes) {
     for (const m of solids) if (m.userData.tone === 'glass') m.visible = false;
@@ -1841,7 +1810,7 @@ function draw() {
     if (g <= 0 && m.userData.dimmed) {
       if (holo) { m.material = m.userData.colorMat; m.userData.dim = 0.25; }
       else m.material = dimMat(m.userData.colorMat.userData.section);
-    } else if (g <= 0) m.material = glassLit(m) ? litMat(m.userData.colorMat) : m.userData.colorMat;
+    } else if (g <= 0) m.material = m.userData.colorMat;
     // A mate fades only halfway, and keeps its fasteners.
     else if (holo) { const mate = m.userData.piece.userData.mate; m.material = m.userData.colorMat; m.userData.dim = lit || mate ? Math.max(mate ? 0.5 : 0.6, 1 - (1 - pal.ghost) * g) : 1 - (1 - pal.ghost) * g; m.visible = lit || mate || !(g >= 1 && FINE.has(m.userData.tone)); }
     else if (m.userData.piece.userData.mate) { m.material = GHOST_FADE; m.userData.solid = Math.max(0.5, 1 - g); }
@@ -2052,7 +2021,7 @@ function applyClip() {
   const key = iso.part ? 'none' : 'sector';
   if (key === clipKey) return;
   clipKey = key;
-  const mats = [...colorMats.values(), ...litMats.values(), ...Object.values(INK)].filter((m) => !m.userData.section);
+  const mats = [...colorMats.values(), ...Object.values(INK)].filter((m) => !m.userData.section);
   for (const m of mats) {
     if (key === 'sector' && m.userData.clip) { m.clippingPlanes = sectorPlanes; m.clipIntersection = true; }
     else m.clippingPlanes = [];
@@ -2160,9 +2129,10 @@ function refreshLit() {
     const p = m.userData.part;
     const sub = m.userData.sub;
     // Sheets belong to sub-parts, not pieces: a kept or previewed sub-part is lit on every piece that has it. Each
-    // state has its own cue: the hot sheet's sub-part, a kept sub-part and the selected part are filled (levels 0.55
-    // and 0.42), the preview is outlined dashed, and whatever is under the pointer or named by a focused or hovered row
-    // or link is outlined (the post pass draws both from the ink pass's code).
+    // state has its own cue: the hot sheet's sub-part, a kept sub-part and the selected part take the full orange layer,
+    // a deep line and a glow, and the rest fades back (levels 0.55 and 0.42); the preview takes a light layer and a
+    // dashed line (0.32); whatever is under the pointer or named by a focused or hovered row or link takes a light
+    // layer and a pale line (0.3). The colour pass draws the layer (litLayer), the post pass the line and glow.
     const here = sub && p === iso.part ? { part: p, sub } : null;
     const pointed = iso.part && pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub;
     let lit = 0, code = 0;
@@ -2217,8 +2187,8 @@ function applyLook() {
     const u = g.material.uniforms, sc = g.material.userData.scale;
     u.uI.value = sc > 1 ? I * 0.32 : I;
     g.visible = state.pNow > 0;
-    // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on grey parts
-    // could not be seen. It turns amber while it is selected or under the pointer, but not while it is inspected, as
+    // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on the white and grey parts
+    // could not be seen. It turns orange while it is selected or under the pointer, but not while it is inspected, as
     // an inspected part keeps its own look.
     if (t === 'greyscale') {
       if (boost > 1 && !iso.part) { u.uCore.value.set('#f0a540'); u.uRim.value.set('#b8650f'); }
