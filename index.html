@@ -40,6 +40,25 @@
     color-scheme: dark;
     scrollbar-color: #1b3a55 transparent;
   }
+  /* Night: the anatomy kit's dark plate. Near-black panels one step off the page, light grey text, whisper rules, and the
+     selection's teal brightened for the dark. */
+  :root.night {
+    --paper: #0b0b0c;
+    --card: #131315;
+    --ink: #e6e6e8;
+    --muted: #8e8e93;
+    --rule: #26262a;
+    --soft: #1b1b1e;
+    --chip: #232327;
+    --accent: #2bb8ae;
+    --accent-ink: #0b0b0c;
+    --sel: #2bb8ae;
+    --spec: #4cc38a;
+    --photo: #d9a441;
+    --assumed: #8e8e93;
+    color-scheme: dark;
+    scrollbar-color: #333338 transparent;
+  }
   /* The greyscale drawing: a white CAD line rendering, every part white and shaded in greys and black, on a white
      page. The teal marks the selection, as in Colour, and nothing else, so the accent (focus rings, the
      tour's rule) is ink. The basis dots keep their shapes. */
@@ -620,12 +639,22 @@
   .greyscale .tabs button[aria-selected="true"] { background: var(--ink); color: var(--card); box-shadow: inset 0 -3px 0 var(--sel); }
   .greyscale .search::placeholder { color: var(--muted); opacity: 1; }
   .greyscale .ti.off .name, .greyscale .eye[aria-pressed="false"] { opacity: 0.7; }
+
+  /* ---------- Night: the panels are flat on the dark, as in the hologram; a choice is a pale tint, an action is the
+     ink, inverted. ---------- */
+  .night .panel, .night .view, .night .mb, .night .isobar, .night .sheets-head { box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .night .screen { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .night .mb button[aria-pressed="true"]:not(.toggle), .night .navcluster .mb button[aria-pressed="true"] { background: rgb(255 255 255 / 0.1); color: var(--ink); }
+  .night .ti.sel, .night table.ptab tr.on { background: rgb(255 255 255 / 0.06); box-shadow: inset 2px 0 0 var(--sel); }
+  .night .tip { background: var(--card); color: var(--ink); border: 1px solid var(--rule); }
+  .night .triad .ring { fill: var(--card); stroke: var(--rule); }
 </style>
 <script>
   // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash.
   try {
     const t = localStorage.getItem('spm1-theme');
     if (t === 'greyscale') document.documentElement.classList.add('greyscale');
+    else if (t === 'night') document.documentElement.classList.add('night');
     else if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('holo');
   } catch { if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.classList.add('holo'); }
 </script>
@@ -647,6 +676,7 @@
       <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
         <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
+        <button type="button" role="radio" data-look="night" aria-checked="false" tabindex="-1" title="Night: light lines on black, lit by the plasma"><svg viewBox="0 0 16 16"><path d="M12.6 10.4A5.4 5.4 0 0 1 5.6 3.4a5.4 5.4 0 1 0 7 7z"/></svg><span class="lbl">Night</span></button>
         <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on black"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
       </div>
     </nav>
@@ -807,9 +837,9 @@ const SCALES = [1, 1.5, 2];
 let uiScale = SCALES.includes(+store.get('spm1-scale')) ? +store.get('spm1-scale') : 1;
 let letterKeys = store.get('spm1-keys') !== 'off';
 document.documentElement.style.setProperty('--ui-scale', String(uiScale));
-// 'light' is the drawing in colour, 'greyscale' the greyscale drawing and 'dark' the hologram. With no choice saved, the
-// system's light or dark setting picks between the light drawing and the hologram.
-const LOOKS = ['light', 'greyscale', 'dark'];
+// 'light' is the drawing in colour, 'greyscale' the greyscale drawing, 'night' the dark line drawing and 'dark' the
+// hologram. With no choice saved, the system's light or dark setting picks between the light drawing and the hologram.
+const LOOKS = ['light', 'greyscale', 'night', 'dark'];
 function themeName() {
   const t = document.documentElement.dataset.theme;
   return LOOKS.includes(t) ? t : systemDark.matches ? 'dark' : 'light';
@@ -835,9 +865,12 @@ const TONES = {
 // or more from the cable and the glass in OKLab (cyan came within 0.077 of the cable, and 0.012 for a protanope), 0.030
 // at worst under simulated colour blindness. The hologram's machine is
 // blue, so its selection is orange, the blue's opposite: teal, the blue's neighbour, read there as a brighter blue.
+// Night is the anatomy kit's dark plate: near-black parts, light grey lines (`ink`), and the plasma's light on them. Its
+// teal is brightened for the dark (7:1 on the panels).
 const THEME = {
   light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
   greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#008080', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
+  night: { paper: '#0c0d10', cut: '#1a1b1f', ink: '#b9bcc3', lit: '#2bb8ae', shadow: 0.55, shadowInk: '#000000', inkAlpha: 0.82, ghost: 0.12, glass: 0.22 },
   dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 const LIGHT = [-0.42, 0.58, 0.7];
@@ -845,15 +878,18 @@ const LIGHT = [-0.42, 0.58, 0.7];
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
 // selection is orange (THEME.dark.lit), the blue's opposite.
 const HOLO = new THREE.Color('#4f9fd6');
-let holo = false, greyscale = false;
+let holo = false, greyscale = false, night = false;
 const clearColor = new THREE.Color();
 // The greyscale drawing is white, like a CAD line rendering: every material is white, and its greys and black come only
 // from the light's shades, the cast shadows and the ink. What would vanish in white keeps a grey: holes and slots, the
 // printed lines, the dark screens and LEDs.
 const GREY_KEEP = { ink: 0.12, tapeline: 0.3, hole: 0.55, slot: 0.55, lcd: 0.25, hvlcd: 0.25, led: 0.3, tip: 0.2 };
+// Night keeps how light each material is, squeezed into a few near-black greys, as the anatomy kit's dark shades are:
+// steel a little lighter than the black parts. Colour is the plasma's light alone.
 function toneColor(name, theme) {
   const c = new THREE.Color(TONES[name] || '#ff00ff');
   if (theme === 'greyscale') { const g = GREY_KEEP[name] ?? 1; return c.setRGB(g, g, g); }
+  if (theme === 'night') { const g = 0.075 + 0.1 * (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b); return c.setRGB(g, g, g * 1.06); }
   if (theme !== 'dark') return c;
   const l = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
   return HOLO.clone().multiplyScalar(0.55 + 0.45 * l);
@@ -889,6 +925,13 @@ const shared = {
   uGlass: { value: 0.28 },
   // While a part is selected or kept, how far the rest fades toward the paper (Colour and Greyscale).
   uFocus: { value: 0 },
+  // Night: how bright the plasma's light is on the machine (0 in the other themes), its colour, and the plasma's ring
+  // radius and the vessel's inner and outer minor radii (set once the device is built).
+  uPlasmaLight: { value: 0 },
+  // Night: the selection's glass layer is dark, not lifted toward the colour's own lightness.
+  uLitDark: { value: 0 },
+  uPlasmaCol: { value: new THREE.Color('#c86ae0') },
+  uPlasmaGeo: { value: new THREE.Vector3(23, 7.5, 7.7) },
   // Hologram: the nearest surface's depth, the target size, time, scan-line density (per cm) and the sweep's height.
   tFront: { value: null },
   uRes: { value: new THREE.Vector2(1, 1) },
@@ -960,17 +1003,46 @@ const LIT_LAYER = /* glsl */`
   uniform float uFocus;
   uniform vec3 uLitColor;
   uniform vec3 uPaper;
+  uniform float uLitDark;
   vec3 litLayer(vec3 c, vec3 n, vec3 light) {
     c = mix(c, uPaper, uFocus * (1.0 - step(0.4, uLit)));
     if (uLit < 0.2) return c;
     float kept = step(0.4, uLit);
     vec3 Y = vec3(0.2126, 0.7152, 0.0722);
+    // On a dark drawing (Night) the layer is a dark teal glass, a shade of the colour well below its own lightness,
+    // with a faint sheen: the bright line and the glow mark the part, and a lit part never floods the dark.
+    if (uLitDark > 0.5) {
+      float lt = mix(0.2, 0.27, kept), rimD = pow(1.0 - abs(n.z), 2.0);
+      c = mix(c, uLitColor * (lt / max(dot(uLitColor, Y), 0.01)), mix(0.62, 0.78, kept));
+      return c + uLitColor * 0.14 * rimD + vec3(0.1) * pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 24.0);
+    }
     float la = dot(uLitColor, Y), l = clamp(dot(c, Y), la, mix(1.0, la + 0.5 * (1.0 - la), kept));
     vec3 hue = l < la ? uLitColor * (l / la) : mix(uLitColor, vec3(1.0), (l - la) / max(1.0 - la, 0.01));
     float rim = pow(1.0 - abs(n.z), 2.0), glint = pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 24.0);
     c = mix(c, hue, mix(0.42, 0.58, kept));
     c = mix(c, mix(uLitColor, vec3(1.0), 0.6), 0.13);
     return c + mix(uLitColor, vec3(1.0), 0.35) * 0.32 * rim + vec3(0.26) * glint + vec3(0.1) * smoothstep(0.2, 1.0, n.y);
+  }
+`;
+
+// Night: the plasma lights the drawing, as the Raptor's exhaust lights its nozzle and the floor. The light falls off from
+// the plasma's ring and lands on faces turned toward it: full inside the vessel (the cavity that holds it), and a faint
+// spill outside, on the coils and the table top, that reaches zero within about 40 cm. In the other themes it is 0.
+const PLASMA_LIGHT = /* glsl */`
+  uniform float uPlasmaLight;
+  uniform vec3 uPlasmaCol;
+  uniform vec3 uPlasmaGeo;
+  varying vec3 vWp;
+  vec3 plasmaLight(vec3 nw) {
+    if (uPlasmaLight <= 0.0) return vec3(0.0);
+    float rr = length(vWp.xy);
+    vec3 q = vec3(vWp.xy / max(rr, 1e-3) * uPlasmaGeo.x, 0.0);
+    vec3 d = q - vWp;
+    float rho = length(d);
+    float facing = max(dot(normalize(nw), d / max(rho, 1e-3)), 0.0);
+    float inside = 1.0 - smoothstep(uPlasmaGeo.y - 0.4, uPlasmaGeo.z + 0.4, rho);
+    float spill = (1.0 - inside) * exp(-(rho - uPlasmaGeo.z) / 11.0) * (1.0 - smoothstep(30.0, 42.0, rho));
+    return uPlasmaCol * uPlasmaLight * facing * (0.62 * inside + 0.3 * spill) + uPlasmaCol * uPlasmaLight * 0.06 * inside;
   }
 `;
 
@@ -984,6 +1056,7 @@ const FRAG_COLOR = /* glsl */`
   uniform vec3 uInk;
   uniform float uDpr;
   ${LIT_LAYER}
+  ${PLASMA_LIGHT}
   varying vec3 vNv;
   varying vec3 vNw;
   void main() {
@@ -1001,7 +1074,7 @@ const FRAG_COLOR = /* glsl */`
     float w = smoothstep(-0.4, 1.0, k);
     float top = smoothstep(0.6, 1.0, vNw.z);
     float tone = mix(0.66, 1.05, w) + 0.06 * top;
-    vec3 c = uColor * tone;
+    vec3 c = uColor * tone + plasmaLight(vNw);
     c = litLayer(c, n, uLight);
     gl_FragColor = vec4(c + uEmit, 1.0);
   }
@@ -1195,7 +1268,7 @@ function colorMat(tone, clip, sec = null) {
   const m = new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color() }, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
-      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uLoose: { value: 0 },
+      uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uLitDark: shared.uLitDark, uPlasmaLight: shared.uPlasmaLight, uPlasmaCol: shared.uPlasmaCol, uPlasmaGeo: shared.uPlasmaGeo, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
       tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
     },
@@ -1329,6 +1402,7 @@ dev.holes.slice(0, 12).forEach((h, i) => {
   shared.uHoleP.value[i].set(h.p.x, h.p.y, h.p.z, h.len);
 });
 const R0 = DIMS.R0;
+shared.uPlasmaGeo.value.set(R0, DIMS.aIn, DIMS.aOut);
 {
   const a0 = DIMS.cut[0] * DEG, a1 = DIMS.cut[1] * DEG;
   sectorPlanes[1].set(new V3(Math.sin(a0), -Math.cos(a0), 0), 0);
@@ -1553,7 +1627,7 @@ const tableLabels = QUARTERS.map(([name, deg]) => {
 const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
-      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus,
+      tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uNight: { value: 0 },
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
@@ -1564,6 +1638,7 @@ const post = (() => {
       uniform sampler2D tNid;
       uniform sampler2D tDepth;
       uniform float uFocus;
+      uniform float uNight;
       uniform vec2 uTexel;
       uniform float uThick;
       uniform vec3 uInk;
@@ -1646,7 +1721,9 @@ const post = (() => {
         selection(e, ctx, outline, glow, hov);
         e = min(e * ctx, 1.0 / max(uInkAlpha, 0.01));
         if (uHolo < 0.5) {
-          vec3 c = mix(col, uInk, e * uInkAlpha);
+          // Night's lines take the light of the surface they are on, so the lit inside reads first.
+          vec3 inkC = uNight > 0.5 ? min(uInk * 0.62 + col * 1.4, vec3(1.0)) : uInk;
+          vec3 c = mix(col, inkC, e * uInkAlpha);
           // Two tones of one hue: a soft light glow outside the part, a crisp line on its edge, pale under the pointer
           // (the glass's own edge) and deep selected or kept.
           c = mix(c, mix(uLitColor, vec3(1.0), 0.3), glow * 0.7);
@@ -1796,7 +1873,7 @@ function draw() {
   renderer.render(scene, camera);
   // While a part is selected or kept, the rest fades back: halfway on the machine, less while inspecting (the
   // context is a ghost already). The hologram is never dimmed.
-  shared.uFocus.value = focusNow && !holo ? (iso.part ? 0.3 : 0.5) : 0;
+  shared.uFocus.value = focusNow && !holo ? (iso.part ? 0.3 : 0.5) * (night ? 0.6 : 1) : 0;
   // The greyscale drawing's shadows come from the same parts as the outlines, but not from the window glass.
   shared.uShadowOn.value = greyscale && !lowRes ? 1 : 0;
   if (greyscale && !lowRes) {
@@ -2187,11 +2264,14 @@ function applyLook() {
   const t = themeName();
   const boost = state.select === 'plasma' || state.hover === 'plasma' || state.legendHot === 'plasma' ? 1.25 : 1;
   const apart = Math.max(...dev.groups.filter((g) => g.obj.name.startsWith('quarter')).map((g) => g.p));
-  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost * (t === 'dark' ? 0.3 : 1);
+  const I = (iso.part === 'plasma' ? 1.15 : 0.95 * (1 - apart)) * ease(state.pNow) * boost;
+  const glowI = I * (t === 'dark' ? 0.3 : t === 'night' ? 0.8 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
-    u.uI.value = sc > 1 ? I * 0.32 : I;
+    u.uI.value = sc > 1 ? glowI * 0.32 : glowI;
     g.visible = state.pNow > 0;
+    // Night: the plasma's light on the machine follows the glow, without the pointer's boost.
+    shared.uPlasmaLight.value = t === 'night' ? I / boost : 0;
     // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on the white and grey parts
     // could not be seen. It turns teal while it is selected or under the pointer, but not while it is inspected, as
     // an inspected part keeps its own look.
@@ -5037,7 +5117,7 @@ function renderOverview(box) {
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all, and a dashed ring marks where it sits. The table’s edges are named Front, Right, Back and Left for the quarters above them, so you know which side you are looking from.',
     'Taken apart, a part steps through the order it comes off with the arrows by “All”: nuts, then bolts, then the flange, the gasket last. Each step says how, with the bolt size and spanner, and a ring of bolts or nuts is numbered on the heads in star order. Fitting runs back up the steps. On a gasket or a vessel joint flange, “Open this joint” does the same for the whole joint: nuts, bolts, the two quarters apart, then the gasket out, never to be reused.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
-    'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, or as a hologram.',
+    'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, at night (light lines on black, lit by the plasma), or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
   ]) box.append(el('p', null, s));
   markTerms(box, 'machine');
@@ -5364,8 +5444,12 @@ function applyTheme() {
   const pal = THEME[t];
   holo = t === 'dark';
   greyscale = t === 'greyscale';
+  night = t === 'night';
   document.documentElement.classList.toggle('holo', holo);
   document.documentElement.classList.toggle('greyscale', greyscale);
+  document.documentElement.classList.toggle('night', night);
+  post.mat.uniforms.uNight.value = night ? 1 : 0;
+  shared.uLitDark.value = night ? 1 : 0;
   shared.uLight.value.set(...(pal.light || LIGHT)).normalize();
   for (const m of colorMats.values()) {
     const glass = m.userData.tone === 'glass';
@@ -5393,15 +5477,17 @@ function applyTheme() {
   // The quarter names are printed in ink, and glow in the hologram's blue.
   for (const l of tableLabels) {
     l.material.color.set(holo ? '#5aaae0' : pal.ink);
-    l.material.opacity = holo ? 0.85 : 0.7;
+    l.material.opacity = holo ? 0.85 : night ? 0.5 : 0.7;
     l.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     l.material.needsUpdate = true;
   }
   // The plasma is the one thing that glows: pink in the drawing and in greyscale (applyLook), brighter in the hologram.
+  // In Night it is drawn over the interior it already lights, so it stays a saturated body with a pale core; adding it
+  // on top burned the lit interior to white.
   for (const g of glow) {
     const u = g.material.uniforms;
-    u.uCore.value.set(holo ? '#ff8fe8' : '#ffe2f6');
-    u.uRim.value.set(holo ? '#b03cff' : '#b84ad6');
+    u.uCore.value.set(holo ? '#ff8fe8' : night ? '#ffa8ea' : '#ffe2f6');
+    u.uRim.value.set(holo ? '#b03cff' : night ? '#9a3ad4' : '#b84ad6');
     g.material.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     g.material.needsUpdate = true;
   }
