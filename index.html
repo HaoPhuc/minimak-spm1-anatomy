@@ -673,9 +673,10 @@
   .blueprint .view.tight:has(.isobar.on) .corner.br { display: none; }
 </style>
 <script>
-  // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash.
+  // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash. A link's theme comes
+  // first: Blueprint moves the view's controls in, and the first view is framed clear of them.
   try {
-    const t = localStorage.getItem('spm1-theme');
+    const t = (/[#&]theme=(light|greyscale|blueprint|dark|night)(?:&|$)/.exec(location.hash) || [])[1] || localStorage.getItem('spm1-theme');
     if (t === 'greyscale') document.documentElement.classList.add('greyscale');
     else if (t === 'blueprint' || t === 'night') document.documentElement.classList.add('blueprint');
     else if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('holo');
@@ -2041,6 +2042,11 @@ function frameOf(points, az, elv, pad = 1.1, share = 1, vshare = 1) {
 // edge and of the labels in its corners. The readout gives zoom against the home view, so it reads 1.00× there.
 let machinePts = null;
 const home = { zoom: 1, centre: new V3() };
+// The view starts at home once it has room to frame the machine. A page opened in a hidden or collapsed pane measures a
+// pixel or so across, and home there lies far off to one side, so until then each new size frames it at home again,
+// while the page is untouched and nothing (a link) has moved the view.
+let homed = false;
+const homeWaits = () => !homed && !touched && goal.zoom === home.zoom && goal.target.equals(home.centre);
 function fitView() {
   const z = frameOf(dev.fit, HOME.az, HOME.el, 1.12);
   if (!machinePts) {
@@ -2051,16 +2057,19 @@ function fitView() {
   }
   // The machine is framed in the room right of the controls, a little in from the other edges.
   const side = Math.max(navReserve(), 16), far = 16, edge = 56;
-  const f = frameOf(machinePts, HOME.az, HOME.el, 1.03, Math.max(0.5, 1 - (side + far) / width), Math.max(0.5, 1 - (2 * edge) / height));
+  const room = 1 - (side + far) / width, vroom = 1 - (2 * edge) / height;
+  const f = frameOf(machinePts, HOME.az, HOME.el, 1.03, Math.max(0.5, room), Math.max(0.5, vroom));
   f.centre.addScaledVector(basis(HOME.az, HOME.el).right, -((side - far) / 2) * ((2 * f.half) / height));
-  const first = fit.half === 100;
+  const again = homeWaits();
   fit = z;
   home.zoom = z.half / f.half;
   home.centre.copy(f.centre);
-  if (first) {
+  if (again) {
     view.target.copy(f.centre); goal.target.copy(f.centre);
     view.zoom = goal.zoom = home.zoom;
   }
+  // Room enough: the machine has half the view's width and height or more.
+  if (room >= 0.5 && vroom >= 0.5) homed = true;
 }
 const halfNow = () => fit.half / view.zoom;
 function placeCamera() {
@@ -5227,7 +5236,8 @@ function linkOf() {
   } else if (quiz.on) kv.push(['quiz', quiz.list.join(',')], ['q', String(quiz.i + 1)]);
   else if (state.select) kv.push(['select', state.select]);
   const az = (((goal.az % 360) + 540) % 360) - 180;
-  kv.push(['view', [az, goal.el, goal.zoom, goal.target.x, goal.target.y, goal.target.z].map((v) => +v.toFixed(2)).join(',')]);
+  // Not while the view waits for room to start at home: a reload would keep it off to one side.
+  if (!homeWaits()) kv.push(['view', [az, goal.el, goal.zoom, goal.target.x, goal.target.y, goal.target.z].map((v) => +v.toFixed(2)).join(',')]);
   if (LOOKS.includes(document.documentElement.dataset.theme)) kv.push(['theme', document.documentElement.dataset.theme]);
   return `#${kv.map(([k, v]) => `${k}=${v}`).join('&')}`;
 }
