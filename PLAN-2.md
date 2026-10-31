@@ -825,6 +825,21 @@ every part (fixed in #25). Its three changes, most effect first:
     - **Checked:** the regression suites against main, twice; the differences are random quiz picks, the harness's
       hang on `Browser.close`, and timing on this machine's software renderer (1 to 5 frames a second; the same 4
       frames in 4 s on both while turning). Old Night links and saved choices open Blueprint.
+16. **The first view waits for room** (found while checking #40: the desktop app's browser pane opened the
+    page while hidden, and the view came up empty; main did the same). *Done:* the home view moves the machine right of
+    the controls by a set number of pixels, and in a view a pixel or so across (a hidden pane, a collapsed panel, a
+    tiny window) that is tens of metres to one side. The first framing was kept when the view got its size, until
+    Home, and the address kept it too. Now the view starts at home once the machine has half the view's width and
+    height; until then each new size frames it at home again, while the page is untouched and no link has moved the
+    view, and the address leaves the view out, so a reload there does not keep it. Checked in headless Chrome: opened
+    at 40 × 40 or 1 × 1, then widened to 1280 × 800, 667 × 375 or 375 × 812, the target and zoom are a normal load's
+    to the millimetre; a normal load, a `#view=` link (also opened tiny), and a pan or zoom made while tiny are as
+    before. Blueprint moves the view's controls 16 px in, and a link's theme was put on after the first framing, so a
+    `theme=blueprint` link framed the machine nearer the controls than Home did after a resize (2.5 cm at 1280 × 800),
+    and a saved Blueprint opened with `theme=light` the other way. The pre-paint script now takes a link's theme
+    before the saved choice, so the first framing has the link's controls, and a link no longer flashes the saved
+    theme first. In Colour and in Blueprint (by link, by an old `theme=night` link, or saved), the first view, Home
+    after a resize, and a view opened tiny and widened now have the same target and zoom.
 
 ## 5. Open questions for you
 
