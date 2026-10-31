@@ -745,6 +745,15 @@ every part (fixed in #25). Its three changes, most effect first:
    - **Checked:** a real hover and click on the table, the TF coils and a viewport, the stack inspected with kept bolts
      and the pointer on a flange, in all three themes, full windows included; no shader or console errors. The regression
      checks give the same results as main.
+9. **Teal for the selection** (asked for after #34: "teal or cyan, picked by colour theory"). *Done:* the selection is
+   teal `#008080` in Colour and Greyscale (the owner's pick, tried against `#0fb3a8`), on the model and in the interface
+   alike: dark enough for its marks and Colour's accent (4.2:1 on the stone, white text on it 4.8:1). Teal over cyan: the copper's opposite is blue
+   (hue 238), but the cable, the window glass and the gauge hold blue, so the selection takes the split-complement on the
+   free side, the widest empty band of hue in the drawing (hue 195, between the circuit board's green and the cable's
+   blue). It stays 0.134 or more from the cable and the glass in OKLab, 0.030 at worst under simulated colour
+   blindness; cyan (hue 215) came within 0.077 of the cable, and 0.012 for a protanope. The hologram keeps orange: its
+   machine is blue, and teal there, the blue's neighbour, read as a brighter blue on the kept bolts. The glass layer's
+   ramp now follows the colour's own lightness (it was set for the orange's), so a darker teal is not washed toward white.
 
 ## 5. Open questions for you
 

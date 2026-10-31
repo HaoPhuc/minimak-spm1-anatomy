@@ -14,9 +14,9 @@
     --rule: #d9d9d5;
     --soft: #eeeeeb;
     --chip: #e6e6e2;
-    --accent: #e25f0c;
-    --accent-ink: #1c1c1a;
-    --sel: #e25f0c;
+    --accent: #008080;
+    --accent-ink: var(--card);
+    --sel: #008080;
     --spec: #2b8a6e;
     --photo: #9a6a0f;
     --assumed: #787873;
@@ -41,7 +41,7 @@
     scrollbar-color: #1b3a55 transparent;
   }
   /* The greyscale drawing: a white CAD line rendering, every part white and shaded in greys and black, on a white
-     page. The orange marks the selection, as in the other themes, and nothing else, so the accent (focus rings, the
+     page. The teal marks the selection, as in Colour, and nothing else, so the accent (focus rings, the
      tour's rule) is ink. The basis dots keep their shapes. */
   :root.greyscale {
     --paper: #f2f2f2;
@@ -53,7 +53,7 @@
     --chip: #e6e6e6;
     --accent: #121212;
     --accent-ink: var(--card);
-    --sel: #e25f0c;
+    --sel: #008080;
     --spec: #1f1f1e;
     --photo: #1f1f1e;
     --assumed: #555555;
@@ -613,7 +613,7 @@
   .holo .screen.folded .bar { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
 
-  /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
+  /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the teal as in the model, on an
      ink edge so the mark stands out from the white. ---------- */
   .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--sel); }
   .greyscale .screen.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel), 0 0 0 2px var(--ink); }
@@ -828,11 +828,16 @@ const TONES = {
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
 // Colours show exactly as given (colour management is off). The greyscale drawing has its own light, raked further
-// in from the upper left so the cast shadows fall clear of the parts that cast them. The selection (`lit`) is one
-// orange in every theme, saturated enough to stand apart from the copper (0.10 from it in OKLab).
+// in from the upper left so the cast shadows fall clear of the parts that cast them. The selection (`lit`) is teal in
+// Colour and Greyscale: the copper's opposite is blue, but the cable, the window glass and the gauge hold blue, so it
+// takes the split-complement on the free side, the widest empty band of hue in the drawing, between the circuit board's
+// green and the cable's blue: #008080, the owner's pick, dark enough to be the interface's accent too. It stays 0.134
+// or more from the cable and the glass in OKLab (cyan came within 0.077 of the cable, and 0.012 for a protanope), 0.030
+// at worst under simulated colour blindness. The hologram's machine is
+// blue, so its selection is orange, the blue's opposite: teal, the blue's neighbour, read there as a brighter blue.
 const THEME = {
-  light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#ff7a1a', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
-  greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
+  light: { paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  greyscale: { paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#008080', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
   dark: { paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
 };
 const LIGHT = [-0.42, 0.58, 0.7];
@@ -946,9 +951,9 @@ const VERT = /* glsl */`
 // The highlight on a part, in Colour and Greyscale (levels from refreshLit: 0.3 under the pointer or named by a row, 0.32
 // previewed, 0.42 selected or kept, 0.55 the hot sheet's). The part stays solid and keeps its own light and shade under
 // a thin layer of coloured glass: tinted by a ramp of the selection colour at its own lightness (dark to pale, kept
-// between the colour's own lightness and white, so a dark part turns orange, not brown), with a little of the colour's
+// between the colour's own lightness and white, so a dark part takes the full colour, not a muddy one), with a little of the colour's
 // pale tint, a sheen where the surface turns away or faces up, and a glint. It never multiplies: over copper that goes
-// grey. Selected or kept the layer is fuller, and a light part is kept below white, so it turns a real orange. While
+// grey. Selected or kept the layer is fuller, and a light part is kept below white, so it takes the colour fully. While
 // a part is selected or kept, the rest fades toward the paper (uFocus). The post pass draws the line and the glow.
 const LIT_LAYER = /* glsl */`
   uniform float uLit;
@@ -960,7 +965,7 @@ const LIT_LAYER = /* glsl */`
     if (uLit < 0.2) return c;
     float kept = step(0.4, uLit);
     vec3 Y = vec3(0.2126, 0.7152, 0.0722);
-    float l = clamp(dot(c, Y), 0.56, mix(1.0, 0.78, kept)), la = dot(uLitColor, Y);
+    float la = dot(uLitColor, Y), l = clamp(dot(c, Y), la, mix(1.0, la + 0.5 * (1.0 - la), kept));
     vec3 hue = l < la ? uLitColor * (l / la) : mix(uLitColor, vec3(1.0), (l - la) / max(1.0 - la, 0.01));
     float rim = pow(1.0 - abs(n.z), 2.0), glint = pow(max(dot(n, normalize(light + vec3(0.0, 0.0, 1.0))), 0.0), 24.0);
     c = mix(c, hue, mix(0.42, 0.58, kept));
@@ -1075,7 +1080,7 @@ const FRAG_HOLO = /* glsl */`
     float band = pow(fract(vWp.z * uScan - uTime * 0.35), 3.0);
     float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
     vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
-    // The highlight: brighter, under a thin orange layer, fuller selected or kept; the rest of the machine is never
+    // The highlight: brighter, under a thin layer of the selection colour, fuller selected or kept; the rest of the machine is never
     // dimmed. Selected or kept, it still shows faintly through what is in front of it.
     float kept = step(0.4, uLit);
     if (uLit > 0.2) c = c * mix(1.25, 1.7, kept) * mix(vec3(1.0), uLitColor, mix(0.35, 0.45, kept)) + uLitColor * (0.02 + mix(0.12, 0.18, kept) * rim);
@@ -1085,7 +1090,7 @@ const FRAG_HOLO = /* glsl */`
 `;
 
 // The greyscale drawing, shaded like a CAD rendering: the light falls into five flat shades, and the parts cast
-// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: orange.
+// shadows (from the shadow map) in the shade of a face just turned away. The selection is the one colour: teal.
 const FRAG_GREY = /* glsl */`
   #include <clipping_planes_pars_fragment>
   ${HOLES}
@@ -1663,7 +1668,7 @@ const post = (() => {
         c += ec * 0.85 * (e * uInkAlpha + halo * 0.18 * ctx);
         c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
-        // The highlight's glow adds light, and its line is orange, as in the other themes.
+        // The highlight's glow adds light, and its line is in the selection colour, as in the other themes.
         c += uLitColor * glow * 0.55;
         c = mix(c, uLitColor * 1.1, outline * 0.85);
         gl_FragColor = vec4(c, 1.0);
@@ -2129,7 +2134,7 @@ function refreshLit() {
     const p = m.userData.part;
     const sub = m.userData.sub;
     // Sheets belong to sub-parts, not pieces: a kept or previewed sub-part is lit on every piece that has it. Each
-    // state has its own cue: the hot sheet's sub-part, a kept sub-part and the selected part take the full orange layer,
+    // state has its own cue: the hot sheet's sub-part, a kept sub-part and the selected part take the full teal layer,
     // a deep line and a glow, and the rest fades back (levels 0.55 and 0.42); the preview takes a light layer and a
     // dashed line (0.32); whatever is under the pointer or named by a focused or hovered row or link takes a light
     // layer and a pale line (0.3). The colour pass draws the layer (litLayer), the post pass the line and glow.
@@ -2188,7 +2193,7 @@ function applyLook() {
     u.uI.value = sc > 1 ? I * 0.32 : I;
     g.visible = state.pNow > 0;
     // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on the white and grey parts
-    // could not be seen. It turns orange while it is selected or under the pointer, but not while it is inspected, as
+    // could not be seen. It turns teal while it is selected or under the pointer, but not while it is inspected, as
     // an inspected part keeps its own look.
     if (t === 'greyscale') {
       if (boost > 1 && !iso.part) { u.uCore.value.set('#f0a540'); u.uRim.value.set('#b8650f'); }
