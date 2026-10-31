@@ -772,6 +772,10 @@ every part (fixed in #25). Its three changes, most effect first:
       `#26262a`); flat panels, as in the hologram. The taste inspector finds nothing at 1440 and 390.
     - **Checked:** the home view, a close look at the plasma, the table selected, the stack inspected with kept bolts and
       the tour's plasma stop; no shader or console errors. Colour, Greyscale and Hologram give the same results as main.
+11. **Greyscale's selection in amber** (asked for after #36: "like the hologram, and only it"). *Done:* Greyscale's
+    selection is the hologram's orange `#ff7a1a` on the model, and `#e25f0c` for its marks on the white page (3.6:1),
+    the one warm colour on its white and greys. Its plasma already turned amber when selected. Colour and Night stay teal
+    and the hologram orange; nothing else changes.
 
 ## 5. Open questions for you
 
