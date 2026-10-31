@@ -754,6 +754,24 @@ every part (fixed in #25). Its three changes, most effect first:
    blindness; cyan (hue 215) came within 0.077 of the cable, and 0.012 for a protanope. The hologram keeps orange: its
    machine is blue, and teal there, the blue's neighbour, read as a brighter blue on the kept bolts. The glass layer's
    ramp now follows the colour's own lightness (it was set for the orange's), so a darker teal is not washed toward white.
+10. **A Night theme** (asked for after #35, from the anatomy skill's Raptor engine figure). *Done:* a fourth theme,
+    between Greyscale and Hologram, in the anatomy kit's dark style:
+    - **The drawing:** every material a near-black grey (0.075 + 0.1 × its lightness), in the colour pass's shading;
+      light grey lines (`#b9bcc3`) that take the light of the surface they are on (ink × 0.62 + surface × 1.4), so lines
+      on unlit structure are dim and lines on the lit machine bright, the kit's tone hierarchy coming from the light.
+    - **The plasma's light** (`plasmaLight`, world space in the colour pass): it falls off from the plasma's ring and lands
+      on faces turned toward it, fully inside the vessel (within its inner minor radius, the cavity), and as a spill on
+      the coils and the table top that reaches zero by 42 cm from the ring. It follows the glow's level (`state.pNow`,
+      the quarters apart, inspect). The glow itself is more saturated in Night and drawn over the interior it lights,
+      so it stays a violet body with a pale core (added on top, it burned the lit interior to white). It is not physical (the steel vessel would hide the spill): it reads as the light
+      through the cut and the viewports.
+    - **The selection:** a brighter teal `#2bb8ae` (7:1 on the panels); its glass layer is dark in Night (`uLitDark`: a
+      teal at 0.2–0.27 lightness), as lifting dark parts toward the colour's own lightness flooded the selected table.
+      The rest fades 60% as far as in Colour.
+    - **The page:** the kit's dark tokens (page `#0b0b0c`, panels `#131315`, text `#e6e6e8`, muted `#8e8e93`, rules
+      `#26262a`); flat panels, as in the hologram. The taste inspector finds nothing at 1440 and 390.
+    - **Checked:** the home view, a close look at the plasma, the table selected, the stack inspected with kept bolts and
+      the tour's plasma stop; no shader or console errors. Colour, Greyscale and Hologram give the same results as main.
 
 ## 5. Open questions for you
 
