@@ -776,6 +776,16 @@ every part (fixed in #25). Its three changes, most effect first:
     selection is the hologram's orange `#ff7a1a` on the model, and `#e25f0c` for its marks on the white page (3.6:1),
     the one warm colour on its white and greys. Its plasma already turned amber when selected. Colour and Night stay teal
     and the hologram orange; nothing else changes.
+12. **Section removed** (asked for after #37: it showed nothing useful on this device). *Done:* the Section switch,
+    its `X` key, its `section=1` link setting (an old link with it opens as without), its plane and box, the section
+    copies of every colour, ink and dim material, and the code that cut a piece and its mates are gone (105 lines).
+    The cutaway, which opens the vessel to show the plasma, is a separate feature and stays, with its hatched cut faces.
+13. **No seat ring, no quarter names while inspecting** (asked for after #37: the dashed ring looked bad, and the
+    "LEFT" at the view's edge said nothing needed). *Done:* the overlay's seat ring, its tether, its centre dot and its
+    "Seat" marker at the view's edge are gone, from inspect and from Show me, and so are the quarter names pinned to the
+    view while inspecting, with their arrows. The names printed on the table top stay in the assembly view, but hide
+    while another part is inspected, as the table is only a ghost then and they stood out of it. The callouts, the
+    leader line, the trail, the star order and the bolt sizes are unchanged.
 
 ## 5. Open questions for you
 
