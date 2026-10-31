@@ -112,7 +112,13 @@ While inspecting, each sub-part has a technical sheet, and the sheets sit in a c
 - **Mouse or touch.** The gestures follow the input, not the width. With a mouse, resting on a sub-part previews it and a click keeps it, in the column and in the bottom sheet alike. On touch, a tap previews, **Keep** keeps, and a tap on a kept sub-part shows its sheet. With every piece shown, a click or a tap picks a piece instead.
 - **Linking.** Hovering a sheet lights its sub-part in the model, and pointing at a kept sub-part lights its sheet. A row under **Made of** or **Pieces**, a row of the assembly list or the search, and a part's name under **How it attaches** light their part too, on hover and on keyboard focus alike.
 - **The leader line.** One line runs from a sheet to its sub-part, ending on a point of it you can see: the sheet under the pointer or keyboard focus, else the sheet kept last (in the bottom sheet, the card it shows). Like the callouts it is drawn only while the view is still, so nothing moves as you turn; when you stop, it is drawn again to where the sub-part now is.
-- **What the light means.** A lit part turns to glass, as the whole machine is in the hologram: its own colour and shading, tinted with the selection colour and see-through, so what is behind and inside it shows, with its lines (the plasma through a TF coil). It is less see-through than the hologram, so the part reads first. A thin outline, about one and a half ink widths, runs just inside its silhouette in a deeper shade of the selection colour, and its inner edges are drawn light. Under the pointer the tint is light, and a preview has the same tint with a dashed outline. A kept sub-part, or a selected part, is tinted more strongly and is less see-through, and the one whose sheet is under the pointer most of all. A part in front of a lit one still hides it. In Colour the selection colour is teal, in Greyscale and the hologram amber.
+- **What the light means.** The selection is one orange in every theme. A part stays solid and keeps its own materials; the orange lies over it like a thin layer of coloured glass, following its light and shade, with a slight sheen and glint.
+  - **Under the pointer** (or named by a row or link): a light orange layer and a pale orange line just inside its edge, so you know which part you are on.
+  - **Previewed:** the same, with the line dashed.
+  - **Selected, or a kept sheet's sub-part:** a fuller orange layer, a deeper orange line and a soft orange glow outside its edge, and its lines in full ink. While one is selected or kept, the rest of the machine fades back toward the paper with lighter lines (halfway on the machine, a little while inspecting), so the selection reads first. The hologram is never dimmed.
+  - **The sub-part whose sheet is under the pointer:** a little brighter still.
+
+  The line and glow follow only the part's own outer edge, never a part standing in front of it. The interface marks the selection in the same orange: the leader line from a sheet, the seat ring, the sheet and callout under the pointer.
 - **Coming back.** Each part keeps its sheets, folds and places, so going back to it by a link, or inspecting it again later, brings them back.
 
 A sheet gives the material, the dimensions and notes, with a tag on every row. Which port carries the probe, and which viewport serves the webcam, the spectrometer or the eye, is not published, so those Pieces rows are tagged assumed. A source id (S1–S10) means the number is published there; a click opens the source. The other tags say how a number was arrived at, and one key at the foot of each sheet and of the Part tab explains the ones it uses:
@@ -139,24 +145,19 @@ The drawing is the only thing on the page with colour and character; the frame r
 
 The theme buttons at the right of the modebar pick one of three drawings, and the page remembers the choice. With none chosen, a dark system theme opens the hologram and a light one the colour drawing. The buttons are one Tab stop: ← and → move to the next theme. Under 1440 px only the chosen theme keeps its label, and under 1320 px none do, so the modebar stays on one row.
 
-- **Colour**: the light drawing, solid shaded parts in their own colours with inked outlines, on a neutral stone ground.
-- **Greyscale**: the same drawing in greys, shaded like a CAD rendering (below).
+- **Colour**: the light drawing, solid shaded parts in their own colours with inked outlines, on a neutral stone ground. Its interface accent (switches, focus rings, **Next ›**) is the selection's orange, a step deeper so it reads on the ground.
+- **Greyscale**: the same drawing in white, shaded like a CAD rendering (below).
 - **Hologram**: glowing blue on black (below).
 
 ### Greyscale
 
-Black and white with shades, like a rendering from a CAD package, on dimmed paper so it is easy on the eyes.
+White with grey and black shades, like a line rendering from a CAD package, on a white page.
 
 - The light comes from the upper left and turns with the view. Each face takes one of five flat shades by how squarely it faces the light, so rounded parts show bands.
 - Parts cast hard shadows on each other and on the table. They come from a 4096 × 4096 shadow map that covers only what the view shows, so they stay sharp when you zoom in. A shadow takes a lit face to the shade of a face just turned away.
-- Each material keeps its own grey: steel and ceramic pale, copper a mid grey set between steel's shades, the black parts dark.
-- Two things are in colour. The plasma glows pink-violet, the colour nitrogen glows, as in the colour drawing: a grey glow could not be seen on the grey parts. The selection is amber, as in the hologram:
-  - amber glass on a selected part or a kept sheet's sub-part: its greys tinted amber and see-through, with a thin darker amber outline;
-  - stronger amber on the sub-part whose sheet is under the pointer;
-  - a lighter amber glass on a part under the pointer, with the same outline, dashed on a preview.
-
-  The plasma turns amber too while it is selected, but keeps its pink-violet while you inspect it.
-- The panels are the colour drawing's, in greys. Amber marks the selection there too, on an ink edge so it shows on the grey. Focus rings and the axis triad are ink.
+- Every part is white: its greys and black come only from the light's shades, the cast shadows and the ink. What would vanish in white keeps a grey: holes and slots, the printed lines, the dark screens and LEDs.
+- Two things are in colour. The plasma glows pink-violet, the colour nitrogen glows, as in the colour drawing. The selection is the same orange as in the other themes (see *What the light means*). The plasma turns orange too while it is selected, but keeps its pink-violet while you inspect it.
+- The panels are white and grey. The orange marks the selection there too, on an ink edge. Focus rings and the axis triad are ink.
 
 ### Hologram
 
@@ -164,8 +165,8 @@ The palette is the soft ice blue of the displays in Tony Stark's workshop: `#4f9
 
 - Every surface adds light, brightest where it turns away from you, so the inside of the machine shows through.
 - The nearest surface is drawn at full strength and the ones behind it faintly, so the front still reads first.
-- The whole machine is one blue, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (violet, pale at its core), and the selection in amber.
-- The selection glows amber, so it stands apart from the blue machine, and stays visible through whatever is in front of it. So do the sub-parts whose sheets you keep. A hovered part takes a lighter amber, and a preview the same; each has a thin amber outline, dashed on a preview.
+- The whole machine is one blue, a little brighter for parts that are light in the drawing. Only the plasma, which carries energy, glows in another colour (violet, pale at its core), and the selection in orange, the blue's opposite.
+- A selected part, or a kept sheet's sub-part, brightens under an orange layer, with an orange line and glow, and stays faintly visible through whatever is in front of it. A hovered part brightens a little under a lighter orange, and a preview the same with a dashed line. The rest of the machine is never dimmed.
 - Edges glow softly in the same blue.
 - Scan lines drift up the model and a bright sweep passes through it every 7 s. Rings on the projector floor pulse outward.
 - The glow is the model's alone. The panels, bars, sheets and buttons are flat, as in the other themes: opaque surfaces one step off the black, dim rules, ice-blue text, a pale blue tint for a choice, and an action (**Done**, **Next ›**, the Part tab's first button) drawn inverted, ink on black. No glow, glass, corner brackets, scan or grid.

@@ -719,6 +719,32 @@ every part (fixed in #25). Its three changes, most effect first:
    - **Checked:** a real hover on the satellite coils, the viewports and the TF coils, the TF coils selected (3×
      crops), and the stack inspected with a kept sheet and a preview, in all three themes; the regression checks give
      the same results as main.
+8. **Ink and focus, one orange, a white Greyscale** (asked for after #33: on a large part the glass flooded the view,
+   the table a third of it in teal or amber; mocked up on the table, the TF coils and kept bolts, then revised with the
+   owner). *Done:* the glass highlight, its material, its render target and its pass are gone. A part stays solid:
+   - **The layer:** a thin layer of coloured glass over the part, in the colour pass (`litLayer`, shared by Colour and
+     Greyscale): a ramp of the orange at the part's own lightness, kept between the orange's lightness and white (so the
+     dark table turns orange, not brown), with a little of its pale tint, a sheen where the surface turns away or faces
+     up, and a glint. It never multiplies (over copper that went grey). Light under the pointer, previewed or named by a
+     row; fuller selected or kept, where a light part is also kept below white so it turns a real orange.
+   - **The line and glow,** in the post pass from the lit state the ink pass already writes: a line just inside the
+     silhouette (1.5 ink widths), pale under the pointer, deep selected or kept, dashed on a preview; outside a selected
+     or kept part a glow fading over about 7 px; the part's lines in full ink. Both follow only true edges (what is beside
+     or behind the part is farther off), so a part standing in front of it, the machine on the table, gets neither.
+   - **Focus:** while a part is selected or kept the rest fades toward the paper, halfway on the machine and 30% while
+     inspecting (the context is a ghost already), with its lines at 40%. The hologram is never dimmed: a selected part
+     brightens under an orange layer and stays faintly visible through what is in front of it (32%).
+   - **One orange,** `#ff7a1a` on the model in every theme, chosen by the taste skill's rules (one accent) and a measure:
+     0.10 in OKLab from the copper, so the coils stay apart. Teal, then azure, were tried in Colour and set aside for one
+     colour across the themes. The interface's selection marks (leader line, seat ring, the hot sheet and callout, the
+     selected row) are the same orange (`--sel`, a step deeper on light grounds, `#e25f0c`: 3.2:1 on the stone, ink text
+     on it 4.8:1), and Colour's interface accent is that orange too, in place of teal, so it has one accent.
+   - **Greyscale white,** like the owner's example (RSR-1, figure D.3): every material white, greys and black only from the
+     light's five shades, the cast shadows and the ink; holes, slots, printed lines, screens and LEDs keep a grey. The
+     page and panels are white and grey; the cut face is a light grey.
+   - **Checked:** a real hover and click on the table, the TF coils and a viewport, the stack inspected with kept bolts
+     and the pointer on a flange, in all three themes, full windows included; no shader or console errors. The regression
+     checks give the same results as main.
 
 ## 5. Open questions for you
 
