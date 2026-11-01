@@ -855,6 +855,21 @@ every part (fixed in #25). Its three changes, most effect first:
       whitens under the pointer, and its tooltip says how to move it.
     - **Checked** in headless Chrome: mouse and touch drags, a drag along the line, a reload, a double-click, and
       turning the model from the paper next to a dimension; no errors.
+18. **Lines that thin past Home** (asked after #42: "are the lines of the blueprint theme thick when zoomed out?").
+    *Measured first:* Blueprint's lines were no wider than Colour's or Greyscale's. Every theme draws them
+    `max(1, 0.75 × dpr)` device pixels wide at any zoom (a row across the table leg on a 2× phone: 3 px in all three).
+    Blueprint read heavier zoomed out because every line in it shows (white on flat blue). In Colour many fall on dark
+    parts. *Done,* mocked up first in all four themes, at 1280 × 800 and on a phone, as now, gentle (√ of the zoom)
+    and in step with the zoom. In step went faint (41% on a phone; the machine a ghost, Greyscale washed out). Gentle
+    read as a smaller copy of Home:
+    - **The width** (`lineInfo.width`, the post pass's `uLineW`): `min(1, √(zoom / home zoom))`, so Home and nearer
+      are unchanged. Zoom stops at 0.3, so fully zoomed out is 0.41× Home on a phone (lines at 64%) and 0.61× in a
+      1280 × 800 window (78%). A line narrows to the thinnest the edge finder draws (1 device px), then fades instead.
+      Blueprint's bleed, the hologram's halo and the centre lines (their alpha) thin with it. A selection's outline
+      and glow keep their width, and so do the touch loupe's 3× views (drawn with `camera.view` on).
+    - **Checked** in the browser pane at 1280 × 800 and on a 2× phone: the width is 1 at Home (so the post pass works
+      exactly as before) and 1 at twice Home. Fully zoomed out it is 0.778 (√(0.3 / 0.495)) at 1280 × 800 and 0.643 on
+      the phone. No console errors. The mock sheets show all four themes.
 
 ## 5. Open questions for you
 

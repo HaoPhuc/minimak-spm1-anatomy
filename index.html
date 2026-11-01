@@ -1576,14 +1576,15 @@ const CL_VERT = /* glsl */`
 const CL_FRAG = /* glsl */`
   uniform vec3 uColor;
   uniform float uCmPx;
+  uniform float uAlpha;
   varying float vD;
   void main() {
     float p = mod(vD / max(uCmPx, 1e-4), 24.0);
     if (!(p < 14.0 || (p > 17.0 && p < 19.5))) discard;
-    gl_FragColor = vec4(uColor, 0.72);
+    gl_FragColor = vec4(uColor, uAlpha);
   }
 `;
-const clMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#eef4ff') }, uCmPx: { value: 0.25 } }, vertexShader: CL_VERT, fragmentShader: CL_FRAG, transparent: true, depthWrite: false });
+const clMat = new THREE.ShaderMaterial({ uniforms: { uColor: { value: new THREE.Color('#eef4ff') }, uCmPx: { value: 0.25 }, uAlpha: { value: 0.72 } }, vertexShader: CL_VERT, fragmentShader: CL_FRAG, transparent: true, depthWrite: false });
 function clLine(points, lift, loop = false) {
   const pos = [], dist = [], lifts = [];
   let d = 0;
@@ -1694,7 +1695,7 @@ const post = (() => {
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       tColor: { value: null }, tNid: { value: null }, tDepth: { value: null }, uFocus: shared.uFocus, uDetail: { value: 1 }, uBlue: { value: 0 }, uGrid: { value: 0 },
-      uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uInk: shared.uInk,
+      uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uLineW: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
     },
@@ -1709,6 +1710,7 @@ const post = (() => {
       uniform float uGrid;
       uniform vec2 uTexel;
       uniform float uThick;
+      uniform float uLineW;
       uniform vec3 uInk;
       uniform float uRange;
       uniform float uDepthT;
@@ -1788,7 +1790,10 @@ const post = (() => {
         }
       }
       void main() {
-        float e = edge(uThick);
+        // The line's width (uLineW of uThick, less than 1 zoomed out past home), no narrower than the edge finder draws;
+        // narrower than that, fainter.
+        float sw = uThick * uLineW, s = max(sw, 1.0), thin = sw / s;
+        float e = edge(s) * thin;
         vec3 col = texture2D(tColor, vUv).rgb;
         float ctx, outline, glow, hov;
         selection(e, ctx, outline, glow, hov);
@@ -1801,7 +1806,7 @@ const post = (() => {
             float grain = fract(sin(dot(floor(gl_FragCoord.xy / uDpr), vec2(12.9898, 78.233))) * 43758.5453);
             float mott = 0.5 + 0.5 * sin(gl_FragCoord.x * 0.009 / uDpr + 2.0 * sin(gl_FragCoord.y * 0.006 / uDpr));
             col *= (1.06 - 0.32 * dot(d2, d2)) * (0.985 + 0.03 * grain) * (0.985 + 0.03 * mott);
-            e = max(e, edge(uThick * 2.2) * 0.18 * uDetail);
+            e = max(e, edge(s * 2.2) * 0.18 * uDetail * thin);
             // The sheet's grid, ruled on the paper only, so it never crosses the drawing: a line every 16 px from the
             // inner frame's top left corner, and a firmer one every fifth. \`uGrid\` is its strength, 0 for none.
             if (uGrid > 0.0 && texture2D(tNid, vUv).a <= 0.0) {
@@ -1828,7 +1833,7 @@ const post = (() => {
         vec3 bg = mix(vec3(0.018, 0.045, 0.085), vec3(0.004, 0.01, 0.022), smoothstep(0.05, 0.85, r));
         vec2 cell = mod(gl_FragCoord.xy, 32.0 * uDpr);
         bg += vec3(0.35, 0.62, 0.88) * 0.022 * max(step(cell.x, uDpr), step(cell.y, uDpr));
-        float halo = edge(uThick * 3.5);
+        float halo = edge(s * 3.5) * thin;
         float m = max(max(col.r, col.g), col.b);
         vec3 ec = m > 0.03 ? col / m : uInk;
         vec3 c = bg + (1.0 - exp(-col * 1.1));
@@ -1947,10 +1952,16 @@ function resize() {
 // at the same width on screen, the inside lines of a small machine crowd into dark bands (the coils, the bolt rings, the
 // frame). Full from 0.12 cm per screen pixel (about twice the home view) inward, down to the theme's `lineFar` at the
 // home view's 0.24 and beyond, eased between. A lit part keeps all its lines.
-const lineInfo = { cmPx: 0, detail: 1 };
+// Zoomed out past the home view, every line also thins with the machine, gently: its width goes with the square root
+// of the zoom against home (64% at a phone's furthest, 78% at a 1280 × 800 window's), so the drawing reads as a
+// smaller copy of home, not a tangle of the same lines. At home and nearer it is full, and so is the loupe's 3× view.
+const lineInfo = { cmPx: 0, detail: 1, width: 1 };
 function draw() {
   const pal = THEME[themeName()];
   lineInfo.cmPx = (2 * halfNow()) / height;
+  lineInfo.width = camera.view?.enabled ? 1 : Math.min(1, Math.sqrt(view.zoom / home.zoom));
+  post.mat.uniforms.uLineW.value = lineInfo.width;
+  clMat.uniforms.uAlpha.value = 0.72 * lineInfo.width;
   clMat.uniforms.uCmPx.value = lineInfo.cmPx;
   for (const l of clMachine) l.visible = blueprint && !iso.part && state.ep < 0.02 && !quiz.on;
   for (const { l, pc } of clPieces) l.visible = blueprint && !pc.userData.ghost && !quiz.on;
