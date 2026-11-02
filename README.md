@@ -121,9 +121,10 @@ While inspecting, each sub-part has a technical sheet, and the sheets sit in a c
 A sheet gives the material, the dimensions and notes, with a tag on every row. Which port carries the probe, and which viewport serves the webcam, the spectrometer or the eye, is not published, so those Pieces rows are tagged assumed. A source id (S1–S10) means the number is published there; a click opens the source. The other tags say how a number was arrived at, and one key at the foot of each sheet and of the Part tab explains the ones it uses:
 
 - **photo**: scaled from the webinar photos.
+- **measured**: measured on a top-down photo of an SPM1. Its camera was fitted to parts of known size: the DN160CF joint bolt rows on the 230 mm major radius, a DN100CF flange and the 25 mm breadboard grid. So a size is read at its own height, not at the midplane's scale. The TF coil band and placement, PF1/PF2, the central former, the satellite coils and the lateral port length come from it.
 - **std**: follows from the CF standard (S9), but the SPM1's own part is not published. Bolt and nut threads are tagged this way. A click opens S9.
 - **derived**: worked out from tagged numbers (vessel volume, field on axis, cable per coil, bolt grip).
-- **assumed**: not published, picked for the drawing (outer PF radius, KF40 reducer outlet, probe placement, TF winding layout).
+- **assumed**: not published, picked for the drawing (KF40 reducer outlet, probe placement, TF winding layout).
 
 The Part tab shows the part's basis as *Drawn from: published spec*, *photos* or *a guess*, with the same dot as the tree. That is how far to trust its drawn shape and position, not the numbers in its rows.
 
@@ -230,8 +231,8 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 Every part has a basis, shown as the dot in the tree:
 
 - **Spec** (filled dot): the number or placement is published. R₀ 230 mm, a 75 mm, four 150 mm elbows, 8 TF coils × 50 turns of 6 mm cable up to 40 A, 3 viewing + 1 vacuum + 4 diagnostic ports, the 90 × 90 × 160 cm envelope.
-- **Photo** (half dot): scaled or placed from the webinar photos. The joints sit on the diagonals, clamped to four aluminium corner posts. The TF formers have fold-out copper tabs. The PF1/PF2 windings and leads are on a white central former. The satellite coils are hose-wound rings. The gauge and gas stack is on top of the back quarter. The table is a Thorlabs Nexus. The control drawer, the coil-supply chassis and the pump are under the table.
-- **Assumed** (ring): placed where plausible. These are the outer PF coils (PF3, PF4), the solenoid's position, the HV supply, the gas valve, the Langmuir probe, the webcam and the spectrometer.
+- **Photo** (half dot): scaled or placed from the webinar photos. The joints sit on the diagonals, clamped to four aluminium corner posts. The TF formers have fold-out copper tabs. The PF1/PF2 windings and leads are on a white central former. The satellite coils are hose-wound rings; with PF1 and PF2 they are the four PF coils. The gauge and gas stack is on top of the back quarter. The table is a Thorlabs Nexus. The control drawer, the coil-supply chassis and the pump are under the table.
+- **Assumed** (ring): placed where plausible. These are the solenoid's position, the HV supply, the gas valve, the Langmuir probe, the webcam and the spectrometer.
 
 The flange sizes (DN160CF joints, DN100CF lateral ports, DN40CF top and bottom ports, ≈DN63CF gauge port) are drawn to the MBE-Komponenten CF table (S9) and match the bolt counts in the photos. Every sealing face has its knife edge and gasket recess at the S9 diameters, and every one of the 17 CF joints has its copper gasket. Bolts are drawn at their stock length (the grip, a nut and two threads, rounded up), with nuts on every through-bolted joint; only the DN40 holes on the reducer are tapped. The KF joints (the gauge on its KF16 adaptor, the bellows hose at the pump port and the pump) are drawn as two flanges, a centring ring with its O-ring, and a clamp; their sizes are the usual ISO-KF ones, marked "assumed", as no SPM1 KF part is published. The vessel is drawn as a 154 × 2 mm DN160CF tube, so its 150 mm bore gives the published 75 mm minor radius. Derived numbers in the inspector (vessel volume, field on axis, cable per coil) are marked "derived", and numbers picked for the drawing are marked "assumed".
 

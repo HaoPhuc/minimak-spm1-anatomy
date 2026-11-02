@@ -33,16 +33,17 @@
     aIn: 7.5,
     gap: 0.2,
     table: { top: -22, thick: 11, half: 45, floor: -107, leg: 9, legAt: 36, shelf: -91 },
-    lat: { flangeAt: 35.5 },
+    lat: { flangeAt: 32 },
     small: { flangeAt: 11.5 },
     gport: { flangeAt: 11 },
-    tf: { halfW: 3.6, rIn: 7.8, rOut: 10.2, tabR: 10.9, tabs: 26 },
-    former: { r: 10.4, t: 0.4, top: 9.5 },
-    pfIn: { z: 6.2, h: 2.6, rOut: 11.4 },
-    sol: { h: 6, rOut: 11.0 },
-    pfOut: { R: 31.5, z: 12.8 },
-    satTop: { R: 35, z: 16.5, r: 1.6 },
-    satBot: { R: 33.5, z: -18.6, r: 1.6 },
+    // A TF coil is a band of even width round the tube, its cheeks two parallel planes ±halfW from its middle; it sits
+    // `at` degrees either side of a lateral port. The former's tabs splay out `splay` degrees from the cheeks.
+    tf: { halfW: 2.5, rIn: 7.8, rOut: 9.8, tabR: 10.1, tabs: 26, splay: 8, at: 19 },
+    former: { r: 12, t: 0.4, top: 11 },
+    pfIn: { z: 8.25, h: 2.6, rOut: 15.6 },
+    sol: { h: 6, rOut: 12.6 },
+    satTop: { R: 30.2, z: 11, r: 1.5 },
+    satBot: { R: 30.2, z: -18.6, r: 1.5 },
     post: { R: 40.2, half: 2.25, top: 19 },
     cut: [287, 352],
     CF,
@@ -53,7 +54,7 @@
   // Instances can override this with an explicit vector (joint flanges part along the ring, the drawer slides out).
   const DETACH = {
     vessel: { spread: 7 }, joints: { spread: 2 }, gaskets: { lift: 0 }, lateral: { spread: 7 }, viewport: { spread: 10 },
-    diagPorts: { lift: 0 }, tf: { lift: 16 }, pfInner: { lift: 0 }, pfOuter: { lift: 0 }, satellite: { lift: 0 },
+    diagPorts: { lift: 0 }, tf: { lift: 16 }, pfInner: { lift: 0 }, satellite: { lift: 0 },
     solenoid: { lift: 0 }, former: { lift: 0 }, electrode: { lift: 0 }, hv: { lift: 6 }, pumpPort: { spread: 8 },
     hose: { spread: 6 }, pump: { spread: 12 }, stack: { lift: 10 }, gauge: { lift: 10 }, needle: { lift: 8 }, laser: { lift: 10 },
     probe: { lift: 12 }, camera: { lift: 8 }, spectro: { lift: 8 }, table: {}, posts: { spread: 6 }, psu: {},
@@ -125,9 +126,11 @@
     const at = (g, m) => g.applyMatrix4(m);
 
     // Thick toroidal shell between minor radii rIn and rOut, closed with caps where the angles do not wrap.
+    // With `o.band`, it runs between two parallel planes o.band either side of the angle midway between p0 and p1, so
+    // it is as wide inboard as outboard (a coil wound round the tube), and its caps are flat.
     function torusShell(R, rIn, rOut, p0, p1, o = {}) {
       const t0 = o.t0 ?? 0, t1 = o.t1 ?? Math.PI * 2;
-      const fullP = Math.abs(p1 - p0 - Math.PI * 2) < 1e-6;
+      const fullP = !o.band && Math.abs(p1 - p0 - Math.PI * 2) < 1e-6;
       const fullT = Math.abs(t1 - t0 - Math.PI * 2) < 1e-6;
       const nP = o.nP ?? Math.max(2, Math.ceil((Math.abs(p1 - p0) / (Math.PI * 2)) * 160));
       const nT = o.nT ?? Math.max(2, Math.ceil(((t1 - t0) / (Math.PI * 2)) * 48));
@@ -143,18 +146,21 @@
           if (flip) idx.push(a, c, b, a, d, c); else idx.push(a, b, c, a, c, d);
         }
       }
-      const pA = (u) => p0 + (p1 - p0) * u, tA = (v) => t0 + (t1 - t0) * v, rA = (w) => rIn + (rOut - rIn) * w;
-      grid(nP, nT, (u, v) => P(rOut, pA(u), tA(v)), (u, v) => M(pA(u), tA(v)), false);
-      if (rIn > 0) grid(nP, nT, (u, v) => P(rIn, pA(u), tA(v)), (u, v) => M(pA(u), tA(v)).map((x) => -x), true);
+      // The toroidal angle at fraction u across the shell, for a point at minor radius r and poloidal angle t.
+      const pm = (p0 + p1) / 2;
+      const pA = o.band ? (u, r, t) => pm + (2 * u - 1) * Math.asin(o.band / (R + r * Math.cos(t))) : (u) => p0 + (p1 - p0) * u;
+      const tA = (v) => t0 + (t1 - t0) * v, rA = (w) => rIn + (rOut - rIn) * w, rMid = (rIn + rOut) / 2;
+      grid(nP, nT, (u, v) => P(rOut, pA(u, rOut, tA(v)), tA(v)), (u, v) => M(pA(u, rOut, tA(v)), tA(v)), false);
+      if (rIn > 0) grid(nP, nT, (u, v) => P(rIn, pA(u, rIn, tA(v)), tA(v)), (u, v) => M(pA(u, rIn, tA(v)), tA(v)).map((x) => -x), true);
       if (!fullP) {
         const capN = (p, s) => [s * Math.sin(p), -s * Math.cos(p), 0];
-        grid(nR, nT, (w, v) => P(rA(w), p0, tA(v)), () => capN(p0, 1), false);
-        grid(nR, nT, (w, v) => P(rA(w), p1, tA(v)), () => capN(p1, -1), true);
+        grid(nR, nT, (w, v) => P(rA(w), pA(0, rA(w), tA(v)), tA(v)), () => capN(o.band ? pm : p0, 1), false);
+        grid(nR, nT, (w, v) => P(rA(w), pA(1, rA(w), tA(v)), tA(v)), () => capN(o.band ? pm : p1, -1), true);
       }
       if (!fullT) {
         const tN = (p, t, s) => { const x = -Math.sin(t) * Math.cos(p), y = -Math.sin(t) * Math.sin(p), z = Math.cos(t); return [s * x, s * y, s * z]; };
-        grid(nP, nR, (u, w) => P(rA(w), pA(u), t0), (u) => tN(pA(u), t0, -1), false);
-        grid(nP, nR, (u, w) => P(rA(w), pA(u), t1), (u) => tN(pA(u), t1, 1), true);
+        grid(nP, nR, (u, w) => P(rA(w), pA(u, rA(w), t0), t0), (u) => tN(pA(u, rMid, t0), t0, -1), false);
+        grid(nP, nR, (u, w) => P(rA(w), pA(u, rA(w), t1), t1), (u) => tN(pA(u, rMid, t1), t1, 1), true);
       }
       return geo(pos, nor, idx);
     }
@@ -561,28 +567,29 @@
 
       // Two TF coils per quarter, either side of the lateral port. Taken apart along the coil axis:
       // the copper former one way, the cover band the other, the winding in the middle.
-      // Each coil is named by the neighbouring quarter it faces: j = 0 (pk − 22.5°) leans towards
-      // quarter k − 1, j = 1 (pk + 22.5°) towards quarter k + 1.
-      for (const [j, pc] of [[0, pk - 22.5], [1, pk + 22.5]]) {
+      // Each coil is named by the neighbouring quarter it faces: j = 0 (pk − 19°) leans towards
+      // quarter k − 1, j = 1 (pk + 19°) towards quarter k + 1.
+      for (const [j, pc] of [[0, pk - D.tf.at], [1, pk + D.tf.at]]) {
         const side = QUARTER[(k + (j ? 1 : 3)) % 4].toLowerCase();
         const coil = piece('tf', q, { clip: true, apart: V(0, 0, 20), label: `${QUARTER[k]} quarter, ${side}-side coil`, axis: toroidal(pc) });
         const tf = D.tf, hw = tf.halfW / D.R0, c = pc * DEG;
         const axis = toroidal(pc);
         const FORMER = { sub: 'Copper former with fold-out tabs', ex: along(axis, -11) };
-        add(coil, torusShell(D.R0, tf.rIn, tf.rOut, c - hw, c + hw, { nT: 72 }), 'cable', { sub: 'Winding: 50 turns of 6 mm cable' });
-        add(coil, torusShell(D.R0, tf.rOut, tf.rOut + 0.12, c - hw + 0.004, c + hw - 0.004, { nT: 72 }), 'copper', { sub: 'Copper cover band', ex: along(axis, 11) });
-        add(coil, torusShell(D.R0, D.aOut, D.aOut + 0.1, c - hw - 0.012, c + hw + 0.012, { nT: 72 }), 'copper', FORMER);
-        // The former's cut tabs, folded out on both cheeks of the winding.
+        add(coil, torusShell(D.R0, tf.rIn, tf.rOut, c - hw, c + hw, { nT: 72, band: tf.halfW }), 'cable', { sub: 'Winding: 50 turns of 6 mm cable' });
+        add(coil, torusShell(D.R0, tf.rOut, tf.rOut + 0.12, c - hw, c + hw, { nT: 72, band: tf.halfW - 0.09 }), 'copper', { sub: 'Copper cover band', ex: along(axis, 11) });
+        add(coil, torusShell(D.R0, D.aOut, D.aOut + 0.1, c - hw, c + hw, { nT: 72, band: tf.halfW + 0.28 }), 'copper', FORMER);
+        // The former's cut tabs, folded out on both cheeks of the winding. A cheek is a plane, so each ring of tabs is
+        // centred where the tube's centre line crosses it.
         const tabs = [];
-        const r0 = D.aOut + 0.1, r1 = tf.tabR, rm = (r0 + r1) / 2, splay = Math.tan(16 * DEG);
+        const r0 = D.aOut + 0.1, r1 = tf.tabR, rm = (r0 + r1) / 2, splay = Math.tan(tf.splay * DEG);
+        const rc = Math.sqrt(D.R0 ** 2 - tf.halfW ** 2), tq = axis;
         for (const s of [-1, 1]) {
-          const ps = pc + (s * tf.halfW / D.R0) / DEG;
-          const C = pol(D.R0, ps), tq = toroidal(ps);
+          const C = pol(rc, pc).add(tq.clone().multiplyScalar(s * tf.halfW));
           for (let i = 0; i < tf.tabs; i++) {
             const th = ((i + 0.5) / tf.tabs) * Math.PI * 2;
-            const u = radial(ps).multiplyScalar(Math.cos(th)).add(Z.clone().multiplyScalar(Math.sin(th)));
-            const w = radial(ps).multiplyScalar(-Math.sin(th)).add(Z.clone().multiplyScalar(Math.cos(th)));
-            const len = (r1 - r0) / Math.cos(16 * DEG);
+            const u = radial(pc).multiplyScalar(Math.cos(th)).add(Z.clone().multiplyScalar(Math.sin(th)));
+            const w = radial(pc).multiplyScalar(-Math.sin(th)).add(Z.clone().multiplyScalar(Math.cos(th)));
+            const len = (r1 - r0) / Math.cos(tf.splay * DEG);
             const ax = u.clone().add(tq.clone().multiplyScalar(s * splay)).normalize();
             const centre = C.clone().add(u.clone().multiplyScalar(rm)).add(tq.clone().multiplyScalar(s * (0.06 + (rm - r0) * splay)));
             const width = ((2 * Math.PI * rm) / tf.tabs) * 0.74;
@@ -870,28 +877,8 @@
       add(sp, at(ring(F.r, D.sol.rOut + 0.1, 0.25, 96), frame(V(0, 0, -D.sol.h / 2), Z)), 'black', { sub: 'Lower end ring', ex: V(0, 0, -4) });
     }
 
-    // ---------- Outer PF coils on aluminium channels, braced to the posts ----------
-    function uChannel(R) {
-      const w = 1.5, h = 1.3, web = 0.3, ch = 0.3;
-      const pts = [[-w, -h], [w, -h], [w, -h + ch], [-w + web, -h + ch], [-w + web, h - ch], [w, h - ch], [w, h], [-w, h], [-w, -h]].map(([r, y]) => [-r, -y]);
-      return revolve(pts.map(([r, y]) => [R + r, y]), 120);
-    }
-    for (const up of [true, false]) {
-      const zs = up ? 1 : -1;
-      const g = group(up ? 'pf3' : 'pf4', V(0, 0, up ? 34 : -14), 0.1);
-      const pc = piece('pfOuter', g, { sub: 'Aluminium U-channel former', label: up ? 'PF3 (upper)' : 'PF4 (lower)' });
-      const m = new THREE.Matrix4().makeRotationX(Math.PI / 2).setPosition(0, 0, zs * D.pfOut.z);
-      add(pc, at(uChannel(D.pfOut.R), m.clone()), 'alu');
-      add(pc, at(ring(D.pfOut.R - 1.25, D.pfOut.R + 1.2, 2.0, 120), m.clone()), 'tape', { sub: 'Winding', ex: V(0, 0, zs * 5) });
-      for (let i = 0; i < 4; i++) {
-        const deg = 45 + i * 90;
-        const from = D.pfOut.R + 1.5, to = D.post.R - D.post.half;
-        add(pc, at(box(to - from, 2.0, 1.2), rtz(pol((from + to) / 2, deg, zs * D.pfOut.z), deg)), 'alu', { sub: '4 post brackets', ex: along(radial(deg), 6) });
-        for (const s of [-1, 1]) add(pc, at(hex(0.9, 0.4), frame(pol((from + to) / 2 + s * 1.1, deg, zs * D.pfOut.z + zs * 0.8), Z.clone().multiplyScalar(zs))), 'bolt', { sub: '8 bracket bolts', ex: along(radial(deg), 6).add(V(0, 0, zs * 3)) });
-      }
-    }
-
     // ---------- Satellite PF coils: hose-wound rings, the top one on brackets, the bottom one on pads ----------
+    // With PF1 and PF2 they are the four PF coils. The upper one rides just above the outboard edge of the vessel.
     for (const up of [true, false]) {
       const S2 = up ? D.satTop : D.satBot;
       const g = group(up ? 'satTop' : 'satBot', V(0, 0, up ? 50 : -22), 0);
@@ -1011,7 +998,7 @@
       for (let i = 0; i < 8; i++) mod(x0 + wm / 2 + i * wm, wm, base, 13.3, null, '8 TF supply channels');
       const top2 = base + 13.3;
       chassis(top2, 13.3);
-      for (let i = 0; i < 7; i++) mod(x0 + wm / 2 + i * wm, wm, top2, 13.3, i < 4 ? null : 'yellowtag', i < 4 ? '4 PF supply channels' : 'Satellite and solenoid channels');
+      for (let i = 0; i < 7; i++) mod(x0 + wm / 2 + i * wm, wm, top2, 13.3, i < 4 ? null : 'yellowtag', i < 4 ? '4 PF supply channels' : 'Solenoid and spare channels');
 
       // Pull-out control drawer under the table top, with the DIN rail inside.
       const dz = TB.top - TB.thick - 7.2;

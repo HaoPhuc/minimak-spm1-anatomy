@@ -870,6 +870,45 @@ every part (fixed in #25). Its three changes, most effect first:
     - **Checked** in the browser pane at 1280 × 800 and on a 2× phone: the width is 1 at Home (so the post pass works
       exactly as before) and 1 at twice Home. Fully zoomed out it is 0.778 (√(0.3 / 0.495)) at 1280 × 800 and 0.643 on
       the phone. No console errors. The mock sheets show all four themes.
+19. **The machine at true size** (asked for after #43: the TF coils were too thick and the bore too small, next to a
+    top-down photo of a real SPM1). *Measured first:* the photo was taken in perspective, so its camera was fitted
+    to parts of known size: about 0.97 m above the midplane, straight down the torus axis, at a 1599 px focal length.
+    The DN160CF joint bolt rows (a 181 mm circle on the 230 mm major radius) fit it to 1% at all four joints. A
+    DN100CF flange (152.4 mm) and the 25 mm breadboard grid agree, and put the table top at −23.3 cm (drawn at −22).
+    So each size is read at its own height. *Done,* mocked up through the photo's own camera and in the app's
+    Above view, and agreed before building:
+    - **TF coils:** a band of even width round the tube (`torusShell`'s new `band`: its cheeks are two parallel
+      planes), not a sector that widened outboard. The band is 50 mm of copper, about 58 mm over the tabs (they
+      splay 8°, was 16°); the photo gives 48–51 and 57–60 mm, the same inboard and outboard. The model drew 72 mm at
+      R₀, 104 mm outboard. The coils sit 19° either side of each port (`tf.at`; 15–23° on the photo), not 22.5°. The
+      winding is 20 mm deep (was 24): the photo shows at least 15 mm past the vessel, and the wider bore leaves no
+      more than 23.
+    - **The bore:** the photo's copper ring (PF1's top) is 241 mm inside and 312 mm outside, about 95 mm above the
+      midplane, over the TF coils' inboard legs. PF1 and PF2 are drawn 240–312 mm across, 70–95 mm from the
+      midplane, so their outer edge clears the coils. The former is 240 mm across (was 208) and stands to 11 cm, so
+      its rim screws clear PF1. The solenoid's outer radius is 12.6 cm, clear of the TF coils' inner legs at 13.
+    - **Satellite coils:** the photo's black ring is 604 mm on its centre line (was 700) on a 30 mm hose, about
+      110 mm up (it passes over the coils and flanges and under the junction box: 95–140 mm). The lower one is drawn
+      the same size; it is not in the photo.
+    - **PF3 and PF4 removed** (the owner's choice): the aluminium-channel pair was assumed, the photo shows nothing
+      like it, and the satellite ring sits where PF3 was drawn. The four PF coils are now PF1, PF2 and the two
+      satellites (S2's four; S4 slide 15's "PF coils on metal formers above and below, with two larger satellite PF
+      coils"). Its part, joins, quiz pair, tour stop, sheets and bracket bolts are gone, and the supply chassis's
+      last three channels are now "Solenoid and spare".
+    - **Lateral ports:** the mating flange's outer face is about 360 mm from the axis on the photo, so the port
+      flange is at 32 cm (was 35.5).
+    - **Tags:** a new `measured` tag, "measured on a top-down photo, scaled by its DN160CF joint bolts, a DN100CF
+      flange and the 25 mm breadboard grid", on every size taken from it. Each row names what it measured. The
+      heights the photo only bounds are tagged assumed. The TF winding sheet no longer reads S1's "6 mm cable" as
+      6 mm across: fifty such turns would stand 37 mm deep.
+    - **Not changed, noted:** the corner posts (one photo from above cannot separate their height from their
+      radius; at the drawn 40 cm they would stand about 10 cm above the midplane, not 19, and each sits about 8° to
+      one side of its joint), the former's grey lid in the photo, each joint ring's top bolt, and the photo's ports,
+      which mirror the model's layout.
+    - **Checked** in the browser pane: 29 components and 71 pieces, no console errors. Inspect and Take apart frame
+      the TF coils, PF1/PF2, the former, the solenoid, the satellites, the lateral ports, the viewports, the pump
+      port, the supply chassis and the posts. Explode and a front cutaway through the bore show no part through
+      another. The Blueprint dimensions (850, 900, Ø460) come out as before.
 
 ## 5. Open questions for you
 
