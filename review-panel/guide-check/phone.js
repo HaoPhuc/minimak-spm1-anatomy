@@ -1,0 +1,21 @@
+// A phone: the card under the view, controls under the more menu, the bottom sheet.
+$('bGuide').click(); await until(() => A.guide.ready);
+const card = $('guide').getBoundingClientRect(), view = $('card').getBoundingClientRect();
+log.push(`phone card: dock=${$('guide').classList.contains('dock')}, card top ${Math.round(card.top)} vs view bottom ${Math.round(view.bottom)}, card height ${Math.round(card.height)}, window ${innerHeight}`);
+await go('first.apart');
+const ringOn = () => { const r = $('gRing').getBoundingClientRect(); const m = $('bMore').getBoundingClientRect(), a = $('bApart').getBoundingClientRect(); return $('gRing').hidden ? 'hidden' : Math.abs(r.left + 4 - m.left) < 3 ? 'bMore' : Math.abs(r.left + 4 - a.left) < 3 ? 'bApart' : `${Math.round(r.left)},${Math.round(r.top)}`; };
+await sleep(200);
+log.push(`Take apart under the more menu: ring on ${ringOn()}, note "${$('gReach').textContent}"`);
+$('bMore').click(); await sleep(300);
+log.push(`menu open: ring on ${ringOn()}, note "${$('gReach').textContent}"`);
+$('bApart').click(); await sleep(1500);
+log.push(`Take apart pressed: apart=${A.iso.apart}, ok=${A.guide.ok}`);
+await go('first.source');
+log.push(`source step: sheet up=${A.HUD.up}`);
+await A.gShowStep(); await sleep(800);
+log.push(`S9 pressed: tab=${A.tab()}, ok=${A.guide.ok}`);
+await go('evidence.float'); await A.gShowStep(); await sleep(800);
+log.push(`bottom sheet: up=${A.HUD.up}, ok=${A.guide.ok}`);
+$('gExit').click(); await sleep(2500);
+log.push(`exit: guide.on=${A.guide.on}, part=${A.iso.part}, up=${A.HUD.up}`);
+return log;

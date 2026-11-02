@@ -679,6 +679,58 @@
   .blueprint .view.tight .corner.br .tb-title { font-size: 12px; }
   .blueprint .view.tight .corner.br > div:nth-child(n+3) { display: none; }
   .blueprint .view.tight:has(.isobar.on) .corner.br { display: none; }
+  /* ---------- Guided analysis ----------
+     The launcher opens the modebar: the one bar on screen with both panels folded, and the row above the view on a
+     phone, where it keeps its short label. The card is fixed: at the view's lower left on a desktop, above the scale
+     bar (the camera frames what is above it), and across the window's foot under the view where the panels stack. Its
+     text sizes with the Controls tab's text size. The ring around the real control never takes a click. */
+  #bGuide .short { display: none; }
+  @media (max-width: 1320px) { #bGuide .long { display: none; } #bGuide .short { display: inline; } }
+  @media (max-width: 960px) { #bGuide .lbl { position: static; width: auto; height: auto; overflow: visible; clip-path: none; } }
+  .guide { position: fixed; z-index: 30; width: calc(400px * var(--ui-scale, 1)); max-width: calc(100vw - 24px); display: flex; flex-direction: column;
+           background: var(--card); color: var(--ink); border: 1px solid var(--rule); border-radius: 12px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.16);
+           font-size: calc(13px * var(--ui-scale, 1)); line-height: 1.45; }
+  .guide[hidden] { display: none; }
+  .guide button { font: inherit; font-size: 0.95em; border: 1px solid var(--rule); background: var(--soft); color: var(--ink); border-radius: 7px; padding: 0.38em 0.75em; cursor: pointer; white-space: nowrap; }
+  .guide button:hover { border-color: var(--muted); }
+  .guide button.primary { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .guide svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; vertical-align: -0.12em; }
+  .g-head { display: flex; align-items: center; gap: 6px; padding: 8px 8px 6px 12px; }
+  .g-ch { flex: 1; min-width: 0; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .guide .g-exit { font-weight: 600; background: var(--card); border-color: var(--ink); }
+  .g-bar { height: 3px; margin: 0 12px; border-radius: 2px; background: var(--rule); overflow: hidden; }
+  .g-bar i { display: block; height: 100%; width: 0; background: var(--accent); }
+  .g-picker { padding: 6px 8px 8px; border-bottom: 1px solid var(--rule); max-height: 46vh; overflow: auto; }
+  .g-picker button { display: flex; gap: 8px; width: 100%; text-align: left; margin-top: 3px; background: transparent; border-color: transparent; white-space: normal; }
+  .g-picker button:hover, .g-picker button[aria-current="step"] { background: var(--soft); border-color: var(--rule); }
+  .g-picker button span:last-child { margin-left: auto; color: var(--muted); }
+  .g-body { padding: 8px 12px 6px; overflow: auto; transition: opacity 0.18s ease-out; }
+  .g-body.fading { opacity: 0; }
+  .g-step { margin: 0 0 2px; color: var(--muted); font-size: 0.88em; font-variant-numeric: tabular-nums; }
+  .g-step button { font-size: 1em; padding: 0 0.5em; margin-left: 6px; }
+  .g-q { margin: 0 0 4px; font-size: 1.12em; line-height: 1.3; font-weight: 650; }
+  .g-q:focus { outline: none; }
+  .g-q:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .g-how, .g-reach { margin: 0 0 6px; }
+  .g-reach { color: var(--accent); font-weight: 600; }
+  .g-look { margin: 0; padding: 6px 8px; border-radius: 8px; background: var(--soft); color: var(--muted); }
+  .g-look b, .g-how b { color: var(--ink); font-weight: 600; }
+  .g-look.ok { background: color-mix(in srgb, var(--accent) 14%, var(--card)); color: var(--ink); }
+  .g-look .g-tick { font-weight: 650; color: var(--ink); }
+  .guide kbd { font: inherit; font-size: 0.86em; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 0.3em; background: var(--card); }
+  .guide code { font-size: 0.85em; overflow-wrap: anywhere; color: var(--ink); }
+  .g-foot { display: flex; gap: 6px; padding: 8px 12px 10px; }
+  .g-foot #gNext { margin-left: auto; }
+  .g-ring { position: fixed; z-index: 31; pointer-events: none; border: 2px solid var(--accent); border-radius: 10px;
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent); animation: g-pulse 1.6s ease-in-out infinite; }
+  @keyframes g-pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 8%, transparent); } }
+  .holo .guide button.primary { background: var(--ink); color: var(--paper); }
+  .holo .guide { box-shadow: none; }
+  @media (prefers-reduced-motion: reduce) { .g-body { transition: none; } .g-ring { animation: none; } }
+  /* Stacked, the card spans the window's foot, under the view; the body scrolls when the step is long. */
+  .guide.dock { left: 8px; right: 8px; bottom: 8px; width: auto; height: min(38vh, 290px); }
+  .guide.dock .g-body { flex: 1; min-height: 0; }
+  @media (pointer: coarse) { .guide button { min-height: 44px; } .g-picker button { min-height: 44px; } }
 </style>
 <script>
   // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash. A link's theme comes
@@ -700,6 +752,9 @@
   <header class="top">
     <div class="brand"><h1>MinimaK SPM1</h1><p>Anatomy of a tabletop magnetised torus</p></div>
     <nav class="modebar" aria-label="View tools">
+      <div class="mb" role="group" aria-label="Guide">
+        <button type="button" id="bGuide" aria-pressed="false" aria-label="Guided analysis" title="Guided analysis: find a part, see how it attaches and where its numbers come from, with the page’s own controls"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3"/><path d="M10.7 5.3 9.1 9.1 5.3 10.7 6.9 6.9z"/></svg><span class="lbl"><span class="long">Guided analysis</span><span class="short" aria-hidden="true">Guide</span></span></button>
+      </div>
       <div class="mb" role="group" aria-label="Model">
         <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="sw" aria-hidden="true"></span></button>
         <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
@@ -836,6 +891,32 @@
   </aside>
 </div>
 
+<!-- The guided analysis: one card and a ring that points at the real control (it never takes a click). -->
+<section class="guide" id="guide" aria-labelledby="gTitle" hidden>
+  <div class="g-head">
+    <span class="sr-only" id="gTitle">Guided analysis</span>
+    <span class="g-ch" id="gChapter"></span>
+    <button type="button" id="gChapters" aria-expanded="false" aria-controls="gPicker">Chapters</button>
+    <button type="button" id="gExit" class="g-exit" title="Leave the guide: your view, sheets and settings come back as they were">Exit <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+  </div>
+  <div class="g-bar" aria-hidden="true"><i id="gFill"></i></div>
+  <div class="g-picker" id="gPicker" role="group" aria-label="Chapters" hidden></div>
+  <div class="g-body" id="gBody">
+    <p class="g-step" id="gStep"></p>
+    <h2 class="g-q" id="gQ" tabindex="-1"></h2>
+    <p class="g-how" id="gHow"></p>
+    <p class="g-reach" id="gReach" hidden></p>
+    <p class="g-look" id="gLook"></p>
+  </div>
+  <div class="g-foot">
+    <button type="button" id="gBack">‹ Back</button>
+    <button type="button" id="gShow">Show this step</button>
+    <button type="button" id="gNext">Next ›</button>
+  </div>
+</section>
+<div class="g-ring" id="gRing" aria-hidden="true" hidden></div>
+<p class="sr-only" id="gLive" aria-live="polite"></p>
+
 <script src="parts.js"></script>
 <script src="device.js"></script>
 <script type="module">
@@ -859,9 +940,11 @@ const ease = (x) => x * x * (3 - 2 * x);
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
 // ---------- Theme and per-viewer preferences ----------
+// `quiet` is on while the guided analysis runs: nothing it does is stored, and the address is not written.
 const store = {
+  quiet: false,
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+  set(k, v) { if (store.quiet) return; try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
 };
 const systemDark = matchMedia('(prefers-color-scheme: dark)');
 // Text size for the sheets, the inspect bar and the view's labels, and whether single-letter keys act (Controls tab).
@@ -2189,6 +2272,10 @@ const hidden = new Set();
 // Where does it go?: the parts asked (`list`), the one asked now (`i`), tries at it, how many came right first time,
 // whether it is answered, and the cutaway and view to give back when the questions end.
 const quiz = { on: false, list: [], i: 0, tries: 0, score: 0, answered: false, places: [], cutWas: true, saved: null };
+// The guided analysis (PLAN-3.md): the step shown (`i`), a token that every wait checks (`seq`), what it found and gives
+// back on Exit (`saved`), the step's starting point for its check (`base`), whether the step's text is up (`ready`) and
+// done (`ok`), the step it left (`last`, for Resume), and Copy link presses (`copies`).
+const guide = { on: false, i: 0, seq: 0, saved: null, base: null, ready: false, ok: false, last: null, copies: 0, lit: null };
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
 function pieceOffset(pc) {
@@ -2625,6 +2712,8 @@ $('isobar').addEventListener('keydown', (e) => {
 document.addEventListener('pointerdown', (e) => { if (!$('isoMore').hidden && !$('isoMore').contains(e.target) && !$('bMore').contains(e.target)) setMore(false); });
 // The guided tour: inspect each stop's part in turn. Done, or Esc back to the assembly, ends it.
 function startTour() {
+  // The tour and the guided analysis never share input: the guide gives back what it found, then the tour starts.
+  if (guide.on) guideExit({ focus: false });
   iso.tour = 0;
   setTab('part');
   inspect(DOCS.TOUR[0].part);
@@ -2668,6 +2757,7 @@ function quizRound() {
   return pool.slice(0, QUIZ_N);
 }
 function startQuiz(list = quizRound(), at = 0) {
+  if (guide.on) guideExit({ focus: false });
   list = list.filter((id) => DOCS.QUIZ[id] && partById.has(id) && placesOf(id).length);
   if (!list.length) return;
   if (iso.part) endInspect();
@@ -3375,9 +3465,16 @@ function navReserve() {
   return Math.max(0, Math.round(c.getBoundingClientRect().right - $('card').getBoundingClientRect().left + 8));
 }
 function hudInsets() {
-  const t = barBottom(), l = navReserve();
-  if (!iso.part || !HUD.on) return { l, r: 0, b: 0, t };
-  return dockLayout() ? { l, r: 0, b: Math.round(height * DOCK_H) + 8, t } : { l, r: SCREEN_W * uiScale + 20, b: 0, t };
+  const t = barBottom(), l = navReserve(), g = guideInset();
+  if (!iso.part || !HUD.on) return { l, r: 0, b: g, t };
+  return dockLayout() ? { l, r: 0, b: Math.max(g, Math.round(height * DOCK_H) + 8), t } : { l, r: SCREEN_W * uiScale + 20, b: g, t };
+}
+// The guide's card sits at the foot of the view on a desktop, so what is framed stays above it. Stacked, it is under
+// the view and takes nothing.
+function guideInset() {
+  const g = $('guide');
+  if (!guide.on || g.hidden || stacked()) return 0;
+  return Math.max(0, Math.round($('card').getBoundingClientRect().bottom - g.getBoundingClientRect().top + 8));
 }
 function setScreens(on) {
   HUD.on = on;
@@ -5027,7 +5124,8 @@ function renderOverview(box) {
   box.append(el('h2', null, 'MinimaK SPM1'));
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
   const acts = el('div', 'actions');
-  acts.append(action('Take the tour', startTour, true, 'act:tour'), action('Where does it go?', () => { startQuiz(); $('quizChoices').querySelector('button')?.focus(); }, false, 'act:quiz'));
+  acts.append(action('Take the tour', startTour, true, 'act:tour'), action('Where does it go?', () => { startQuiz(); $('quizChoices').querySelector('button')?.focus(); }, false, 'act:quiz'),
+    action('Guided analysis', () => guideStart(), false, 'act:guide'));
   box.append(acts, el('p', 'note', `The tour: ${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow; Next in the inspect bar goes on, Done leaves. Where does it go?: ${QUIZ_N} parts are lifted out in turn, and you click where each one goes.`));
   box.append(el('h3', null, 'How a run goes'));
   const ol = el('ol', 'run');
@@ -5274,6 +5372,7 @@ function linkOf() {
 }
 let linkKey = null, linkAt = 0;
 function writeLink() {
+  if (store.quiet) return; // the guided analysis leaves no history and no address behind
   const h = linkOf();
   if (h === location.hash) return;
   const key = linkKeyNow();
@@ -5317,10 +5416,14 @@ function applyLink(h) {
   if (v.length === 6 && v.every(Number.isFinite)) lookFrom(v[0], v[1], { zoom: clamp(v[2], ZOOM_MIN, ZOOM_MAX), target: new V3(v[3], v[4], v[5]) });
   linkKey = linkKeyNow();
 }
-window.addEventListener('popstate', () => applyLink(location.hash));
+// Back during the guided analysis gives back what it found first, then goes back as usual.
+window.addEventListener('popstate', () => { if (guide.on) guideExit({ url: false, focus: false }); applyLink(location.hash); });
+// Copy link copies only on a click. In the guided analysis it copies the link of what is shown without writing it to
+// the address.
 $('bLink').addEventListener('click', async () => {
-  writeLink();
-  try { await navigator.clipboard.writeText(location.href); announce('Link copied.'); } catch { announce('The link could not be copied; it is in the address bar.'); }
+  if (guide.on) guide.copies++; else writeLink();
+  const href = guide.on ? `${location.href.split('#')[0]}${linkOf()}` : location.href;
+  try { await navigator.clipboard.writeText(href); announce('Link copied.'); } catch { announce(guide.on ? 'The link could not be copied.' : 'The link could not be copied; it is in the address bar.'); }
 });
 
 // ---------- Modebar ----------
@@ -5965,6 +6068,825 @@ window.addEventListener('keydown', (e) => {
   if (used) { touched = true; dirty = true; if (onStage) e.preventDefault(); }
 });
 
+// ---------- Guided analysis ----------
+// A walkthrough of the viewer on the SPM1 itself (PLAN-3.md). Each step asks one question, rings the real control,
+// lets you try it, and says what shows when it works; Show this step does it with the call a click makes. A step is
+// { ch, id, q, how, look, need, act, done, base, target }: `need` sets up the state it starts from with the controls'
+// own calls, `done(base)` says whether the page is in the state it asks for (null: nothing to check), `target` is the
+// control (an element) or a part ({ box }). The guide keeps its own state and leaves none: nothing is stored or written
+// to the address while it runs, and Exit or Finish gives back everything it found.
+const GUIDE_CHAPTERS = ['A viewport, bolt by bolt', 'Orient the view', 'Find hardware', 'See inside', 'Inspect a connection', 'Read the evidence', 'Use the result'];
+const gPiece = (part, start) => (piecesOf.get(part) || []).find((pc) => pc.userData.label.startsWith(start)) || null;
+const gLeft = () => gPiece('viewport', 'Left viewport');
+const gTf = () => (iso.part === 'tf' && iso.focus) || (piecesOf.get('tf') || [])[0] || null;
+const gRB = () => gPiece('gaskets', 'Right–back');
+const BOLTS = { part: 'viewport', sub: '16 bolts' };
+const gStale = (t) => t !== guide.seq || !guide.on;
+const gSleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const phoneBar = () => $('isobar').classList.contains('compact');
+const underMore = () => (phoneBar() ? ' (under <b>⋯</b>)' : '');
+const tapOr = (tap, click) => (coarse ? tap : click);
+const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
+// Wait until the camera and the parts have stopped (the overlay's own clock), at most `max` s.
+async function gSettle(t, max = 2.5) {
+  const t0 = performance.now();
+  await gSleep(60);
+  while (!gStale(t) && performance.now() - t0 < max * 1000) {
+    if (!glide && performance.now() / 1000 - ov.at > 0.15) return;
+    await gSleep(50);
+  }
+}
+// A camera move with the viewer's glide (decelerating into a hold); under reduced motion it cuts.
+function gGlide(fn, dur = 0.8) {
+  fn();
+  if (!reduceMotion.matches) glide = { at: performance.now() / 1000, dur, from: null };
+  touched = true;
+  dirty = true;
+}
+function gHome() { gGlide(() => { lookFrom(HOME.az, HOME.el); fitAll(); }, 0.9); }
+// The assembly, with what a step needs: the selection, the switches, every part shown, a theme.
+function gAssembly(o = {}) {
+  if (quiz.on) endQuiz(false);
+  setMore(false);
+  if (iso.part) { endShow(false); endInspect(); }
+  if (state.explode !== !!o.explode) setExplode(!!o.explode);
+  if (o.cut != null && state.cut !== o.cut) setCut(o.cut);
+  if (o.unhide && hidden.size) setHidden([...hidden], false);
+  if (state.select !== (o.select ?? null)) select(o.select ?? null, { scroll: false });
+  if (o.theme && themeName() !== o.theme) setLook(o.theme);
+}
+// A part inspected, at a piece, with its switches, step, kept sheets and Show me as a step needs them. A new part or
+// piece is first turned to `view`, so the glide out of the machine is the step's own.
+function gPart(id, pc, o = {}) {
+  if (quiz.on) endQuiz(false);
+  if (state.explode) setExplode(false);
+  if (hidden.has(id)) setHidden([id], false);
+  const moving = iso.part !== id || iso.focus !== pc;
+  if (moving && o.view) lookFrom(...o.view);
+  if (moving) inspect(id, pc);
+  if (o.context != null && iso.context !== o.context) setContext(o.context);
+  if (!HUD.on) setScreens(true);
+  if (o.joint) { if (!iso.joint) { if (iso.apart) setApart(false); setJoint(true); } }
+  else {
+    if (iso.joint) setJoint(false);
+    if (iso.apart !== !!o.apart) setApart(!!o.apart);
+  }
+  if ((o.step ?? null) !== iso.step) setStep(o.step ?? null);
+  if (o.pins) {
+    for (const x of [...state.pins]) if (!o.pins.includes(x.sub)) unpinSheet(x);
+    for (const sub of o.pins) if (!isPinned({ part: id, sub })) pinSheet(id, sub);
+    for (const sub of o.pins) HUD.folded.delete(sheetKey({ part: id, sub }));
+    // The last one is the sheet the step reads: in the bottom sheet, the card shown.
+    if (o.pins.length) revealSheet({ part: id, sub: o.pins.at(-1) }); else renderHud();
+  }
+  if (o.show) showMe(id, o.show, pc); else if (iso.show) endShow(false);
+  // A step that points into the Part tab opens it: the inspector unfolded, or else the part card open.
+  if (o.tab) {
+    if (!stacked() && !panels.insp) setPanel('insp', true);
+    if (HUD.folded.delete('part')) renderHud();
+    if (tab !== o.tab) setTab(o.tab);
+  }
+  if (o.up != null && dockLayout() && HUD.up !== o.up) setSheetUp(o.up, false);
+}
+function gTree() { if (!panels.tree && !stacked()) setPanel('tree', true); }
+function gType(v) { const s = $('search'); if (s.value === v) return; s.value = v; s.dispatchEvent(new Event('input', { bubbles: true })); }
+function gSlide(inp, v) { inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); }
+// Where the Part tab's controls are: beside the view, else the part card in the column. Stacked, the Part tab under the
+// view, where the rows are whole (the bottom sheet shows them a few lines at a time).
+function gHost() {
+  const card = HUD.els.get('part');
+  return partBeside() || stacked() || !card?.getClientRects().length ? $('inspBody') : card;
+}
+const gRow = (sub, show) => gHost().querySelector(`[data-fk="${CSS.escape(`${show ? 'show' : 'sub'}:${sub}`)}"]`);
+const gLink = (id) => gHost().querySelector(`[data-fk="link:${id}"]`);
+const gTerm = () => gHost().querySelector('.term');
+const gChip = () => gHost().querySelector('.chips .chip');
+const gSheet = (sub) => HUD.els.get(sheetKey({ part: iso.part, sub })) || null;
+// A tag on a sheet: on the row that starts with `row`, else the last one with that id (the sheet's sources).
+function gTag(sub, row, id) {
+  const tags = [...(gSheet(sub)?.querySelectorAll('button.ref') || [])].filter((b) => b.textContent === id);
+  return (row && tags.find((b) => b.closest('tr')?.textContent.startsWith(row))) || tags.at(-1) || null;
+}
+const gHit = (text) => [...document.querySelectorAll('#tree .ti-hit')].find((li) => li.textContent === text) || null;
+const gNd = () => [...document.querySelectorAll('#treePanel .caret')].find((b) => b.textContent === 'Listed, not drawn') || null;
+const gCallout = (name) => [...$('callouts').children].find((c) => c.textContent.includes(name)) || null;
+const gRun = () => $('inspBody').querySelector('ol.run .chip');
+const gDims = () => [...document.querySelectorAll('#draft [data-dim]')].filter((g) => g.getClientRects().length);
+// Light one piece with the viewer's own highlight (the light a Pieces row gives), until the step is done or left.
+function gLight(pc) { gUnlight(); guide.lit = pc; state.rowPiece = pc; refreshLit(); }
+function gUnlight() { if (guide.lit && state.rowPiece === guide.lit) { state.rowPiece = null; refreshLit(); } guide.lit = null; }
+// The loupe, shown over a point of the view for a moment, as a finger held there would show it.
+async function gLoupe(t, box) {
+  const s = toScreen(box.getCenter(new V3())), r = stage.getBoundingClientRect();
+  loupe.on = true;
+  loupe.el.hidden = false;
+  moveLoupe(r.left + s.x, r.top + s.y);
+  await gSleep(2600);
+  if (!gStale(t) && !drag) closeLoupe();
+}
+
+const GUIDE_STEPS = [
+  // 1. A viewport, bolt by bolt: where it is, how it comes off, how long a bolt is and where that number comes from.
+  { ch: 0, id: 'first.find', q: 'Where is the left viewport, the window the webcam looks through?',
+    how: () => `It is lit and ringed on the model. ${tapOr('Double-tap', 'Double-click')} it, or select <b>Viewports</b> in the assembly list and press <b>Inspect on its own</b> (<kbd>I</kbd>).`,
+    look: 'The rest of the machine fades to a ghost and the viewport lifts out. The lateral port it bolts to stays half solid, with its bolts and nuts: that is where it mounts.',
+    need: () => { gAssembly({ unhide: true }); gHome(); gLight(gLeft()); },
+    act: () => inspect('viewport', gLeft()),
+    done: () => iso.part === 'viewport',
+    target: () => (iso.part ? null : { box: boxOfPiece(gLeft()) }) },
+  { ch: 0, id: 'first.apart', q: 'How does it come off its port?',
+    how: () => `Switch <b>Take apart</b> on in the inspect bar${underMore()}, or press <kbd>T</kbd>.`,
+    look: 'Seen from three-quarters, the 16 nuts come off the back and the 16 bolts slide out of the flange; the flange and its copper gasket part along the port’s axis.',
+    need: () => gPart('viewport', gLeft(), { view: [HOME.az, HOME.el] }),
+    act: () => setApart(true),
+    done: () => iso.apart,
+    target: () => $('bApart') },
+  { ch: 0, id: 'first.steps', q: 'What comes off first, and where did the bolts sit?',
+    how: 'Step to <b>Step 2 / 4</b> with the arrows beside <b>Step</b> in the inspect bar.',
+    look: '<b>Step 2 of 4 · 16 bolts</b>: “Draw out the 16 bolts, M8 × 50 mm (13 mm spanner).” The bolts are out, each head numbered in star order, and the flange’s 16 empty holes show where they sat.',
+    need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
+    act: () => setStep(2),
+    done: () => iso.apart && iso.step === 2,
+    target: () => $('bStepNext') },
+  { ch: 0, id: 'first.showme', q: 'How long is one of these bolts?',
+    how: () => `Choose <b>Show me</b> on the <b>16 bolts</b> row: the frame button at the end of the row under <b>Made of</b>${partBeside() ? ' in the Part tab' : ''}. Or focus the row and press <kbd>Z</kbd>.`,
+    look: 'The camera closes in on one bolt and draws its sizes under the head: <b>M8 × 50 mm</b>, the <b>grip 41 mm</b> it spans, <b>13 mm across flats</b>. The bar names where it is: Left quarter › Viewports › Left viewport (webcam) › 16 bolts.',
+    need: () => gPart('viewport', gLeft(), { apart: true, step: 2, tab: 'part', view: [HOME.az, HOME.el] }),
+    act: () => showMe('viewport', '16 bolts', gLeft()),
+    done: () => iso.show?.sub === '16 bolts',
+    target: () => gRow('16 bolts', true) },
+  { ch: 0, id: 'first.sheet', q: 'Where does “M8 × 50 mm” come from?',
+    how: () => `Keep the bolts’ sheet: ${tapOr('tap a bolt, then <b>Keep</b>', 'click a bolt')}, or the <b>16 bolts</b> row under <b>Made of</b>.`,
+    look: 'The sheet <b>DN100CF flange bolts</b> opens, joined to the bolt by a leader line. Its <b>Length</b> row reads M8 × 50 mm, tagged <b>derived</b>: the 41 mm grip, a nut and two threads, rounded up to a stock length.',
+    need: () => gPart('viewport', gLeft(), { apart: true, step: 2, show: '16 bolts', pins: [], tab: 'part', view: [HOME.az, HOME.el] }),
+    act: () => keepSheet('viewport', '16 bolts', gLeft()),
+    done: () => isPinned(BOLTS),
+    target: () => (isPinned(BOLTS) ? gSheet('16 bolts') : gRow('16 bolts')) },
+  { ch: 0, id: 'first.source', below: true, q: 'Which source gives the Ø8.4 mm holes the bolts pass through?',
+    how: 'On the bolts’ sheet, press the <b>S9</b> tag on the <b>Holes they pass</b> row. A tag works the same anywhere on the page.',
+    look: 'The Sources tab opens on <b>S9</b>, MBE-Komponenten’s ConFlat flange, gasket and tube table, with what was taken from it. Above it: <b>← Back to the part tab</b>.',
+    need: () => { gPart('viewport', gLeft(), { apart: true, step: 2, show: '16 bolts', pins: ['16 bolts'], tab: 'part', up: true, view: [HOME.az, HOME.el] }); },
+    act: () => { const b = gTag('16 bolts', 'Holes', 'S9'); if (b) { b.focus({ preventScroll: true }); b.click(); } else showSource('S9'); },
+    done: () => tab === 'sources',
+    target: () => gTag('16 bolts', 'Holes', 'S9') },
+  { ch: 0, id: 'first.back', below: true, q: 'Can you get back to the same piece?',
+    how: 'Press <b>← Back to the part tab</b> above S9.',
+    look: 'The left viewport’s Part tab is back, the bolts’ sheet still kept and Show me still on the bolt: nothing was lost on the way.',
+    need: () => {
+      gPart('viewport', gLeft(), { apart: true, step: 2, show: '16 bolts', pins: ['16 bolts'], view: [HOME.az, HOME.el] });
+      if (tab !== 'sources' || !$('inspBody').querySelector('.src-back')) { const b = gTag('16 bolts', 'Holes', 'S9'); if (b) { b.focus({ preventScroll: true }); b.click(); } else showSource('S9'); }
+    },
+    act: () => $('inspBody').querySelector('.src-back')?.click(),
+    done: () => tab === 'part' && iso.part === 'viewport' && iso.focus === gLeft() && isPinned(BOLTS),
+    target: () => $('inspBody').querySelector('.src-back') },
+  { ch: 0, id: 'first.home', q: 'Can the viewport find its way home?',
+    how: 'Press <b>Done</b> in the inspect bar. <kbd>Esc</kbd> steps back one level at a time instead: Show me, the step, the piece, then the part.',
+    look: 'In reverse: the bolts and nuts go back in, the viewport flies home onto its port while the camera returns, and the machine turns solid. The assembled SPM1 faces you again.',
+    need: () => gPart('viewport', gLeft(), { apart: true, step: 2, pins: ['16 bolts'], tab: 'part', view: [HOME.az, HOME.el] }),
+    act: () => endInspect(),
+    done: () => !iso.part,
+    target: () => $('bDone') },
+
+  // 2. Orient the view.
+  { ch: 1, id: 'orient.turn', q: 'What does the far side look like?',
+    how: () => tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.'),
+    look: 'Sideways spins the machine about its vertical axis; up and down tilts it. The vertical always stays up.',
+    need: () => { gAssembly(); gHome(); },
+    base: () => ({ az: goal.az, el: goal.el }),
+    act: () => gGlide(() => lookFrom(goal.az + 150, goal.el)),
+    done: (b) => Math.abs(goal.az - b.az) > 25 || Math.abs(goal.el - b.el) > 15,
+    target: () => stage },
+  { ch: 1, id: 'orient.pan', q: 'Can you slide the machine aside?',
+    how: () => tapOr('Drag with two fingers.', 'Right-drag, Shift-drag or middle-drag. Or switch on the pan button at the view’s left edge (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.'),
+    look: 'The machine slides without turning, and the point it turns about moves with it.',
+    base: () => ({ t: goal.target.clone() }),
+    act: () => gGlide(() => panBy(-140, 0)),
+    done: (b) => goal.target.distanceTo(b.t) > 3,
+    target: () => (coarse ? stage : document.querySelector('[data-drag]')) },
+  { ch: 1, id: 'orient.zoom', q: 'Can you get close to the coils?',
+    how: () => tapOr('Pinch on the model.', 'Scroll the wheel over the coils: it zooms toward the pointer. The zoom buttons and <kbd>+</kbd> <kbd>−</kbd> zoom too.'),
+    look: 'The machine grows about the pointer, and the scale bar’s length and label change with it.',
+    base: () => ({ z: goal.zoom }),
+    act: () => gGlide(() => zoomBy(1.8)),
+    done: (b) => goal.zoom > b.z * 1.3,
+    target: () => (coarse ? stage : $('bZoomIn')) },
+  { ch: 1, id: 'orient.scale', q: 'How big is it?',
+    how: () => `Read the scale bar at the view’s lower left${blueprint ? ', or the scale in the title block' : ''}, and compare it with any part, near or far.`,
+    look: 'The bar is true at every zoom, because the view has no perspective: a part at the back is drawn at the same scale as one at the front.',
+    target: () => $('scale') },
+  { ch: 1, id: 'orient.views', q: 'What does the machine look like from above?',
+    how: 'Open <b>Views</b> at the view’s left edge and pick <b>Above</b> (<kbd>4</kbd>). A click on an axis end of the triad, top right, looks along that axis.',
+    look: 'The view turns to look straight down: the ring of eight TF coils round the vessel, and the four corner posts.',
+    act: () => gGlide(() => lookFrom(...VIEWS.top)),
+    done: () => goal.el > 80,
+    target: () => $('bViews') },
+  { ch: 1, id: 'orient.home', q: 'Lost? Get back to the whole machine.',
+    how: () => `Press the home button at the view’s left edge, or <kbd>0</kbd>${coarse ? '' : ', or double-click empty space'}. While you inspect a part, home frames that part.`,
+    look: 'The three-quarter view of the whole SPM1, stand and pump included.',
+    act: () => gGlide(resetView),
+    done: () => Math.abs(goal.az - nearestAz(HOME.az)) < 1 && Math.abs(goal.el - HOME.el) < 1 && Math.abs(goal.zoom / home.zoom - 1) < 0.03,
+    target: () => $('bHome') },
+  { ch: 1, id: 'orient.panels', below: true, q: 'Can the model have the whole window?',
+    how: () => (stacked() ? 'On a narrow screen the panels sit under the view: scroll down to the inspector, then the assembly list.'
+      : 'Press the panels button at the view’s left edge (<kbd>F</kbd>). Drag the edge between a panel and the view to size it, and double-click the edge for the default width. A folded panel’s rail opens it again.'),
+    look: () => (stacked() ? 'Below the view: the inspector’s tabs, then the assembly list.' : 'Both panels fold to thin rails and the view takes the width. Press it again to bring them back.'),
+    need: () => gAssembly(),
+    base: () => ({ tree: panels.tree, insp: panels.insp }),
+    act: () => (stacked() ? $('inspPanel').scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth' }) : togglePanels()),
+    done: (b) => (stacked() ? null : panels.tree !== b.tree || panels.insp !== b.insp),
+    target: () => (stacked() ? $('inspPanel') : $('bPanels')) },
+
+  // 3. Find hardware.
+  { ch: 2, id: 'find.search', below: true, q: 'Which parts use M8 bolts?',
+    how: 'Type <b>M8</b> in the assembly list’s search box. <kbd>/</kbd> puts the cursor there; when the list is folded to its rail, its magnifier opens it.',
+    look: 'The list narrows to the parts with M8 hardware, each with its matching rows: the joint flanges’ 20 bolts and nuts, the viewports’ 16 bolts and nuts…',
+    need: () => { gAssembly(); gTree(); gType(''); },
+    act: () => { findPart(); gType('M8'); },
+    done: () => /\bm8\b/i.test($('search').value),
+    target: () => $('search') },
+  { ch: 2, id: 'find.pick', q: 'Which row is the left viewport’s?',
+    how: 'Click the row <b>Left viewport (webcam) · 16 bolts</b> under Viewports.',
+    look: 'It inspects that piece and keeps the bolts’ sheet: a hit takes you straight to the hardware.',
+    need: () => { gAssembly(); gTree(); gType('M8'); },
+    act: () => gHit('Left viewport (webcam) · 16 bolts')?.click(),
+    done: () => iso.part === 'viewport' && iso.focus === gLeft() && isPinned(BOLTS),
+    target: () => gHit('Left viewport (webcam) · 16 bolts') },
+  { ch: 2, id: 'find.select', q: 'What is the difference between selecting and inspecting?',
+    how: () => `${tapOr('Tap', 'Click')} <b>Toroidal field coils</b> in the list or on the model: that selects. ${tapOr('Double-tap', 'Double-click')}, <b>Inspect on its own</b> or <kbd>I</kbd> inspects. From the keyboard the list is one Tab stop: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> selects, <kbd>Space</kbd> hides.`,
+    look: 'Selected, the coils take the selection colour and outline, the rest fades back and the Part tab describes them, but the machine stays whole. <b>Zoom to it</b> frames them without lifting them out.',
+    need: () => { gAssembly(); gTree(); gType(''); },
+    act: () => select('tf'),
+    done: () => state.select === 'tf' && !iso.part,
+    target: () => document.querySelector('#tree .ti[data-part="tf"]') },
+  { ch: 2, id: 'find.hide', below: true, q: 'Can you see past the table?',
+    how: 'Press the eye on the <b>Optical table</b> row in the list. <b>Hide</b> in the Part tab, or <kbd>H</kbd>, hides the selected part; the eye on a group hides the whole group.',
+    look: 'The table goes and its eye closes: the pump and supplies under it are in the open.',
+    need: () => { gAssembly(); gTree(); gType(''); if (hidden.has('table')) setHidden(['table'], false); document.querySelector('#tree .ti[data-part="table"]')?.scrollIntoView({ block: 'nearest' }); },
+    act: () => { setHidden(['table'], true); renderInspector(); },
+    done: () => hidden.has('table'),
+    target: () => document.querySelector('#tree .ti[data-part="table"] .eye') },
+  { ch: 2, id: 'find.show', below: true, q: 'And back again?',
+    how: 'Press the same eye again, or select the table and press <kbd>H</kbd>.',
+    look: 'The table is back. Inspecting a hidden part shows it again too.',
+    need: () => { gAssembly(); gTree(); gType(''); if (!hidden.has('table')) setHidden(['table'], true); },
+    act: () => { setHidden(['table'], false); renderInspector(); },
+    done: () => !hidden.has('table'),
+    target: () => document.querySelector('#tree .ti[data-part="table"] .eye') },
+  { ch: 2, id: 'find.notdrawn', below: true, q: 'Is the turbomolecular pump in the model?',
+    how: 'Open <b>Listed, not drawn</b> at the foot of the assembly list.',
+    look: 'Options and upgrades named in the sources but not drawn, each with its status and source. The turbomolecular pump is an upgrade (S4). Everything drawn is in the groups above.',
+    need: () => { gAssembly({ unhide: true }); gTree(); gType(''); gNd()?.scrollIntoView({ block: 'nearest' }); },
+    act: () => { const b = gNd(); if (b?.getAttribute('aria-expanded') === 'false') b.click(); b?.scrollIntoView({ block: 'nearest' }); },
+    done: () => gNd()?.getAttribute('aria-expanded') === 'true',
+    target: () => gNd() },
+
+  // 4. See inside.
+  { ch: 3, id: 'inside.cut', q: 'Where is the glow?',
+    how: 'Switch <b>Cutaway</b> in the top bar off, then on again (<kbd>C</kbd>).',
+    look: 'With Cutaway on, the top of the vessel is cut away to show the plasma inside; off, the vessel is closed over it.',
+    need: () => { gAssembly({ unhide: true }); gGlide(() => { lookFrom(HOME.az, 34); fitAll(); }, 0.9); },
+    base: () => ({ last: state.cut, n: 0 }),
+    act: () => setCut(!state.cut),
+    done: (b) => { if (state.cut !== b.last) { b.last = state.cut; b.n++; } return b.n > 0; },
+    target: () => $('bCut') },
+  { ch: 3, id: 'inside.explode', q: 'How does the whole machine come apart?',
+    how: 'Switch <b>Explode</b> on (<kbd>E</kbd>). Cutaway greys out while the machine is apart.',
+    look: 'The quarters move out, the coils and ports lift off them, the PF and satellite coils rise, and the table, supplies and pump drop away. Cables and the pump hose stay plugged in at both ends.',
+    need: () => gAssembly({ unhide: true }),
+    act: () => setExplode(true),
+    done: () => state.explode,
+    target: () => $('bExplode') },
+  { ch: 3, id: 'inside.spread', q: 'Can they go further apart?',
+    how: 'Drag the <b>Spread</b> slider beside Explode (0.4× to 2.5×), or press <kbd>[</kbd> and <kbd>]</kbd>. <kbd>A</kbd> fits everything shown in the view.',
+    look: 'The gaps between the components grow or shrink; the view fits them again when you let go.',
+    need: () => gAssembly({ explode: true }),
+    base: () => ({ s: state.spread }),
+    act: () => gSlide($('sSpread'), state.spread < 1.6 ? 1.9 : 1),
+    done: (b) => Math.abs(state.spread - b.s) > 0.05,
+    target: () => $('sSpread') },
+  { ch: 3, id: 'inside.together', q: 'And back together?',
+    how: 'Switch <b>Explode</b> off (<kbd>E</kbd>).',
+    look: 'Every component flies home, and Cutaway can be switched again.',
+    need: () => gAssembly({ explode: true }),
+    act: () => setExplode(false),
+    done: () => !state.explode,
+    target: () => $('bExplode') },
+  { ch: 3, id: 'inside.themes', q: 'Which drawing reads best for you?',
+    how: 'Pick a theme at the right of the top bar: <b>Colour</b>, <b>Greyscale</b>, <b>Blueprint</b> or <b>Hologram</b>. In the group, <kbd>←</kbd> <kbd>→</kbd> move to the next.',
+    look: 'The same machine drawn again. Greyscale shades it like a CAD rendering, Blueprint sets it out as a drawing sheet, Hologram lets you see through it. Everything works in every theme, and Exit gives yours back.',
+    need: () => gAssembly(),
+    base: () => ({ t: themeName() }),
+    act: () => setLook(LOOKS[(LOOKS.indexOf(themeName()) + 1) % LOOKS.length]),
+    done: (b) => themeName() !== b.t,
+    target: () => $('looks') },
+  { ch: 3, id: 'inside.dims', q: 'How tall is the table, and can you move that dimension?',
+    how: () => (gDims().length ? 'In Blueprint the whole machine at rest carries three dimensions in millimetres. Drag a dimension’s line further off, or drag its figure along it; double-click it to put it back.'
+      : 'Blueprint draws three dimensions on the whole machine at rest, on a desktop: there is no room for them here. The title block still gives the scale.'),
+    look: () => { const f = [...document.querySelectorAll('#draft [data-dim] .dim')].map((e) => e.textContent).filter(Boolean); return `The dimension moves as on a drawing. The figures${f.length ? ` (${esc(f.join(', '))})` : ''} are the model’s own sizes: the table’s height and width, and the torus’s centre circle, twice R₀ = 230 mm (S2).`; },
+    need: () => { gAssembly({ unhide: true, theme: 'blueprint' }); gHome(); },
+    base: () => ({ d: draft.dims.map((d) => ({ ...d })) }),
+    act: () => { const d = draft.dims[0]; d.k = d.k > 1.3 ? 1 : 1.6; ov.dirty = true; dirty = true; },
+    done: (b) => (gDims().length ? draft.dims.some((d, j) => Math.abs(d.k - b.d[j].k) > 0.03 || Math.abs(d.u - b.d[j].u) > 0.03) : null),
+    target: () => gDims()[0] || $('readout') },
+
+  // 5. Inspect a connection.
+  { ch: 4, id: 'connect.pieces', q: 'Which of the eight TF coils is which?',
+    how: () => `Step through the coils with the arrows beside <b>All</b> in the inspect bar (<kbd>,</kbd> <kbd>.</kbd>), or ${tapOr('tap', 'click')} one coil. A row of the <b>Pieces</b> table picks one too.`,
+    look: 'One coil stays solid and the other seven fade, and the bar counts it: <b>1 / 8</b>. <b>All</b> brings every coil back.',
+    need: () => gPart('tf', null, { view: [HOME.az, HOME.el] }),
+    act: () => stepPiece(1),
+    done: () => iso.part === 'tf' && !!iso.focus,
+    target: () => $('bNext') },
+  { ch: 4, id: 'connect.ghost', q: 'Can you hide the rest of the machine?',
+    how: () => `Switch <b>Ghost</b> off in the inspect bar${underMore()}, or press <kbd>G</kbd>.`,
+    look: 'The see-through ghost of the machine goes; the parts the coil is joined to stay half solid. Switch it on again to see where the coil sits.',
+    need: () => gPart('tf', gTf(), { view: [HOME.az, HOME.el], context: true, tab: 'part' }),
+    base: () => ({ c: iso.context }),
+    act: () => setContext(!iso.context),
+    done: (b) => iso.context !== b.c,
+    target: () => $('bContext') },
+  { ch: 4, id: 'connect.attach', q: 'What is a TF coil wound onto?',
+    how: () => `Under <b>How it attaches</b>${partBeside() ? ' in the Part tab' : ''}, press <b>Vessel quarters</b>.`,
+    look: 'It inspects the quarter nearest the coil. The sentence above the link says how the two are joined: each coil is wound onto a copper former mounted on an elbow, two per quarter (S4).',
+    need: () => gPart('tf', gTf(), { view: [HOME.az, HOME.el], context: true, tab: 'part' }),
+    act: () => followLink('vessel'),
+    done: () => iso.part === 'vessel',
+    target: () => gLink('vessel') },
+  { ch: 4, id: 'connect.back', q: 'And back to the coil?',
+    how: 'Press <b>← Toroidal field coils</b> at the start of the inspect bar, or <kbd>Backspace</kbd>.',
+    look: 'Back on the coil you came from, at the same piece.',
+    need: () => { if (!(iso.part === 'vessel' && iso.history.at(-1)?.part === 'tf')) { gPart('tf', gTf(), { view: [HOME.az, HOME.el], tab: 'part' }); followLink('vessel'); } },
+    act: () => goBack(),
+    done: () => iso.part === 'tf',
+    target: () => $('bBack') },
+  { ch: 4, id: 'connect.apart', q: 'How far apart do the viewport’s parts go?',
+    how: () => `Take the left viewport apart (<b>Take apart</b>, <kbd>T</kbd>), then drag its own <b>Spread</b> slider in the inspect bar${underMore()}, or press <kbd>[</kbd> <kbd>]</kbd>.`,
+    look: 'This spread is the part’s own, apart from the machine’s: the nuts, bolts, flange and gasket move further apart or closer along the port’s axis.',
+    need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
+    base: () => ({ s: iso.apartSpread }),
+    act: () => { if (!iso.apart) setApart(true); gSlide($('sApart'), iso.apartSpread < 1.6 ? 1.9 : 1); },
+    done: (b) => iso.apart && Math.abs(iso.apartSpread - b.s) > 0.05,
+    target: () => $('sApart') },
+  { ch: 4, id: 'connect.steps', q: 'Which bolt is which?',
+    how: () => `Step to <b>Step 2 / 4</b>, then ${tapOr('hold a finger on one bolt head: the loupe names it', 'rest the pointer on one bolt head')}.`,
+    look: 'Each head carries its turn in the star order, the cross pattern a flange is tightened in. The tooltip names the bolt under the pointer, <b>Bolt n of 16 · star m</b>: its place round the ring from the top, and its turn.',
+    need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
+    act: () => setStep(2),
+    done: () => iso.apart && iso.step === 2,
+    target: () => $('bStepNext') },
+  { ch: 4, id: 'connect.joint', q: 'How does a vessel joint open?',
+    how: 'On a copper gasket (here the right–back joint’s), switch <b>Open this joint</b> on (<kbd>J</kbd>). Step through it with the arrows beside <b>Step</b>.',
+    look: 'The joint opens in four steps: the 20 nuts off in star order, the 20 bolts out, the two quarters eased apart, the gasket out last. A copper gasket is never reused.',
+    need: () => gPart('gaskets', gRB(), { view: [HOME.az, HOME.el] }),
+    act: () => setJoint(true),
+    done: () => !!iso.joint,
+    target: () => $('bJoint') },
+  { ch: 4, id: 'connect.turn', q: 'The parts come apart toward you. What now?',
+    how: () => `You are looking along the joint’s axis, so its parts hide one another and <b>Turn to see</b> appears in the inspect bar${phoneBar() ? ' (⋯ carries a dot: it is under <b>⋯</b>)' : ''}. Press it.`,
+    look: 'The view turns until the joint’s parts lie across it, a little short of square so it keeps some depth. The view never turns by itself.',
+    need: () => {
+      gPart('gaskets', gRB(), { joint: true, view: [HOME.az, HOME.el] });
+      const a = stepAxis();
+      if (a) gGlide(() => { lookFrom(Math.atan2(a.y, a.x) / DEG, clamp(Math.asin(clamp(a.z, -1, 1)) / DEG + 10, -80, 80)); frameIsolated(false); });
+    },
+    base: () => ({ was: turnOffered() }),
+    act: () => turnToSee(),
+    done: (b) => (b.was ? !!iso.joint && !turnOffered() : null),
+    target: () => $('bTurn') },
+
+  // 6. Read the evidence.
+  { ch: 5, id: 'evidence.callouts', q: 'What is the viewport made of?',
+    how: () => `Read the numbered <b>Made of</b> rows${partBeside() ? ' in the Part tab' : ''}. Taken apart, the same numbers label the sub-parts on the model.`,
+    look: '1 Copper gasket, 2 Viewport flange, 3 Window glass, 4 16 bolts, 5 16 nuts. A callout and its row carry the same number, and pointing at a row lights its sub-part.',
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: [], tab: 'part', view: [HOME.az, HOME.el] }),
+    target: () => gHost().querySelector('ul.subs') },
+  { ch: 5, id: 'evidence.preview', q: 'Can you glance at a sheet without keeping it?',
+    how: () => tapOr('Tap a sub-part, or a numbered callout on the model.', 'Rest the pointer on a sub-part for a moment, or click a numbered callout.'),
+    look: 'Its sheet opens with a dashed edge, labelled <b>Preview</b>. It stays until you rest on another sub-part; <b>Keep</b> keeps it.',
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: [], view: [HOME.az, HOME.el] }),
+    act: () => setLive({ part: 'viewport', sub: 'Viewport flange' }),
+    done: () => !!state.live,
+    target: () => gCallout('Viewport flange') || stage },
+  { ch: 5, id: 'evidence.compare', q: 'Can you compare two sheets?',
+    how: () => `Keep two: ${tapOr('press <b>Keep</b> on a preview', 'click a sub-part, or press <b>Keep</b> on its preview')}. Here, the flange and the gasket.`,
+    look: () => (dockLayout() ? 'Both are kept: the bottom sheet’s arrows step between them, <b>Kept 1 of 2</b>.' : 'Both sheets stack in the column, each row with its tag. A leader line runs from the sheet under the pointer to its sub-part: the flange’s 16 × Ø8.4 mm holes against the gasket’s 120.5 mm outside diameter.'),
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: [], view: [HOME.az, HOME.el] }),
+    act: () => { keepSheet('viewport', 'Viewport flange', gLeft()); keepSheet('viewport', 'Copper gasket', gLeft()); },
+    done: () => state.pins.length >= 2,
+    target: () => (state.pins.length ? $('sheets') : gCallout('Viewport flange') || stage) },
+  { ch: 5, id: 'evidence.fold', q: 'Too many sheets open?',
+    how: () => (dockLayout() ? '× closes the sheet shown; <b>Close all</b> closes every kept one.' : 'The chevron on a sheet’s bar folds it to its name; <b>Fold all</b> folds every one. × closes a sheet, <b>Close all</b> every kept one.'),
+    look: 'Folded sheets keep their place as one-line bars; their chevron opens them again. A closed sheet is gone until you keep it again.',
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: ['Viewport flange', 'Copper gasket'], view: [HOME.az, HOME.el] }),
+    act: () => (dockLayout() ? closeAllSheets() : foldAllSheets()),
+    done: () => state.pins.length < 2 || state.pins.some((x) => HUD.folded.has(sheetKey(x))),
+    target: () => (dockLayout() ? $('bCloseAll') : $('bFoldAll')) },
+  { ch: 5, id: 'evidence.float', q: 'Can you set a sheet aside, or read it larger?',
+    how: () => (dockLayout() ? 'The sheets are a bottom sheet that peeks under the part. Pull it up by its head (or tap the head, or <b>⌃</b>) to read; push it down, or <kbd>Esc</kbd>, to let it peek.'
+      : 'Drag a sheet by its bar out of the column and drop it on the view. It floats there, kept.'),
+    look: () => (dockLayout() ? 'Pulled up, the sheet takes most of the view to read; let down, it peeks and the part is framed above it. The camera never moves for it.' : 'The sheet floats where you dropped it, and <b>Tidy</b> appears in the column’s head.'),
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: ['Viewport flange', 'Copper gasket'], up: false, view: [HOME.az, HOME.el] }),
+    base: () => ({ up: HUD.up }),
+    act: () => {
+      if (dockLayout()) return setSheetUp(!HUD.up);
+      HUD.pos.set(sheetKey({ part: 'viewport', sub: 'Copper gasket' }), { x: Math.round(width * 0.36), y: Math.round(height * 0.12) });
+      renderHud();
+    },
+    done: (b) => (dockLayout() ? HUD.up !== b.up : HUD.pos.size > 0),
+    target: () => (dockLayout() ? $('bSheetUp') : gSheet('Copper gasket')?.querySelector('.bar')) },
+  { ch: 5, id: 'evidence.tidy', q: () => (dockLayout() ? 'How do you get to the other sheet?' : 'And put it back?'),
+    how: () => (dockLayout() ? 'Step through the kept sheets with the arrows in the bottom sheet’s head.' : 'Press <b>Tidy</b> in the column’s head, or <kbd>L</kbd>: every floating sheet goes back into the column.'),
+    look: () => (dockLayout() ? 'The head says which one shows: <b>Kept 1 of 2</b>.' : 'The sheet is back in the column, in its place.'),
+    need: () => {
+      gPart('viewport', gLeft(), { apart: true, pins: ['Viewport flange', 'Copper gasket'], view: [HOME.az, HOME.el] });
+      if (!dockLayout() && !HUD.pos.size) { HUD.pos.set(sheetKey({ part: 'viewport', sub: 'Copper gasket' }), { x: Math.round(width * 0.36), y: Math.round(height * 0.12) }); renderHud(); }
+    },
+    base: () => ({ card: HUD.card }),
+    act: () => (dockLayout() ? dockStep(-1) : tidySheets()),
+    done: (b) => (dockLayout() ? HUD.card !== b.card : HUD.pos.size === 0),
+    target: () => (dockLayout() ? $('bCardPrev') : $('bTidy')) },
+  { ch: 5, id: 'evidence.crumb', q: 'Where exactly is this nut?',
+    how: () => `Choose <b>Show me</b> on the <b>16 nuts</b> row (or focus it and press <kbd>Z</kbd>). The inspect bar then reads as a path; ${tapOr('tap', 'click')} <b>Viewports</b> in it to go back to the whole part.`,
+    look: 'The path reads <b>Left quarter › Viewports › Left viewport (webcam) › 16 nuts</b>: the quarter it is mounted on, the part, the piece, the sub-part. Each step is a link.',
+    need: () => gPart('viewport', gLeft(), { apart: true, tab: 'part', view: [HOME.az, HOME.el] }),
+    act: () => showMe('viewport', '16 nuts', gLeft()),
+    done: () => iso.show?.sub === '16 nuts',
+    target: () => (iso.show ? $('crumbs') : gRow('16 nuts', true)) },
+  { ch: 5, id: 'evidence.cite', below: true, q: 'Where does the gasket’s “single use” come from?',
+    how: 'On the <b>DN100CF copper gasket</b> sheet, press <b>S6</b> under <b>Sources</b> at its foot. <b>← Back to the part tab</b> returns you.',
+    look: 'S6 is the article on vacuum flanges: how CF and KF joints seal. The sheet’s rows carry S9, the CF standard table.',
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: ['Copper gasket'], tab: 'part', up: true, view: [HOME.az, HOME.el] }),
+    act: () => { const b = gTag('Copper gasket', null, 'S6'); if (b) { b.focus({ preventScroll: true }); b.click(); } else showSource('S6'); },
+    done: () => tab === 'sources',
+    target: () => gTag('Copper gasket', null, 'S6') },
+  { ch: 5, id: 'evidence.basis', q: 'How far can you trust where the viewport is drawn, and its 90 mm clear view?',
+    how: 'Compare the chip <b>Drawn from: photos</b> under the part’s name with the tags on its rows.',
+    look: 'The chip, like the dot in the list, is about the drawn shape and position: the viewports were placed from photos. Each number has its own tag: the 90 mm clear view is S10, a standard Kodial viewport, and which window serves the webcam is <b>assumed</b>.',
+    need: () => gPart('viewport', gLeft(), { tab: 'part', pins: ['Viewport flange'], view: [HOME.az, HOME.el] }),
+    target: () => gChip() },
+  { ch: 5, id: 'evidence.term', below: true, q: 'What does DN100CF mean?',
+    how: () => `${tapOr('Tap', 'Click')} a word with a dotted underline, such as <b>DN100CF</b> in the part’s description, or Tab to it and press <kbd>Enter</kbd>.`,
+    look: 'The definition opens under its paragraph, with its source; one word can explain two (DN and ConFlat). A second click closes it.',
+    need: () => gPart('viewport', gLeft(), { tab: 'part', view: [HOME.az, HOME.el] }),
+    act: () => { const b = gTerm(); if (b && b.getAttribute('aria-expanded') !== 'true') b.click(); },
+    done: () => gTerm()?.getAttribute('aria-expanded') === 'true',
+    target: () => gTerm() },
+
+  // 7. Use the result.
+  { ch: 6, id: 'use.link', q: 'How do you send someone exactly this view?',
+    how: () => `Press the link icon in the inspect bar${phoneBar() ? ' (<b>Copy link</b>, under <b>⋯</b>)' : ''}. It copies a link to this part, piece, its kept sheets and the view: <code>${esc(linkOf().replace(/&view=[^&]*/, ''))}</code>. The guide never copies for you.`,
+    look: 'Opened in any browser, even a fresh one, the link shows the same inspection with the same sheets kept.',
+    need: () => gPart('viewport', gLeft(), { apart: true, pins: ['16 bolts'], view: [HOME.az, HOME.el] }),
+    base: () => ({ n: guide.copies }),
+    done: (b) => guide.copies > b.n,
+    target: () => $('bLink') },
+  { ch: 6, id: 'use.history', q: 'What does the browser’s Back button do here?',
+    how: 'Outside the guide, inspecting another part adds a step to the browser’s history, so <b>Back</b> returns to the part before; turning the view only updates the address. The guide adds no steps: Back now would close the guide first.',
+    look: 'Try it after Exit: inspect two parts, then press Back.' },
+  { ch: 6, id: 'use.run', q: 'In what order is the machine used?',
+    how: 'In the <b>Machine</b> tab, read <b>How a run goes</b>: pump down, let in a little gas, strike the glow, add the magnetic field. Each step names its parts; press one.',
+    look: 'The part is selected and lit on the model, with its Part tab.',
+    need: () => { gAssembly(); setTab('machine'); gRun()?.scrollIntoView({ block: 'nearest' }); },
+    act: () => gRun()?.click(),
+    done: () => !!state.select && !iso.part,
+    target: () => gRun() },
+  { ch: 6, id: 'use.tour', q: 'What does each part do in a run?',
+    how: '<b>Take the tour</b> in the Machine tab inspects the parts in the order of a run: eight stops from the empty chamber to the glow, with <b>Next ›</b> in the inspect bar. Starting it closes this guide and gives your view back first; <b>Guided analysis</b> brings you back here.',
+    look: 'Stop 1 of 8: the vessel.',
+    need: () => { gAssembly(); setTab('machine'); },
+    act: () => $('inspBody').querySelector('[data-fk="act:tour"]')?.click(),
+    target: () => $('inspBody').querySelector('[data-fk="act:tour"]') },
+  { ch: 6, id: 'use.quiz', q: 'Can you place the parts yourself?',
+    how: '<b>Where does it go?</b> lifts a part out above the machine, and you click its place or pick one of four parts: five questions, scored on first tries. Like the tour, it closes this guide first.',
+    look: 'The first question, in a bar above the view.',
+    need: () => { gAssembly(); setTab('machine'); },
+    act: () => $('inspBody').querySelector('[data-fk="act:quiz"]')?.click(),
+    target: () => $('inspBody').querySelector('[data-fk="act:quiz"]') },
+  { ch: 6, id: 'use.settings', below: true, q: 'Is the text too small, or do letters get pressed by accident?',
+    how: 'In the <b>Controls</b> tab, <b>Text size</b> 1×, 1.5× or 2× scales the sheets, the inspect bar, the view’s labels and this card; <b>Single-letter keys</b> can be turned off for speech input.',
+    look: 'The text grows at once. The guide stores nothing, and Exit gives your settings back.',
+    need: () => { gAssembly(); setTab('help'); },
+    base: () => ({ s: uiScale, k: letterKeys }),
+    act: () => setScale(uiScale === 1 ? 1.5 : 1),
+    done: (b) => uiScale !== b.s || letterKeys !== b.k,
+    target: () => $('inspBody').querySelector('[data-fk="scale:1.5"]') },
+  { ch: 6, id: 'use.loupe', q: 'How do you hit a small part with a finger?',
+    how: () => (coarse ? 'Hold a finger still on the model for half a second. A loupe shows the view under it at 3×, with the name of what a tap there would pick; slide to move it, lift to tap there.'
+      : 'On a touch screen, holding a finger still opens a loupe at 3×. With a mouse, a click that hits nothing picks the smallest part within 12 px; on touch, a tap picks the smallest within 24 px.'),
+    look: 'The loupe names what is under it, down to one bolt of a ring.',
+    need: () => gPart('viewport', gLeft(), { apart: true, step: 2, view: [HOME.az, HOME.el] }),
+    act: (t) => gLoupe(t, boxOfSub(gLeft(), '16 bolts')),
+    done: () => (coarse ? loupe.on || null : null),
+    target: () => stage },
+  { ch: 6, id: 'use.controls', below: true, q: 'Where is every control listed?',
+    how: 'The <b>Controls</b> tab lists every mouse, touch and key binding, after its two settings.',
+    look: 'The same bindings this guide used, in one list.',
+    need: () => gAssembly(),
+    act: () => setTab('help'),
+    done: () => tab === 'help',
+    target: () => $('tHelp') },
+  { ch: 6, id: 'use.finish', q: 'That is the whole viewer.',
+    how: 'Replay any chapter from <b>Chapters</b>, or press <b>Finish</b>: your view, sheets and settings come back as they were.',
+    look: '<b>Guided analysis</b> in the top bar opens this again, with <b>Resume</b> to pick up where you left.',
+    need: () => { gAssembly(); gHome(); } },
+];
+const gText = (v) => (typeof v === 'function' ? v() : v || '');
+const gChapterSteps = (ch) => GUIDE_STEPS.filter((s) => s.ch === ch);
+function gFill() {
+  const s = GUIDE_STEPS[guide.i];
+  $('gQ').textContent = gText(s.q);
+  $('gHow').innerHTML = gText(s.how);
+  $('gShow').hidden = !s.act;
+  gMark(true);
+}
+function gHeader() {
+  const s = GUIDE_STEPS[guide.i], list = gChapterSteps(s.ch), N = GUIDE_STEPS.length;
+  $('gChapter').textContent = `${s.ch + 1}. ${GUIDE_CHAPTERS[s.ch]}`;
+  $('gStep').replaceChildren(`Step ${list.indexOf(s) + 1} of ${list.length} · ${guide.i + 1} of ${N} in all`);
+  if (guide.i === 0 && guide.last) {
+    const r = el('button', null, `Resume at ${guide.last + 1} ›`);
+    r.type = 'button';
+    r.addEventListener('click', () => guideGo(guide.last, { focus: true }));
+    $('gStep').append(r);
+  }
+  $('gFill').style.width = `${((guide.i + 1) / N) * 100}%`;
+  $('gBack').disabled = guide.i === 0;
+  $('gNext').textContent = guide.i === N - 1 ? 'Finish' : 'Next ›';
+}
+// Is the page in the state the step asks for? Then Look for turns to a tick and Next becomes the one filled button.
+function gMark(force) {
+  const s = GUIDE_STEPS[guide.i];
+  let ok = null;
+  if (guide.ready && s.done) { try { ok = s.done(guide.base); } catch { ok = false; } }
+  ok = ok == null ? null : !!ok;
+  if (!force && ok === guide.ok) return;
+  const was = guide.ok;
+  guide.ok = ok;
+  const look = gText(s.look), info = !s.done || ok === null;
+  $('gLook').classList.toggle('ok', !!ok);
+  $('gLook').hidden = !look;
+  $('gLook').innerHTML = ok ? `<span class="g-tick">✓ That’s it.</span> ${look}` : info ? look : `<b>Look for:</b> ${look}`;
+  $('gNext').classList.toggle('primary', !!ok || info);
+  if (ok) gUnlight();
+  if (ok && was === false && guide.ready && stacked() && !s.below && scrollY > 0) scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+  if (ok && was === false && guide.ready) $('gLive').textContent = `That’s it. ${$('gLook').textContent.replace(/^✓ That’s it\.\s*/, '')}`;
+}
+// A control out of sight: under ⋯ on a phone, or in a folded panel. The ring goes to the way in, and the card says so.
+function gReach(e) {
+  if (!e) return null;
+  if (e.getClientRects().length) return e;
+  if ($('isoMore').contains(e)) return $('bMore').getClientRects().length ? $('bMore') : null;
+  if ($('inspPanel').contains(e) && !panels.insp) return $('inspPanel').querySelector('.rail');
+  if ($('treePanel').contains(e) && !panels.tree) return $('treePanel').querySelector('.rail-search');
+  return null;
+}
+function gRing(r) {
+  const g = $('gRing');
+  if (!r || r.width < 2 || r.height < 2) { if (!g.hidden) g.hidden = true; return; }
+  const k = [r.left, r.top, r.width, r.height].map(Math.round).join(',');
+  if (g.hidden) g.hidden = false;
+  if (g.dataset.k === k) return;
+  g.dataset.k = k;
+  Object.assign(g.style, { left: `${Math.round(r.left) - 4}px`, top: `${Math.round(r.top) - 4}px`, width: `${Math.round(r.width) + 8}px`, height: `${Math.round(r.height) + 8}px` });
+}
+// A part's place on screen, inside the view.
+function gBoxRect(box) {
+  if (!box || box.isEmpty()) return null;
+  const r = screenRect(box), s = stage.getBoundingClientRect();
+  const x0 = Math.max(s.left, s.left + r.x0), y0 = Math.max(s.top, s.top + r.y0), x1 = Math.min(s.right, s.left + r.x1), y1 = Math.min(s.bottom, s.top + r.y1);
+  return x1 > x0 && y1 > y0 ? { left: x0, top: y0, width: x1 - x0, height: y1 - y0 } : null;
+}
+// The card: at the view's lower left, above the scale bar, on a desktop; across the window's foot where panels stack.
+function gPlace() {
+  const g = $('guide'), dock = stacked(), card = $('card');
+  g.classList.toggle('dock', dock);
+  // Stacked, the card is fixed at the window's foot, and the view gives it room: from the top of the page, the whole
+  // view (its inspect bar, the part and the bottom sheet) sits above the card.
+  if (dock) {
+    if (g.style.left) g.style.left = g.style.bottom = g.style.maxHeight = '';
+    const h = `${Math.max(300, Math.round(innerHeight - (card.getBoundingClientRect().top + scrollY) - g.offsetHeight - 16))}px`;
+    if (card.style.height !== h) card.style.height = h;
+    return;
+  }
+  if (card.style.height) card.style.height = '';
+  const v = card.getBoundingClientRect(), sc = $('scale').getBoundingClientRect();
+  const foot = sc.height ? sc.top : v.bottom - 12;
+  const left = `${Math.round(v.left + Math.max(navReserve(), 12))}px`, bottom = `${Math.round(innerHeight - foot + 8)}px`;
+  const mh = `${Math.max(180, Math.round(foot - 8 - v.top - 12))}px`;
+  if (g.style.left !== left) g.style.left = left;
+  if (g.style.bottom !== bottom) g.style.bottom = bottom;
+  if (g.style.maxHeight !== mh) g.style.maxHeight = mh;
+}
+// Every frame while the guide is on (from frame()): the card's place, the ring, and the step's check.
+function guideTick() {
+  gPlace();
+  if (!guide.ready) { $('gRing').hidden = true; return; }
+  const s = GUIDE_STEPS[guide.i];
+  gMark();
+  let r = null, via = null;
+  const t = s.target?.();
+  if (t?.box) r = gBoxRect(t.box);
+  else if (t) { const e = gReach(t); if (e) { r = e.getBoundingClientRect(); if (e !== t) via = e; } }
+  gRing(r);
+  const say = !via ? '' : via === $('bMore') ? 'It is under ⋯: open ⋯ first.' : via.classList.contains('rail-search') ? 'Open the assembly list first: its magnifier, or /.' : 'Open the panel from its rail first.';
+  if ($('gReach').textContent !== say) { $('gReach').textContent = say; $('gReach').hidden = !say; }
+}
+// Go to step i: the text fades out, the step's state is set up with the controls' own calls, the camera and parts
+// settle, then the text fades in with its ring. Every wait checks the token, so fast Back or Next, a replay or Exit
+// mid-glide leaves nothing behind.
+async function guideGo(i, o = {}) {
+  if (!guide.on) return;
+  i = clamp(i, 0, GUIDE_STEPS.length - 1);
+  const t = ++guide.seq, s = GUIDE_STEPS[i];
+  guide.i = i;
+  guide.ready = false;
+  guide.ok = null;
+  guide.base = null;
+  gUnlight();
+  if (loupe.on && !drag) closeLoupe();
+  gPicker(false);
+  gHeader();
+  $('gRing').hidden = true;
+  const body = $('gBody');
+  if (!reduceMotion.matches) { body.classList.add('fading'); await gSleep(180); if (gStale(t)) return; }
+  gFill();
+  gPlace();
+  try { await s.need?.(t); } catch (e) { console.error(`guide ${s.id}:`, e); }
+  if (gStale(t)) return;
+  await gSettle(t);
+  if (gStale(t)) return;
+  gFill();
+  guide.base = s.base ? s.base() : null;
+  guide.ready = true;
+  gMark(true);
+  body.classList.remove('fading');
+  // The control in sight: in its panel's own scroll on a desktop; stacked, the view at the top of the page, or a control
+  // below it in the middle of the window, above the card.
+  const tg = s.target?.(), inView = !(tg instanceof Element) || tg === stage || $('card').contains(tg);
+  if (stacked()) { if (inView) scrollTo({ top: 0 }); else if (tg.getClientRects().length) tg.scrollIntoView({ block: 'center' }); }
+  else if (!inView && tg.getClientRects().length) tg.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  const list = gChapterSteps(s.ch);
+  $('gLive').textContent = `${GUIDE_CHAPTERS[s.ch]}, step ${list.indexOf(s) + 1} of ${list.length}. ${gText(s.q)}`;
+  if (o.focus) $('gQ').focus({ preventScroll: true });
+}
+async function gShowStep() {
+  const s = GUIDE_STEPS[guide.i];
+  if (!guide.on || !s.act) return;
+  gPicker(false);
+  try { await s.act(guide.seq); } catch (e) { console.error(`guide ${s.id}:`, e); }
+}
+function gPicker(open) {
+  const p = $('gPicker');
+  if (p.hidden === !open) return;
+  p.hidden = !open;
+  $('gChapters').setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (!open) return;
+  const here = GUIDE_STEPS[guide.i].ch;
+  p.replaceChildren(...GUIDE_CHAPTERS.map((title, ch) => {
+    const b = el('button');
+    b.type = 'button';
+    b.append(el('span', null, `${ch + 1}. ${title}`), el('span', null, `${gChapterSteps(ch).length} steps`));
+    if (ch === here) b.setAttribute('aria-current', 'step');
+    b.addEventListener('click', () => guideGo(GUIDE_STEPS.findIndex((s) => s.ch === ch), { focus: true }));
+    return b;
+  }));
+  (p.querySelector('[aria-current]') || p.querySelector('button')).focus();
+}
+// What the guide finds when it starts, to give back on Exit: the address, the camera and the camera Done returns to,
+// the inspection, every part's kept sheets with their folds and places, the switches, panels, theme, dimensions,
+// settings, the tab, the search, the scroll and the focus.
+function gSnapshot() {
+  const kept = structuredClone(HUD.kept);
+  if (iso.part) {
+    const keys = [...state.pins.map(sheetKey), 'part'];
+    kept.set(iso.part, { pins: state.pins.map((x) => ({ ...x })), folded: keys.filter((k) => HUD.folded.has(k)), pos: keys.filter((k) => HUD.pos.has(k)).map((k) => [k, { ...HUD.pos.get(k) }]) });
+  }
+  const cam = (c) => c && { az: c.az, el: c.el, zoom: c.zoom, target: c.target.clone() };
+  return {
+    url: location.href, goal: cam(goal), isoSaved: cam(iso.saved), touched,
+    part: iso.part, focus: iso.focus, apart: iso.apart, joint: !!iso.joint, step: iso.step, show: iso.show && { pc: iso.show.pc, sub: iso.show.sub },
+    history: iso.history.slice(), tour: iso.tour, foldTree: iso.foldTree, foldInsp: !!iso.foldInsp, context: iso.context, apartSpread: iso.apartSpread,
+    select: state.select, kept, hudOn: HUD.on, up: HUD.up, card: HUD.card,
+    hidden: new Set(hidden), explode: state.explode, spread: state.spread, cut: state.cut,
+    panels: { ...panels }, theme: document.documentElement.dataset.theme ?? null, dims: draft.dims.map((d) => ({ ...d })),
+    scale: uiScale, keys: letterKeys, drag: dragMode, tab, search: $('search').value, nd: gNd()?.getAttribute('aria-expanded') === 'true',
+    scroll: scrollY, active: document.activeElement,
+  };
+}
+function gRestore(s, o = {}) {
+  $('card').style.height = '';
+  closeLoupe();
+  setMore(false);
+  setViewMenu(false, false);
+  if (quiz.on) endQuiz(false);
+  if (uiScale !== s.scale) setScale(s.scale);
+  if (letterKeys !== s.keys) setLetterKeys(s.keys);
+  if (dragMode !== s.drag) setDragMode(s.drag);
+  if ((document.documentElement.dataset.theme ?? null) !== s.theme) {
+    if (s.theme) document.documentElement.dataset.theme = s.theme; else delete document.documentElement.dataset.theme;
+    applyTheme();
+  }
+  s.dims.forEach((d, j) => Object.assign(draft.dims[j], d));
+  if (state.cut !== s.cut) setCut(s.cut);
+  state.spread = s.spread; $('sSpread').value = s.spread; $('oSpread').textContent = fmtSpread(s.spread);
+  if (state.explode !== s.explode) setExplode(s.explode);
+  iso.apartSpread = s.apartSpread; $('sApart').value = s.apartSpread; $('oApart').textContent = fmtSpread(s.apartSpread);
+  const show = [...hidden].filter((id) => !s.hidden.has(id)), hide = [...s.hidden].filter((id) => !hidden.has(id));
+  if (show.length) setHidden(show, false);
+  if (hide.length) setHidden(hide, true);
+  if ($('search').value !== s.search) { $('search').value = s.search; $('search').dispatchEvent(new Event('input', { bubbles: true })); }
+  const nd = gNd();
+  if (nd && (nd.getAttribute('aria-expanded') === 'true') !== s.nd) nd.click();
+  // The inspection and every part's sheets: the guide's own go nowhere, what was kept comes back with its folds.
+  if (iso.part) { endShow(false); clearSheets(); }
+  HUD.kept = structuredClone(s.kept);
+  HUD.on = s.hudOn;
+  if (s.part) {
+    if (iso.part === s.part) { restoreSheets(s.part); if (iso.focus !== s.focus) setFocus(s.focus); }
+    else inspect(s.part, s.focus, { back: true });
+    if (iso.context !== s.context) setContext(s.context);
+    if (s.joint) { if (!iso.joint) { if (iso.apart) setApart(false); setJoint(true); } }
+    else { if (iso.joint) setJoint(false); if (iso.apart !== s.apart) setApart(s.apart); }
+    if (iso.step !== s.step) setStep(s.step);
+    if (s.show) showMe(s.part, s.show.sub, s.show.pc); else endShow(false);
+    iso.history = s.history;
+    iso.tour = s.tour;
+  } else {
+    if (iso.part) endInspect();
+    if (state.select !== s.select) select(s.select, { scroll: false });
+  }
+  if (s.isoSaved) iso.saved = s.isoSaved;
+  HUD.card = s.card;
+  Object.assign(panels, s.panels);
+  applyPanels();
+  iso.foldTree = s.foldTree;
+  iso.foldInsp = s.foldInsp;
+  resize();
+  // The camera glides back to where it was, and an untouched page spins again.
+  stopGlide();
+  goal.az = nearestAz(s.goal.az); goal.el = s.goal.el; goal.zoom = s.goal.zoom; goal.target.copy(s.goal.target);
+  if (!reduceMotion.matches) glide = { at: performance.now() / 1000, dur: 0.8, from: null };
+  touched = s.touched;
+  if (dockLayout() && HUD.up !== s.up) setSheetUp(s.up, false);
+  setTab(s.tab, false);
+  renderHud();
+  renderInspector();
+  updateIsoBar();
+  refreshLit();
+  setHint();
+  if (o.url !== false) history.replaceState(history.state, '', s.url);
+  linkKey = linkKeyNow();
+  scrollTo(0, s.scroll);
+  ov.dirty = true;
+  dirty = true;
+}
+function guideStart(at = 0) {
+  if (guide.on) return guideGo(at, { focus: true });
+  if (quiz.on) endQuiz();
+  setViewMenu(false, false);
+  guide.saved = gSnapshot();
+  guide.on = true;
+  store.quiet = true;
+  touched = true;
+  $('guide').hidden = false;
+  $('bGuide').setAttribute('aria-pressed', 'true');
+  gPlace();
+  guideGo(at, { focus: true });
+}
+function guideExit(o = {}) {
+  if (!guide.on) return;
+  guide.seq++;
+  guide.last = guide.i || null;
+  guide.ready = false;
+  gUnlight();
+  gPicker(false);
+  try { gRestore(guide.saved, o); } catch (e) { console.error('guide: restore', e); }
+  const back = guide.saved?.active;
+  guide.on = false;
+  store.quiet = false;
+  guide.saved = null;
+  $('guide').hidden = true;
+  $('gRing').hidden = true;
+  $('card').style.height = '';
+  $('bGuide').setAttribute('aria-pressed', 'false');
+  $('gLive').textContent = 'Guided analysis closed. Your view, sheets and settings are back as they were.';
+  if (o.focus !== false) ($('bGuide').getClientRects().length ? $('bGuide') : back?.isConnected ? back : stage).focus({ preventScroll: true });
+}
+$('bGuide').addEventListener('click', () => (guide.on ? guideExit() : guideStart()));
+$('gExit').addEventListener('click', () => guideExit());
+$('gNext').addEventListener('click', () => (guide.i >= GUIDE_STEPS.length - 1 ? guideExit() : guideGo(guide.i + 1)));
+$('gBack').addEventListener('click', () => guideGo(guide.i - 1));
+$('gShow').addEventListener('click', gShowStep);
+$('gChapters').addEventListener('click', () => gPicker($('gPicker').hidden));
+// Esc in the card closes the chapter list first; otherwise it steps back in the viewer, as everywhere.
+$('guide').addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || $('gPicker').hidden) return;
+  gPicker(false);
+  $('gChapters').focus();
+  e.preventDefault();
+  e.stopPropagation();
+});
+
 // ---------- Animation ----------
 let visible = true, lastT = performance.now() / 1000, idleSince = lastT, lastDraw = 0;
 // How far an object has moved from rest: the sum of its own and its parents' offsets.
@@ -5987,6 +6909,7 @@ function rebuildStretch() {
 
 function frame() {
   requestAnimationFrame(frame);
+  if (guide.on) guideTick();
   if (!renderer || !visible) return;
   const now = performance.now() / 1000;
   const dt = Math.min(0.05, now - lastT);
@@ -6176,6 +7099,7 @@ window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, sele
   setGrid: (v) => { draft.grid = v; applyTheme(); },
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
   setStep, stepBy, stepList, setJoint, jointHere, loupe, quiz, startQuiz, endQuiz, answerQuiz, placesOf, nextQuiz, ringOf, oneOf, applyLink, subMeshes,
+  guide, GUIDE_STEPS, guideStart, guideGo, guideExit, gShowStep, linkOf, store, hidden, draft, turnOffered, startTour, tab: () => tab, uiScale: () => uiScale,
   // One of a ring under a point of the page: its name ("Bolt 7 of 20 · star 3"), as the tooltip shows it.
   oneAt: (x, y) => { const m = pickMesh(ndcOf({ clientX: x, clientY: y }), true); return m ? oneOf(m, pickInst) : null; },
   // What a click or tap at a point of the page would pick, forgiving a near miss as the pointer does.

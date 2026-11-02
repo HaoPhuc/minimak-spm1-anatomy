@@ -1,0 +1,20 @@
+[
+  { "name": "walk-desktop", "w": 1280, "h": 800, "dpr": 1, "theme": "light", "steps": [{ "wait": 2500 }, { "jsFile": "walk.js" }] },
+  { "name": "restore", "w": 1280, "h": 800, "dpr": 1, "theme": "light", "steps": [{ "wait": 2500 }, { "jsFile": ["common.js", "restore.js"] }] },
+  { "name": "back", "w": 1280, "h": 800, "dpr": 1, "theme": "light", "steps": [{ "wait": 2500 }, { "jsFile": ["common.js", "back.js"] }] },
+  { "name": "handoff", "w": 1280, "h": 800, "dpr": 1, "theme": "light", "steps": [{ "wait": 2500 }, { "jsFile": ["common.js", "handoff.js"] }] },
+  { "name": "keyboard", "w": 1280, "h": 800, "dpr": 1, "theme": "light", "steps": [
+    { "wait": 2500 }, { "keys": ["Tab", "Tab"] }, { "js": "return 'Tab, Tab: ' + document.activeElement.id" },
+    { "keys": ["Enter"] }, { "wait": 3500 }, { "js": "return 'Enter: guide.on=' + __spm1.guide.on + ', focus=' + document.activeElement.id + ', said: ' + document.getElementById('gLive').textContent" },
+    { "keys": ["Tab"] }, { "js": "return 'Tab: ' + document.activeElement.id" }, { "keys": ["Tab"] }, { "js": "return 'Tab: ' + document.activeElement.id" },
+    { "keys": ["Enter"] }, { "wait": 3500 }, { "js": "return 'Enter on Next: step ' + (__spm1.guide.i + 1) + ', focus=' + document.activeElement.id" },
+    { "keys": ["Enter"] }, { "wait": 3500 }, { "js": "return 'Enter on Next: step ' + (__spm1.guide.i + 1) + ', focus=' + document.activeElement.id" },
+    { "js": "document.getElementById('gChapters').focus(); return 'focus ' + document.activeElement.id" }, { "keys": ["Enter"] }, { "wait": 300 },
+    { "js": "return 'Chapters: list hidden=' + document.getElementById('gPicker').hidden + ', focus=' + document.activeElement.textContent" },
+    { "keys": ["Escape"] }, { "wait": 200 }, { "js": "return 'Esc: list hidden=' + document.getElementById('gPicker').hidden + ', focus=' + document.activeElement.id + ', still inspecting ' + __spm1.iso.part" },
+    { "keys": ["Tab"] }, { "js": "return 'Tab: ' + document.activeElement.id" }, { "keys": ["Enter"] }, { "wait": 2500 },
+    { "js": "return 'Enter on Exit: guide.on=' + __spm1.guide.on + ', focus=' + document.activeElement.id" }] },
+  { "name": "reduced", "w": 1280, "h": 800, "dpr": 1, "theme": "light", "reduced": true, "steps": [{ "wait": 2500 }, { "jsFile": ["common.js", "reduced.js"] }] },
+  { "name": "walk-phone", "w": 390, "h": 844, "mobile": true, "theme": "light", "steps": [{ "wait": 2500 }, { "jsFile": "walk.js" }] },
+  { "name": "phone", "w": 390, "h": 844, "mobile": true, "theme": "light", "steps": [{ "wait": 2500 }, { "jsFile": ["common.js", "phone.js"] }] }
+]

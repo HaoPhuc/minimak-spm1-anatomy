@@ -8,10 +8,12 @@
 //   { "name": "tf-apart", "w": 1440, "h": 900,            // viewport (default 1440×900)
 //     "dpr": 1, "mobile": false,                           // mobile: true emulates a touch phone (taps via "tap")
 //     "dark": false,                                       // emulate prefers-color-scheme: dark
+//     "reduced": false,                                    // emulate prefers-reduced-motion: reduce
 //     "theme": "light" | "greyscale" | "dark",             // saved theme ('dark' = hologram)
 //     "setup": "js run before the reload, e.g. localStorage",
 //     "steps": [
 //       { "js": "__spm1.inspect('tf')" },                  // body of an async function; a returned value is printed
+//       { "jsFile": ["common.js", "check.js"] },            // the same, read from files beside scenarios.json, joined
 //       { "wait": 2500 },                                   // ms
 //       { "keys": ["Tab", "Enter", "ArrowRight", "Escape", "i", "."] },
 //       { "move": [x, y] }, { "click": [x, y] }, { "dblclick": [x, y] }, { "rclick": [x, y] },
@@ -101,7 +103,7 @@ for (const s of scen) {
   const w = s.w || 1440, h = s.h || 900;
   await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: s.dpr || (s.mobile ? 2 : 1), mobile: !!s.mobile });
   await send('Emulation.setTouchEmulationEnabled', { enabled: !!s.mobile, maxTouchPoints: s.mobile ? 5 : 0 });
-  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: s.dark ? 'dark' : 'light' }] });
+  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: s.dark ? 'dark' : 'light' }, { name: 'prefers-reduced-motion', value: s.reduced ? 'reduce' : 'no-preference' }] });
   await send('Page.navigate', { url: base });
   await sleep(400);
   await evalJs(`localStorage.clear(); ${s.theme ? `localStorage.setItem('spm1-theme', ${JSON.stringify(s.theme)});` : ''} ${s.setup || ''}`);
@@ -110,7 +112,8 @@ for (const s of scen) {
   await sleep(700);
   console.log(`[${s.name}]`);
   for (const st of s.steps || []) {
-    if (st.js) { const v = await evalJs(`(async () => { ${st.js} })()`); if (v !== undefined) console.log('  →', JSON.stringify(v)); }
+    const js = st.js ?? (st.jsFile && [].concat(st.jsFile).map((f) => fs.readFileSync(path.resolve(path.dirname(scenFile), f), 'utf8')).join('\n'));
+    if (js) { const v = await evalJs(`(async () => { ${js} })()`); if (v !== undefined) console.log('  →', JSON.stringify(v)); }
     if (st.wait) await sleep(st.wait);
     for (const k of st.keys || []) await key(k);
     if (st.move) { await mouse('mouseMoved', ...st.move); await sleep(60); }

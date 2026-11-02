@@ -12,8 +12,8 @@ Open [`index.html`](index.html) in a browser. The first time it needs an interne
 | --- | --- |
 | **Assembly** (left) | On a first visit the list starts folded to its rail, so the machine has the room; the magnifier at the top of the rail, or `/`, opens it with the cursor in its search box, and once opened (or folded) it stays as you left it. The 30 components in seven groups. Click a name to read about it, double-click to inspect it on its own. The eye hides a part or a whole group. The dot gives the geometry basis (below). The search box filters by name, spec, description and the sub-parts' sheets, so a size or a seal finds its hardware: "M8" lists every M8 bolt and nut ring, "o-ring" the three KF joints' centring rings. A word matches from the start of a word ("led" no longer finds "sealed"), a plural finds its singular, and words such as *the*, *between* or *where* are dropped, so a question in plain words works: "the gasket between the right and back quarters" lists the Right–back joint's gasket. Not every word has to match: the parts and rows that match best are listed, a word in a name counting for more than one in a sheet and a rare word for more than a common one, and a line under the box names the words nothing listed has, or says that nothing matched. Words that name a piece or a sub-part ("left viewport bolt", "gasket back") also list the matching pieces under their part, such as *Left viewport (webcam) · 16 bolts*; a click on one inspects that piece and keeps its sheet open. "Listed, not drawn" collects options and upgrades that are named in the sources but not drawn. From the keyboard the list is one Tab stop, and the first Tab stop on the page, *Skip to the assembly*, jumps to it: ↑ ↓ move between rows, → ← open and close a group, Enter selects, Space hides or shows, and `I` inspects the selected part. |
 | **Viewer** (centre) | The model, about 70% of the window's width on a first visit at 1280 px and wider (77% at 1920), with the whole machine in view, stand and pump included, clear of every label and button. Opened while the view is hidden or a few pixels across (a hidden pane, a collapsed panel), it frames the machine once the view has room, if nothing has been touched yet. Drag to turn it like a plotly turntable, right-drag or Shift-drag to pan, scroll to zoom toward the pointer. The triad in the corner shows the axes; click an axis end to look along it. The buttons at the view's left edge are the view's own: zoom in and out (not on touch, where you pinch), the home view (the whole machine; inspecting, the part), **Views** (a menu of the sides to look from, the triad's axes for the keyboard: ↑ ↓ move, Enter picks, Esc closes), pan with left-drag (a mode, lit while on), and the side panels. Nothing is framed under them. The scale bar is true at every zoom, because the view is orthographic. |
-| **Inspector** (right) | **Machine**, the first tab and one click away from anything: what the machine is, how a run goes, **Take the tour** and **Where does it go?**, the headline numbers and how to use the page. **Part**: **Inspect on its own** first, then what the part does, how it attaches to each part it connects to, what it is made of, its pieces, its specification with a source tag on every row, and practical notes. **Sources**: every reference, what was taken from it, and how many rows cite it. **Controls**: the text size and single-letter keys settings, then every mouse, touch and key binding. |
-| **Modebar** (top) | What changes the machine: Explode with its **Spread** slider, Cutaway, and the theme (**Colour**, **Greyscale**, **Blueprint** or **Hologram**). Explode and Cutaway are switches: the knob and its fill say whether each is on, and only an action (**Done**, **Next ›**) is a filled button. Moving round the model is the view's own (the buttons at its left edge, the triad). |
+| **Inspector** (right) | **Machine**, the first tab and one click away from anything: what the machine is, how a run goes, **Take the tour**, **Where does it go?** and **Guided analysis**, the headline numbers and how to use the page. **Part**: **Inspect on its own** first, then what the part does, how it attaches to each part it connects to, what it is made of, its pieces, its specification with a source tag on every row, and practical notes. **Sources**: every reference, what was taken from it, and how many rows cite it. **Controls**: the text size and single-letter keys settings, then every mouse, touch and key binding. |
+| **Modebar** (top) | **Guided analysis** first (below), then what changes the machine: Explode with its **Spread** slider, Cutaway, and the theme (**Colour**, **Greyscale**, **Blueprint** or **Hologram**). Explode and Cutaway are switches: the knob and its fill say whether each is on, and only an action (**Done**, **Next ›**) is a filled button. Moving round the model is the view's own (the buttons at its left edge, the triad). |
 
 Drag the edge between a side panel and the view to size the panel. Double-click the edge for the default width, or focus it and use the arrow keys. Dragged nearly shut, a panel folds to a thin rail; the arrow in its header does the same, and a click on the rail opens it again. The panels button at the view's left edge (or `F`) folds or unfolds both, giving the model and its sheets the full width. The inspector is 23% of the window wide by default, between 300 and 360 px. The page remembers the sizes. On a narrow screen the panels stack under the model instead.
 
@@ -89,6 +89,58 @@ The order follows the webinar (S4 slides 16–27). No operating procedure is pub
 **Take the tour** inspects the parts in that order, eight stops from the empty chamber to the glow: the vessel, the pump, the gauge, the gas valve, the electrodes, the TF coils, PF1 and PF2, and the plasma. At each stop a line above *What it does* says why the part matters at that point, with its tags, and the inspect bar shows *Stop 3 of 8* (on a phone, *3 of 8*) and **Next ›**. From the first page that is eight clicks to the plasma. Inspecting a stop's part by any other way (**← name**, a link) makes it the current stop, and a link to a part off the tour keeps your place. Only **Done** leaves the tour; Esc steps back as far as the whole part and stops there.
 
 **Where does it go?**, beside **Take the tour**, asks five questions. Each lifts a part out above the machine (its main object, for the gauge on its cable), framed with the machine from the table top up, and you click its place on the model, or pick one of four parts in the bar. What stays behind of a part made of several objects (the gauge's cable and its clamp, the needle valve's fitting and line) is not lit and lets the pointer through until you answer, so it gives the place away neither by its colour nor by its name. The answer is checked against `connects`, read one way (`QUIZ` in `parts.js` says what each part sits on: a viewport goes on a lateral port, not on the webcam that looks through it), and must be a piece within reach of where the part rests: any of the three ports a viewport is on, but not the control drawer the gauge's cable runs to. A wrong answer names what you clicked and gives one more try; then the part flies home, its place is outlined, and the bar says how the two are joined. The round is scored on first tries (*Round done: 4 of 5 right first time*), and **New round** asks five more. The cutaway is off while it runs and comes back after. A round is a link: `#quiz=gauge,viewport,laser,needle,probe&q=2` opens it at the second question, so a lecturer can send one. Esc or **Done** ends it, and the view goes back to where it was. By keyboard, focus starts on the first choice, Enter answers and moves to **Next ›**. On touch, a tap on the place answers.
+
+### Guided analysis
+
+**Guided analysis**, the first button in the modebar (*Guide* under 1320 px, still labelled on a phone), or the same
+button in the Machine tab, walks a first-time visitor through the viewer on the SPM1 itself. By the end they can answer
+*Where is this part?*, *How does it attach?* and *Where did that dimension come from?* with the page's own controls.
+[`PLAN-3.md`](PLAN-3.md) has the design and the coverage table: one row per function, with its question, its mouse,
+key and touch inputs, the state it needs, what shows, the step that teaches it, and how that step checks it.
+
+- **The first sequence** starts at once:
+  1. The whole machine, three-quarter, with the left viewport lit and ringed. Inspecting it fades the rest, and its
+     lateral port stays half solid where it mounts.
+  2. **Take apart**, the fasteners leaving the flange.
+  3. **Step 2 of 4 · 16 bolts**, the bolt ring and its empty holes both in sight.
+  4. *How long is one of these bolts?*: **Show me** on the bolt row, and M8 × 50 mm drawn under the head.
+  5. The bolts' sheet kept, joined by its leader line.
+  6. The **S9** tag on *Holes they pass*, to the Sources tab.
+  7. **← Back to the part tab**, to the same piece.
+  8. **Done**, the viewport flying home and the machine facing you again.
+- **Seven chapters**, 54 steps, each replayable from **Chapters**:
+  1. A viewport, bolt by bolt
+  2. Orient the view
+  3. Find hardware
+  4. See inside
+  5. Inspect a connection
+  6. Read the evidence
+  7. Use the result
+- **Each step** asks one question, rings the real control, and lets you try it. **Look for** says what shows when it
+  works, and turns into a tick (*That's it*) once the page is in that state. **Show this step** does it for you, with
+  the same call a click makes. **‹ Back**, **Next ›** (**Finish** at the end), the progress bar and **Exit** are always
+  there. The ring never takes a click, so every control still works.
+- **Hidden controls.** When a control is out of sight, the ring shows the way in, and the card says so: **⋯** on a
+  phone, a folded panel's rail.
+- **The card** sits at the view's lower left on a desktop, and the camera frames everything above it. Where the panels
+  stack, it is fixed at the window's foot, and the view shrinks to stay whole above it.
+- **Motion.** A step's text fades out, the camera and parts settle with the viewer's own glides, then the text fades in
+  (180 ms) with its ring. A drag or pinch takes over at once. Under reduced motion it all cuts.
+- **It leaves nothing behind.** While it runs, nothing is stored, and the address is not written, so it adds no
+  history entries. **Exit** or **Finish** gives back everything it found:
+  - the address, the camera
+  - the part, piece, steps and Show me
+  - every part's kept sheets with their folds and places
+  - hidden parts, Explode, Cutaway, Ghost and Sheets
+  - panels, theme and dimensions
+  - text size and single-letter keys, the tab, the search and the focus
+
+  **Copy link** copies only when you press it. Browser **Back** first gives everything back, then goes back. Opened
+  again, the guide offers **Resume** at the step it left.
+- **The tour and the quiz.** **Take the tour** and **Where does it go?** close the guide first, giving everything back,
+  so two modes never share input.
+- **Accessibility.** Focus moves to the step's question. The card's buttons are in reading order, and each step is
+  announced. Inside the card, Esc closes the chapter list.
 
 ### Words explained where they are used
 
@@ -211,6 +263,7 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 | [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS` (with `pieces` where the pieces differ), `NOT_DRAWN`, how each connected pair attaches (`JOINS`), the run steps (`RUN`), the tour (`TOUR`), the fitting order (`ORDER`), what each part asked about in *Where does it go?* sits on (`QUIZ`), the glossary (`GLOSSARY`), and the sub-part sheets (`SUBDOCS`, `SUBMAP`). A pair in `connects` with no join, or a join for parts that do not connect, is reported in the browser console |
 | [`PLAN.md`](PLAN.md) | The first critique and plan for Inspect; its three phases are done |
 | [`PLAN-2.md`](PLAN-2.md) | The next plan, from an eight-critic review panel: inspecting small parts, Stark-style, and showing where they go; Phases 0 to 3 are done. Its record is in [`review-panel/`](review-panel/) |
+| [`PLAN-3.md`](PLAN-3.md) | Guided analysis: its design, the coverage table of every function, and its steps |
 | [`docs/user-guide.pdf`](docs/user-guide.pdf) | The user guide. [`docs/guide/`](docs/guide/README.md) has its page, the scenarios its screenshots are taken from, and how to print it again |
 
 ## Sources
