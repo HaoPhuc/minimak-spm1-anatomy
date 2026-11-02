@@ -628,8 +628,27 @@
     windowFlange(vpB, 90, 4.5);
     const vpL = piece('viewport', qL, { clip: true, apart: along(radial(180), 12), label: 'Left viewport (webcam)', axis: radial(180) });
     windowFlange(vpL, 180, 4.5);
+    // The front port, as a photo of an SPM1 shows it: a zero-length reducer takes the port's DN100CF flange down to
+    // DN63CF, and a smaller viewport bolts into its tapped holes. Back to front: the DN100 gasket, the reducer and its 16
+    // bolts and nuts, the DN63 gasket, the DN63CF viewport (VPZL-450: 65 mm view, 3.5 mm glass), its 8 bolts.
+    function reducedWindow(pc, deg, glassR) {
+      const rdir = radial(deg), v = toroidal(deg);
+      add(pc, cfGasket(L, pol(latFace + D.gap / 2, deg), rdir, 48), 'copper', { sub: 'Copper gasket', ex: along(rdir, 3) });
+      const rz = latFace + D.gap;
+      const RED = { sub: 'Zero-length reducer, DN100CF to DN63CF', ex: along(rdir, 7) };
+      add(pc, cfRing(pol(rz + L.t / 2, deg), rdir, G.tube / 2 - G.wall, L.od / 2, L.t, [drilled(Z, v, L), drilled(Z, v, G)], 72, [{ side: -1, cf: L }, { side: 1, cf: G }]), 'steel2', RED);
+      // The DN63 holes are tapped into its front face, not drilled through.
+      addInst(pc, disc(G.hr, 0.02, 12), 'hole', circleMatrices(pol(rz + L.t + 0.01, deg), rdir, Z, v, G.bc / 2, G.n), RED);
+      cfBolts(pc, L, pol(rz + L.t, deg), pol(D.lat.flangeAt, deg), rdir, Z, v, { bolts: 16, nuts: 5 });
+      const vz = rz + L.t + D.gap;
+      add(pc, cfGasket(G, pol(rz + L.t + D.gap / 2, deg), rdir, 40), 'copper', { sub: 'DN63CF copper gasket', ex: along(rdir, 10) });
+      add(pc, cfRing(pol(vz + G.t / 2, deg), rdir, glassR, G.od / 2, G.t, [drilled(Z, v, G)], 56, [{ side: -1, cf: G }]), 'steel2', { sub: 'DN63CF viewport flange', ex: along(rdir, 13) });
+      add(pc, at(disc(glassR, 0.35, 40), frame(pol(vz + 0.4, deg), rdir)), 'glass', { sub: 'DN63CF window glass', ex: along(rdir, 16) });
+      // M8 × 30 into the tapped holes: through the viewport flange and the gasket, then 11 mm into the reducer.
+      addInst(pc, boltGeom(3.0, G.af, G.br, G.k), 'bolt', circleMatrices(pol(vz + G.t, deg), rdir, Z, v, G.bc / 2, G.n), { sub: '8 bolts into the reducer', ex: along(rdir, 22) });
+    }
     const vpF = piece('viewport', qF, { clip: true, apart: along(radial(270), 12), label: 'Front viewport (eyes)', axis: radial(270) });
-    windowFlange(vpF, 270, 4.5);
+    reducedWindow(vpF, 270, 3.25);
 
     // Right port: zero-length reducer to a KF40 stub for the bellows line. The hose's own KF40 flange is drawn with the
     // port, so the whole joint (stub, centring ring and O-ring, hose flange, clamp) comes apart together; the hose
