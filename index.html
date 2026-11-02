@@ -508,7 +508,7 @@
   table.specs .ref { white-space: nowrap; margin-left: 2px; }
   .ref { font-size: 11.5px; font-variant-numeric: tabular-nums; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
   .ref:hover { border-color: var(--muted); }
-  .ref.derived, .ref.photo, .ref.assumed, .ref.none { cursor: default; color: var(--muted); }
+  .ref.derived, .ref.photo, .ref.measured, .ref.assumed, .ref.none { cursor: default; color: var(--muted); }
   .ref.assumed, .ref.std { border-style: dashed; }
   .tagkey { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
   .tagkey b { font-size: 12px; font-weight: 650; }
@@ -4706,6 +4706,7 @@ $('tHelp').addEventListener('click', () => setTab('help'));
 // standard (S9) but the SPM1's own part is not published, so it opens S9 like a source does.
 const TAGS = {
   photo: 'scaled from the webinar photos',
+  measured: 'measured on a top-down photo, scaled by its DN160CF joint bolts, a DN100CF flange and the 25 mm breadboard grid',
   std: 'CF standard; the SPM1’s own part is not published',
   derived: 'worked out from tagged numbers',
   assumed: 'not published; picked for the drawing',
@@ -4998,7 +4999,7 @@ const HEADLINE = [
   ['Ports', '3 viewing, 1 vacuum, 4 diagnostic', ['S1']],
   ['TF coils', '8 × 50 turns, 40 A each', ['S1']],
   ['TF field', '0.025 T CW, 0.1 T pulsed', ['S2', 'S3']],
-  ['PF coils', '4 + 2 satellites', ['S1']],
+  ['PF coils', '4: PF1, PF2 and two satellites', ['S2', 'S4']],
   ['Plasma', '1–5 eV glow in N₂ or He', ['S2', 'S3']],
   ['Envelope', '90 × 90 × 160 cm', ['S2', 'S3']],
 ];
@@ -5084,7 +5085,7 @@ function renderOverview(box) {
 }
 function renderSources(box) {
   box.append(el('h2', null, 'Where the numbers come from'));
-  box.append(el('p', null, 'A row that names one of these is published there. Otherwise its tag says how it was arrived at: “photo” scaled from the webinar photos, “std” the CF standard (S9) where the SPM1’s own part is not published, “derived” worked out from tagged numbers, “assumed” not published and picked for the drawing.'));
+  box.append(el('p', null, 'A row that names one of these is published there. Otherwise its tag says how it was arrived at: “photo” scaled from the webinar photos, “measured” measured on a top-down photo against its CF flanges, joint bolts and breadboard grid, “std” the CF standard (S9) where the SPM1’s own part is not published, “derived” worked out from tagged numbers, “assumed” not published and picked for the drawing.'));
   const ul = el('ul', 'srclist');
   for (const s of DOCS.SOURCES) {
     const li = el('li');
