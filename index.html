@@ -973,13 +973,14 @@ const TONES = {
   grey: '#a3a5a1', pcb: '#3f7a52', hvlcd: '#3a2f2f',
 };
 // In Colour the bare metals reflect a studio instead of taking a flat shade (see METAL_SHADE): `tint` is the metal's
-// own colour, what it reflects the studio in, and `rough` its finish, from a mirror (0) to satin (1). The stainless is
-// brushed on the tubes and machined on the flanges, the fasteners and the copper polished. `amount` (1 if left out) is
+// own colour, what it reflects the studio in, and `rough` its finish, from a mirror (0) to satin (1). As on the machine
+// itself, the stainless is polished, a little softer on the tubes than on the flanges, and the fasteners and the copper
+// are polished bright. `amount` (1 if left out) is
 // how far the reflection replaces the flat shade: the aluminium extrusion is only half metal, a dull satin.
 const METAL = {
-  vessel: { tint: '#dcdedc', rough: 0.5 }, steel: { tint: '#dcdedc', rough: 0.45 }, steel2: { tint: '#dfe0de', rough: 0.35 },
-  bolt: { tint: '#dadcda', rough: 0.25 }, copper: { tint: '#f4a37c', rough: 0.22 }, brass: { tint: '#e9c57c', rough: 0.3 },
-  bronze: { tint: '#dba679', rough: 0.35 }, alu: { tint: '#dcdedb', rough: 0.85, amount: 0.5 },
+  vessel: { tint: '#dcdedc', rough: 0.3 }, steel: { tint: '#dcdedc', rough: 0.3 }, steel2: { tint: '#dfe0de', rough: 0.22 },
+  bolt: { tint: '#dadcda', rough: 0.15 }, copper: { tint: '#f4a37c', rough: 0.12 }, brass: { tint: '#e9c57c', rough: 0.2 },
+  bronze: { tint: '#dba679', rough: 0.25 }, alu: { tint: '#dcdedb', rough: 0.85, amount: 0.5 },
 };
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
@@ -1153,10 +1154,11 @@ const LIT_LAYER = /* glsl */`
 `;
 
 // Colour's metals (METAL): a part reflects a small studio fixed to the view, as a product on a turntable does under
-// still lights, so its highlights sweep across it as it turns. Worked out in a few lines, with no map: a pale floor, a
-// dark band of the room at the horizon (fainter straight behind the viewer, so a face turned to the viewer stays
-// light), pale walls, a bright ceiling, a softbox at the drawing's light with a broad glow round it, and a strip light
-// at the right for a rim.
+// still lights, so its highlights sweep across it as it turns. Worked out in a few lines, with no map, and lit like the
+// lab in the photos: a dark grey floor, a darker band of the room at the horizon (fainter straight behind the viewer,
+// so a face turned to the viewer stays light), a bright ceiling crossed by two rows of lights, which streak along a
+// tube lying down, two tall strip lights at the sides, which streak along a tube standing up, a bright backdrop behind
+// the machine, which rims every edge in white, and a small hard softbox at the drawing's light.
 // The view is orthographic, so a flat face would reflect one flat grey: the reflection is taken from an eye in front
 // of the view's centre instead (uEye, see draw), which runs a soft gradient across a flange as a photograph does. The
 // reflection is tinted by the metal's own colour, runs to white at grazing angles (Schlick's fresnel) and rolls off
@@ -1169,22 +1171,24 @@ const METAL_SHADE = /* glsl */`
   varying vec3 vWp;
   // r is the reflected direction in view space (x right, y up, z toward the viewer); s blurs the studio for a rougher
   // finish.
+  // A lamp: a line across the studio at o along t, w wide, its edge softening with the finish.
+  float lamp(float t, float o, float w) { return 1.0 - smoothstep(0.35 * w, w, abs(t - o)); }
   float studio(vec3 r, vec3 light, float s) {
-    float L = mix(mix(0.66, 0.8, smoothstep(-0.8, -0.1, r.y)), 0.92, smoothstep(0.25 - 0.4 * s, 0.85 + 0.15 * s, r.y));
-    float band = (1.0 - smoothstep(0.03, 0.16 + s, abs(r.y - 0.03))) * mix(1.0, 0.3, smoothstep(0.2, 0.95, r.z));
-    L = mix(L, 0.32, band) + 0.14 * smoothstep(0.5, 1.0, r.z);
-    float d = dot(r, light);
-    L += 0.55 * smoothstep(0.88 - 0.4 * s, 0.985 - 0.06 * s, d) + 0.22 * smoothstep(0.3, 1.0, d) - 0.08;
-    L += 0.32 * smoothstep(0.86 - 0.4 * s, 0.98 - 0.06 * s, dot(r, vec3(0.88, 0.22, -0.42)));
-    return L;
+    float L = mix(mix(0.36, 0.5, smoothstep(-0.9, -0.05, r.y)), 0.9, smoothstep(0.12 - 0.3 * s, 0.6 + 0.2 * s, r.y));
+    float band = (1.0 - smoothstep(0.02, 0.1 + s, abs(r.y - 0.03))) * mix(1.0, 0.35, smoothstep(0.3, 0.95, r.z));
+    L = mix(L, 0.14, band) + 0.4 * smoothstep(0.55, 1.0, r.z) + 0.5 * smoothstep(0.7, 0.97, -r.z);
+    float w = 0.03 + 0.6 * s;
+    L += 0.9 * (lamp(r.y, 0.52, w) + lamp(r.y, 0.8, w));
+    L += 0.8 * (1.0 - smoothstep(0.5, 0.85, abs(r.y))) * (1.0 - smoothstep(0.2, 0.6, r.z)) * (lamp(r.x, -0.78, w) + lamp(r.x, 0.74, w));
+    return L + 1.1 * smoothstep(0.93 - 0.35 * s, 0.995 - 0.03 * s, dot(r, light));
   }
   vec3 metal(vec3 tint, vec3 n, vec3 light, float rough, float shade) {
     vec2 p = (viewMatrix * vec4(vWp, 1.0)).xy;
     vec3 r = reflect(-normalize(vec3(-p, uEye)), n);
-    float L = studio(r, light, 0.04 + 0.4 * rough);
-    L = L < 0.8 ? L : 0.8 + 0.3 * (L - 0.8) / (L - 0.5);
+    float L = studio(r, light, 0.03 + 0.35 * rough);
+    L = L < 0.8 ? L : 0.8 + 0.45 * (L - 0.8) / (L - 0.35);
     vec3 F = mix(tint, vec3(1.0), pow(1.0 - clamp(n.z, 0.0, 1.0), 5.0));
-    return mix(F * L * shade, vec3(1.0), smoothstep(0.92, 1.1, L) * 0.45);
+    return mix(F * L * shade, vec3(1.0), smoothstep(0.95, 1.2, L) * 0.65);
   }
   #endif
 `;
