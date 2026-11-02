@@ -19,6 +19,7 @@
  {"name": "greyscale", "w": 1280, "h": 800, "dpr": 2, "theme": "greyscale", "steps": [{"wait": 2500}, {"keys": ["0"]}, {"wait": 2500}, {"shot": "greyscale"}]},
  {"name": "blueprint", "w": 1280, "h": 800, "dpr": 2, "theme": "blueprint", "steps": [{"wait": 2500}, {"keys": ["0"]}, {"wait": 2000}, {"shot": "blueprint"}]},
  {"name": "hologram", "w": 1280, "h": 800, "dpr": 2, "theme": "dark", "dark": true, "steps": [{"wait": 2500}, {"keys": ["0"]}, {"wait": 2000}, {"shot": "hologram"}]},
+ {"name": "guide", "w": 1280, "h": 800, "dpr": 2, "theme": "light", "steps": [{"wait": 2500}, {"js": "document.getElementById('bGuide').click(); const g = __spm1.guide; const sl = (ms) => new Promise((r) => setTimeout(r, ms)); await sl(300); let t0 = performance.now(); while (!g.ready && performance.now() - t0 < 9000) await sl(50); __spm1.guideGo(5); await sl(300); t0 = performance.now(); while (!g.ready && performance.now() - t0 < 12000) await sl(50);"}, {"wait": 1500}, {"shot": "guide"}]},
  {"name": "phone", "w": 390, "h": 844, "mobile": true, "theme": "light", "steps": [{"wait": 3000}, {"shot": "phone"}]},
  {"name": "phone-inspect", "w": 390, "h": 844, "mobile": true, "theme": "light", "steps": [{"wait": 1500}, {"js": "__spm1.applyLink('#part=viewport&piece=left&apart=1&sheets=viewport-flange')"}, {"wait": 4500}, {"shot": "phone-inspect"}, {"js": "document.getElementById('bMore').click()"}, {"wait": 600}, {"shot": "phone-more"}]}
 ]

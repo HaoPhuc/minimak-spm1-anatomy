@@ -1,6 +1,6 @@
 # The user guide
 
-[`../user-guide.pdf`](../user-guide.pdf) is printed from [`guide.html`](guide.html), 14 A4 pages. Its pictures are
+[`../user-guide.pdf`](../user-guide.pdf) is printed from [`guide.html`](guide.html), 15 A4 pages. Its pictures are
 screenshots of the app, so after a change to the page they can be taken again and the guide printed again. From the
 repository's root:
 
@@ -30,5 +30,5 @@ repository's root:
   its theme, and the steps that set it up, mostly a link (`__spm1.applyLink('#part=…')`).
 - The crop boxes in [`prep.py`](prep.py), the numbered markers on a screenshot and the labels on the inspect bar
   (`data-at` in `guide.html`) are in CSS px of the 1280 × 800 view. If the page's layout moves, look at the markers
-  on pages 2, 6 and 7 and the inspect bar on page 5.
+  on pages 2, 3, 7 and 8 and the inspect bar on page 6.
 - Each section starts a page and should fit on it, as the page numbers in the contents are written by hand.
