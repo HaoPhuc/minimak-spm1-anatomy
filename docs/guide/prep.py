@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 S, O = os.path.join(HERE, 'shots'), os.path.join(HERE, 'img')
 os.makedirs(O, exist_ok=True)
 
-FULL = ['first', 'page', 'select', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'greyscale', 'blueprint', 'hologram']
+FULL = ['first', 'page', 'guide', 'select', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'greyscale', 'blueprint', 'hologram']
 PHONE = ['phone', 'phone-inspect', 'phone-more']
 CROPS = {
     'bar': ('apart', 150, 98, 860, 172),        # the inspect bar

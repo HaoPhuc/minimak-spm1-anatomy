@@ -4,7 +4,7 @@ An interactive 3D anatomy of the MinimaK SPM1 simple magnetised torus by Rideo S
 
 Open [`index.html`](index.html) in a browser. The first time it needs an internet connection, to load three.js from jsDelivr. There is no build step.
 
-[`docs/user-guide.pdf`](docs/user-guide.pdf) shows how to use the page, in 14 A4 pages of screenshots, for anyone who opens it for the first time.
+[`docs/user-guide.pdf`](docs/user-guide.pdf) shows how to use the page, in 15 A4 pages of screenshots, for anyone who opens it for the first time.
 
 ## The page
 
