@@ -44,9 +44,9 @@
     },
     {
       id: 'S10', short: 'Lesker, Kodial viewports',
-      title: 'CF flanged viewports, Kodial glass (VPZL-275, VPZL-600)',
+      title: 'CF flanged viewports, Kodial glass (VPZL-275, VPZL-450, VPZL-600)',
       who: 'Kurt J. Lesker Company', url: 'https://www.lesker.com/viewports/viewports-cf-flanged-kodial-glass.cfm',
-      gives: 'Reference data for standard zero-length viewports: Kodial (alkali borosilicate 7056) glass sealed to a 304L flange through a Kovar sleeve; view 38.0 mm and glass 3.0 mm for DN40CF, view 90.0 mm and glass 6.0 mm for DN100CF; bake-out to 350 °C at no more than 2–3 °C per minute. The make of the SPM1 viewports is not published.',
+      gives: 'Reference data for standard zero-length viewports: Kodial (alkali borosilicate 7056) glass sealed to a 304L flange through a Kovar sleeve; view 38.0 mm and glass 3.0 mm for DN40CF, view 65.0 mm and glass 3.5 mm for DN63CF, view 90.0 mm and glass 6.0 mm for DN100CF; bake-out to 350 °C at no more than 2–3 °C per minute. The make of the SPM1 viewports is not published.',
     },
     {
       id: 'S11', short: 'Lesker, KF notes',
@@ -157,18 +157,18 @@
     },
     {
       id: 'viewport', name: 'Viewports', group: 'vessel', count: 3, basis: 'photo',
-      what: 'Glass windows sealed into DN100CF flanges on three lateral ports. Drawn here: the front one left open for eyes, the left one for the webcam and the back one for the spectrometer fibre.',
+      what: 'Glass windows sealed into CF flanges on three lateral ports. The left and back ones are DN100CF viewports bolted straight onto their ports; on the front port, as a photo shows, a zero-length reducer takes the port down to DN63CF for a smaller viewport. Drawn here: the front one left open for eyes, the left one for the webcam and the back one for the spectrometer fibre.',
       specs: [
         ['Count', '3 lateral viewing ports', 'S1'],
-        ['Clear view', '90 mm on a standard DN100CF Kodial viewport (make not published)', 'S10'],
+        ['Clear view', '90 mm on a standard DN100CF Kodial viewport; 65 mm on the front’s DN63CF (make not published)', 'S10'],
         ['Used by', 'webcam, spectrometer, eyes', 'S4'],
       ],
       connects: ['lateral', 'camera', 'spectro'],
       // Which window serves which use is not published: S4 names the three uses, the drawing assigns them.
       pieces: {
-        'Back viewport (spectrometer)': [['Used for', 'the spectrometer fibre (which window: not published)', 'assumed']],
-        'Left viewport (webcam)': [['Used for', 'the webcam (which window: not published)', 'assumed']],
-        'Front viewport (eyes)': [['Used for', 'looking in by eye (which window: not published)', 'assumed']],
+        'Back viewport (spectrometer)': [['Used for', 'the spectrometer fibre (which window: not published)', 'assumed'], ['Mount', 'a DN100CF viewport straight on the port', 'photo']],
+        'Left viewport (webcam)': [['Used for', 'the webcam (which window: not published)', 'assumed'], ['Mount', 'a DN100CF viewport straight on the port', 'photo']],
+        'Front viewport (eyes)': [['Used for', 'looking in by eye (which window: not published)', 'assumed'], ['Mount', 'a zero-length reducer to DN63CF, then a DN63CF viewport (65 mm view)', 'photo']],
       },
       know: 'Vent the chamber slowly: under vacuum a 90 mm window carries about 640 N (65 kg) of air pressure.',
       sources: ['S1', 'S4'],
@@ -518,7 +518,7 @@
     ['vessel', 'plasma', 'The glow fills the whole chamber, and the chamber wall is the cathode of the discharge.', ['S4']],
     ['joints', 'gaskets', 'One copper gasket sits between the two flanges of each joint, and tightening the bolts drives both knife edges into it.', ['S6']],
     ['joints', 'posts', 'A clamp block on each post grips one joint’s pair of flanges.', ['photo']],
-    ['lateral', 'viewport', 'Three lateral ports carry a viewport, bolted to the port’s DN100CF flange over a copper gasket.', ['S1', 'S9']],
+    ['lateral', 'viewport', 'Three lateral ports carry a viewport, bolted to the port’s DN100CF flange over a copper gasket. On the front port a zero-length reducer sits between them, and a smaller DN63CF viewport bolts into its tapped holes over a second gasket.', ['S1', 'S9', 'photo']],
     ['lateral', 'pumpPort', 'The fourth lateral port is the vacuum port: a zero-length reducer bolts onto its DN100CF flange.', ['S1', 'photo']],
     ['viewport', 'camera', 'As drawn, the webcam stands on a post and looks in through the left viewport; which window it uses is not published.', ['assumed']],
     ['viewport', 'spectro', 'As drawn, an adaptor on the back viewport holds the fibre that takes the glow’s light to the spectrometer; which window is not published.', ['assumed']],
@@ -588,7 +588,7 @@
     pfInner: ['former'], satellite: ['table', 'posts'],
   };
   const ORDER = {
-    viewport: [['16 nuts'], ['16 bolts'], ['Viewport flange', 'Window glass, sealed into the flange'], ['Copper gasket']],
+    viewport: [['8 bolts into the reducer'], ['DN63CF viewport flange', 'DN63CF window glass'], ['DN63CF copper gasket'], ['16 nuts'], ['16 bolts'], ['Viewport flange', 'Window glass, sealed into the flange', 'Zero-length reducer, DN100CF to DN63CF'], ['Copper gasket']],
     laser: [['6 nuts'], ['6 bolts'], ['DN40CF viewport flange', 'Window glass'], ['Copper gasket']],
     electrode: [['HV terminal cap'], ['6 nuts'], ['6 bolts'], ['HV feedthrough: flange, ceramic insulator, anode rod', 'Anode disc'], ['Copper gasket']],
     probe: [['6 nuts'], ['6 bolts'], ['Bellows linear feedthrough', 'Micrometer drive and knob', 'Probe: shaft, ceramic sleeve, wire tip'], ['Copper gasket']],
@@ -841,6 +841,45 @@
       rows: [['View diameter', '38.0 mm', 'S10'], ['Thickness', '3.0 mm', 'S10'], ['Bake-out', 'up to 350 °C', 'S10']],
       note: 'The window material and coating on the SPM1’s laser port are not published. Check them before choosing a laser wavelength.',
       sources: ['S10', 'S2'],
+    },
+    'reducer-100-63': {
+      title: 'Zero-length reducer, DN100CF to DN63CF',
+      material: 'Stainless steel (grade not published)',
+      rows: [
+        ['DN100 side', '16 × Ø8.4 mm on 130.3 mm', 'S9'],
+        ['DN63 side', '8 tapped holes on 92.2 mm', 'S9'],
+        ['Thickness', '19.5 mm, drawn as a DN100CF flange (not published)', 'assumed'],
+        ['Seen on', 'a photo of an SPM1, on the front lateral port', 'photo'],
+      ],
+      note: 'Zero length: both knife edges are cut into one plate, so the smaller viewport sits no further out than a DN100CF one would. Its DN63 side is tapped, so the viewport’s bolts need no nuts.',
+      sources: ['S9'],
+    },
+    'vp-flange-63': {
+      title: 'DN63CF zero-length viewport flange',
+      material: '304L stainless steel (reference part)',
+      rows: [['Flange', 'DN63CF, 114.3 mm OD', 'S9'], ['Bolt holes', '8 × Ø8.4 mm on 92.2 mm', 'S9'], ['Clear view', '65.0 mm', 'S10'], ['Glass seal', 'Kovar transition sleeve', 'S10']],
+      note: 'Values for a standard DN63CF Kodial viewport (Lesker VPZL-450). The make on the SPM1 is not published.',
+      sources: ['S10', 'S9'],
+    },
+    'vp-glass-63': {
+      title: 'DN63CF viewport window glass',
+      material: 'Kodial glass (alkali borosilicate 7056), fully annealed',
+      rows: [['View diameter', '65.0 mm', 'S10'], ['Thickness', '3.5 mm', 'S10'], ['Sealed by', 'Kovar sleeve to the flange', 'S10'], ['Bake-out', 'up to 350 °C, heating at ≤ 2–3 °C per minute', 'S10']],
+      note: 'Values for a standard DN63CF Kodial viewport (Lesker VPZL-450); the SPM1’s front window type is not published.',
+      sources: ['S10'],
+    },
+    'bolts-tapped-63': {
+      title: 'DN63CF bolts into the reducer',
+      material: 'Stainless steel (grade not published)',
+      rows: [
+        ['Count', '8, one per tapped hole', 'S9'],
+        ['Thread', 'M8 or 5/16-24 UNF (not published)', 'std'],
+        ['Holes', '8 tapped on a 92.2 mm circle', 'S9'],
+        ['Length', 'M8 × 30 mm: the 17 mm viewport flange, the 2 mm gasket and 11 mm of thread', 'derived'],
+        ['Spanner', '13 mm (M8) or 1/2 in (5/16-24)', 'derived'],
+      ],
+      note: 'The DN63 side of a zero-length reducer is tapped, so these bolts screw straight in and need no nuts. The photo shows socket-head screws here; hex heads are drawn.',
+      sources: ['S9'],
     },
     'reducer-100-kf40': {
       title: 'Zero-length reducer, DN100CF to KF',
@@ -1121,6 +1160,8 @@
     'gaskets|OFHC copper gasket': 'gasket-160',
     'lateral|Port tube, 104 mm': 'tube-100', 'lateral|DN100CF flange': 'cf100',
     'viewport|Copper gasket': 'gasket-100', 'viewport|Viewport flange': 'vp-flange-100', 'viewport|Window glass, sealed into the flange': 'vp-glass-100',
+    'viewport|Zero-length reducer, DN100CF to DN63CF': 'reducer-100-63', 'viewport|DN63CF viewport flange': 'vp-flange-63', 'viewport|DN63CF window glass': 'vp-glass-63',
+    'viewport|DN63CF copper gasket': 'gasket-63', 'viewport|8 bolts into the reducer': 'bolts-tapped-63',
     'pumpPort|Copper gasket': 'gasket-100', 'pumpPort|Zero-length reducer with KF40 stub': 'reducer-100-kf40', 'pumpPort|KF40 clamp with wing nut': 'kf-clamp',
     'pumpPort|KF40 centring ring and O-ring': 'kf-ring-40', 'pumpPort|Hose end flange, KF40': 'kf-hose-flange',
     '*|16 bolts': 'bolts-100', '*|16 nuts': 'nuts-100', '*|8 bolts': 'bolts-63', '*|8 nuts': 'nuts-63', '*|6 bolts': 'bolts-40', '*|6 nuts': 'nuts-40',

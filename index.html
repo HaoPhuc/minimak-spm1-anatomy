@@ -1492,7 +1492,8 @@ function perMesh(r, s, c, g, material) {
   if (material.userData.ghost) {
     if (!material.userData.fade) return;
     u.uColor.value.copy(this.userData.colorMat.uniforms.uColor.value);
-    u.uMetal.value.copy(this.userData.colorMat.uniforms.uMetal.value);
+    // Show me's dim wash is a ghost with no metal of its own.
+    u.uMetal?.value.copy(this.userData.colorMat.uniforms.uMetal.value);
     u.uSolid.value = this.userData.solid;
   } else if (material.userData.ink) { u.uId.value = this.userData.inkId; u.uLitS.value = this.userData.litCode; }
   else {
