@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SPM1 anatomy: user guide</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 17mm 18mm;
+    @bottom-left { content: "SPM1 anatomy · User guide"; font: 7.5pt "Segoe UI", system-ui, sans-serif; color: #5c5c59; }
+    @bottom-right { content: counter(page); font: 600 7.5pt "Segoe UI", system-ui, sans-serif; color: #5c5c59; }
+  }
+  @page :first { @bottom-left { content: none; } @bottom-right { content: none; } }
+  :root {
+    --ink: #1c1c1a; --muted: #5c5c59; --rule: #d9d9d5; --soft: #eeeeeb; --card: #fafaf9; --paper: #f1f1ef;
+    --accent: #008080; --spec: #2b8a6e; --photo: #9a6a0f; --assumed: #787873;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font: 9.6pt/1.45 "Segoe UI", system-ui, sans-serif; color: var(--ink); font-variant-numeric: tabular-nums; }
+  section { break-before: page; }
+  section.cover { break-before: auto; }
+  h1, h2, h3 { font-weight: 600; margin: 0; }
+  h1 { font-size: 19pt; line-height: 1.15; margin-bottom: 1.5mm; }
+  h1 .n { color: var(--accent); margin-right: 2.5mm; }
+  h2 { font-size: 11.5pt; margin: 4.5mm 0 1.2mm; }
+  h3 { font-size: 9.8pt; margin: 3mm 0 0.8mm; }
+  p { margin: 0 0 2mm; }
+  .lede { font-size: 10.6pt; color: var(--ink); margin-bottom: 4mm; max-width: 160mm; }
+  .muted { color: var(--muted); }
+  ul { margin: 0 0 2mm; padding-left: 4.5mm; }
+  li { margin: 0 0 1.1mm; }
+  b { font-weight: 600; }
+  code { font: 8.4pt Consolas, "Cascadia Mono", monospace; background: var(--soft); border-radius: 0.8mm; padding: 0.1mm 0.9mm; }
+  kbd { display: inline-block; min-width: 4.2mm; text-align: center; font: 600 8pt "Segoe UI", system-ui, sans-serif; line-height: 1.35;
+        padding: 0 1.1mm; border: 0.25mm solid #b9b9b4; border-bottom-width: 0.5mm; border-radius: 1mm; background: #fff; color: var(--ink); }
+  .tag { display: inline-block; font-size: 7.6pt; line-height: 1.3; padding: 0 1.1mm; border-radius: 0.8mm; background: var(--soft); border: 0.2mm solid var(--rule); color: var(--muted); }
+  .dot { display: inline-block; width: 2.6mm; height: 2.6mm; border-radius: 50%; vertical-align: -0.3mm; }
+  .dot.spec { background: var(--spec); }
+  .dot.photo { background: linear-gradient(90deg, var(--photo) 50%, transparent 50%); border: 0.35mm solid var(--photo); }
+  .dot.assumed { border: 0.35mm solid var(--assumed); }
+
+  figure { margin: 0 0 3mm; break-inside: avoid; }
+  figure img { display: block; width: 100%; border: 0.25mm solid var(--rule); border-radius: 1.6mm; }
+  figure.bare img { border: 0; border-radius: 0; }
+  figcaption { font-size: 8.2pt; color: var(--muted); margin-top: 1.2mm; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .cols.wide-left { grid-template-columns: 1.45fr 1fr; }
+  .cols.wide-right { grid-template-columns: 1fr 1.45fr; }
+  .cols.three { grid-template-columns: 1fr 1fr 1fr; gap: 5mm; }
+  .tip { background: var(--soft); border-left: 0.9mm solid var(--accent); border-radius: 0 1.2mm 1.2mm 0; padding: 2mm 3mm; margin: 2.5mm 0; font-size: 9pt; break-inside: avoid; }
+  .tip b:first-child { color: var(--accent); }
+
+  /* Numbered markers on a screenshot, and their legend */
+  .shot { position: relative; }
+  .shot .m { position: absolute; width: 4.6mm; height: 4.6mm; margin: -2.3mm 0 0 -2.3mm; border-radius: 50%; background: var(--accent); color: #fff;
+             font: 700 7.6pt/4.6mm "Segoe UI", system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 0.55mm #fff, 0 0.3mm 1mm rgba(0,0,0,.35); }
+  .legend { list-style: none; padding: 0; margin: 2mm 0 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 7mm; row-gap: 1.3mm; font-size: 9pt; }
+  .legend.one { grid-template-columns: 1fr; }
+  .legend li { position: relative; padding-left: 6.4mm; margin: 0; }
+  .legend li::before { content: attr(data-n); position: absolute; left: 0; top: 0.35mm; width: 4.4mm; height: 4.4mm; border-radius: 50%; background: var(--accent); color: #fff;
+                       font: 700 7.4pt/4.4mm "Segoe UI", system-ui, sans-serif; text-align: center; }
+
+  /* A screenshot with labels above and below, joined to their targets by lines */
+  .callfig { position: relative; margin: 0 0 3mm; break-inside: avoid; }
+  .callfig img { position: absolute; left: 0; width: 100%; border: 0.25mm solid var(--rule); border-radius: 1.6mm; }
+  .callfig svg { position: absolute; inset: 0; overflow: visible; }
+  .callfig .lab { position: absolute; transform: translateX(-50%); font-size: 8pt; line-height: 1.25; text-align: center; white-space: nowrap; }
+  .callfig .lab b { display: block; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 8.9pt; break-inside: avoid; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 8pt; padding: 1.2mm 2mm 1.2mm 0; border-bottom: 0.3mm solid var(--ink); }
+  td { padding: 1.3mm 2mm 1.3mm 0; border-bottom: 0.2mm solid var(--rule); vertical-align: top; }
+  td:first-child { white-space: nowrap; }
+  table.keys td:first-child { width: 24mm; }
+  table.links code { font-size: 7.6pt; }
+
+  /* Cover */
+  .cover { display: grid; grid-template-rows: auto 1fr auto; height: 262mm; }
+  .cover .eyebrow { font-size: 9pt; font-weight: 600; color: var(--accent); letter-spacing: 0; }
+  .cover h1 { font-size: 34pt; margin: 1mm 0 2mm; }
+  .cover .sub { font-size: 13pt; color: var(--muted); max-width: 150mm; }
+  .cover .hero { margin: 6mm 0; background: var(--card); border: 0.25mm solid var(--rule); border-radius: 2.5mm; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .cover .hero img { height: 128mm; display: block; }
+  .cover .bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+  .toc { list-style: none; padding: 0; margin: 0; columns: 1; font-size: 9.4pt; }
+  .toc li { display: flex; gap: 2mm; margin: 0 0 0.9mm; }
+  .toc li span:first-child { color: var(--accent); font-weight: 600; width: 5mm; }
+  .toc li span:last-child { margin-left: auto; color: var(--muted); }
+
+  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm 6mm; }
+  .themes figure { margin: 0; }
+  .themes h3 { margin: 1.6mm 0 0.6mm; }
+  .themes p { font-size: 8.8pt; margin: 0; }
+  .phones { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6mm; }
+  .phones figure img { border-radius: 2.5mm; }
+  .cheat { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8mm; }
+  .cheat h2:first-child { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ Cover -->
+<section class="cover">
+  <div>
+    <div class="eyebrow">User guide</div>
+    <h1>SPM1 anatomy</h1>
+    <div class="sub">How to use the interactive 3D anatomy of the MinimaK SPM1, a tabletop magnetised torus by Rideo Systems</div>
+  </div>
+  <div class="hero"><img src="img/hero.png" alt=""></div>
+  <div class="bottom">
+    <div>
+      <h2 style="margin-top:0">What it is</h2>
+      <p>A 3D model you can turn, take apart and read. For each of the machine’s 29 components it shows what the part is, how it attaches to the next one, what it is made of, and where each number comes from. It does not simulate the plasma physics.</p>
+      <h2>Opening it</h2>
+      <p>Open <code>index.html</code> in a recent browser (Chrome, Edge, Firefox or Safari). There is nothing to install. The first time it opens, it needs an internet connection to load its 3D library.</p>
+    </div>
+    <div>
+      <h2 style="margin-top:0">In this guide</h2>
+      <ol class="toc">
+        <li><span>1</span><span>The page at a glance</span><span>2</span></li>
+        <li><span>2</span><span>Moving round the model</span><span>3</span></li>
+        <li><span>3</span><span>Finding a part</span><span>4</span></li>
+        <li><span>4</span><span>Inspecting a part</span><span>5</span></li>
+        <li><span>5</span><span>Taking a part apart</span><span>6</span></li>
+        <li><span>6</span><span>Sheets and Show me</span><span>7</span></li>
+        <li><span>7</span><span>Where the numbers come from</span><span>8</span></li>
+        <li><span>8</span><span>The whole machine: Explode and Cutaway</span><span>9</span></li>
+        <li><span>9</span><span>Learning the machine: the tour and the quiz</span><span>10</span></li>
+        <li><span>10</span><span>Four themes</span><span>11</span></li>
+        <li><span>11</span><span>Phones and tablets</span><span>12</span></li>
+        <li><span>12</span><span>Links, settings and access</span><span>13</span></li>
+        <li><span>13</span><span>Keys and gestures</span><span>14</span></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 1 -->
+<section>
+  <h1><span class="n">1</span>The page at a glance</h1>
+  <p class="lede">The page has three columns: the assembly list on the left, the 3D view in the middle and the inspector on the right. The bar at the top changes the whole machine.</p>
+  <figure class="shot" data-css="1280,800">
+    <img src="img/page.jpg" alt="The whole page with the assembly list open">
+    <i class="m" data-at="175,88">1</i>
+    <i class="m" data-at="243,124">2</i>
+    <i class="m" data-at="224,209">3</i>
+    <i class="m" data-at="420,250">4</i>
+    <i class="m" data-at="352,339">5</i>
+    <i class="m" data-at="852,150">6</i>
+    <i class="m" data-at="428,718">7</i>
+    <i class="m" data-at="482,771">8</i>
+    <i class="m" data-at="772,755">9</i>
+    <i class="m" data-at="946,60">10</i>
+    <i class="m" data-at="1060,60">11</i>
+    <i class="m" data-at="1194,60">12</i>
+    <i class="m" data-at="1200,136">13</i>
+    <i class="m" data-at="1232,371">14</i>
+  </figure>
+  <ol class="legend">
+    <li data-n="1"><b>Assembly list.</b> All 29 components in seven groups. Click a name to select the part; double-click to inspect it. On a first visit the list is folded to a thin rail: click its magnifier, or press <kbd>/</kbd>.</li>
+    <li data-n="2"><b>Search.</b> Find a part by name, size or seal: <i>M8</i>, <i>o-ring</i>, <i>viewport bolt</i>.</li>
+    <li data-n="3"><b>Basis dot.</b> How far to trust the drawn shape: <span class="dot spec"></span> published spec, <span class="dot photo"></span> from photos, <span class="dot assumed"></span> assumed. The eye beside each row hides the part or group.</li>
+    <li data-n="4"><b>The 3D view.</b> Drag to turn, right-drag to pan, scroll to zoom. Until you touch it, it turns slowly on its own.</li>
+    <li data-n="5"><b>View buttons.</b> Zoom in and out, the home view, <b>Views</b> (look from a side), pan mode, and the side panels.</li>
+    <li data-n="6"><b>Axis triad.</b> Shows which way is up; click an axis end to look along it.</li>
+    <li data-n="7"><b>Scale bar.</b> True at every zoom: the view has no perspective, so sizes can be compared anywhere in it.</li>
+    <li data-n="8"><b>Hint.</b> What a click or a drag does right now. It changes as you go.</li>
+    <li data-n="9"><b>Readout.</b> The view’s angles and zoom, and what is shown or selected.</li>
+    <li data-n="10"><b>Explode.</b> Takes every component off the machine at once (page 9).</li>
+    <li data-n="11"><b>Cutaway.</b> Cuts the top off the vessel to show the plasma inside.</li>
+    <li data-n="12"><b>Theme.</b> Colour, Greyscale, Blueprint or Hologram (page 11).</li>
+    <li data-n="13"><b>Inspector.</b> Four tabs: <b>Machine</b> (what it is, how a run goes), <b>Part</b> (the selected part), <b>Sources</b> and <b>Controls</b>.</li>
+    <li data-n="14"><b>Take the tour</b> and <b>Where does it go?</b>, a guided tour and a quiz (page 10).</li>
+  </ol>
+  <div class="tip"><b>Make room.</b> Drag the edge between a side panel and the view to size the panel; double-click the edge for the default width. The panels button at the view’s left edge, or <kbd>F</kbd>, folds both side panels so the model gets the whole window.</div>
+</section>
+
+<!-- ============================================================ 2 -->
+<section>
+  <h1><span class="n">2</span>Moving round the model</h1>
+  <p class="lede">The model turns like a turntable: sideways spins it about its vertical axis, up and down tilts it. The vertical always stays up, so you never lose your bearings.</p>
+  <table>
+    <thead><tr><th>To</th><th>Mouse</th><th>Touch</th><th>Keys</th></tr></thead>
+    <tbody>
+      <tr><td><b>Turn</b></td><td>Drag</td><td>One finger</td><td>Arrow keys</td></tr>
+      <tr><td><b>Pan</b></td><td>Right-drag, Shift-drag or middle-drag; or switch on the pan button, then drag</td><td>Two fingers</td><td><kbd>Shift</kbd> + arrows</td></tr>
+      <tr><td><b>Zoom</b></td><td>Scroll wheel (it zooms toward the pointer), or the zoom buttons</td><td>Pinch</td><td><kbd>+</kbd> <kbd>−</kbd></td></tr>
+      <tr><td><b>Home view</b></td><td>The home button, or double-click empty space</td><td>The home button</td><td><kbd>0</kbd></td></tr>
+      <tr><td><b>Fit everything shown</b></td><td>—</td><td>—</td><td><kbd>A</kbd></td></tr>
+      <tr><td><b>Look from a side</b></td><td><b>Views</b> menu, or click an axis end on the triad</td><td>The same</td><td><kbd>1</kbd> three-quarter, <kbd>2</kbd> front, <kbd>3</kbd> right, <kbd>4</kbd> above</td></tr>
+      <tr><td><b>Fold the side panels</b></td><td>The panels button</td><td>The panels button</td><td><kbd>F</kbd></td></tr>
+    </tbody>
+  </table>
+  <p class="muted" style="margin-top:1.5mm">Keys work once the model has focus: click it first. While inspecting a part, the home view frames that part instead of the whole machine.</p>
+
+  <div class="cols" style="margin-top:4mm;grid-template-columns:62mm 1fr;gap:8mm">
+    <figure class="bare">
+      <img src="img/menu.png" alt="The view buttons and the Views menu" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+      <figcaption>The view buttons and the <b>Views</b> menu. From the top: zoom in, zoom out, home, Views, pan mode, side panels. The menu works from the keyboard too: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> picks, <kbd>Esc</kbd> closes.</figcaption>
+    </figure>
+    <div>
+      <figure class="bare" style="width:46mm">
+        <img src="img/triad.png" alt="The axis triad" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+      </figure>
+      <h3>The axis triad</h3>
+      <p>The filled ends are the positive axes, with their letters (x red, y green, z blue, z up); the hollow rings are the negative ends. Click any end to look from that side.</p>
+      <h3>The table’s sides</h3>
+      <p>The table’s edges are printed with the quarters above them: <b>Front</b>, <b>Right</b>, <b>Back</b> and <b>Left</b>. Parts are named by these sides, as in <i>Left viewport</i> or <i>Right–back joint</i>.</p>
+      <div class="tip"><b>Lost?</b> Press <kbd>0</kbd> or double-click empty space to go back to the home view.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 3 -->
+<section>
+  <h1><span class="n">3</span>Finding a part</h1>
+  <div class="cols" style="grid-template-columns:1fr 68mm;align-items:start">
+    <p class="lede">Point at any part to see its name; click it to select it. A selected part gets a teal layer and outline, the rest of the machine fades back, and the <b>Part</b> tab tells you about it.</p>
+    <figure class="bare" style="margin:0">
+      <img src="img/tooltip.png" alt="A tooltip naming the rotary vane pump" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+      <figcaption>Pointing at a part names it and lights it.</figcaption>
+    </figure>
+  </div>
+  <figure>
+    <img src="img/select.jpg" alt="The toroidal field coils selected">
+    <figcaption>The toroidal field coils selected, from the model or from the list. The Part tab offers <b>Inspect on its own</b>, <b>Zoom to it</b> and <b>Hide</b>.</figcaption>
+  </figure>
+  <div class="cols" style="grid-template-columns:1fr 62mm">
+    <div>
+      <h2 style="margin-top:0">The assembly list</h2>
+      <ul>
+        <li><b>Click</b> a name to select the part; <b>double-click</b> to inspect it.</li>
+        <li><b>×4</b> after a name is how many pieces the part has.</li>
+        <li><b>The eye</b> hides a part, or a whole group, and shows it again.</li>
+        <li><b>The dot</b> is the part’s basis: <span class="dot spec"></span> spec, <span class="dot photo"></span> photos, <span class="dot assumed"></span> assumed.</li>
+      </ul>
+      <h2>Search</h2>
+      <p>The box searches names, specs, descriptions and every sub-part’s sheet. Try a size (<i>M8</i> lists every M8 bolt and nut), a seal (<i>o-ring</i>), or a question in plain words: <i>the gasket between the right and back quarters</i>. The best matches are listed, with matching pieces under their part; click one to inspect it. A line under the box says which words found nothing.</p>
+    </div>
+    <figure class="bare">
+      <img src="img/search.png" alt="Searching for M8" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+      <figcaption>Searching for <i>M8</i>.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ 4 -->
+<section>
+  <h1><span class="n">4</span>Inspecting a part</h1>
+  <p class="lede">Inspecting shows one component on its own. The rest of the machine fades to an x-ray ghost, and the part lifts out while the camera glides round to frame it, so you can see where it comes from.</p>
+  <figure>
+    <img src="img/inspect.jpg" alt="The left viewport inspected">
+    <figcaption>Inspecting the viewports, on the left one (piece 2 of 3). The parts it bolts to are drawn half solid with their bolts and nuts; the rest of the machine is a ghost.</figcaption>
+  </figure>
+  <p><b>To inspect a part:</b> double-click it in the view or in the list, press <b>Inspect on its own</b> in the Part tab, or select it and press <kbd>I</kbd>.</p>
+  <h2>The inspect bar</h2>
+  <div class="callfig" data-css="150,98,860,172" data-pad="12,15">
+    <img src="img/bar.png" alt="The inspect bar">
+    <span class="lab" data-at="240,107" data-l="16,t1"><b>The piece</b>you are looking at</span>
+    <span class="lab" data-at="370,107" data-l="50,t1"><b>Pieces</b><kbd>,</kbd> <kbd>.</kbd> step through</span>
+    <span class="lab" data-at="475,107" data-l="82,t1"><b>Take apart</b><kbd>T</kbd></span>
+    <span class="lab" data-at="612,108" data-l="113,t1"><b>Spread</b><kbd>[</kbd> <kbd>]</kbd></span>
+    <span class="lab" data-at="790,107" data-l="157,t1"><b>Steps</b>the order it comes apart</span>
+    <span class="lab" data-at="424,165" data-l="44,b1"><b>Ghost</b><kbd>G</kbd> the rest of the machine</span>
+    <span class="lab" data-at="510,165" data-l="85,b1"><b>Sheets</b><kbd>S</kbd> beside the part</span>
+    <span class="lab" data-at="571,165" data-l="117,b1"><b>Copy link</b>to this view</span>
+    <span class="lab" data-at="614,166" data-l="150,b1"><b>Done</b>put it back and leave</span>
+  </div>
+  <div class="cols">
+    <div>
+      <h2 style="margin-top:1mm">The Part tab</h2>
+      <ul>
+        <li><b>What it does</b>, and what it is made of.</li>
+        <li><b>How it attaches</b>: one sentence for each part it connects to. Click a name to inspect that part; <b>← name</b> in the bar, or <kbd>Backspace</kbd>, goes back.</li>
+        <li><b>Made of</b>: its sub-parts, numbered. Each has a sheet (page 7).</li>
+        <li><b>Pieces</b>: where each piece of a repeated part sits, and what tells them apart.</li>
+        <li><b>Specification</b>: every row carries a source tag (page 8).</li>
+      </ul>
+    </div>
+    <div>
+      <h2 style="margin-top:1mm">Getting back out</h2>
+      <p><kbd>Esc</kbd> steps back one level at a time: the preview, Show me, the opened joint, the step, the single piece, the part, then the selection. Kept sheets stay.</p>
+      <p><b>Done</b> reverses the whole inspect at an explode’s pace: the part goes back together, flies home while the camera returns to your earlier view, and the machine turns solid again.</p>
+      <p class="muted">A part with several pieces opens on all of them; click one to pick it, or use the arrows beside <b>All</b>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 5 -->
+<section>
+  <h1><span class="n">5</span>Taking a part apart</h1>
+  <p class="lede"><b>Take apart</b> (<kbd>T</kbd>) separates the inspected part into its sub-parts, each along the way it really comes off: bolts slide out, nuts come off the back, gaskets come out from between their flanges, a KF clamp opens. A weld never comes apart.</p>
+  <figure class="shot" data-css="1280,800">
+    <img src="img/apart.jpg" alt="The left viewport taken apart, at step 2 of 4">
+    <i class="m" data-at="200,330">1</i>
+    <i class="m" data-at="222,196">2</i>
+    <i class="m" data-at="790,150">3</i>
+  </figure>
+  <ol class="legend one">
+    <li data-n="1"><b>Star order.</b> When a step takes off a ring of bolts or nuts, each head is numbered with its turn in the star (cross) tightening pattern: 1, 11, 6, 16 … round a 20-bolt flange. Point at one bolt to name it: <i>Bolt 7 of 20 · star 3</i>.</li>
+    <li data-n="2"><b>How to do the step:</b> the size, length and spanner (<i>Draw out the 16 bolts, M8 × 50 mm, 13 mm spanner</i>), which way a knife edge faces, and that a copper gasket is never reused.</li>
+    <li data-n="3"><b>Steps.</b> <b>‹ Step 2 / 4 ›</b> walks through the order the sub-parts come off: nuts, then bolts, then the flange, a gasket last. <b>All</b> has every sub-part off; fitting runs back up the steps. No procedure is published, so the order is tagged <span class="tag">assumed</span>.</li>
+  </ol>
+  <div class="cols wide-right" style="margin-top:3mm">
+    <div>
+      <h2 style="margin-top:0">More</h2>
+      <ul>
+        <li><b>Spread</b> (slider, or <kbd>[</kbd> <kbd>]</kbd>) sets how far apart the sub-parts go.</li>
+        <li>A <b>dotted trail</b> from a hollow ring shows where the sub-part under the pointer sat, and the way it came off.</li>
+        <li><b>Turn to see</b> appears when the sub-parts come apart toward you and hide each other. It turns the view so they lie side by side. The view never turns by itself.</li>
+      </ul>
+      <h2>Open this joint</h2>
+      <p>On a copper gasket or a joint flange, <b>Open this joint</b> (<kbd>J</kbd>) opens the whole vessel joint: the 20 nuts off in star order, the 20 bolts out, the two quarters eased apart, then the gasket out. Press it again, or <kbd>Esc</kbd>, to close it.</p>
+    </div>
+    <figure>
+      <img src="img/joint-crop.jpg" alt="The right–back joint opened at step 2">
+      <figcaption>The right–back joint opened at step 2: its 20 bolts drawn out, each numbered with its turn in the star order.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section>
+  <h1><span class="n">6</span>Sheets and Show me</h1>
+  <p class="lede">While you inspect, every sub-part has a technical sheet: its material, dimensions and notes, with a source on every row. Sheets sit in a column on the right of the view, where they never cover the part.</p>
+  <figure class="shot" data-css="1280,800">
+    <img src="img/sheets.jpg" alt="Two sheets kept beside the left viewport">
+    <i class="m" data-at="652,198">1</i>
+    <i class="m" data-at="548,352">2</i>
+    <i class="m" data-at="652,472">3</i>
+    <i class="m" data-at="944,493">4</i>
+    <i class="m" data-at="944,604">5</i>
+  </figure>
+  <ol class="legend">
+    <li data-n="1"><b>The column</b> counts the kept sheets. <b>Fold all</b> folds them to their bars; <b>Close all</b> closes them.</li>
+    <li data-n="2"><b>Callouts</b> name the sub-parts beside the part, numbered as the Made of rows. Click one to preview its sheet.</li>
+    <li data-n="3"><b>The leader line</b> joins a sheet to its sub-part.</li>
+    <li data-n="4"><b>A sheet’s bar:</b> the chevron folds it, the frame button is Show me, × closes it. <i>Same on all 3</i>: a sheet belongs to the sub-part, so it is the same on every piece.</li>
+    <li data-n="5"><b>Source tags</b> on every row say where the number comes from (page 8).</li>
+  </ol>
+  <div class="cols" style="margin-top:3mm">
+    <div>
+      <h2 style="margin-top:0">Preview and keep</h2>
+      <ul>
+        <li><b>Preview:</b> rest the pointer on a sub-part. Its sheet opens with a dashed edge, labelled <i>Preview</i>, and stays until you rest on another one.</li>
+        <li><b>Keep:</b> click the sub-part, press <b>Keep</b> on the preview, or click its row under <b>Made of</b>.</li>
+        <li><b>Float:</b> drag a sheet by its bar to anywhere on the view. <b>Tidy</b> (<kbd>L</kbd>) puts floating sheets back in the column.</li>
+        <li>Each part remembers its sheets, folds and places for when you come back.</li>
+      </ul>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Show me</h2>
+      <p>Brings one sub-part close up and dims the rest of the part. Use the frame button on a sheet’s bar or a Made of row, <kbd>Z</kbd>, or double-click the sub-part. The bar shows where it is (<i>Left quarter › Viewports › Left viewport › 16 bolts</i>), and a ring of bolts gets its sizes drawn on. <kbd>Esc</kbd> goes back.</p>
+      <figure style="margin-top:2mm">
+        <img src="img/showme.jpg" alt="Show me on the left viewport's bolts">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 7 -->
+<section>
+  <h1><span class="n">7</span>Where the numbers come from</h1>
+  <p class="lede">Every number on the page carries a tag that says where it comes from, so you can tell a published figure from one read off a photo or picked for the drawing.</p>
+  <div class="cols wide-left">
+    <div>
+      <table>
+        <thead><tr><th>Tag</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag">S1</span> … <span class="tag">S11</span></td><td>Published in that source. Click the tag to open it in the <b>Sources</b> tab; <b>← back</b> returns you.</td></tr>
+          <tr><td><span class="tag">photo</span></td><td>Scaled from the photos in the 2025 webinar on the Minimak (S4).</td></tr>
+          <tr><td><span class="tag">measured</span></td><td>Measured on a top-down photo of an SPM1, with the camera fitted to parts of known size.</td></tr>
+          <tr><td><span class="tag">std</span></td><td>Follows from the ConFlat standard (S9); the SPM1’s own part is not published.</td></tr>
+          <tr><td><span class="tag">derived</span></td><td>Worked out from tagged numbers: the vessel volume, the field on the axis.</td></tr>
+          <tr><td><span class="tag">assumed</span></td><td>Not published; picked for the drawing.</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:1.5mm">A key at the foot of each sheet and of the Part tab explains the tags it uses.</p>
+      <h2>How far to trust a shape</h2>
+      <p>The Part tab says what the part’s shape and position are drawn from, with the same dot as the list:</p>
+      <ul>
+        <li><span class="dot spec"></span> <b>published spec</b>: the size or placement is published.</li>
+        <li><span class="dot photo"></span> <b>photos</b>: scaled or placed from photos.</li>
+        <li><span class="dot assumed"></span> <b>a guess</b>: placed where it is plausible.</li>
+      </ul>
+      <p>This is about the drawn shape, not the numbers in the rows, which have their own tags.</p>
+      <h2>Words explained where they are used</h2>
+      <p>About two dozen terms a first-year student may not know (torus, poloidal, ConFlat, knife edge, Pirani gauge, mbar and more) have a dotted underline the first time they appear. Click one, or Tab onto it, to open its definition under the paragraph; click again to close it.</p>
+    </div>
+    <div>
+      <figure class="bare">
+        <img src="img/term.png" alt="The definition of torus opened" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+        <figcaption>A click on <i>torus</i> opens its definition.</figcaption>
+      </figure>
+      <figure class="bare">
+        <img src="img/sources.png" alt="The Sources tab" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+        <figcaption>The Sources tab: every reference, what was taken from it, and how many rows cite it.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 8 -->
+<section>
+  <h1><span class="n">8</span>The whole machine: Explode and Cutaway</h1>
+  <p class="lede"><b>Explode</b> (<kbd>E</kbd>) takes every component off the machine at once, so you can see how it all fits together.</p>
+  <figure>
+    <img src="img/explode.jpg" alt="The machine exploded">
+    <figcaption>Exploded and zoomed to fit (<kbd>A</kbd>). The quarters move out, the coils and ports lift off them, the PF and satellite coils rise, and the table, supplies and pump drop away. Cables and the pump hose stay plugged in at both ends.</figcaption>
+  </figure>
+  <div class="cols">
+    <div>
+      <h2 style="margin-top:0">Explode</h2>
+      <ul>
+        <li><b>Spread</b>, the slider beside the switch, or <kbd>[</kbd> <kbd>]</kbd>, sets how far apart the parts go (0.4× to 2.5×).</li>
+        <li>The plasma is off while the machine is apart. The windows are clear glass, so you can look into the vessel through any of them.</li>
+      </ul>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Cutaway and hiding</h2>
+      <ul>
+        <li><b>Cutaway</b> (<kbd>C</kbd>) cuts away the top of the vessel to show the glow inside. It is on when you open the page.</li>
+        <li><b>Hide</b> a part with its eye in the list, the <b>Hide</b> button in the Part tab, or <kbd>H</kbd> for the selected part. The eye on a group hides the whole group.</li>
+        <li><b>Fit</b> (<kbd>A</kbd>) zooms to whatever is shown, at the current angle.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 9 -->
+<section>
+  <h1><span class="n">9</span>Learning the machine: the tour and the quiz</h1>
+  <p class="lede">The <b>Machine</b> tab explains what the SPM1 is and how a run goes, in four steps: <b>pump down</b>, <b>let in a little gas</b>, <b>strike the glow</b> and <b>add the magnetic field</b>. Each step names the parts it uses; click a name to select that part. The order follows the 2025 webinar on the Minimak (S4); no operating procedure is published.</p>
+  <div class="cols" style="grid-template-columns:1fr 104mm;align-items:start;margin-bottom:5mm">
+    <div>
+      <h2 style="margin-top:0">Take the tour</h2>
+      <p>Inspects the parts in the order of a run, in eight stops from the empty chamber to the glow: the vessel, the pump, the gauge, the gas valve, the electrodes, the TF coils, PF1 and PF2, and the plasma.</p>
+      <ul>
+        <li>At each stop, a line in the Part tab says why that part matters at that point in the run.</li>
+        <li><b>Next ›</b> in the inspect bar goes on; it shows <i>Stop 6 of 8</i>.</li>
+        <li>You can look around at any stop: take the part apart, open sheets, follow links. Only <b>Done</b> leaves the tour.</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="img/tour-crop.jpg" alt="Stop 6 of the tour: the toroidal field coils">
+      <figcaption>Stop 6 of 8: the toroidal field coils. The Part tab says why they matter now.</figcaption>
+    </figure>
+  </div>
+  <div class="cols" style="grid-template-columns:1fr 104mm;align-items:start">
+    <div>
+      <h2 style="margin-top:0">Where does it go?</h2>
+      <p>A quiz of five questions. Each lifts a part out above the machine; click the place it belongs on the model, or pick one of four parts in the bar.</p>
+      <ul>
+        <li>A wrong answer names what you clicked and gives you one more try. Then the part flies home, its place is outlined, and the bar says how the two are joined.</li>
+        <li>The round is scored on first tries; <b>New round</b> asks five more.</li>
+        <li>A lecturer can send a round as a link (page 13).</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="img/quiz-crop.jpg" alt="The first question of Where does it go?">
+      <figcaption>The vacuum gauge is lifted out: click where it belongs, or pick in the bar.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ 10 -->
+<section>
+  <h1><span class="n">10</span>Four themes</h1>
+  <p class="lede">The buttons at the right of the top bar switch between four ways of drawing the same machine. Everything works the same in every theme, and the page remembers your choice.</p>
+  <div class="themes">
+    <figure>
+      <img src="img/first.jpg" alt="Colour theme">
+      <h3>Colour</h3>
+      <p>Solid shaded parts in their own colours with inked outlines, on a neutral stone ground. The selection is teal.</p>
+    </figure>
+    <figure>
+      <img src="img/greyscale.jpg" alt="Greyscale theme">
+      <h3>Greyscale</h3>
+      <p>A white, CAD-style rendering with five flat shades and hard shadows. Only the plasma (pink-violet) and the selection (amber) are in colour.</p>
+    </figure>
+    <figure>
+      <img src="img/blueprint.jpg" alt="Blueprint theme">
+      <h3>Blueprint</h3>
+      <p>White drafting lines on blue paper, set out as a drawing sheet: a frame with zones, centre lines, a grid, and a title block with the scale. Three dimensions (850, 900, Ø460 mm) can be dragged further off or along; double-click one to put it back. The selection is a red pencil mark.</p>
+    </figure>
+    <figure>
+      <img src="img/hologram.jpg" alt="Hologram theme">
+      <h3>Hologram</h3>
+      <p>Glowing ice blue on deep navy, so the inside of the machine shows through. The plasma glows violet and the selection orange. With no theme chosen, a dark system setting opens this one.</p>
+    </figure>
+  </div>
+  <div class="tip" style="margin-top:4mm"><b>Zoomed out,</b> the lines inside each part fade and thin, as an illustrator draws a figure seen from further off; zoom in and every line comes back. A selected part always keeps all its lines.</div>
+</section>
+
+<!-- ============================================================ 11 -->
+<section>
+  <h1><span class="n">11</span>Phones and tablets</h1>
+  <p class="lede">On a narrow screen the side panels stack under the model: scroll the page to read them. One finger turns the model, two fingers pan, and a pinch zooms.</p>
+  <div class="phones">
+    <figure>
+      <img src="img/phone.jpg" alt="The page on a phone">
+      <figcaption>The home view on a phone.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/phone-inspect.jpg" alt="Inspecting on a phone">
+      <figcaption>Inspecting: the bar is one row, and the sheets are a bottom sheet.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/phone-more.jpg" alt="The ⋯ menu on a phone">
+      <figcaption><b>⋯</b> opens the rest of the inspect bar.</figcaption>
+    </figure>
+  </div>
+  <div class="cols" style="margin-top:2mm">
+    <div>
+      <h2 style="margin-top:0">Inspecting on a phone</h2>
+      <ul>
+        <li><b>Tap</b> to select, <b>double-tap</b> to inspect.</li>
+        <li>The inspect bar is one row: the part’s name, one way to step, <b>⋯</b> and <b>Done</b>. <b>⋯</b> holds Take apart, Spread, Ghost, Sheets, Copy link and the pieces.</li>
+        <li>The sheets are a <b>bottom sheet</b> that peeks under the part. Pull it up by its head (or tap the head) to read; push it down to peek again. Its arrows step through the kept sheets.</li>
+      </ul>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Hitting small parts</h2>
+      <ul>
+        <li>A tap picks the smallest part within 24 px of your finger, so a tap on a flange beside a nut gets the nut.</li>
+        <li>Inspecting, a tap <b>previews</b> a sub-part’s sheet; <b>Keep</b> keeps it.</li>
+        <li><b>Loupe:</b> hold a finger still for half a second. A magnifier shows the view under it at 3×, with the name of what a tap there would pick. Slide to move it; lift to tap there.</li>
+        <li>Every button is at least 44 px on a touch screen.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 12 -->
+<section>
+  <h1><span class="n">12</span>Links, settings and access</h1>
+  <div class="cols wide-left">
+    <div>
+      <h2 style="margin-top:0">Share exactly what you see</h2>
+      <p>The address in the browser follows what you are looking at: the part and piece, the kept sheets, the step, Show me, the view and the theme. Copy it, or press <b>Copy link</b> in the inspect bar, and anyone who opens it sees the same thing, even in a fresh browser. The browser’s Back button returns to the part before.</p>
+      <table class="links">
+        <tbody>
+          <tr><td><code>#part=gaskets&amp;piece=right-back</code></td><td>The right–back gasket, inspected</td></tr>
+          <tr><td><code>&amp;sheets=ofhc-copper-gasket</code></td><td>…with its sheet kept</td></tr>
+          <tr><td><code>&amp;joint=1&amp;step=2</code></td><td>…with the joint opened at step 2</td></tr>
+          <tr><td><code>#quiz=gauge,viewport,laser,needle,probe</code></td><td>A quiz round of those five parts</td></tr>
+          <tr><td><code>#theme=blueprint</code></td><td>Opens in the Blueprint theme</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:1.5mm">A piece or sheet can be named by the start of its name, as <code>piece=right-back</code> above.</p>
+
+      <h2>Settings</h2>
+      <p>The <b>Controls</b> tab starts with two settings, which the page remembers:</p>
+      <ul>
+        <li><b>Text size</b> 1×, 1.5× or 2× scales the sheets, the inspect bar, the view’s labels and the tooltips, for a projector or a lecture hall.</li>
+        <li><b>Single-letter keys</b> can be turned off, for speech input or if keys get pressed by accident. The arrows, <kbd>Esc</kbd> and <kbd>Backspace</kbd> still work.</li>
+      </ul>
+      <p>Below them, the Controls tab lists every mouse, touch and key binding.</p>
+
+      <h2>Keyboard and screen readers</h2>
+      <ul>
+        <li>The first Tab stop, <b>Skip to the assembly</b>, jumps to the list. In it, <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>→</kbd> <kbd>←</kbd> open and close a group, <kbd>Enter</kbd> selects, <kbd>Space</kbd> hides or shows, and <kbd>I</kbd> inspects.</li>
+        <li>The theme buttons are one Tab stop: <kbd>←</kbd> <kbd>→</kbd> switch theme.</li>
+        <li>A status line announces what changes, and the 3D view has a text description of what it shows and from which side.</li>
+        <li>With reduced motion turned on in your system, glides become cuts and the animation stands still.</li>
+      </ul>
+    </div>
+    <figure class="bare">
+      <img src="img/controls.png" alt="The Controls tab" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
+      <figcaption>The Controls tab: the settings, then every binding.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================================================ 13 -->
+<section>
+  <h1><span class="n">13</span>Keys and gestures</h1>
+  <p class="lede">Click the model first so it has the keys. With single-letter keys turned off, only the arrows, <kbd>Esc</kbd> and <kbd>Backspace</kbd> work.</p>
+  <div class="cheat">
+    <div>
+      <h2>The view</h2>
+      <table class="keys"><tbody>
+        <tr><td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td><td>Turn</td></tr>
+        <tr><td><kbd>Shift</kbd> + arrows</td><td>Pan</td></tr>
+        <tr><td><kbd>+</kbd> <kbd>−</kbd></td><td>Zoom</td></tr>
+        <tr><td><kbd>0</kbd></td><td>Home view (inspecting, the part)</td></tr>
+        <tr><td><kbd>A</kbd></td><td>Fit everything shown</td></tr>
+        <tr><td><kbd>1</kbd>–<kbd>4</kbd></td><td>Three-quarter, front, right, above</td></tr>
+        <tr><td><kbd>O</kbd> / <kbd>P</kbd></td><td>Left-drag turns / pans</td></tr>
+        <tr><td><kbd>F</kbd></td><td>Fold or unfold the side panels</td></tr>
+      </tbody></table>
+      <h2>The machine</h2>
+      <table class="keys"><tbody>
+        <tr><td><kbd>/</kbd></td><td>Find a part</td></tr>
+        <tr><td><kbd>E</kbd></td><td>Explode</td></tr>
+        <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>Less or more spread</td></tr>
+        <tr><td><kbd>C</kbd></td><td>Cutaway</td></tr>
+        <tr><td><kbd>H</kbd></td><td>Hide the selected part</td></tr>
+        <tr><td><kbd>I</kbd></td><td>Inspect the selected part</td></tr>
+      </tbody></table>
+      <h2>Mouse</h2>
+      <table class="keys"><tbody>
+        <tr><td>Drag</td><td>Turn</td></tr>
+        <tr><td>Right-drag</td><td>Pan (also Shift-drag, middle-drag)</td></tr>
+        <tr><td>Wheel</td><td>Zoom toward the pointer</td></tr>
+        <tr><td>Click</td><td>Select; inspecting, keep a sheet</td></tr>
+        <tr><td>Double-click</td><td>Inspect; inspecting, Show me</td></tr>
+        <tr><td>Rest on a sub-part</td><td>Preview its sheet</td></tr>
+        <tr><td>Double-click space</td><td>Home view</td></tr>
+      </tbody></table>
+    </div>
+    <div>
+      <h2>Inspecting</h2>
+      <table class="keys"><tbody>
+        <tr><td><kbd>T</kbd></td><td>Take apart</td></tr>
+        <tr><td><kbd>J</kbd></td><td>Open or close the joint</td></tr>
+        <tr><td><kbd>,</kbd> <kbd>.</kbd></td><td>Previous or next piece</td></tr>
+        <tr><td><kbd>G</kbd></td><td>Ghost on or off</td></tr>
+        <tr><td><kbd>S</kbd></td><td>Sheets on or off</td></tr>
+        <tr><td><kbd>Z</kbd></td><td>Show me</td></tr>
+        <tr><td><kbd>L</kbd></td><td>Floating sheets back into the column</td></tr>
+        <tr><td><kbd>Backspace</kbd></td><td>Back to the part you came from</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>One step back</td></tr>
+      </tbody></table>
+      <h2>Touch</h2>
+      <table class="keys"><tbody>
+        <tr><td>One finger</td><td>Turn</td></tr>
+        <tr><td>Two fingers</td><td>Pan; pinch to zoom</td></tr>
+        <tr><td>Tap</td><td>Select; inspecting, preview a sheet</td></tr>
+        <tr><td>Double-tap</td><td>Inspect</td></tr>
+        <tr><td>Hold still</td><td>Loupe at 3×; lift to tap there</td></tr>
+      </tbody></table>
+      <h2>In the assembly list</h2>
+      <table class="keys"><tbody>
+        <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>Move between rows</td></tr>
+        <tr><td><kbd>→</kbd> <kbd>←</kbd></td><td>Open or close a group</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Select the part</td></tr>
+        <tr><td><kbd>Space</kbd></td><td>Hide or show it</td></tr>
+      </tbody></table>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Numbered markers: data-css on the figure is the screenshot's size in CSS px; data-at on a marker is its point.
+  for (const f of document.querySelectorAll('.shot')) {
+    const [w, h] = f.dataset.css.split(',').map(Number);
+    for (const m of f.querySelectorAll('.m')) {
+      const [x, y] = m.dataset.at.split(',').map(Number);
+      m.style.left = `${(x / w) * 100}%`;
+      m.style.top = `${(y / h) * 100}%`;
+    }
+  }
+  // Callout figures, laid out in mm: data-css is the crop (x0,y0,x1,y1 in CSS px), data-pad the room above and below
+  // for labels. A label's data-at is its target; data-l is its centre in mm and its row (t1, t2 above; b1, b2 below).
+  const MM = 96 / 25.4;
+  for (const f of document.querySelectorAll('.callfig')) {
+    const W = f.getBoundingClientRect().width / MM;
+    const [x0, y0, x1, y1] = f.dataset.css.split(',').map(Number);
+    const [pt, pb] = f.dataset.pad.split(',').map(Number);
+    const ih = (W * (y1 - y0)) / (x1 - x0), H = pt + ih + pb;
+    f.style.height = `${H}mm`;
+    const img = f.querySelector('img');
+    img.style.top = `${pt}mm`;
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('width', `${W}mm`);
+    svg.setAttribute('height', `${H}mm`);
+    f.append(svg);
+    for (const l of f.querySelectorAll('.lab')) {
+      const [tx, ty] = l.dataset.at.split(',').map(Number);
+      const [lx, row] = l.dataset.l.split(',');
+      const X = ((tx - x0) / (x1 - x0)) * W, Y = pt + ((ty - y0) / (y1 - y0)) * ih;
+      const top = row[0] === 't', tier = +row[1] - 1;
+      l.style.left = `${lx}mm`;
+      if (top) l.style.top = `${tier * 6}mm`; else l.style.bottom = `${tier * 6}mm`;
+      const lh = l.getBoundingClientRect().height / MM;
+      const ly = top ? tier * 6 + lh + 0.6 : H - tier * 6 - lh - 0.6;
+      const line = document.createElementNS(NS, 'path');
+      line.setAttribute('d', `M${+lx} ${ly} L${X} ${Y}`);
+      line.setAttribute('stroke', '#008080'); line.setAttribute('stroke-width', '0.3'); line.setAttribute('fill', 'none');
+      const dot = document.createElementNS(NS, 'circle');
+      dot.setAttribute('cx', X); dot.setAttribute('cy', Y); dot.setAttribute('r', '0.75');
+      dot.setAttribute('fill', '#008080'); dot.setAttribute('stroke', '#fff'); dot.setAttribute('stroke-width', '0.35');
+      svg.append(line, dot);
+    }
+  }
+</script>
+</body>
+</html>
