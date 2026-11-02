@@ -975,12 +975,15 @@ const TONES = {
 // In Colour the bare metals reflect a studio instead of taking a flat shade (see METAL_SHADE): `tint` is the metal's
 // own colour, what it reflects the studio in, and `rough` its finish, from a mirror (0) to satin (1). As on the machine
 // itself, the stainless is polished, a little softer on the tubes than on the flanges, and the fasteners and the copper
-// are polished bright. `amount` (1 if left out) is
-// how far the reflection replaces the flat shade: the aluminium extrusion is only half metal, a dull satin.
+// are polished bright. The optical table's top is brushed stainless too, a satin, so its reflections stay soft and
+// broad. `amount` (1 if left out) is how far the reflection replaces the flat shade: the aluminium extrusion is only
+// half metal, a dull satin. `gain` (1 if left out) is how bright the studio shows in it: a satin spreads each light
+// wider and dimmer, so the table top, which faces the bright ceiling, keeps its broad reflections short of white.
 const METAL = {
   vessel: { tint: '#dcdedc', rough: 0.3 }, steel: { tint: '#dcdedc', rough: 0.3 }, steel2: { tint: '#dfe0de', rough: 0.22 },
   bolt: { tint: '#dadcda', rough: 0.15 }, copper: { tint: '#f4a37c', rough: 0.12 }, brass: { tint: '#e9c57c', rough: 0.2 },
   bronze: { tint: '#dba679', rough: 0.25 }, alu: { tint: '#dcdedb', rough: 0.85, amount: 0.5 },
+  table: { tint: '#eeefed', rough: 0.7, gain: 0.6 },
 };
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
@@ -1166,7 +1169,7 @@ const LIT_LAYER = /* glsl */`
 // the metals' materials (METAL), so the software renderer, which runs both sides of a branch, keeps its pace.
 const METAL_SHADE = /* glsl */`
   #ifdef METAL
-  uniform vec2 uMetal;
+  uniform vec3 uMetal;
   uniform float uEye;
   varying vec3 vWp;
   // r is the reflected direction in view space (x right, y up, z toward the viewer); s blurs the studio for a rougher
@@ -1182,10 +1185,10 @@ const METAL_SHADE = /* glsl */`
     L += 0.8 * (1.0 - smoothstep(0.5, 0.85, abs(r.y))) * (1.0 - smoothstep(0.2, 0.6, r.z)) * (lamp(r.x, -0.78, w) + lamp(r.x, 0.74, w));
     return L + 1.1 * smoothstep(0.93 - 0.35 * s, 0.995 - 0.03 * s, dot(r, light));
   }
-  vec3 metal(vec3 tint, vec3 n, vec3 light, float rough, float shade) {
+  vec3 metal(vec3 tint, vec3 n, vec3 light, float rough, float gain, float shade) {
     vec2 p = (viewMatrix * vec4(vWp, 1.0)).xy;
     vec3 r = reflect(-normalize(vec3(-p, uEye)), n);
-    float L = studio(r, light, 0.03 + 0.35 * rough);
+    float L = studio(r, light, 0.03 + 0.35 * rough) * gain;
     L = L < 0.8 ? L : 0.8 + 0.45 * (L - 0.8) / (L - 0.35);
     vec3 F = mix(tint, vec3(1.0), pow(1.0 - clamp(n.z, 0.0, 1.0), 5.0));
     return mix(F * L * shade, vec3(1.0), smoothstep(0.95, 1.2, L) * 0.65);
@@ -1224,7 +1227,7 @@ const FRAG_COLOR = /* glsl */`
     float tone = mix(mix(0.66, 1.05, w) + 0.06 * top, 0.95 + 0.09 * w + 0.02 * top, uFlat);
     vec3 c = uColor * tone;
     #ifdef METAL
-      if (uMetal.x > 0.0) c = mix(c, metal(uColor, n, uLight, uMetal.y, mix(0.82, 1.04, w) + 0.03 * top), uMetal.x);
+      if (uMetal.x > 0.0) c = mix(c, metal(uColor, n, uLight, uMetal.y, uMetal.z, mix(0.82, 1.04, w) + 0.03 * top), uMetal.x);
     #endif
     c = litLayer(c, n, uLight);
     gl_FragColor = vec4(c + uEmit, 1.0);
@@ -1273,7 +1276,7 @@ const FRAG_GHOST = /* glsl */`
     float top = smoothstep(0.6, 1.0, vNw.z);
     vec3 c = uColor * (mix(0.66, 1.05, w) + 0.06 * top);
     #ifdef METAL
-      if (uMetal.x > 0.0) c = mix(c, metal(uColor, n, uLight, uMetal.y, mix(0.82, 1.04, w) + 0.03 * top), uMetal.x);
+      if (uMetal.x > 0.0) c = mix(c, metal(uColor, n, uLight, uMetal.y, uMetal.z, mix(0.82, 1.04, w) + 0.03 * top), uMetal.x);
     #endif
     gl_FragColor = vec4(mix(uInk, c, uSolid), mix(a, 1.0, uSolid));
   }
@@ -1418,7 +1421,7 @@ function colorMat(tone, clip) {
   const glass = tone === 'glass';
   const m = new THREE.ShaderMaterial({
     uniforms: {
-      uColor: { value: new THREE.Color() }, uMetal: { value: new THREE.Vector2() }, uEye: shared.uEye, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
+      uColor: { value: new THREE.Color() }, uMetal: { value: new THREE.Vector3() }, uEye: shared.uEye, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
       uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uFlat: shared.uFlat, uRedline: shared.uRedline, uLoose: { value: 0 },
       tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
       tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
@@ -1444,7 +1447,7 @@ const INK = { clip: inkMat(true), free: inkMat(false), clipHoles: inkMat(true, t
 // GHOST is the x-ray; GHOST_FADE is the same turning solid again, so it writes depth and takes each mesh's colour.
 function ghostMat(fade) {
   const m = new THREE.ShaderMaterial({
-    uniforms: { uInk: shared.uInk, uGhost: shared.uGhost, uLight: shared.uLight, uSolid: { value: 0 }, uColor: { value: new THREE.Color() }, uMetal: { value: new THREE.Vector2() }, uEye: shared.uEye },
+    uniforms: { uInk: shared.uInk, uGhost: shared.uGhost, uLight: shared.uLight, uSolid: { value: 0 }, uColor: { value: new THREE.Color() }, uMetal: { value: new THREE.Vector3() }, uEye: shared.uEye },
     vertexShader: VERT, fragmentShader: FRAG_GHOST, transparent: true, depthWrite: fade, side: THREE.FrontSide,
   });
   // Only a ghost turning solid shows a metal; the x-ray never does.
@@ -5591,7 +5594,7 @@ function applyTheme() {
     m.uniforms.uColor.value.copy(toneColor(m.userData.tone, t));
     // Only Colour's parts are metal; the other drawings keep their own flat shades.
     const mt = t === 'light' && METAL[m.userData.tone];
-    m.uniforms.uMetal.value.set(mt ? mt.amount ?? 1 : 0, mt ? mt.rough : 0);
+    m.uniforms.uMetal.value.set(mt ? mt.amount ?? 1 : 0, mt ? mt.rough : 0, mt ? mt.gain ?? 1 : 1);
     m.fragmentShader = holo ? FRAG_HOLO : glass ? FRAG_GLASS : greyscale ? FRAG_GREY : FRAG_COLOR;
     m.blending = holo ? THREE.AdditiveBlending : THREE.NormalBlending;
     m.transparent = holo || glass;
