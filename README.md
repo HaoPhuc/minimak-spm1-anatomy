@@ -4,6 +4,8 @@ An interactive 3D anatomy of the MinimaK SPM1 simple magnetised torus by Rideo S
 
 Open [`index.html`](index.html) in a browser. The first time it needs an internet connection, to load three.js from jsDelivr. There is no build step.
 
+[`docs/user-guide.pdf`](docs/user-guide.pdf) shows how to use the page, in 14 A4 pages of screenshots, for anyone who opens it for the first time.
+
 ## The page
 
 | Area | What it does |
@@ -209,6 +211,7 @@ Arrows turn, Shift+arrows pan, `+`/`−` zoom, `0` resets, `A` fits everything, 
 | [`parts.js`](parts.js) | The documentation: `SOURCES`, `GROUPS`, one entry per component in `PARTS` (with `pieces` where the pieces differ), `NOT_DRAWN`, how each connected pair attaches (`JOINS`), the run steps (`RUN`), the tour (`TOUR`), the fitting order (`ORDER`), what each part asked about in *Where does it go?* sits on (`QUIZ`), the glossary (`GLOSSARY`), and the sub-part sheets (`SUBDOCS`, `SUBMAP`). A pair in `connects` with no join, or a join for parts that do not connect, is reported in the browser console |
 | [`PLAN.md`](PLAN.md) | The first critique and plan for Inspect; its three phases are done |
 | [`PLAN-2.md`](PLAN-2.md) | The next plan, from an eight-critic review panel: inspecting small parts, Stark-style, and showing where they go; Phases 0 to 3 are done. Its record is in [`review-panel/`](review-panel/) |
+| [`docs/user-guide.pdf`](docs/user-guide.pdf) | The user guide. [`docs/guide/`](docs/guide/README.md) has its page, the scenarios its screenshots are taken from, and how to print it again |
 
 ## Sources
 
