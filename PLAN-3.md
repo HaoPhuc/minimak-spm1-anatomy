@@ -85,7 +85,7 @@ listed after the table.
 | 19 | Spread | Further apart? | slider · [ ] | exploded | spacing | inside.spread | `state.spread` ≠ start |
 | 20 | Reassemble | Back together? | switch · E | exploded | all home | inside.together | not exploded |
 | 21 | Themes | Another drawing? | theme buttons · ← → in the group | — | redrawn | inside.themes | theme ≠ start |
-| 22 | Dimensions | How tall is the table? | drag a line or figure, double-click | Blueprint, desktop, machine at rest | 850, 900, Ø460 move | inside.dims | `draft.dims` moved |
+| 22 | Dimensions | How tall is the table? | drag a line or figure, double-click | Blueprint, desktop, machine at rest | 910, 900, Ø460 move | inside.dims | `draft.dims` moved |
 | 23 | Inspect | Where is the left viewport? | double-click, Inspect on its own · I · double-tap | — | isolated, lifted, mount half solid | first.find | `iso.part`, piece |
 | 24 | Pieces, All | Which coil? | ‹ › All, click, Pieces row · , . · tap | repeated part | one piece, n of N | connect.pieces | `iso.focus` |
 | 25 | Ghost | Hide the rest? | switch · G | inspecting | ghost goes | connect.ghost | `iso.context` toggled |

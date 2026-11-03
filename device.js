@@ -32,7 +32,13 @@
     aOut: 7.7,
     aIn: 7.5,
     gap: 0.2,
-    table: { top: -22, thick: 11, half: 45, floor: -107, leg: 9, legAt: 36, shelf: -91 },
+    // The table is a Thorlabs B9090B Nexus breadboard (parts.js S12) on a PFR9090-8 rigid frame (S13): a 90 × 90 cm
+    // top 11 cm thick with 0.5 cm steel skins; 10 cm legs whose centres are 5 cm in from the edges; 6.5 cm levelling pads
+    // up to the top and feet down to the floor, so the frame stands 80 cm and the top 91 cm. Box rails 4 cm wide and
+    // 8 cm tall run along the back and the sides at two heights (`rails`, their bottoms above the floor); the front is
+    // open, with a flat 8 × 4 cm cross bar at each height `cross` in from the front edge. The shelf plate lies on the
+    // lower rails.
+    table: { top: -22, thick: 11, skin: 0.5, half: 45, floor: -113, leg: 10, legAt: 40, pad: 6.5, rail: [4, 8], rails: [13, 59], cross: 20.3, shelf: -92 },
     lat: { flangeAt: 32 },
     small: { flangeAt: 11.5 },
     gport: { flangeAt: 11 },
@@ -927,40 +933,65 @@
       }
     }
 
-    // ---------- Table (Thorlabs Nexus), legs, shelf, posts ----------
+    // ---------- Table (Thorlabs Nexus breadboard on a rigid frame), legs, shelf, posts ----------
     // In the exploded view the table and everything on and under it drops, to clear the coils below the vessel.
     const DROP = V(0, 0, -30);
     const tableG = group('table', DROP, 0);
     {
       const g = tableG;
-      const tb = piece('table', g, { sub: 'Table core, steel side band' });
+      const tb = piece('table', g, { sub: 'Honeycomb core, black side trim' });
+      const W = TB.half * 2, sk = TB.skin, F = TB.floor;
+      // Steel skins top and bottom; the black side trim is set 2 mm in from their edges.
       const SKIN = { sub: 'Breadboard top skin, M6 on 25 mm', ex: V(0, 0, 8) };
-      add(tb, at(box(TB.half * 2, TB.half * 2, 1), T(0, 0, TB.top - 0.5)), 'table', SKIN);
-      add(tb, at(box(TB.half * 2 - 0.2, TB.half * 2 - 0.2, TB.thick - 1), T(0, 0, TB.top - 1 - (TB.thick - 1) / 2)), 'black');
+      add(tb, at(box(W, W, sk), T(0, 0, TB.top - sk / 2)), 'table', SKIN);
+      add(tb, at(box(W, W, sk), T(0, 0, TB.top - TB.thick + sk / 2)), 'table');
+      add(tb, at(box(W - 0.4, W - 0.4, TB.thick - sk * 2), T(0, 0, TB.top - TB.thick / 2)), 'frame');
+      // Steel corner pieces, 6 cm along each side, flush with the skins.
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
+        add(tb, at(box(6, 0.2, TB.thick - sk * 2), T(sx * (TB.half - 3), sy * (TB.half - 0.1), TB.top - TB.thick / 2)), 'frame');
+        add(tb, at(box(0.2, 6, TB.thick - sk * 2), T(sx * (TB.half - 0.1), sy * (TB.half - 3), TB.top - TB.thick / 2)), 'frame');
+      }
+      // 36 × 36 M6 holes on 25 mm, the outer row 12.5 mm in from each edge.
       const holes = [];
       const pitch = 2.5;
-      for (let i = -17; i <= 17; i++) for (let j = -17; j <= 17; j++) holes.push(T(i * pitch, j * pitch, TB.top + 0.01));
+      for (let i = -18; i < 18; i++) for (let j = -18; j < 18; j++) holes.push(T((i + 0.5) * pitch, (j + 0.5) * pitch, TB.top + 0.01));
       const holeMesh = addInst(tb, at(new THREE.CircleGeometry(0.3, 10).deleteAttribute('uv'), new THREE.Matrix4()), 'hole', holes, SKIN);
       holeMesh.userData.sameInkAs = 'table';
-      // Engraved name plates on the front band.
-      for (const [x, w] of [[-24, 12], [26, 10]]) add(tb, at(box(w, 0.08, 1.6), T(x, -TB.half - 0.1, TB.top - TB.thick / 2)), 'alu', { sub: 'Name plates', ex: V(0, -3, 0) });
-      const legTop = TB.top - TB.thick;
+      // THORLABS at the left of the front trim; the NEXUS mark, a red hexagon and the name, at its right.
+      const PLATE = { sub: 'Name plates', ex: V(0, -3, 0) };
+      const plateZ = TB.top - 7.2;
+      for (const [x, w] of [[-33, 10], [31.5, 11.5]]) add(tb, at(box(w, 0.08, 1.5), T(x, -TB.half + 0.16, plateZ)), 'alu', PLATE);
+      add(tb, at(hexNut(2.4, 0.08, 0.95), frame(V(23.5, -TB.half + 0.16, plateZ), V(0, -1, 0))), 'red', PLATE);
+      // Four 10 cm box-section legs on levelling feet, each with a levelling pad on top; the badge is on the front-right leg.
+      const legTop = TB.top - TB.thick - TB.pad, legLow = F + TB.pad;
       for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
         const lx = sx * TB.legAt, ly = sy * TB.legAt;
-        const h = legTop - 1.6 - (TB.floor + 2.5);
         const out = V(sx * 7, sy * 7, -6);
-        add(tb, at(box(TB.leg, TB.leg, h), T(lx, ly, TB.floor + 2.5 + h / 2)), 'black', { sub: '4 legs', ex: out });
-        add(tb, at(disc(2.2, 1.6, 24), frame(V(lx, ly, legTop - 0.8), Z)), 'steel2', { sub: '4 isolator pads', ex: out.clone().add(V(0, 0, 4)) });
-        add(tb, at(rod(0.9, 2.6, 16), frame(V(lx, ly, TB.floor + 2.0), Z)), 'bolt', { sub: '4 levelling feet', ex: out.clone().add(V(0, 0, -5)) });
-        add(tb, at(disc(3.0, 1.2, 28), frame(V(lx, ly, TB.floor + 0.6), Z)), 'ink', { sub: '4 levelling feet', ex: out.clone().add(V(0, 0, -5)) });
+        const LEG = { sub: '4 legs', ex: out };
+        add(tb, at(box(TB.leg, TB.leg, legTop - legLow - 1.2), T(lx, ly, (legTop + legLow) / 2)), 'frame', LEG);
+        for (const z of [legTop - 0.3, legLow + 0.3]) add(tb, at(box(TB.leg + 0.4, TB.leg + 0.4, 0.6), T(lx, ly, z)), 'frame', LEG);
+        if (sx > 0 && sy < 0) add(tb, at(box(4.5, 0.06, 0.7), T(lx, ly - TB.leg / 2 - 0.03, F + 21.7)), 'alu', LEG);
+        const PAD = { sub: '4 levelling pads', ex: out.clone().add(V(0, 0, 4)) };
+        add(tb, at(hex(2.4, 1.2), frame(V(lx, ly, legTop + 0.6), Z)), 'bolt', PAD);
+        add(tb, at(rod(0.8, 4.4, 16), frame(V(lx, ly, legTop + 2.2), Z)), 'bolt', PAD);
+        add(tb, at(revolve([[0, 0], [1.3, 0], [4.2, 1.0], [4.2, 2.1], [0, 2.1]], 32), frame(V(lx, ly, legTop + 4.4), Z)), 'ink', PAD);
+        const FOOT = { sub: '4 levelling feet', ex: out.clone().add(V(0, 0, -5)) };
+        add(tb, at(hex(2.4, 1.2), frame(V(lx, ly, legLow - 0.6), Z)), 'bolt', FOOT);
+        add(tb, at(rod(0.8, 4.4, 16), frame(V(lx, ly, F + 4.3), Z)), 'bolt', FOOT);
+        add(tb, at(revolve([[0, 0], [4.2, 0], [4.2, 1.1], [1.3, 2.1], [0, 2.1]], 32), frame(V(lx, ly, F), Z)), 'ink', FOOT);
       }
-      const inner = TB.legAt - TB.leg / 2;
-      for (const s of [-1, 1]) {
-        add(tb, at(box(inner * 2, 5, 7), T(0, s * TB.legAt, TB.shelf - 3.5)), 'black', { sub: 'Frame beams', ex: V(0, s * 4, -6) });
-        add(tb, at(box(5, inner * 2, 7), T(s * TB.legAt, 0, TB.shelf - 3.5)), 'black', { sub: 'Frame beams', ex: V(s * 4, 0, -6) });
-        add(tb, at(box(5, inner * 2, 6), T(s * TB.legAt, 0, legTop - 1.6 - 3)), 'black', { sub: 'Frame beams', ex: V(s * 4, 0, -3) });
+      // Rails on the back and the sides at two heights, between the legs; a flat cross bar near the open front.
+      const [rw, rh] = TB.rail, inner = TB.legAt - TB.leg / 2;
+      const RAIL = (ex) => ({ sub: 'Frame rails and cross bars', ex });
+      for (const [k, z0] of TB.rails.entries()) {
+        const zc = F + z0 + rh / 2, dz = k ? -3 : -6;
+        add(tb, at(box(inner * 2, rw, rh), T(0, TB.legAt, zc)), 'frame', RAIL(V(0, 4, dz)));
+        for (const s of [-1, 1]) add(tb, at(box(rw, inner * 2, rh), T(s * TB.legAt, 0, zc)), 'frame', RAIL(V(s * 4, 0, dz)));
+        add(tb, at(box((TB.legAt - rw / 2) * 2, rh, rw), T(0, -TB.half + TB.cross + rh / 2, zc)), 'frame', RAIL(V(0, -4, dz)));
       }
-      add(tb, at(box(inner * 2, inner * 2, 1.0), T(0, 0, TB.shelf + 0.5)), 'panel', { sub: 'Lower shelf', ex: V(0, 0, -3) });
+      // The shelf plate rests on the lower side rails, clear of the legs.
+      const shelfX = TB.legAt + rw / 2 - 1, shelfY0 = -inner + 5, shelfY1 = inner;
+      add(tb, at(box(shelfX * 2, shelfY1 - shelfY0, 1.0), T(0, (shelfY0 + shelfY1) / 2, TB.shelf + 0.5)), 'panel', { sub: 'Lower shelf', ex: V(0, 0, -3) });
     }
 
     // Post i stands at 45 + 90i°: +x is right, +y is back, so 45° is the back-right corner.
@@ -1026,6 +1057,13 @@
       add(dr, at(box(dx1 - dx0, dy1 - dy0, 0.4), T(0, (dy0 + dy1) / 2, dz - 4.8)), 'panel');
       for (const s of [-1, 1]) add(dr, at(box(0.4, dy1 - dy0, 9.6), T(s * ((dx1 - dx0) / 2 - 0.2), (dy0 + dy1) / 2, dz)), 'panel');
       add(dr, at(box(dx1 - dx0, 0.4, 9.6), T(0, dy1 - 0.2, dz)), 'panel');
+      // It runs on a slide each side, hung from the table's underside.
+      const hang = TB.top - TB.thick - (dz - 1.5);
+      for (const s of [-1, 1]) {
+        const RUN = { sub: 'Drawer runners', ex: V(s * 3, 0, 4) };
+        add(dr, at(box(0.5, dy1 - dy0 - 1.5, 3), T(s * (dx1 + 0.25), (dy0 + dy1) / 2 + 0.25, dz)), 'steel2', RUN);
+        add(dr, at(box(0.3, dy1 - dy0 - 1.5, hang), T(s * (dx1 + 0.65), (dy0 + dy1) / 2 + 0.25, dz - 1.5 + hang / 2)), 'steel2', RUN);
+      }
       const FRONT = { sub: 'Front panel and handles', ex: V(0, -8, 0) };
       add(dr, at(box(dx1 - dx0 + 2, 0.6, 11), T(0, dy0 - 0.3, dz + 0.3)), 'alu', FRONT);
       for (const s of [-1, 1]) {
