@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SPM1 Anatomy</title>
 <meta name="description" content="An interactive anatomy of the MinimaK SPM1 simple magnetised torus: turn it like a turntable, take it apart, inspect each component on its own and read where every number comes from.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <style>
+  /* The type of a parts catalogue: IBM Plex Sans for names, prose, labels and actions; IBM Plex Mono, with tabular
+     figures, only for what is measured, counted or compared (dimensions, counts, part and source numbers). Each falls
+     back to the system's own. --line is a secondary button's 1 px outline, a step stronger than the rule between rows. */
+  :root {
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, Menlo, monospace;
+    --line: color-mix(in srgb, var(--ink) 38%, var(--card));
+  }
   :root {
     --paper: #f1f1ef;
     --card: #fafaf9;
@@ -84,9 +95,17 @@
   body {
     background: var(--paper);
     color: var(--ink);
-    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font: 14px/1.5 var(--sans);
     -webkit-font-smoothing: antialiased;
   }
+  /* Measured, counted and compared: the mono, its figures all one width. */
+  .fig, button.ref, kbd, .sheets-head .eyebrow b, .ti .n, .ti .cnt, .subs .no, .slide output, .doc h2 .count, .stat b, .srclist .sid { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  /* A value's number keeps its unit on its line, and the unit is the lighter of the two. A value that is all figures
+     (Ø8.4 mm; 13 mm (M8) or 1/2 in) is set in the mono; a description stays in the sans. */
+  .qty { white-space: nowrap; }
+  .unit { color: color-mix(in srgb, var(--ink) 70%, var(--card)); }
+  .fig .num { font-weight: 500; }
+  .fig .unit { font-weight: 400; }
   button { font: inherit; color: inherit; }
   a { color: inherit; }
   /* Read by screen readers, never seen: the one status line. Pinned to the top-left corner of its containing block, so
@@ -104,22 +123,23 @@
   .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
   .brand { flex: none; line-height: 1.2; }
   /* The page's one h1: the machine's name, then what this is. */
-  .brand h1 { margin: 0; font-size: 20px; line-height: 1.15; font-weight: 650; letter-spacing: -0.01em; }
-  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+  .brand h1 { margin: 0; font-size: 20px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; line-height: 15px; }
   /* The tools wrap to a second row rather than scroll out of sight. */
   .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
-  .mb { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); overflow: hidden; flex: none; }
-  .mb button { position: relative; border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1; white-space: nowrap; }
+  /* A group of tools is a secondary control: one 1 px outline round it, a rule between its buttons. */
+  .mb { display: inline-flex; border: 1px solid var(--line); border-radius: 2px; background: var(--card); overflow: hidden; flex: none; }
+  .mb button { position: relative; border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1; white-space: nowrap; }
   .mb button + button { border-left: 1px solid var(--rule); }
   .mb button:hover { background: var(--soft); }
-  .mb button[aria-pressed="true"]:not(.toggle), .mb button[aria-checked="true"] { background: var(--ink); color: var(--card); }
-  /* A toggle is a switch: the button stays as it is and its switch says on or off, by the knob's side and its fill, so
-     a toggle that is on never looks like an action (Done, Next), which alone is filled. */
-  .sw { position: relative; display: inline-block; flex: none; width: 22px; height: 12px; margin-left: 2px; border: 1.5px solid currentColor; border-radius: 7px; opacity: 0.6; vertical-align: -2px; box-sizing: border-box; }
-  .sw::after { content: ''; position: absolute; top: 1.5px; left: 1.5px; width: 6px; height: 6px; border-radius: 50%; background: currentColor; transition: transform 0.15s; }
-  [aria-pressed="true"] > .sw { opacity: 1; background: var(--accent); border-color: var(--accent); }
-  [aria-pressed="true"] > .sw::after { transform: translateX(10px); background: var(--card); }
-  @media (prefers-reduced-motion: reduce) { .sw::after { transition: none; } }
+  /* The theme chosen, and the guide while it runs: a tint and an ink rule under it. Only Done and Next are filled. */
+  .mb button[aria-pressed="true"]:not(.toggle), .mb button[aria-checked="true"] { background: var(--chip); color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
+  /* A toggle (Explode, Cutaway, Take apart, Open this joint, Ghost, Sheets) keeps its label and says on or off with a
+     small square after it: outlined when off, filled with the ink when on. Focus is the ring round the button, and a
+     toggle out of use (Cutaway while exploded) is faded with a dotted square, so the three never look alike. */
+  .ind { flex: none; display: inline-block; width: 10px; height: 10px; border: 1.5px solid currentColor; box-sizing: border-box; }
+  [aria-pressed="true"] > .ind { background: currentColor; }
+  [aria-disabled="true"] > .ind, :disabled > .ind { border-style: dotted; background: none; }
   .mb svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   /* Under 1440 px the theme buttons not chosen show only their icons, and under 1320 px the chosen one too, so the
      modebar keeps to one row on a laptop, Spread slider included. A label that is not shown still names its button. */
@@ -140,13 +160,14 @@
      button too. */
   .mb button:focus-visible { outline-offset: -2px; box-shadow: inset 0 0 0 4px var(--card); }
 
-  .panel { background: var(--card); border: 1px solid var(--rule); border-radius: 12px; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+  /* Corners: 4 px on a panel or sheet, 2 px on a button or tag, square everywhere else. */
+  .panel { background: var(--card); border: 1px solid var(--rule); border-radius: 4px; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   /* Either side panel folds to a thin rail, to give the model and its screens the room. */
   .head-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-  .fold { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); font-size: 17px; line-height: 1; }
+  .fold { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 2px; cursor: pointer; color: var(--muted); font-size: 17px; line-height: 1; }
   .fold:hover { background: var(--chip); color: var(--ink); }
   .rail, .rail-search { display: none; }
-  .panel.folded .rail-search { display: grid; place-items: center; height: 34px; margin: 6px 4px 0; border: 0; border-radius: 7px; background: none; color: var(--muted); cursor: pointer; }
+  .panel.folded .rail-search { display: grid; place-items: center; height: 34px; margin: 6px 4px 0; border: 0; border-radius: 2px; background: none; color: var(--muted); cursor: pointer; }
   .panel.folded .rail-search:hover { background: var(--soft); color: var(--ink); }
   .rail-search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   /* The grip between a panel and the view sizes the panel; a line shows while it is hovered or dragged. */
@@ -160,15 +181,15 @@
   .app.fold-tree { --tw: 34px; }
   .app.fold-insp { --iw: 34px; }
   .panel.folded > :not(.rail):not(.rail-search) { display: none; }
-  .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 12px 0; }
+  .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font-size: 13px; font-weight: 600; color: var(--muted); padding: 12px 0; }
   .panel.folded .rail:hover { color: var(--ink); background: var(--soft); }
-  .panel-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--rule); }
-  .panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 8px 12px 14px; flex: 1; min-height: 0; }
+  .panel-head { padding: 10px 14px 8px; border-bottom: 1px solid var(--rule); }
+  .panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px 16px; flex: 1; min-height: 0; }
   /* A small label: sentence case in the muted ink, never tracked capitals. */
-  .eyebrow { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .eyebrow { font-size: 13px; color: var(--muted); font-weight: 500; }
 
   /* The first Tab stop: hidden until focused, it jumps to the assembly list. */
-  .skip { position: absolute; left: 10px; top: -60px; z-index: 10; background: var(--ink); color: var(--card); padding: 6px 12px; border-radius: 8px; font-size: 13px; text-decoration: none; }
+  .skip { position: absolute; left: 10px; top: -60px; z-index: 10; background: var(--ink); color: var(--card); padding: 6px 12px; border-radius: 2px; font-size: 13px; text-decoration: none; }
   .skip:focus { top: 10px; }
 
   /* ---------- Assembly tree ---------- */
@@ -177,30 +198,30 @@
   .search-note { margin: 5px 2px 0; font-size: 12px; line-height: 1.35; color: var(--muted); }
   .search-note[hidden] { display: none; }
   .search-note b { color: var(--ink); font-weight: 600; }
-  .search { width: 100%; margin-top: 8px; font: inherit; font-size: 13px; color: var(--ink); background: var(--soft); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 9px; }
+  .search { width: 100%; margin-top: 8px; font: inherit; font-size: 13px; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 2px; padding: 6px 9px; }
   .tree-root { list-style: none; margin: 0; padding: 0; }
   .tg { margin-top: 6px; }
-  .tg-head { display: flex; align-items: center; gap: 2px; border-radius: 7px; }
+  .tg-head { display: flex; align-items: center; gap: 2px; }
   .tree-root .tg-head { cursor: pointer; }
-  .tg-head .caret { flex: 1; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 6px 2px; cursor: pointer; text-align: left; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+  .tg-head .caret { flex: 1; display: flex; align-items: center; gap: 6px; border: 0; background: none; padding: 6px 2px; cursor: pointer; text-align: left; font-size: 13px; color: var(--muted); font-weight: 500; }
   .tg-head .caret::before { content: ""; width: 0; height: 0; border-left: 4px solid currentColor; border-top: 4px solid transparent; border-bottom: 4px solid transparent; transition: transform .15s; transform: rotate(90deg); }
   .tg.closed .tg-head .caret::before { transform: rotate(0); }
   .tg.closed ul { display: none; }
   .tg ul { list-style: none; margin: 0; padding: 0; }
   .tg:focus { outline: none; }
   .tg:focus-visible > .tg-head, .ti:focus-visible, .ti-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-  .ti { display: flex; align-items: center; gap: 2px; border-radius: 7px; cursor: pointer; }
+  .ti { display: flex; align-items: center; gap: 2px; cursor: pointer; }
   .ti:hover, .ti.hot { background: var(--soft); }
   .ti.sel { background: var(--chip); }
   .ti .name { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 7px; padding: 5px 4px; text-align: left; font-size: 13px; }
   .ti .name span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ti .n { font-size: 11.5px; color: var(--muted); min-width: 1.4em; text-align: right; font-variant-numeric: tabular-nums; }
-  .ti .cnt { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .ti-hit { padding: 3px 4px 3px 52px; border-radius: 7px; font-size: 12px; cursor: pointer; color: var(--ink); overflow-wrap: anywhere; }
+  .ti .n { font-size: 12px; color: var(--muted); min-width: 1.6em; text-align: right; }
+  .ti .cnt { font-size: 12px; color: var(--muted); }
+  .ti-hit { padding: 3px 4px 3px 52px; font-size: 12px; cursor: pointer; color: var(--ink); overflow-wrap: anywhere; }
   .ti-hit:hover { background: var(--soft); }
-  .ti-hit.more { padding: 2px 4px 4px 52px; font-size: 11.5px; color: var(--muted); cursor: default; }
+  .ti-hit.more { padding: 2px 4px 4px 52px; font-size: 12px; color: var(--muted); cursor: default; }
   .ti-hit.more:hover { background: none; }
-  .eye { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+  .eye { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 2px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
   .eye:hover { color: var(--ink); background: var(--chip); }
   .eye svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; }
   .eye[aria-pressed="false"] { opacity: 0.45; }
@@ -211,12 +232,12 @@
   .basis.assumed { border-color: var(--assumed); }
   .legend-basis { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); padding: 10px 2px 2px; border-top: 1px solid var(--rule); margin-top: 12px; }
   .legend-basis div { display: flex; align-items: center; }
-  .nd { font-size: 12.5px; color: var(--muted); margin: 4px 0 0; padding: 0; list-style: none; }
+  .nd { font-size: 13px; color: var(--muted); margin: 4px 0 0; padding: 0; list-style: none; }
   .nd li { padding: 3px 4px; display: flex; gap: 8px; justify-content: space-between; }
-  .nd li span:last-child { font-size: 11.5px; white-space: nowrap; }
+  .nd li span:last-child { font-size: 12px; white-space: nowrap; }
 
   /* ---------- Viewer card ---------- */
-  .view { grid-area: view; position: relative; margin: 0; background: var(--card); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; min-height: 0; }
+  .view { grid-area: view; position: relative; margin: 0; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; min-height: 0; }
   .stage { position: absolute; inset: 0; cursor: grab; touch-action: none; outline: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
   /* The loupe: a finger held still shows the view under it at 3×, with the name of what it is on, above the finger. */
   .loupe { position: absolute; z-index: 6; width: 132px; display: flex; flex-direction: column; align-items: center; gap: 5px; pointer-events: none; }
@@ -247,17 +268,17 @@
   .navcluster .mb button { justify-content: center; padding: 8px; }
   .navcluster .mb button + button { border-left: 0; border-top: 1px solid var(--rule); }
   .navcluster .mb button[aria-pressed="true"] { background: var(--chip); color: var(--ink); }
-  .vmenu { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; min-width: 150px; padding: 4px; border: 1px solid var(--rule); border-radius: 9px; background: var(--card); box-shadow: 0 6px 20px rgb(0 0 0 / 0.14); }
+  .vmenu { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; min-width: 150px; padding: 4px; border: 1px solid var(--rule); border-radius: 4px; background: var(--card); }
   .vmenu[hidden] { display: none; }
-  .vmenu button { display: flex; justify-content: space-between; gap: 16px; padding: 6px 10px; border: 0; border-radius: 6px; background: none; text-align: left; font-size: 13px; cursor: pointer; }
+  .vmenu button { display: flex; justify-content: space-between; gap: 16px; padding: 6px 10px; border: 0; border-radius: 0; background: none; text-align: left; font-size: 13px; cursor: pointer; }
   .vmenu button:hover, .vmenu button:focus-visible { background: var(--soft); outline: none; }
-  .vmenu button span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .vmenu button span { color: var(--muted); font-family: var(--mono); font-variant-numeric: tabular-nums; }
   @media (pointer: coarse) { .navcluster .zoom { display: none; } }
   .triad text { font-size: 10px; font-weight: 650; fill: var(--ink); cursor: pointer; }
   .triad .ax { cursor: pointer; }
   .triad .ax:hover circle { stroke-width: 2.4; }
   .triad .ring { fill: color-mix(in srgb, var(--card) 70%, transparent); stroke: var(--rule); }
-  .tip { position: absolute; z-index: 3; pointer-events: none; background: var(--ink); color: var(--card); font-size: 12px; padding: 3px 8px; border-radius: 6px; white-space: nowrap; transform: translate(12px, 14px); opacity: 0; transition: opacity .12s; }
+  .tip { position: absolute; z-index: 3; pointer-events: none; background: var(--ink); color: var(--card); font-size: 12px; padding: 3px 8px; border-radius: 2px; white-space: nowrap; transform: translate(12px, 14px); opacity: 0; transition: opacity .12s; }
   .tip.on { opacity: 0.94; }
   .tip small { opacity: 0.7; margin-left: 6px; }
   /* Information screens. While inspecting, the sheet column on the right of the view holds, in order, the part card
@@ -267,88 +288,81 @@
   .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
   .hud[hidden] { display: none; }
   .sheets { position: absolute; top: 80px; right: 12px; bottom: 8px; width: calc(280px * var(--ui-scale, 1)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-  .sheets-head {
-    flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 4px 4px 4px 10px; border-radius: 10px; pointer-events: auto;
-    background: color-mix(in srgb, var(--card) 90%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
-    border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
-  }
+  /* A sheet, and the head over the column, is one opaque card with one 1 px edge: no glass, no gradient, no shadow at
+     rest. Only a sheet being dragged lifts, and it settles flat when dropped. */
+  .sheets-head { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 2px 4px 2px 12px; border-radius: 4px; pointer-events: auto; background: var(--card); border: 1px solid var(--rule); }
   .sheets-head[hidden], .sheets-head [hidden] { display: none; }
   .sheets-head .eyebrow { margin-right: auto; }
-  .sheets-head .eyebrow b { font-weight: 650; color: var(--ink); margin-left: 3px; font-variant-numeric: tabular-nums; }
-  .sheets-head button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 3px 8px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .sheets-head .eyebrow b { font-weight: 500; color: var(--ink); margin-left: 4px; }
+  /* Tidy, Fold all and Close all are text: the room round each is still its target. */
+  .sheets-head button { border: 0; background: none; border-radius: 2px; padding: 4px 8px; font-size: 13px; font-weight: 500; color: var(--ink); cursor: pointer; white-space: nowrap; }
+  .sheets-head button:hover:not(:disabled) { background: var(--soft); text-decoration: underline; text-underline-offset: 3px; }
   .sheets-head button:disabled { opacity: 0.45; cursor: default; }
   .dockstep { display: inline-flex; align-items: center; gap: 2px; }
-  .dockstep span { min-width: 6.5em; text-align: center; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .dockstep span { min-width: 6.5em; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; }
   .sheets-body { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
   /* The kept list scrolls. A 1 px inset keeps a lit sheet's ring inside the scroll box. */
   .sheets-list { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; display: flex; flex-direction: column; gap: 8px; padding: 1px; margin: -1px; pointer-events: auto; }
   .sheets-list:empty { display: none; }
-  .screen {
-    position: relative; flex: none; pointer-events: auto; overflow: hidden;
-    padding: 8px 12px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.45;
-    background: color-mix(in srgb, var(--card) 90%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
-    border: 1px solid color-mix(in srgb, var(--ink) 15%, transparent);
-  }
+  .screen { position: relative; flex: none; pointer-events: auto; overflow: hidden; padding: 0 12px 14px; border-radius: 4px; font-size: 14px; line-height: 1.45; background: var(--card); border: 1px solid var(--rule); }
   /* The preview sits under the kept list and takes at most half the column; a longer sheet scrolls inside it. */
   .sheets-body > .screen { max-height: calc(50% - 8px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
-  .screen.float { position: absolute; width: 280px; max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; box-shadow: 0 8px 26px rgb(0 0 0 / 0.14); }
+  .screen.float { position: absolute; width: 280px; max-height: calc(100% - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
   .screen.enter { animation: screen-in .32s ease-out backwards; }
   @keyframes screen-in { from { opacity: 0; transform: translateY(8px); clip-path: inset(0 0 85% 0); } to { opacity: 1; transform: none; clip-path: inset(0); } }
-  .screen.live { border-style: dashed; }
   .screen.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel); }
-  .screen.dragging { opacity: 0.9; }
+  .screen.dragging { box-shadow: 0 6px 18px rgb(0 0 0 / 0.16); }
+  .screen.hot.dragging { box-shadow: 0 0 0 1px var(--sel), 0 6px 18px rgb(0 0 0 / 0.16); }
   /* A folded sheet keeps only its top bar; its chevron opens it again. */
-  .screen.folded { padding-bottom: 6px; }
+  .screen.folded { padding-bottom: 0; }
   .screen.folded > :not(.bar) { display: none; }
-  .screen.folded .bar { margin-bottom: 0; }
-  /* A bar names the sub-part in full, wrapping rather than cut off, so a folded sheet still says what it holds. Under
-     it, a second line: the Preview label, on how many pieces the sheet is the same, or for the part card, the piece
-     in view. */
-  .screen .bar { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 6px; margin: 0 -6px 4px 0; font: 600 12px/18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--muted); user-select: none; }
+  .screen.folded .bar { margin-bottom: 0; border-bottom: 0; }
+  /* The bar is the sheet's head, ruled off from its body across the full width: the sub-part's name in full,
+     wrapping rather than cut off, so a folded sheet still says what it holds, then its buttons at the right (the
+     chevron that folds it first). Under it, a second line: the Preview label, on how many pieces the sheet is the
+     same, or for the part card, the piece in view. Name, line and body all start on the sheet's one left edge. */
+  .screen .bar { display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 4px; margin: 0 -12px 10px; padding: 7px 6px 6px 12px; border-bottom: 1px solid var(--rule); font: 500 13px/20px var(--sans); color: var(--muted); user-select: none; }
   .screen .bar.grab { cursor: grab; touch-action: none; }
   .screen.dragging .bar { cursor: grabbing; }
-  .screen .bar .ttl { flex: 1 1 0; min-width: 0; font-weight: 600; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
-  .screen .bar .line2 { order: 1; flex: 1 0 100%; min-width: 0; font-weight: 400; line-height: 16px; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
-  .screen .bar .fold-btn ~ .line2 { padding-left: 30px; }
-  .screen .bar .state { margin-right: 8px; font-weight: 600; }
-  .screen .bar button { flex: none; width: 24px; height: 22px; margin: -2px 0; border: 0; background: none; border-radius: 5px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
+  .screen .bar .ttl { order: -1; flex: 1 1 0; min-width: 0; font-weight: 500; color: var(--ink); white-space: normal; overflow-wrap: anywhere; }
+  .screen .bar .line2 { order: 1; flex: 1 0 100%; min-width: 0; font-weight: 400; line-height: 18px; color: var(--muted); white-space: normal; overflow-wrap: anywhere; }
+  .screen .bar .state { margin-right: 8px; font-weight: 600; color: var(--ink); }
+  .screen .bar button { flex: none; width: 24px; height: 24px; margin: -2px 0; border: 0; background: none; border-radius: 2px; cursor: pointer; color: var(--muted); display: grid; place-items: center; font-size: 16px; line-height: 1; }
   .screen .bar button:hover { background: var(--chip); color: var(--ink); }
   .screen .bar button svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .screen .bar .fold-btn svg { transition: transform .15s; transform: rotate(90deg); }
   .screen.folded .bar .fold-btn svg { transform: none; }
-  .screen .bar button.keep { width: auto; padding: 0 8px; border: 1px solid var(--rule); background: var(--soft); color: var(--ink); font-size: 12px; font-weight: 600; }
-  .screen h4 { margin: 0 0 2px; font-size: 15px; font-weight: 650; line-height: 1.25; }
-  .screen h4:focus-visible, .screen .bar .ttl:focus-visible, .doc h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
-  .screen h5 { margin: 10px 0 4px; font-size: 12.5px; font-weight: 650; color: var(--muted); }
-  .screen .from { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .screen p { margin: 6px 0 0; }
-  .screen .mat { margin: 0 0 6px; }
+  .screen .bar button.keep { width: auto; padding: 0 9px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 13px; font-weight: 500; }
+  .screen .bar button.keep:hover { background: var(--soft); }
+  /* The name is the strongest thing on a sheet: the sub-part's in its body, the part's in the part card's bar. */
+  .screen h4 { margin: 0 0 2px; font-size: 17px; font-weight: 600; line-height: 1.25; }
+  .screen.part .bar .ttl { font-size: 17px; line-height: 22px; font-weight: 600; }
+  .screen h4:focus-visible, .screen .bar .ttl:focus-visible, .doc h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+  .screen h5 { margin: 16px 0 4px; font-size: 13px; font-weight: 600; color: var(--ink); }
+  .screen .from { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .screen p { margin: 8px 0 0; }
+  .screen .mat { margin: 0 0 10px; }
   .screen .mat b { font-weight: 600; }
-  .screen .note { color: var(--muted); }
-  .screen table.specs { font-size: 12.5px; }
-  .screen table.specs td { padding: 4px 0; }
-  .screen table.specs td:first-child { width: 42%; }
-  .screen .srcs { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; align-items: center; font-size: 12px; color: var(--muted); }
-  .screen .subs button { font-size: 12.5px; padding: 3px 6px; }
+  .screen .note { color: var(--muted); margin-top: 14px; }
+  .screen .srcs { display: flex; gap: 2px 8px; flex-wrap: wrap; margin-top: 12px; align-items: baseline; font-size: 13px; color: var(--muted); }
+  .screen .subs button { font-size: 13px; padding: 3px 6px; }
   /* In a view under 660 px the column becomes a bottom sheet, one card at a time. It peeks: 30 % of the view, enough
      for the card's name and its first lines, with the part framed in the room above it. Pulled up (a drag on its head,
      a tap there, or ⌃) it takes 72 % to read; pushed down it peeks again. The camera never moves for it. */
   .hud .sheets.dock { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 30%; gap: 0; padding-top: 12px; pointer-events: auto; touch-action: none;
-    background: var(--card); border-top: 1px solid var(--rule); border-radius: 14px 14px 0 0; box-shadow: 0 -6px 20px rgb(0 0 0 / 0.08); transition: max-height .28s ease; }
+    background: var(--card); border-top: 1px solid var(--rule); border-radius: 4px 4px 0 0; transition: max-height .28s ease; }
   .hud .sheets.dock.up { max-height: 72%; }
   .hud .sheets.dock.none { display: none; }
-  .hud .sheets.dock::before { content: ''; position: absolute; top: 5px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: var(--rule); }
-  .hud .sheets.dock .sheets-head { padding: 0 8px 0 10px; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; flex-wrap: nowrap; cursor: ns-resize; -webkit-user-select: none; user-select: none; }
+  .hud .sheets.dock::before { content: ''; position: absolute; top: 5px; left: 50%; width: 36px; height: 4px; margin-left: -18px; background: var(--rule); }
+  .hud .sheets.dock .sheets-head { padding: 0 8px 0 10px; border: 0; border-radius: 0; background: none; box-shadow: none; flex-wrap: nowrap; cursor: ns-resize; -webkit-user-select: none; user-select: none; }
   .hud .sheets.dock .sheets-head .eyebrow { display: none; }
   .hud .sheets.dock .dockstep { margin-right: auto; }
   .hud .sheets.dock .sheets-body { flex: 0 1 auto; }
-  .hud .sheets.dock .screen { padding: 10px 14px 14px; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; outline: 0; }
+  .hud .sheets.dock .screen { padding: 0 14px 14px; border: 0; border-radius: 0; background: none; box-shadow: none; outline: 0; }
+  .hud .sheets.dock .screen .bar { margin-inline: -14px; padding-left: 14px; }
   .hud .sheets.dock .sheets-list { border-top: 1px solid var(--rule); margin: 4px 0 0; padding: 0; }
   .hud .sheets.dock .fold-btn { display: none; }
   .hud .sheets.dock .screen .bar.grab { cursor: default; touch-action: auto; }
-  .hud .sheets.dock .screen .bar .line2 { padding-left: 0; }
   .sheets-head #bSheetUp { display: inline-grid; place-items: center; padding: 3px 6px; }
   .sheets-head #bSheetUp[hidden] { display: none; }
   .sheets-head #bSheetUp svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
@@ -358,30 +372,34 @@
   .view.sheet-up .hud { z-index: 4; }
   @media (prefers-reduced-motion: reduce) { .hud .sheets.dock, .sheets-head #bSheetUp svg { transition: none; } }
   @media (prefers-reduced-motion: reduce) { .screen.enter { animation: none; } }
-  .isobar { position: absolute; top: 36px; left: 0; right: 0; width: fit-content; margin-inline: auto; display: none; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 4px 4px 4px 12px; box-shadow: 0 4px 18px rgb(0 0 0 / 0.08); max-width: calc(100% - 200px); flex-wrap: wrap; justify-content: center; row-gap: 4px; z-index: 2; }
+  .isobar { position: absolute; top: 36px; left: 0; right: 0; width: fit-content; margin-inline: auto; display: none; align-items: center; gap: 4px; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; padding: 4px 4px 4px 12px; max-width: calc(100% - 200px); flex-wrap: wrap; justify-content: center; row-gap: 4px; z-index: 2; }
   .isobar.on { display: flex; }
   .isobar > :not(.lbl) { flex: none; }
-  .isobar .lbl { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 6px; }
+  .isobar .lbl { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 6px; }
   .isobar .lbl b { font-weight: 600; }
-  .isobar button { border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 4px 9px; font-size: 12px; cursor: pointer; white-space: nowrap; }
-  .isobar button[aria-pressed="true"]:not(.toggle) { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  /* Three levels of button. Secondary actions and the toggles: a 1 px outline. Done and Next: filled with the ink.
+     Copy link and ⋯: text only, on the same room. */
+  /* The bar's height places what is framed under it, so its buttons keep an 18 px line whatever the face. */
+  .isobar button { border: 1px solid var(--line); background: var(--card); border-radius: 2px; padding: 4px 9px; font-size: 13px; line-height: 18px; cursor: pointer; white-space: nowrap; }
+  .isobar button:hover { background: var(--soft); }
+  .isobar button[aria-pressed="true"]:not(.toggle) { background: var(--chip); color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); }
   /* Laid out as a row only while shown: a display here would otherwise beat [hidden] (Open this joint on a gauge). */
   .isobar button.toggle:not([hidden]) { display: inline-flex; align-items: center; gap: 6px; }
-  .isobar button.done { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .isobar button.done, .isobar button.next { background: var(--ink); color: var(--card); border-color: var(--ink); font-weight: 500; }
   .isobar #bBack { max-width: 13em; overflow: hidden; text-overflow: ellipsis; }
-  .isobar button.icon { display: inline-grid; place-items: center; padding: 4px 6px; }
+  .isobar button.icon { display: inline-grid; place-items: center; padding: 4px 6px; border-color: transparent; background: none; }
+  .isobar button.icon:hover { background: var(--soft); }
   .isobar button.icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   .isobar .step { display: inline-flex; }
   .isobar .step[hidden] { display: none; }
   .isobar .step button { border-radius: 0; margin-left: -1px; }
-  .isobar .step button:first-child { border-radius: 7px 0 0 7px; margin-left: 0; }
-  .isobar .step button:last-child { border-radius: 0 7px 7px 0; }
+  .isobar .step button:first-child { border-radius: 2px 0 0 2px; margin-left: 0; }
+  .isobar .step button:last-child { border-radius: 0 2px 2px 0; }
   .isobar .step #bAll { min-width: 4.6em; font-variant-numeric: tabular-nums; }
   /* On the tour: which stop this is, and the way on. */
   .isobar .tour { display: inline-flex; align-items: center; gap: 6px; padding-left: 8px; border-left: 1px solid var(--rule); }
   .isobar .tour[hidden] { display: none; }
-  .isobar .tour > span { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .isobar button.next { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .isobar .tour > span { font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .isobar button.next[hidden] { display: none; }
   /* Where does it go?: the question, then the choices, which say right or wrong once answered. */
   .quizbar .lbl { white-space: normal; max-width: 26em; }
@@ -390,13 +408,13 @@
   .quizbar .choices button.wrong { text-decoration: line-through; opacity: 0.7; }
   /* Steps: the arrows beside Take apart, and under the bar what the step shown takes off and how. */
   .isobar .step #bSteps { min-width: 5.6em; font-variant-numeric: tabular-nums; }
-  .isobar > .stepcap { order: 10; flex: 1 0 100%; max-width: 44em; margin: 2px auto 0; padding: 5px 4px 2px; border-top: 1px solid var(--rule); font-size: 12.5px; line-height: 1.45; text-align: left; }
+  .isobar > .stepcap { order: 10; flex: 1 0 100%; max-width: 44em; margin: 2px auto 0; padding: 5px 4px 2px; border-top: 1px solid var(--rule); font-size: 13px; line-height: 1.45; text-align: left; }
   .isobar > .stepcap[hidden] { display: none; }
   .isobar .stepcap b { font-weight: 600; margin-right: 4px; }
   /* Show me: where the framed sub-part is, each step up a link. It takes the place of the part's name. */
-  .isobar .crumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 2px; font-size: 12.5px; margin-right: 6px; min-width: 0; }
+  .isobar .crumbs { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0 2px; font-size: 13px; margin-right: 6px; min-width: 0; }
   .isobar .crumbs[hidden] { display: none; }
-  .isobar .crumbs button { border: 0; background: none; padding: 2px 3px; font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .isobar .crumbs button { border: 0; background: none; padding: 2px 3px; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
   .isobar .crumbs button:hover { background: var(--soft); }
   .isobar .crumbs .sep { color: var(--muted); padding: 0 1px; }
   .isobar .crumbs [aria-current] { font-weight: 600; padding: 2px 3px; }
@@ -409,14 +427,15 @@
      controls; a pick closes it. The view's caption gives the bar its place, and the triad sits under it. */
   .isobar.compact { top: 8px; left: 8px; right: 8px; width: auto; max-width: none; margin: 0; justify-content: flex-start; padding: 4px 4px 4px 10px; z-index: 5; }
   .isobar.compact > .lbl, .isobar.compact > .crumbs { flex: 1 1 0; min-width: 0; margin-right: 2px; }
-  .isobar.compact > .lbl { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; line-height: 16px; overflow-wrap: anywhere; }
+  /* The name keeps room for a word or two; at a large text size the steps wrap under it rather than crush it. */
+  .isobar.compact > .lbl { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; line-height: 16px; overflow-wrap: anywhere; min-width: 6em; }
   .isobar.compact > .lbl[hidden], .isobar.compact > .crumbs[hidden] { display: none; }
   .isobar.compact > .crumbs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
   .isobar.compact > .crumbs > * { flex: none; }
   .isobar.compact > .crumbs.cut { -webkit-mask-image: linear-gradient(to right, transparent, #000 18px); mask-image: linear-gradient(to right, transparent, #000 18px); }
   .isobar.compact .step #bAll, .isobar.compact .step #bSteps { min-width: 3.4em; padding-inline: 6px; }
   .isobar.compact .tour { padding-left: 4px; border-left: 0; }
-  .isobar .isomore { position: absolute; top: calc(100% + 6px); left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: row dense; gap: 6px; padding: 8px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.14); }
+  .isobar .isomore { position: absolute; top: calc(100% + 6px); left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: row dense; gap: 6px; padding: 8px; background: var(--card); border: 1px solid var(--rule); border-radius: 4px; }
   .isobar .isomore[hidden] { display: none; }
   .isomore > button { justify-content: space-between; min-height: 36px; padding-inline: 10px; text-align: left; }
   .isomore > button.toggle:not([hidden]) { display: flex; }
@@ -429,8 +448,8 @@
   .isomore > .slide input { flex: 1 1 auto; width: auto; }
   .isomore > .step { display: flex; align-items: center; }
   .isomore > .step[hidden] { display: none; }
-  .isomore > .step::before { content: 'Piece'; flex: 1 1 auto; font-size: 12px; color: var(--muted); }
-  .isomore > .step button:first-child { border-radius: 7px 0 0 7px; }
+  .isomore > .step::before { content: 'Piece'; flex: 1 1 auto; font-size: 13px; color: var(--muted); }
+  .isomore > .step button:first-child { border-radius: 2px 0 0 2px; }
   .view.compact-iso .corner.tl { visibility: hidden; }
   .view.compact-iso .triad { top: var(--bar-b, 64px); width: 56px; height: 56px; }
   /* The model's own labels, drawn only while the view is still: the leader line from a sheet to its sub-part, the trail
@@ -460,112 +479,137 @@
   .callout.balloon { display: grid; place-items: center; padding: 0; border-radius: 50%; width: calc(20px * var(--ui-scale, 1)); height: calc(20px * var(--ui-scale, 1)); font-size: calc(11.5px * var(--ui-scale, 1)); font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; border-color: var(--accent); }
   .callout.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel); }
   .callout:hover { border-color: var(--sel); }
-  .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
+  .slide { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); padding: 0 8px; white-space: nowrap; }
   .slide[hidden] { display: none; }
   .slide input { width: 92px; accent-color: var(--accent); }
-  .slide output { font-size: 11.5px; color: var(--ink); min-width: 3em; font-variant-numeric: tabular-nums; }
+  .slide output { font-size: 12px; color: var(--ink); min-width: 3.4em; }
   .mb .slide { border-left: 1px solid var(--rule); }
-  .mb button[aria-disabled="true"] { opacity: 0.4; }
+  .mb button[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; }
   .subs { list-style: none; margin: 0; padding: 0; }
   /* A Made of row: its number (the callouts' number), its name, on how many pieces, and Show me at the end. */
-  .subs li.row { display: flex; align-items: stretch; margin: 0 -6px; border-radius: 6px; }
+  .subs li.row { display: flex; align-items: stretch; margin: 0 -6px; }
   .subs li.row:hover { background: var(--soft); }
-  .subs button.sub { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: none; text-align: left; padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; }
+  .subs button.sub { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: none; text-align: left; padding: 4px 6px; border-radius: 0; font-size: 14px; cursor: pointer; }
   .subs button.sub.on { background: var(--chip); }
   .subs button.sub.on .nm { font-weight: 600; }
   .subs .nm { flex: 1; min-width: 0; }
-  .subs .no { font-size: 12px; color: var(--muted); min-width: 1.4em; font-variant-numeric: tabular-nums; }
-  .subs .k { font-size: 12px; color: var(--muted); white-space: nowrap; }
-  .subs button.show, .screen .bar button.show { flex: none; width: 28px; border: 0; background: none; border-radius: 6px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
+  .subs .no { font-size: 12px; color: var(--muted); min-width: 1.6em; }
+  .subs .k { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .subs button.show, .screen .bar button.show { flex: none; width: 28px; border: 0; background: none; border-radius: 2px; cursor: pointer; color: var(--muted); display: grid; place-items: center; }
   .subs button.show:hover, .subs button.show:focus-visible { color: var(--ink); background: var(--chip); }
   .subs button.show svg, .screen .bar button.show svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  .subs .grp { font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 0 2px; }
+  .subs .grp { font-size: 13px; font-weight: 600; color: var(--muted); padding: 10px 0 2px; }
   .subs .grp:first-child { padding-top: 0; }
   .fallback { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
 
   /* ---------- Inspector ---------- */
+  /* A part reads like a catalogue page: its name, the strongest thing on it, then sections, each a heading on the same
+     left edge as the name and the table labels, with more room before a section than between its rows. */
   .insp { grid-area: insp; }
-  .tabs { display: flex; gap: 4px; }
-  .tabs button { border: 0; background: none; padding: 5px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; color: var(--muted); }
-  .tabs button[aria-selected="true"] { background: var(--chip); color: var(--ink); }
-  .doc h2 { font-size: 19px; line-height: 1.25; margin: 2px 0 8px; font-weight: 650; }
-  .doc h2 .count { font-size: 13px; color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
-  .doc h3 { font-size: 14px; line-height: 1.3; color: var(--ink); margin: 18px 0 6px; font-weight: 650; }
+  .tabs { display: flex; gap: 2px; }
+  .tabs button { border: 0; background: none; padding: 5px 10px; border-radius: 2px; cursor: pointer; font-size: 13px; color: var(--muted); }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { background: var(--chip); color: var(--ink); font-weight: 500; }
+  .doc h2 { font-size: 21px; line-height: 1.2; margin: 4px 0 4px; font-weight: 600; letter-spacing: -0.005em; }
+  .doc h2 .count { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .doc h3 { font-size: 14px; line-height: 1.3; color: var(--ink); margin: 24px 0 6px; font-weight: 600; }
   .doc p { margin: 0 0 10px; }
-  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-  .chip { font-size: 12px; background: var(--chip); border-radius: 999px; padding: 2px 9px; color: var(--muted); display: inline-flex; align-items: center; border: 0; }
-  button.chip { cursor: pointer; color: var(--ink); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { font-size: 12px; background: var(--chip); border-radius: 2px; padding: 1px 7px; color: var(--muted); display: inline-flex; align-items: center; border: 0; }
+  button.chip { cursor: pointer; color: var(--ink); font-size: 13px; padding: 2px 8px; }
   button.chip:hover { background: var(--rule); }
-  .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 12px; }
-  .actions button { border: 1px solid var(--rule); background: var(--soft); border-radius: 8px; padding: 6px 11px; cursor: pointer; font-size: 13px; }
-  .actions button.primary, .actions button[aria-checked="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 14px; }
+  .actions button { border: 1px solid var(--line); background: var(--card); border-radius: 2px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions button:hover { background: var(--soft); }
+  .actions button.primary { background: var(--ink); color: var(--card); border-color: var(--ink); font-weight: 500; }
+  .actions button[aria-checked="true"] { background: var(--chip); color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); font-weight: 500; }
   .switch { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin: 2px 0 12px; }
-  .src-back { display: block; margin: 0 0 6px; border: 1px solid var(--rule); background: var(--soft); border-radius: 7px; padding: 3px 8px; font-size: 12px; cursor: pointer; }
-  table.specs { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.specs td { padding: 5px 0; border-top: 1px solid var(--rule); vertical-align: top; }
-  table.specs td:first-child { color: var(--muted); padding-right: 10px; width: 38%; }
-  table.specs td:last-child { text-align: right; padding-left: 8px; overflow-wrap: anywhere; }
-  table.specs .ref { white-space: nowrap; margin-left: 2px; }
-  .ref { font-size: 11.5px; font-variant-numeric: tabular-nums; border: 1px solid var(--rule); background: var(--soft); border-radius: 5px; padding: 0 4px; cursor: pointer; color: var(--ink); }
-  .ref:hover { border-color: var(--muted); }
-  .ref.derived, .ref.photo, .ref.measured, .ref.assumed, .ref.none { cursor: default; color: var(--muted); }
-  .ref.assumed, .ref.std { border-style: dashed; }
-  .tagkey { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
-  .tagkey b { font-size: 12px; font-weight: 650; }
-  .know { border-left: 3px solid var(--accent); padding-left: 10px; }
-  .doc .piece-of { margin: -4px 0 8px; color: var(--muted); }
-  .doc h2.gap { margin-top: 24px; }
-  .doc .note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+  .src-back { display: block; margin: 0 0 6px; border: 1px solid var(--line); background: var(--card); border-radius: 2px; padding: 3px 8px; font-size: 13px; cursor: pointer; }
+  /* A specification: the label muted on the left, the value at the right, so its numbers end on one edge, then a narrow
+     column for the source marks, so a citation never pushes its value out of line. Thin rules between the rows; a long
+     value wraps. */
+  table.specs { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.4; }
+  table.specs td { padding: 5px 0 6px; border-top: 1px solid var(--rule); vertical-align: baseline; }
+  table.specs tr:first-child > td { border-top: 0; padding-top: 1px; }
+  table.specs td:first-child { color: var(--muted); font-size: 13px; padding-right: 10px; width: 33%; }
+  table.specs td.v { text-align: right; padding-left: 8px; overflow-wrap: anywhere; text-wrap: pretty; }
+  table.specs td.src { width: 1%; padding-left: 2px; white-space: nowrap; text-align: left; }
+  /* A source mark: a small raised mark right after its value, muted, with no box. A published source (S1…) is set in
+     the mono and opens its entry; std opens the CF standard. A number no source publishes is tagged in words, and
+     "photo" and "assumed" in italic, so a size scaled from a photo or picked for the drawing never reads as published.
+     A mark's target reaches past its figure, further for a finger. */
+  .ref { position: relative; font-size: 12px; line-height: 1; vertical-align: super; color: var(--muted); border: 0; background: none; padding: 0 1px; margin: 0; border-radius: 2px; font-variant-numeric: tabular-nums; }
+  button.ref { cursor: pointer; }
+  button.ref::after { content: ''; position: absolute; inset: -6px -4px; }
+  button.ref:hover { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  .ref.std { font-family: var(--sans); }
+  .ref.photo, .ref.assumed { font-style: italic; }
+  .ref.derived, .ref.photo, .ref.measured, .ref.assumed, .ref.none { cursor: default; }
+  @media (pointer: coarse) { button.ref::after { inset: -10px -6px; } }
+  /* Where marks stand on their own (a sheet's sources, a part's list of them) they sit on the line, in the ink. */
+  .srcs .ref, .srclist .ref { vertical-align: baseline; font-size: 13px; color: var(--ink); }
+  .tagkey { margin: 12px 0 0; font-size: 12px; line-height: 1.5; color: var(--muted); }
+  .tagkey b { font-weight: 600; }
+  .tagkey b.photo, .tagkey b.assumed { font-style: italic; }
+  /* A note: a bold lead-in that says what kind of note it is, run into its text on the same grid. */
+  .know { margin: 24px 0 10px; }
+  .doc .know > h3, .know > p { display: inline; }
+  .doc .know > h3 { font-size: inherit; line-height: inherit; margin: 0 0.25em 0 0; }
+  .doc .know > h3::after { content: '.'; }
+  .doc .piece-of { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+  .doc h2.gap { margin-top: 28px; }
+  .doc .note { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
   /* The Pieces table: one row per piece of a repeated part; the current one is marked, a click goes to it. */
-  table.ptab { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.ptab th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 0 0 4px; }
+  table.ptab { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.4; }
+  table.ptab th { text-align: left; font-size: 13px; font-weight: 500; color: var(--muted); padding: 0 0 4px; }
   table.ptab th + th { text-align: right; }
-  table.ptab td { border-top: 1px solid var(--rule); vertical-align: top; }
-  table.ptab td + td { text-align: right; padding: 5px 0 5px 8px; overflow-wrap: anywhere; }
+  table.ptab td { border-top: 1px solid var(--rule); vertical-align: baseline; }
+  table.ptab td + td { text-align: right; padding: 5px 0 6px 8px; overflow-wrap: anywhere; }
   table.ptab tr { cursor: pointer; }
   table.ptab tbody tr:hover { background: var(--soft); }
   table.ptab tr.on { background: var(--chip); }
   table.ptab tr.on td:first-child > button { font-weight: 600; }
-  table.ptab td:first-child > button { width: 100%; border: 0; background: none; padding: 5px 4px; text-align: left; cursor: pointer; font-size: 13px; }
-  .screen table.ptab, .screen table.ptab button { font-size: 12.5px; }
+  table.ptab td:first-child > button { width: 100%; border: 0; background: none; padding: 5px 4px 6px 0; text-align: left; cursor: pointer; font-size: 13px; }
   .srclist { list-style: none; margin: 0; padding: 0; }
   .srclist li { padding: 10px 0; border-top: 1px solid var(--rule); }
   .srclist li:first-child { border-top: 0; }
-  .srclist .sid { font-size: 12px; font-weight: 650; margin-right: 6px; }
-  .srclist .who { color: var(--muted); font-size: 12.5px; }
-  .srclist p { margin: 6px 0; font-size: 13px; color: var(--muted); }
+  .srclist .sid { font-size: 13px; font-weight: 500; margin-right: 8px; }
+  .srclist .who { color: var(--muted); font-size: 13px; }
+  .srclist p { margin: 4px 0; font-size: 13px; color: var(--muted); }
+  .srclist li > .ref { margin-right: 4px; }
   .srclist li.flash { animation: flash 1.2s; }
   @keyframes flash { 0% { background: var(--chip); } 100% { background: transparent; } }
   /* The key or gesture wraps in its own column, so a long one ("Double-click a sub-part (inspecting), or …") never
      pushes what it does out of the panel. */
   table.keys { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-  table.keys td { padding: 5px 0; border-top: 1px solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
+  table.keys td { padding: 5px 0 6px; border-top: 1px solid var(--rule); vertical-align: baseline; overflow-wrap: anywhere; }
   table.keys td:first-child { width: 42%; padding-right: 12px; color: var(--muted); }
-  kbd { font-size: 12px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: var(--soft); }
-  .stat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 12px; }
-  .stat div { background: var(--soft); border-radius: 8px; padding: 8px; }
-  .stat b { display: block; font-size: 18px; font-weight: 650; }
-  .stat span { font-size: 12px; color: var(--muted); }
+  kbd { font-size: 12px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 2px; padding: 0 4px; background: var(--soft); }
+  /* The counts: a ruled list, a plain label and its figure at the right edge, in as many columns as fit. */
+  .stat { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15em), 1fr)); column-gap: 24px; max-width: 52em; margin: 4px 0 14px; }
+  .stat div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 5px 0 6px; border-top: 1px solid var(--rule); }
+  .stat span { font-size: 13px; color: var(--muted); }
+  .stat b { font-size: 14px; font-weight: 500; }
   /* How it attaches: each connected part, then how the two are joined, with its tags. */
   .joins { list-style: none; margin: 0; padding: 0; }
-  .joins li { padding: 7px 0; border-top: 1px solid var(--rule); }
+  .joins li { padding: 8px 0; border-top: 1px solid var(--rule); }
   .joins li:first-child { border-top: 0; padding-top: 0; }
-  .joins p { margin: 3px 0 0; font-size: 13px; }
+  .joins p { margin: 4px 0 0; font-size: 14px; }
   /* How a run goes: numbered steps, each with the parts it uses. */
   .run { list-style: none; margin: 0 0 4px; padding: 0; counter-reset: run; }
-  .run li { counter-increment: run; position: relative; padding: 0 0 10px 30px; }
-  .run li::before { content: counter(run); position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--chip); font-size: 12px; font-weight: 650; line-height: 20px; font-variant-numeric: tabular-nums; text-align: center; }
+  .run li { counter-increment: run; position: relative; padding: 0 0 12px 30px; }
+  .run li::before { content: counter(run); position: absolute; left: 0; top: 1px; width: 20px; height: 20px; box-sizing: border-box; border: 1px solid var(--rule); font: 500 12px/18px var(--mono); text-align: center; }
   .run b { display: block; font-weight: 600; }
-  .run p { margin: 2px 0 6px; font-size: 13px; }
+  .run p { margin: 2px 0 6px; font-size: 14px; }
   .run .chips { margin-bottom: 0; }
   /* The tour's stop, above What it does: why this part matters at this point of a run. */
-  .tourline { background: var(--soft); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 8px 10px; margin: 0 0 12px; }
+  .tourline { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 10px; margin: 0 0 12px; }
   .doc .tourline p { margin: 2px 0 0; }
   /* Glossary words: a dotted underline. A click, or Tab onto it, opens the definition under its paragraph or row. */
   .term { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: help; text-align: inherit; text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: 3px; }
   .term[aria-expanded="true"] { text-decoration-style: solid; }
   .term:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px; }
-  .def { display: block; margin: 6px 0 4px; padding: 6px 9px; background: var(--soft); border-radius: 8px; font-size: 12.5px; line-height: 1.45; color: var(--ink); text-align: left; font-weight: 400; }
+  .def { display: block; margin: 6px 0 4px; padding: 6px 9px; background: var(--soft); font-size: 13px; line-height: 1.45; color: var(--ink); text-align: left; font-weight: 400; font-style: normal; }
   .def[hidden], tr.defrow[hidden] { display: none; }
   .def > span { display: block; }
   .def > span + span { margin-top: 4px; }
@@ -575,7 +619,7 @@
   /* A Pieces table with several facts per piece lists them down one cell. */
   table.ptab.stacked th + th, table.ptab.stacked td + td { text-align: left; }
   table.ptab .line + .line { margin-top: 3px; }
-  table.ptab .line > span:first-child { color: var(--muted); }
+  table.ptab .line > span:first-child { color: var(--muted); font-size: 13px; }
 
   @media (max-width: 1180px) { .app { --tw: 230px; --iw: 320px; } }
   @media (max-width: 960px) {
@@ -604,31 +648,30 @@
      and no glow, glass, brackets, scan or grid. A choice is a pale blue tint; an action (Done, Next, the Part tab's
      first button) is the ink on black, inverted. */
   .holo body { background: var(--paper); }
-  .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head { background: var(--card); border-color: var(--rule); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .holo .panel, .holo .view, .holo .mb, .holo .isobar, .holo .sheets-head { border-radius: 6px; }
+  .holo .panel, .holo .view, .holo .isobar, .holo .sheets-head { background: var(--card); border-color: var(--rule); box-shadow: none; }
   .holo .isobar .isomore, .holo .hud .sheets.dock { box-shadow: none; }
   .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; }
   .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); }
   .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); }
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle),
+  .holo .actions button[aria-checked="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--ink); }
   .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: none; }
   .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: none; }
   .holo .ti.sel, .holo table.ptab tr.on { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--sel); }
   .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: none; }
-  .holo .know { border-left-color: var(--accent); }
   .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.35); box-shadow: none; }
-  .holo .screen { border-radius: 6px; background: var(--card); border-color: var(--rule); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .holo .screen.dragging { box-shadow: none; border-color: var(--accent); }
   .holo .screen.hot { border-color: var(--sel); box-shadow: none; outline: 1px solid var(--sel); }
   .holo .callout { background: var(--card); border-color: rgb(90 170 225 / 0.35); border-radius: 4px; box-shadow: none; }
   .holo .callout.balloon { border-radius: 50%; border-color: var(--sel); }
-  .holo .screen .bar { border-bottom: 1px solid var(--rule); padding-bottom: 4px; margin-bottom: 8px; }
-  .holo .screen.folded .bar { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
 
   /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
      ink edge so the mark stands out from the white. ---------- */
   .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--sel); }
+  /* Where a theme marks the piece in view with a stripe at the row's start, its name steps clear of the stripe. */
+  :is(.holo, .greyscale, .blueprint) table.ptab tr.on td:first-child > button { padding-left: 9px; }
   .greyscale .screen.hot { border-color: var(--sel); box-shadow: 0 0 0 1px var(--sel), 0 0 0 2px var(--ink); }
   .greyscale .tabs button[aria-selected="true"] { background: var(--ink); color: var(--card); box-shadow: inset 0 -3px 0 var(--sel); }
   .greyscale .search::placeholder { color: var(--muted); opacity: 1; }
@@ -636,8 +679,6 @@
 
 
   /* ---------- Blueprint: flat chrome; the view is a drawing sheet with a frame, zones and a title block. ---------- */
-  .blueprint .panel, .blueprint .view, .blueprint .mb, .blueprint .isobar, .blueprint .sheets-head { box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .blueprint .screen { background: var(--card); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .blueprint .mb button[aria-pressed="true"]:not(.toggle), .blueprint .navcluster .mb button[aria-pressed="true"] { background: rgb(255 255 255 / 0.12); color: var(--ink); }
   .blueprint .ti.sel, .blueprint table.ptab tr.on { background: rgb(255 255 255 / 0.08); box-shadow: inset 2px 0 0 var(--sel); }
   .blueprint .tip { background: var(--card); color: var(--ink); border: 1px solid var(--rule); }
@@ -688,17 +729,17 @@
   @media (max-width: 1320px) { #bGuide .long { display: none; } #bGuide .short { display: inline; } }
   @media (max-width: 960px) { #bGuide .lbl { position: static; width: auto; height: auto; overflow: visible; clip-path: none; } }
   .guide { position: fixed; z-index: 30; width: calc(400px * var(--ui-scale, 1)); max-width: calc(100vw - 24px); display: flex; flex-direction: column;
-           background: var(--card); color: var(--ink); border: 1px solid var(--rule); border-radius: 12px; box-shadow: 0 6px 24px rgb(0 0 0 / 0.16);
+           background: var(--card); color: var(--ink); border: 1px solid var(--rule); border-radius: 4px;
            font-size: calc(13px * var(--ui-scale, 1)); line-height: 1.45; }
   .guide[hidden] { display: none; }
-  .guide button { font: inherit; font-size: 0.95em; border: 1px solid var(--rule); background: var(--soft); color: var(--ink); border-radius: 7px; padding: 0.38em 0.75em; cursor: pointer; white-space: nowrap; }
-  .guide button:hover { border-color: var(--muted); }
-  .guide button.primary { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  .guide button { font: inherit; font-size: 0.95em; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 2px; padding: 0.38em 0.75em; cursor: pointer; white-space: nowrap; }
+  .guide button:hover { background: var(--soft); }
+  .guide button.primary { background: var(--ink); color: var(--card); border-color: var(--ink); font-weight: 500; }
   .guide svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; vertical-align: -0.12em; }
   .g-head { display: flex; align-items: center; gap: 6px; padding: 8px 8px 6px 12px; }
-  .g-ch { flex: 1; min-width: 0; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .g-ch { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .guide .g-exit { font-weight: 600; background: var(--card); border-color: var(--ink); }
-  .g-bar { height: 3px; margin: 0 12px; border-radius: 2px; background: var(--rule); overflow: hidden; }
+  .g-bar { height: 3px; margin: 0 12px; background: var(--rule); overflow: hidden; }
   .g-bar i { display: block; height: 100%; width: 0; background: var(--accent); }
   .g-picker { padding: 6px 8px 8px; border-bottom: 1px solid var(--rule); max-height: 46vh; overflow: auto; }
   .g-picker button { display: flex; gap: 8px; width: 100%; text-align: left; margin-top: 3px; background: transparent; border-color: transparent; white-space: normal; }
@@ -706,26 +747,25 @@
   .g-picker button span:last-child { margin-left: auto; color: var(--muted); }
   .g-body { padding: 8px 12px 6px; overflow: auto; transition: opacity 0.18s ease-out; }
   .g-body.fading { opacity: 0; }
-  .g-step { margin: 0 0 2px; color: var(--muted); font-size: 0.88em; font-variant-numeric: tabular-nums; }
+  .g-step { margin: 0 0 2px; color: var(--muted); font-size: 0.93em; font-variant-numeric: tabular-nums; }
   .g-step button { font-size: 1em; padding: 0 0.5em; margin-left: 6px; }
-  .g-q { margin: 0 0 4px; font-size: 1.12em; line-height: 1.3; font-weight: 650; }
+  .g-q { margin: 0 0 4px; font-size: 1.15em; line-height: 1.3; font-weight: 600; }
   .g-q:focus { outline: none; }
   .g-q:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .g-how, .g-reach { margin: 0 0 6px; }
   .g-reach { color: var(--accent); font-weight: 600; }
-  .g-look { margin: 0; padding: 6px 8px; border-radius: 8px; background: var(--soft); color: var(--muted); }
+  .g-look { margin: 0; padding: 6px 8px; background: var(--soft); color: var(--muted); }
   .g-look b, .g-how b { color: var(--ink); font-weight: 600; }
   .g-look.ok { background: color-mix(in srgb, var(--accent) 14%, var(--card)); color: var(--ink); }
-  .g-look .g-tick { font-weight: 650; color: var(--ink); }
-  .guide kbd { font: inherit; font-size: 0.86em; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 0.3em; background: var(--card); }
+  .g-look .g-tick { font-weight: 600; color: var(--ink); }
+  .guide kbd { font: inherit; font-family: var(--mono); font-size: 0.86em; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 2px; padding: 0 0.3em; background: var(--card); }
   .guide code { font-size: 0.85em; overflow-wrap: anywhere; color: var(--ink); }
   .g-foot { display: flex; gap: 6px; padding: 8px 12px 10px; }
   .g-foot #gNext { margin-left: auto; }
-  .g-ring { position: fixed; z-index: 31; pointer-events: none; border: 2px solid var(--accent); border-radius: 10px;
+  .g-ring { position: fixed; z-index: 31; pointer-events: none; border: 2px solid var(--accent); border-radius: 4px;
             box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent); animation: g-pulse 1.6s ease-in-out infinite; }
   @keyframes g-pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 8%, transparent); } }
   .holo .guide button.primary { background: var(--ink); color: var(--paper); }
-  .holo .guide { box-shadow: none; }
   @media (prefers-reduced-motion: reduce) { .g-body { transition: none; } .g-ring { animation: none; } }
   /* Stacked, the card spans the window's foot, under the view; the body scrolls when the step is long. */
   .guide.dock { left: 8px; right: 8px; bottom: 8px; width: auto; height: min(38vh, 290px); }
@@ -756,9 +796,9 @@
         <button type="button" id="bGuide" aria-pressed="false" aria-label="Guided analysis" title="Guided analysis: find a part, see how it attaches and where its numbers come from, with the page’s own controls"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3"/><path d="M10.7 5.3 9.1 9.1 5.3 10.7 6.9 6.9z"/></svg><span class="lbl"><span class="long">Guided analysis</span><span class="short" aria-hidden="true">Guide</span></span></button>
       </div>
       <div class="mb" role="group" aria-label="Model">
-        <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="sw" aria-hidden="true"></span></button>
+        <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="ind" aria-hidden="true"></span></button>
         <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
-        <button type="button" id="bCut" class="toggle" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="sw" aria-hidden="true"></span></button>
+        <button type="button" id="bCut" class="toggle" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="ind" aria-hidden="true"></span></button>
       </div>
       <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
@@ -818,8 +858,8 @@
         <button type="button" id="bAll" title="Every piece, or pick one with the arrows">All</button>
         <button type="button" id="bNext" title="Next piece (.)" aria-label="Next piece">›</button>
       </span>
-      <button type="button" id="bApart" class="toggle" aria-pressed="false" title="Take the part apart into its sub-parts (T)">Take apart<span class="sw" aria-hidden="true"></span></button>
-      <button type="button" id="bJoint" class="toggle" aria-pressed="false" hidden title="Open the joint step by step: the nuts, the bolts, the flanges apart, the gasket out (J)">Open this joint<span class="sw" aria-hidden="true"></span></button>
+      <button type="button" id="bApart" class="toggle" aria-pressed="false" title="Take the part apart into its sub-parts (T)">Take apart<span class="ind" aria-hidden="true"></span></button>
+      <button type="button" id="bJoint" class="toggle" aria-pressed="false" hidden title="Open the joint step by step: the nuts, the bolts, the flanges apart, the gasket out (J)">Open this joint<span class="ind" aria-hidden="true"></span></button>
       <label class="slide" id="apartWrap" hidden title="How far the sub-parts move apart ([ and ])">Spread <input type="range" id="sApart" min="0.4" max="2.5" step="0.05" value="1" aria-label="Take-apart distance"><output id="oApart">1.0×</output></label>
       <span class="step" id="stepStep" role="group" aria-label="Steps in the order it comes apart" hidden>
         <button type="button" id="bStepPrev" title="Previous step" aria-label="Previous step">‹</button>
@@ -827,8 +867,8 @@
         <button type="button" id="bStepNext" title="Next step" aria-label="Next step">›</button>
       </span>
       <button type="button" id="bTurn" hidden title="The parts come apart toward you, so they hide one another: turn the view to see them side by side">Turn to see</button>
-      <button type="button" id="bContext" class="toggle" aria-pressed="true" title="The rest of the machine as a see-through ghost (G)">Ghost<span class="sw" aria-hidden="true"></span></button>
-      <button type="button" id="bScreens" class="toggle" aria-pressed="true" title="The sub-parts' sheets beside the part (S)">Sheets<span class="sw" aria-hidden="true"></span></button>
+      <button type="button" id="bContext" class="toggle" aria-pressed="true" title="The rest of the machine as a see-through ghost (G)">Ghost<span class="ind" aria-hidden="true"></span></button>
+      <button type="button" id="bScreens" class="toggle" aria-pressed="true" title="The sub-parts' sheets beside the part (S)">Sheets<span class="ind" aria-hidden="true"></span></button>
       <span class="tour" id="tourStep" role="group" aria-label="Tour" hidden>
         <span id="tourLabel"></span>
         <button type="button" class="next" id="bTourNext">Next ›</button>
@@ -2693,7 +2733,7 @@ function updateIsoBar() {
   $('bApart').setAttribute('aria-pressed', iso.apart ? 'true' : 'false');
   $('apartWrap').hidden = !iso.apart;
   showTurn(turnOffered());
-  // A gasket or a joint flange: Open this joint, the whole joint as one sequence. A toggle keeps its label; its switch
+  // A gasket or a joint flange: Open this joint, the whole joint as one sequence. A toggle keeps its label; its square
   // says whether it is on.
   const jb = $('bJoint');
   jb.hidden = !iso.joint && !jointHere();
@@ -3732,14 +3772,45 @@ function barButton(text, label, fk, fn, cls) {
   b.addEventListener('click', fn);
   return b;
 }
+// A value set for the type, its text unchanged: each number with its unit, kept on one line (230 mm, Ø8.4 mm,
+// 2.0 ± 0.1 mm, 16 × Ø8.4 mm, 10⁻⁹ mbar), and each part or size designation (DN100CF, M8, B9090B). "in" is the inch
+// only where no word follows it, so "4 in all" stays words. setValue marks a cell whose value is all figures, joined
+// by no more than or, and, to, on or per, as one to set in the mono.
+const QTY = /(?<![\p{L}\p{N}.\/-])((?:[≈~<>≤≥±Ø]\s?)?\d+(?:\.\d+)?(?:\/\d+(?:-\d+)?)?[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]*(?:\s?[–±×]\s?Ø?\d+(?:\.\d+)?)*)(?:(\s?)(mm|cm|nm|µm|μm|m|kg|kV|kA|mA|A|kW|W|V|mT|T|mbar|Torr|Pa|°C|°|″|eV|L|in(?!\s+[a-z])|%)(?![\p{L}]))?|\b[A-Z]+\d+[A-Z\d]*(?:-\d+)?\b/gu;
+function valueParts(text) {
+  const out = [];
+  let at = 0;
+  for (const m of text.matchAll(QTY)) {
+    if (m.index > at) out.push(text.slice(at, m.index));
+    if (m[1] === undefined) out.push(el('span', 'pid', m[0]));
+    else {
+      const q = el('span', 'qty');
+      q.append(el('span', 'num', m[1]));
+      if (m[3]) q.append(m[2], el('span', 'unit', m[3]));
+      out.push(q);
+    }
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) out.push(text.slice(at));
+  return out;
+}
+const FIG_GLUE = /^[\s,;:/×()·&+–-]*(?:(?:or|and|to|on|per)(?![\p{L}])[\s,;:/×()·&+–-]*)*$/u;
+function setValue(cell, text) {
+  const parts = valueParts(text);
+  cell.append(...parts);
+  if (parts.some((x) => typeof x !== 'string') && FIG_GLUE.test(parts.filter((x) => typeof x === 'string').join(''))) cell.classList.add('fig');
+}
+// A specification: label, value, and a cell of its own for the source marks, so they line up down one narrow column.
 function specTable(rows) {
   const t = el('table', 'specs');
   const tb = el('tbody');
   for (const [label, value, src] of rows) {
     const tr = el('tr');
-    const v = el('td');
-    v.append(value, ' ', refButton(src));
-    tr.append(el('td', null, label), v);
+    const v = el('td', 'v');
+    setValue(v, value);
+    const s = el('td', 'src');
+    [].concat(src).forEach((id, i) => s.append(i ? ' ' : '', refButton(id)));
+    tr.append(el('td', null, label), v, s);
     tb.append(tr);
   }
   t.append(tb);
@@ -3751,7 +3822,7 @@ function tagKey(host) {
   const used = Object.keys(TAGS).filter((k) => host.querySelector(`.ref.${k}`));
   if (!used.length) return;
   const key = el('p', 'tagkey');
-  used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', null, k), ` ${TAGS[k]}`));
+  used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', k, k), ` ${TAGS[k]}`));
   host.append(key);
 }
 // The glossary (GLOSSARY in parts.js). On each page (the Machine tab, a Part tab, a part card, a sheet) the first use of
@@ -5019,8 +5090,9 @@ function renderPart(box, card) {
   const doc = only.length === 1 ? subDocOf(p.id, only[0]) : null;
   if (doc?.rows.length) box.append(el('h3', null, doc.title), specTable(doc.rows));
   if (p.know) {
-    box.append(el('h3', null, 'Good to know'));
-    box.append(el('p', 'know', p.know));
+    const k = el('div', 'know');
+    k.append(el('h3', null, KNOW_LEAD[p.id] || 'Good to know'), el('p', null, p.know));
+    box.append(k);
   }
   box.append(el('h3', null, 'Sources'));
   const ul = el('ul', 'srclist');
@@ -5037,6 +5109,16 @@ function renderPart(box, card) {
   tagKey(box);
   markTerms(box, `${card ? 'card' : 'part'}-${p.id}`);
 }
+// What kind of note a part's `know` is, as the lead-in run into it. "Before you touch it" is kept for the notes that
+// say how to handle the part itself.
+const KNOW_LEAD = {
+  joints: 'Before you touch it', gaskets: 'Before you touch it', electrode: 'Before you touch it', pumpPort: 'Before you touch it', hose: 'Before you touch it',
+  hv: 'Safety', satellite: 'Safety', drawer: 'Safety', estop: 'Safety',
+  viewport: 'When you run it', tf: 'When you run it', psu: 'When you run it', pump: 'When you run it', needle: 'When you run it',
+  table: 'Setting up',
+  gauge: 'Reading it', probe: 'Reading it', camera: 'Reading it', spectro: 'Reading it',
+  lateral: 'Check on site', diagPorts: 'Check on site',
+};
 // A button naming another part: while inspecting it inspects that part, otherwise it selects it to read about.
 function partLink(id, here) {
   const q = partById.get(id);
@@ -5143,7 +5225,7 @@ function piecesTable(p) {
       const v = el('td');
       for (const [f, value, src] of rows) {
         const line = el('div', 'line');
-        line.append(el('span', null, `${f}: `), value, ' ', refButton(src));
+        line.append(el('span', null, `${f}: `), ...valueParts(value), ' ', refButton(src));
         v.append(line);
       }
       if (!rows.length) v.append('–');
@@ -5151,7 +5233,7 @@ function piecesTable(p) {
     } else for (const f of fields) {
       const r = rows.find((x) => x[0] === f);
       const v = el('td');
-      if (r) v.append(r[1], ' ', refButton(r[2])); else v.append('–');
+      if (r) { setValue(v, r[1]); v.append(' ', refButton(r[2])); } else v.append('–');
       tr.append(v);
     }
     tr.addEventListener('click', (e) => { if (!e.target.closest('.ref, .term')) focusPiece(pc); });
@@ -5219,23 +5301,11 @@ function renderOverview(box) {
   const st = el('div', 'stat');
   for (const [n, l] of [[DOCS.PARTS.length, 'components'], [pieces.length, 'pieces drawn'], [DOCS.SOURCES.length, 'sources']]) {
     const d = el('div');
-    d.append(el('b', null, String(n)), el('span', null, l));
+    d.append(el('span', null, l), el('b', null, String(n)));
     st.append(d);
   }
   box.append(st);
-  box.append(el('h3', null, 'Headline numbers'));
-  const t = el('table', 'specs');
-  const tb = el('tbody');
-  for (const [label, value, ids] of HEADLINE) {
-    const tr = el('tr');
-    const v = el('td');
-    v.append(value);
-    for (const id of ids) v.append(' ', refButton(id));
-    tr.append(el('td', null, label), v);
-    tb.append(tr);
-  }
-  t.append(tb);
-  box.append(t);
+  box.append(el('h3', null, 'Headline numbers'), specTable(HEADLINE));
   box.append(el('h3', null, 'How to use it'));
   for (const s of [
     'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The buttons at the view’s left edge zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, and fold the side panels.',
@@ -5243,7 +5313,7 @@ function renderOverview(box) {
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
-    'The search box above the list finds names, sizes and seals (M8, o-ring) and takes plain words: “the gasket between the right and back quarters” finds that gasket. A switch on a button (Explode, Ghost, Sheets) says whether it is on.',
+    'The search box above the list finds names, sizes and seals (M8, o-ring) and takes plain words: “the gasket between the right and back quarters” finds that gasket. The square on a button (Explode, Ghost, Sheets) is filled while it is on.',
     '“Where does it go?” lifts a part out above the machine: click where it goes. Five make a round, scored on first tries, and a round can be shared as a link. On a tablet, hold a finger still for a loupe that shows the view under it at 3× and names what it is on.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
     'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades and the inspect bar says where it is. Esc goes back to the view you had.',
@@ -6539,7 +6609,7 @@ const GUIDE_STEPS = [
     target: () => gHost().querySelector('ul.subs') },
   { ch: 5, id: 'evidence.preview', q: 'Can you glance at a sheet without keeping it?',
     how: () => tapOr('Tap a sub-part, or a numbered callout on the model.', 'Rest the pointer on a sub-part for a moment, or click a numbered callout.'),
-    look: 'Its sheet opens with a dashed edge, labelled <b>Preview</b>. It stays until you rest on another sub-part; <b>Keep</b> keeps it.',
+    look: 'Its sheet opens labelled <b>Preview</b> under its name. It stays until you rest on another sub-part; <b>Keep</b> keeps it.',
     need: () => gPart('viewport', gLeft(), { apart: true, pins: [], view: [HOME.az, HOME.el] }),
     act: () => setLive({ part: 'viewport', sub: 'Viewport flange' }),
     done: () => !!state.live,
