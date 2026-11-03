@@ -975,15 +975,16 @@ const TONES = {
 // In Colour the bare metals reflect a studio instead of taking a flat shade (see METAL_SHADE): `tint` is the metal's
 // own colour, what it reflects the studio in, and `rough` its finish, from a mirror (0) to satin (1). As on the machine
 // itself, the stainless is polished, a little softer on the tubes than on the flanges, and the fasteners and the copper
-// are polished bright. The optical table's top is brushed stainless too, a satin, so its reflections stay soft and
-// broad. `amount` (1 if left out) is how far the reflection replaces the flat shade: the aluminium extrusion is only
-// half metal, a dull satin. `gain` (1 if left out) is how bright the studio shows in it: a satin spreads each light
-// wider and dimmer, so the table top, which faces the bright ceiling, keeps its broad reflections short of white.
+// are polished bright. The optical table's top is polished stainless too. `amount` (1 if left out) is how far the
+// reflection replaces the flat shade: the aluminium extrusion is only half metal, a dull satin. `gain` (1 if left out)
+// is how bright the studio shows in it: the table top faces the bright ceiling, so it takes a little less, and a
+// darker tint, which leaves the ceiling grey between its lights and the lights crossing it as bright bands, not white
+// all over.
 const METAL = {
   vessel: { tint: '#dcdedc', rough: 0.3 }, steel: { tint: '#dcdedc', rough: 0.3 }, steel2: { tint: '#dfe0de', rough: 0.22 },
   bolt: { tint: '#dadcda', rough: 0.15 }, copper: { tint: '#f4a37c', rough: 0.12 }, brass: { tint: '#e9c57c', rough: 0.2 },
   bronze: { tint: '#dba679', rough: 0.25 }, alu: { tint: '#dcdedb', rough: 0.85, amount: 0.5 },
-  table: { tint: '#eeefed', rough: 0.7, gain: 0.6 },
+  table: { tint: '#d6d8d5', rough: 0.18, gain: 0.9 },
 };
 // The dark theme is a hologram: light added on black, so `paper` is the clear colour, `ink` the glowing edge colour,
 // `ghost` how bright the context stays while one part is inspected, and `shadowInk` the projector floor's colour.
