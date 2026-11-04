@@ -190,10 +190,13 @@
   .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
   /* The page's one h1: the machine's name and then what this is, in two tones on one line, in every theme set as the
      names are on the sheets: wide capitals, the name heavy and what this is light. It keeps the room the two
-     lines had (37.7 px), so the view under it stands where it did, and wrapped in two lines it still fits. Stacked,
-     the tools share its row while 211 px is left for it, and it wraps in the rest of the row. */
-  .brand { flex: 1 1 0; min-width: 211px; line-height: 1.2; min-height: 37.7px; display: flex; align-items: center; }
-  .brand h1 { margin: 0; font-size: 15px; line-height: 18px; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+     lines had (37.7 px), so the view under it stands where it did, and wrapped in two lines it still fits: it is drawn
+     at 15 px, smaller where its room beside the tools is short, down to 10 px. Beside the tools it always leaves the
+     room Explode's Spread slider takes when it shows (104 px of its column), so it keeps its size when Explode is
+     switched.
+     Stacked, the tools share its row while 211 px is left for it, and it wraps in the rest of the row. */
+  .brand { flex: 1 1 0; min-width: 211px; line-height: 1.2; min-height: 37.7px; display: flex; align-items: center; container-type: inline-size; }
+  .brand h1 { margin: 0; font-size: clamp(10px, 4.5cqi, 15px); line-height: 18px; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
   .brand h1 span { font-weight: 300; color: var(--muted); }
   /* The tools wrap to a second row rather than scroll out of sight. */
   .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
@@ -823,15 +826,12 @@
   .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 58%, var(--vignette) 100%); }
   .top, .panel, .grip { position: relative; z-index: 2; }
 
-  /* The top: the name small at the left, the tools in the middle, over the machine. The name keeps to two lines beside
-     the tools: in a window under about 1140 px it is drawn smaller, down to 11 px at 961 px. On the narrowest phones
-     it is 14 px for the same reason. */
+  /* The top: the name small at the left, the tools in the middle, over the machine. */
   @media (min-width: 961px) {
     .top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
     .top .modebar { grid-column: 2; margin: 0; justify-content: center; }
-    .brand h1 { font-size: clamp(11px, 11px + (100vw - 961px) / 45, 15px); }
+    .top:not(:has(#spreadWrap:not([hidden]))) .brand h1 { font-size: clamp(10px, 4.5cqi - 4.68px, 15px); }
   }
-  @media (max-width: 339px) { .brand h1 { font-size: 14px; } }
   /* What stands on the stage itself, not on glass (the name, the dial's names, the turntable), takes the stage's ink. */
   .brand { color: var(--stage-ink); }
   .brand h1 span { color: var(--stage-muted); }
