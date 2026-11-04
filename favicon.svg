@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+<!-- The MinimaK SPM1 from device.js's numbers: the vessel (torus R0 23 cm, a 7.7 cm) and its eight TF coils (5 cm bands
+     in pairs at 19 deg either side of each lateral port), seen from the diagonal at 45 deg. Colours are the Colour
+     theme's accent-ink (#1c2332) and accent (#f3f5f9) tokens, swapped on a dark tab bar. -->
+<style>
+  .v { fill: #1c2332; } .c { stroke: #f3f5f9; }
+  @media (prefers-color-scheme: dark) { .v { fill: #f3f5f9; } .c { stroke: #1c2332; } }
+</style>
+<clipPath id="k"><path clip-rule="evenodd" d="M1.8 16a14.2 10.8 0 1 0 28.4 0a14.2 10.8 0 1 0 -28.4 0ZM6.98 16a9.02 5.62 0 1 0 18.05 0a9.02 5.62 0 1 0 -18.05 0Z"/></clipPath>
+<path class="v" fill-rule="evenodd" d="M0.5 16a15.5 12.1 0 1 0 31 0a15.5 12.1 0 1 0 -31 0ZM8.28 16a7.72 4.32 0 1 0 15.45 0a7.72 4.32 0 1 0 -15.45 0Z"/>
+<path class="c" fill="none" stroke-width="2.52" clip-path="url(#k)" d="M22.35 4.94A3.89 1.21 109.03 0 0 19.81 12.29M9.65 4.94A3.89 1.21 -109.03 0 1 12.19 12.29M2.38 10.18A3.89 2.47 -145.4 0 1 8.78 14.59M29.62 10.18A3.89 2.47 145.4 0 0 23.22 14.59M2.35 21.79A3.89 2.47 145.4 0 1 8.75 17.37M29.65 21.79A3.89 2.47 -145.4 0 0 23.25 17.37M22.37 27.05A3.89 1.21 -109.03 0 0 19.83 19.7M9.63 27.05A3.89 1.21 109.03 0 1 12.17 19.7"/>
+</svg>
