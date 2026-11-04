@@ -954,13 +954,12 @@
   .holo .wh-head .t b { color: var(--accent); }
   .blueprint :is(.wh-lbl, .wh-name) { border-radius: 0; }
 
-  /* The view's own buttons stand at its lower left, over the scale bar, since the wheel has the middle of the edge. */
-  .navcluster { top: auto; bottom: 92px; transform: none; }
-  .navcluster .mb button { padding: 9px; }
-  .navcluster .mb svg { width: 16px; height: 16px; }
+  /* The view's own buttons stand at its lower left, over the scale bar, since the wheel has the middle of the edge. They
+     keep small (26 px), so the edge's room is the wheel's at every window height. */
+  .navcluster { top: auto; bottom: 92px; transform: none; gap: 6px; }
+  .navcluster .mb button { padding: 6px; }
+  .navcluster .mb svg { width: 13px; height: 13px; }
   .blueprint .navcluster { bottom: 108px; }
-  /* In a short window they step down a size, so they stay clear of the wheel above and the scale bar below. */
-  @media (max-height: 740px) { .navcluster .mb button { padding: 6px; } .navcluster .mb svg { width: 14px; height: 14px; } }
 
   .navcluster .mb { border-radius: 14px; }
 
