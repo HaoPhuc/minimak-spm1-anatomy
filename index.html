@@ -181,7 +181,7 @@
   .app {
     --tw: 260px; --iw: clamp(300px, 23vw, 360px);
     display: grid; height: 100vh; height: 100dvh; row-gap: 12px; padding: 12px 16px 16px;
-    grid-template-columns: var(--tw) 10px minmax(0, 1fr) 10px var(--iw);
+    grid-template-columns: var(--tw) var(--gl, 10px) minmax(0, 1fr) 10px var(--iw);
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas: "top top top top top" "tree gl view gr insp";
   }
@@ -243,7 +243,7 @@
   .grip:hover::after, .grip.on::after, .grip:focus-visible::after { opacity: 0.7; }
   body.resizing { cursor: col-resize; user-select: none; }
   body.resizing .stage { pointer-events: none; }
-  .app.fold-tree { --tw: 34px; }
+  .app.fold-tree { --tw: 34px; --gl: 0px; }
   .app.fold-insp { --iw: 34px; }
   .panel.folded > :not(.rail):not(.rail-search) { display: none; }
   .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font-size: 13px; font-weight: 600; color: var(--muted); padding: 12px 0; }
@@ -723,7 +723,6 @@
   .holo .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
   .holo .chips span.chip { background: var(--accent); color: var(--accent-ink); }
   .holo .chips span.chip .basis { border-color: var(--accent-ink); }
-  .holo .dial-list button[aria-current="true"] .rn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(111 184 232 / 0.45); box-shadow: none; }
   .holo .screen.dragging { box-shadow: none; border-color: var(--accent); }
   .holo .callout { background: var(--card); border-color: rgb(111 184 232 / 0.45); box-shadow: none; }
@@ -879,43 +878,90 @@
   /* Stacked, the name wraps clear of the triad. */
   @media (max-width: 960px) { .corner.tl { right: 100px; } .corner.tl .ttl { white-space: normal; } }
 
-  /* The groups on a dial at the stage's left, as a showroom's rail of a car's sections, and the knob of a bench
-     instrument's selector: it turns to the group of the selected part, its numerals on an arc round it, the group in
-     use picked out. Shown while the assembly list is folded (it is the list's quick way in), on a wide view with a
-     mouse, and not while a part is inspected, when the room is the part's. It keeps small: the knob's hub sits behind
-     the view's buttons at the edge, and the dial is cut off at their right side, so the knob's ring comes out from
-     behind them; the numerals lie close round it, 32 px apart. In Blueprint it stands inside the sheet's frame. */
-  .dial { display: none; position: absolute; left: 44px; top: 50%; width: 0; height: 0; z-index: 2;
-    clip-path: polygon(0 -1000px, 2000px -1000px, 2000px 1000px, 0 1000px); }
-  .blueprint .dial { left: 60px; }
-  .app.fold-tree .dial { display: block; }
-  .view.compact-iso .dial, .view.docked .dial, .view:has(.isobar.on) .dial { display: none; }
-  @media (max-width: 960px), (pointer: coarse) { .app .dial, .app.fold-tree .dial { display: none; } }
-  .dial-knob { position: absolute; left: -120px; top: -80px; width: 160px; height: 160px; border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--card) 88%, transparent) 0 60%, transparent 60.5%),
-      repeating-conic-gradient(from 89deg, color-mix(in srgb, var(--stage-ink) 55%, transparent) 0 1.2deg, transparent 1.2deg 7.5deg);
-    border: 1px solid color-mix(in srgb, var(--stage-ink) 20%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-    transform: rotate(var(--a, 0deg)); transition: transform .5s cubic-bezier(.3, .7, .2, 1); }
-  .dial-knob i { position: absolute; left: 50%; top: 50%; width: 50%; height: 3px; margin-top: -1.5px; border-radius: 2px; background: var(--sel); transform-origin: 0 50%; }
-  .dial-knob::after { content: ''; position: absolute; inset: 34%; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); }
-  @media (prefers-reduced-motion: reduce) { .dial-knob { transition: none; } }
-  .dial-list { list-style: none; margin: 0; padding: 0; }
-  .dial-list li { position: absolute; left: var(--x); top: var(--y); transform: translateY(-50%); }
-  .dial-list button { display: flex; align-items: center; gap: 9px; min-height: 30px; padding: 2px 8px 2px 2px; border: 0; border-radius: 8px; background: none; color: var(--stage-ink); cursor: pointer; white-space: nowrap; text-align: left; }
-  .dial-list .rn { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; font: 500 11px/1 var(--mono); color: var(--ink); background: color-mix(in srgb, var(--card) 80%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); }
-  .dial-list .nm { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
-  .dial-list button:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
-  .dial-list button[aria-current="true"] .rn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .dial-list button[aria-current="true"] .nm { font-weight: 700; }
-  /* In a narrower window the names make way for the machine: the numerals stay, and the names show while the pointer
-     or focus is on the dial, on glass, since they may then lie over the machine. They stay in each button's name for a
-     screen reader. */
-  @media (max-width: 1180px) {
-    .dial:not(:hover, :focus-within) .dial-list .nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-    .dial-list .nm { padding: 3px 7px; border-radius: 6px; color: var(--ink); background: color-mix(in srgb, var(--card) 82%, transparent); }
-  }
+  /* The groups on a half-wheel at the stage's left, its flat side on the assembly panel's edge (the strip between them
+     closes while the list is folded): a wedge for each group with its sign, its numeral and a dot for each of its parts,
+     the group of the selected part outlined and the hub's pointer on it, and the names on glass while the pointer or
+     focus is on the wheel. A group opened (the pointer resting on it, a click or Enter) lifts, and all its parts fan out
+     on an arc beside the wheel, facing the stage: a picture of each in the theme in use (thumbs/, made by
+     review-panel/thumbs.mjs), its count and what it is drawn from. A click selects any of them, a double-click inspects
+     it, and the pointer on one lights it on the model. Shown while the list is folded (it is the list's quick way in), on
+     a wide view with a mouse, and not while a part is inspected, when the room is the part's. In a short window it is
+     drawn smaller. */
+  .wheel { display: none; position: absolute; left: 0; top: 232px; width: 0; height: 0; z-index: 3; transform: scale(var(--ws, 1)); transform-origin: 0 0; }
+  .app.fold-tree .wheel { display: block; }
+  .view.compact-iso .wheel, .view.docked .wheel, .view:has(.isobar.on) .wheel { display: none; }
+  @media (max-width: 960px), (pointer: coarse) { .app .wheel, .app.fold-tree .wheel { display: none; } }
+  @media (max-height: 820px) { .wheel { top: 190px; --ws: 0.82; } }
+  .wheel svg { position: absolute; overflow: visible; pointer-events: none; }
+  .wh-ring { left: 0; top: -190px; width: 172px; height: 380px; }
+  .wh-guide { fill: none; stroke: var(--stage-ink); stroke-opacity: 0.2; }
+  .wh-tick { stroke: var(--stage-ink); stroke-opacity: 0.25; }
+  .wh-tick.major { stroke-opacity: 0.5; }
+  .wh-seg { color: var(--ink); }
+  .wh-wedge { fill: color-mix(in srgb, var(--card) 80%, transparent); stroke: color-mix(in srgb, var(--ink) 16%, transparent); pointer-events: visiblePainted; cursor: pointer; }
+  .wh-seg.cur .wh-wedge { stroke: var(--accent); stroke-width: 1.5; }
+  .wh-seg.open { color: var(--accent-ink); }
+  .wh-seg.open .wh-wedge { fill: var(--accent); stroke: var(--accent); }
+  .wh-ico { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .wh-rn { fill: currentColor; font: 600 10px var(--mono); text-anchor: middle; }
+  .wh-dot { fill: var(--stage-ink); fill-opacity: 0.5; }
+  .wh-seg.cur .wh-dot { fill: var(--accent); fill-opacity: 1; }
+  .wh-seg.open .wh-dot { fill: var(--accent-ink); fill-opacity: 0.8; }
+  .wh-hub { fill: color-mix(in srgb, var(--card) 90%, transparent); stroke: color-mix(in srgb, var(--ink) 20%, transparent); }
+  .wh-hub-in { fill: none; stroke: color-mix(in srgb, var(--ink) 18%, transparent); stroke-dasharray: 2 4; }
+  .wh-ptr { stroke: var(--sel); stroke-width: 3; stroke-linecap: round; transform-box: view-box; transform-origin: 0 0; transform: rotate(var(--a, 0deg)); transition: transform .45s cubic-bezier(.3, .7, .2, 1); }
+  .wh-ptr-dot { fill: var(--sel); }
+  /* Each group's button lies over its wedge: its target and its name for the keyboard and a screen reader. */
+  .wh-groups button { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; }
+  .wh-groups button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .wh-name { position: absolute; transform: translateY(-50%); padding: 3px 8px; border-radius: 6px; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .12s;
+    font: 600 10.5px/1.2 var(--sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink);
+    background: color-mix(in srgb, var(--card) 84%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); }
+  .wheel:is(:hover, :focus-within):not(.open) .wh-name { opacity: 1; }
+  .wh-name.cur { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  /* The fan. The room between the wheel and the parts (the bridge) holds the pointer, so it can cross to them. */
+  .wh-fan { position: absolute; left: 0; top: 0; }
+  .wh-fan[hidden] { display: none; }
+  .wh-fan svg { left: 0; top: -400px; width: 600px; height: 800px; }
+  .wh-bridge { fill: transparent; pointer-events: fill; }
+  .wh-band { fill: var(--accent); }
+  .wh-link, .wh-arc { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+  .wh-arc { stroke-opacity: 0.75; }
+  .wh-part { position: absolute; left: 0; top: 0; width: var(--d); height: var(--d); margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2); padding: 0; border: 0; border-radius: 50%; cursor: pointer; color: var(--ink);
+    background: color-mix(in srgb, var(--card) 80%, transparent) var(--pic) center / cover no-repeat;
+    box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--ink) 35%, transparent), 0 10px 24px rgb(0 0 0 / 0.3);
+    animation: wh-in .22s ease-out backwards; animation-delay: calc(var(--k) * 25ms); }
+  @keyframes wh-in { from { opacity: 0; transform: scale(.6); } }
+  @media (prefers-reduced-motion: reduce) { .wh-part { animation: none; } .wh-ptr { transition: none; } }
+  .wh-part:hover, .wh-part:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent), 0 10px 24px rgb(0 0 0 / 0.3); }
+  .wh-part.on { box-shadow: 0 0 0 3px var(--sel), 0 0 0 7px color-mix(in srgb, var(--sel) 25%, transparent), 0 12px 28px rgb(0 0 0 / 0.4); }
+  /* The picture in the theme in use: each part carries all four, and only the one shown is fetched. */
+  .wh-part { --pic: var(--p-light); }
+  .greyscale .wh-part { --pic: var(--p-greyscale); }
+  .blueprint .wh-part { --pic: var(--p-blueprint); }
+  .holo .wh-part { --pic: var(--p-dark); }
+  .wh-part > .basis { position: absolute; left: 3px; top: 3px; margin: 0; }
+  .wh-part .cnt { position: absolute; right: -4px; bottom: -2px; min-width: 22px; padding: 2px 6px; border-radius: 10px; font: 600 11px/14px var(--mono); background: var(--accent); color: var(--accent-ink); }
+  .wh-lbl { position: absolute; left: calc(100% + 9px); top: 50%; transform: translateY(-50%); max-width: 140px; width: max-content; padding: 4px 8px; border-radius: 7px; text-align: left; pointer-events: none;
+    font: 600 12.5px/1.2 var(--sans); color: var(--ink); background: color-mix(in srgb, var(--card) 72%, transparent); }
+  .wh-lbl small { display: block; margin-top: 2px; font: 500 10px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .wh-part.on .wh-lbl small { color: var(--sel); }
+  .wh-head { position: absolute; white-space: nowrap; pointer-events: none; color: var(--stage-ink); }
+  .wh-head .k { display: block; font: 500 11px/14px var(--mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--stage-muted); }
+  .wh-head .t { display: block; font-size: 30px; line-height: 36px; font-weight: 300; letter-spacing: -0.02em; }
+  .wh-head .t b { font-weight: 300; color: var(--stage-muted); }
+  .holo .wh-head .t { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 24px; }
+  .holo .wh-head .t b { color: var(--accent); }
+  .blueprint :is(.wh-lbl, .wh-name) { border-radius: 0; }
 
-  /* The view's own buttons keep its left edge, so the sheet column keeps the right one. */
+  /* The view's own buttons stand at its lower left, over the scale bar, since the wheel has the middle of the edge. */
+  .navcluster { top: auto; bottom: 92px; transform: none; }
+  .navcluster .mb button { padding: 9px; }
+  .navcluster .mb svg { width: 16px; height: 16px; }
+  .blueprint .navcluster { bottom: 108px; }
+  /* In a short window they step down a size, so they stay clear of the wheel above and the scale bar below. */
+  @media (max-height: 740px) { .navcluster .mb button { padding: 6px; } .navcluster .mb svg { width: 14px; height: 14px; } }
+
   .navcluster .mb { border-radius: 14px; }
 
   /* The turntable under the machine: turn it an eighth at a time, between two rulers of ticks. */
@@ -994,7 +1040,7 @@
   .screen.part .bar .ttl { font-weight: 700; font-stretch: 112%; text-transform: uppercase; }
 
   /* Blueprint keeps the drawing's square corners. */
-  .blueprint :is(.panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb, .isobar button, .actions button, .search, .tabs button, .glance div, table.specs, .srclist, .know, .tourline, .def, button.chip, .dial-list .rn) { border-radius: 0; }
+  .blueprint :is(.panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb, .isobar button, .actions button, .search, .tabs button, .glance div, table.specs, .srclist, .know, .tourline, .def, button.chip) { border-radius: 0; }
   .blueprint .panel { border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent); }
   .blueprint .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 62%, var(--vignette) 100%); }
   /* Blueprint's sheets are drawing sheets: a double frame (the lit one's inner line in red pencil), squared paper, the
@@ -1146,9 +1192,10 @@
         <button type="button" role="menuitem" data-view="bottom">Below</button>
       </div>
     </div>
-    <nav class="dial" id="dial" aria-label="Groups">
-      <div class="dial-knob" id="dialKnob" aria-hidden="true"><i></i></div>
-      <ol class="dial-list" id="dialList"></ol>
+    <nav class="wheel" id="wheel" aria-label="Groups and their parts">
+      <svg class="wh-ring" id="whRing" aria-hidden="true"></svg>
+      <div class="wh-groups" id="whGroups"></div>
+      <div class="wh-fan" id="whFan" role="group" hidden></div>
     </nav>
     <div class="turn" id="turnTable" role="group" aria-label="Turn the machine">
       <button type="button" id="bSpinL" title="Turn the machine an eighth to the left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
@@ -3926,13 +3973,14 @@ function barBottom() {
   const bar = $('isobar');
   return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
 }
-// The view's controls take its left edge, and while it shows the dial beyond them, to the end of its longest name (or
-// of its numerals, where the names make way): what is framed stays clear of both.
+// The view's controls take its left edge, and while it shows the wheel beyond them: what is framed stays clear of both.
+// The wheel keeps the room the groups' dial kept (262 px from the edge at its full size), so the machine is drawn as
+// large as before and an open group's pictures fan out beside it, not over it.
 function navReserve() {
   let r = 0;
-  const c = $('navCluster'), d = $('dialList');
+  const c = $('navCluster'), w = $('whRing');
   if (c?.getClientRects().length) r = c.getBoundingClientRect().right + 8;
-  if (d?.getClientRects().length) for (const b of d.querySelectorAll('button')) r = Math.max(r, b.getBoundingClientRect().right + 8);
+  if (w?.getClientRects().length) { const b = w.getBoundingClientRect(); r = Math.max(r, b.left + 262 * (b.width / 172)); }
   return r ? Math.max(0, Math.round(r - $('card').getBoundingClientRect().left)) : 0;
 }
 function hudInsets() {
@@ -5036,42 +5084,194 @@ function revealRow(row) {
   else if (r.bottom > b.bottom) box.scrollTop += r.bottom - b.bottom;
 }
 
-// ---------- The dial ----------
-// The groups on a knob at the stage's left, as a showroom's rail of a car's sections: a click on a group selects its
-// first part, and again its next one, round the group. The knob turns to the group of the selected part. Its names lie
-// on an arc round the knob, a numeral each, 32 px apart, clear of its 80 px rim.
-const DIAL_R = 130, DIAL_IN = 40, DIAL_STEP = 32;
-const DIAL_NAME = { vessel: 'Vessel', magnets: 'Magnets', discharge: 'Plasma', vacuum: 'Vacuum', diag: 'Diagnostics', structure: 'Structure', power: 'Power' };
-const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-const dialAt = (i) => {
-  const y = (i - (DOCS.GROUPS.length - 1) / 2) * DIAL_STEP;
-  return { x: Math.sqrt(DIAL_R * DIAL_R - y * y) - DIAL_IN, y };
+// ---------- The wheel ----------
+// The groups on a half-wheel at the stage's left (see .wheel), a wedge each, from the top down, 180° in all, round a
+// hub on the panel's edge. A group opened fans all its parts out on an arc beside the wheel, facing the stage, so any
+// part is one click away. The pointer resting on a group opens it, and leaving the wheel and its fan folds it again; a
+// click or Enter opens it to stay, until a click elsewhere, Esc or a second click on the group. Radii in px, at the
+// wheel's own size: wedges from 58 to 132 (an open one to 142), the ticks at 160–168, the parts on a 286 px arc.
+const WH = { r0: 58, r1: 132, lift: 142, icon: 84, num: 114, btn: 96, dot: 139, name: 182, bus: 178, R: 286, arc: 234, d: 58, dOn: 72 };
+const WH_NAME = { vessel: 'Vessel', magnets: 'Magnets', discharge: 'Plasma', vacuum: 'Vacuum', diag: 'Diagnostics', structure: 'Structure', power: 'Power' };
+// Each group's sign, a line drawing on a 24-unit square: the torus, a coil, a spark, a gauge, an eye, the table, a plug.
+const WH_ICON = {
+  vessel: 'M3 12a9 5 0 1 0 18 0a9 5 0 1 0 -18 0M8 12a4 2 0 1 0 8 0a4 2 0 1 0 -8 0',
+  magnets: 'M6 4v16M18 4v16M6 8h12M6 12h12M6 16h12',
+  discharge: 'M13 2L4 14h7l-1 8 9-12h-7z',
+  vacuum: 'M12 21a9 9 0 1 1 0-18a9 9 0 0 1 0 18zM12 12l5-4',
+  diag: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6a3 3 0 0 0 0 6z',
+  structure: 'M3 9h18M5 9v11M19 9v11M3 6h18',
+  power: 'M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4',
 };
-DOCS.GROUPS.forEach((g, i) => {
-  const { x, y } = dialAt(i);
-  const li = el('li');
-  li.style.setProperty('--x', `${x.toFixed(1)}px`);
-  li.style.setProperty('--y', `${y}px`);
-  const b = el('button');
-  b.type = 'button';
-  b.dataset.group = g.id;
-  b.title = `${g.name}: select its parts in turn`;
-  b.append(el('span', 'rn', ROMAN[i] || String(i + 1)), el('span', 'nm', DIAL_NAME[g.id] || g.name));
-  b.addEventListener('click', () => {
-    const list = DOCS.PARTS.filter((p) => p.group === g.id);
-    const at = list.findIndex((p) => p.id === state.select);
-    select(list[(at + 1) % list.length].id);
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const whStep = 180 / DOCS.GROUPS.length;
+const whMid = (i) => -90 + whStep * (i + 0.5);
+const whAt = (r, a) => [r * Math.cos(a * DEG), r * Math.sin(a * DEG)];
+const whPt = (r, a) => whAt(r, a).map((v) => v.toFixed(1)).join(' ');
+function whArc(r, a0, a1) { return `M${whPt(r, a0)}A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${whPt(r, a1)}`; }
+function whSector(r0, r1, a0, a1, gap) {
+  const g0 = gap / r0 / DEG, g1 = gap / r1 / DEG, big = a1 - a0 > 180 ? 1 : 0;
+  return `M${whPt(r1, a0 + g1)}A${r1} ${r1} 0 ${big} 1 ${whPt(r1, a1 - g1)}L${whPt(r0, a1 - g0)}A${r0} ${r0} 0 ${big} 0 ${whPt(r0, a0 + g0)}Z`;
+}
+const wheel = { open: null, pinned: false, openT: 0, closeT: 0 };
+const whParts = (gid) => DOCS.PARTS.filter((p) => p.group === gid);
+{
+  const ring = $('whRing');
+  ring.setAttribute('viewBox', '0 -190 172 380');
+  ring.append(svgEl('path', { d: whArc(158, -90, 90) }, 'wh-guide'));
+  for (let a = -87; a <= 87; a += 3) {
+    const [x0, y0] = whAt(160, a), [x1, y1] = whAt(a % 15 ? 164 : 168, a);
+    ring.append(svgEl('line', { x1: x0, y1: y0, x2: x1, y2: y1 }, a % 15 ? 'wh-tick' : 'wh-tick major'));
+  }
+  DOCS.GROUPS.forEach((g, i) => {
+    const a = whMid(i), parts = whParts(g.id), n = parts.length;
+    const seg = svgEl('g', {}, 'wh-seg');
+    seg.dataset.group = g.id;
+    const wedge = svgEl('path', { d: whSector(WH.r0, WH.r1, a - whStep / 2, a + whStep / 2, 2) }, 'wh-wedge');
+    const [ix, iy] = whAt(WH.icon, a), [nx, ny] = whAt(WH.num, a);
+    const num = svgEl('text', { x: nx, y: ny + 3.5 }, 'wh-rn');
+    num.textContent = ROMAN[i] || String(i + 1);
+    seg.append(wedge, svgEl('path', { d: WH_ICON[g.id] || '', transform: `translate(${(ix - 9).toFixed(1)} ${(iy - 9).toFixed(1)}) scale(0.75)` }, 'wh-ico'), num);
+    parts.forEach((p, k) => { const [dx, dy] = whAt(WH.dot, a + (k - (n - 1) / 2) * 2.9); seg.append(svgEl('circle', { cx: dx, cy: dy, r: 1.8 }, 'wh-dot')); });
+    ring.append(seg);
+    const b = el('button');
+    b.type = 'button';
+    b.dataset.group = g.id;
+    b.setAttribute('aria-label', `${ROMAN[i]}, ${g.name}: ${n} part${n > 1 ? 's' : ''}`);
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-controls', 'whFan');
+    const [bx, by] = whAt(WH.btn, a), [mx, my] = whAt(WH.name, a);
+    b.style.left = `${bx.toFixed(1)}px`;
+    b.style.top = `${by.toFixed(1)}px`;
+    const nm = el('span', 'wh-name', WH_NAME[g.id] || g.name);
+    nm.dataset.group = g.id;
+    nm.style.left = `${mx.toFixed(1)}px`;
+    nm.style.top = `${my.toFixed(1)}px`;
+    $('whGroups').append(b, nm);
+    for (const t of [b, wedge]) {
+      t.addEventListener('pointerenter', () => whIntent(g.id));
+      t.addEventListener('pointerleave', () => clearTimeout(wheel.openT));
+      t.addEventListener('click', (e) => {
+        clearTimeout(wheel.openT);
+        if (wheel.open === g.id && wheel.pinned) { whClose(); return; }
+        whOpen(g.id, true);
+        // From the keyboard, into the fan: to the selected part, or the first.
+        if (e.detail === 0) ($('whFan').querySelector('.wh-part.on') || $('whFan').querySelector('.wh-part'))?.focus();
+      });
+    }
   });
-  li.append(b);
-  $('dialList').append(li);
-});
-function updateDial() {
+  ring.append(svgEl('path', { d: whSector(0.5, 52, -90, 90, 0) }, 'wh-hub'), svgEl('path', { d: whArc(40, -90, 90) }, 'wh-hub-in'),
+    svgEl('line', { x1: 0, y1: 0, x2: 50, y2: 0 }, 'wh-ptr'), svgEl('circle', { cx: 0, cy: 0, r: 4 }, 'wh-ptr-dot'));
+}
+// The pointer resting on a group opens it (sooner while another is open); it never takes over one opened to stay.
+function whIntent(gid) {
+  clearTimeout(wheel.openT);
+  if (wheel.pinned || wheel.open === gid) return;
+  wheel.openT = setTimeout(() => whOpen(gid, false), wheel.open ? 60 : 140);
+}
+function whOpen(gid, pin) {
+  clearTimeout(wheel.closeT);
+  wheel.pinned = pin;
+  if (wheel.open !== gid) { wheel.open = gid; whFan(); }
+  updateWheel();
+}
+function whClose() {
+  clearTimeout(wheel.openT);
+  clearTimeout(wheel.closeT);
+  if (!wheel.open) return;
+  wheel.open = null;
+  wheel.pinned = false;
+  $('whFan').hidden = true;
+  $('whFan').replaceChildren();
+  if (state.legendHot) { state.legendHot = null; refreshLit(); }
+  updateWheel();
+}
+// The open group's parts, on an arc a little below the wheel's middle, so the first clears the machine's name: each a
+// picture, 82 px or more apart centre to centre. The group is linked to them by a wire in the accent, out from its wedge,
+// round just outside the ticks to the arc's nearest end, and out to the arc.
+function whFan() {
+  const fan = $('whFan');
+  const gi = DOCS.GROUPS.findIndex((g) => g.id === wheel.open), g = DOCS.GROUPS[gi], parts = whParts(g.id), n = parts.length;
+  const sp = n > 5 ? 16.5 : 18.5, f0 = 13 - ((n - 1) / 2) * sp, f1 = 13 + ((n - 1) / 2) * sp, w = whMid(gi), e = clamp(w, f0, f1);
+  const svg = svgEl('svg', { viewBox: '0 -400 600 800', 'aria-hidden': 'true' });
+  svg.append(
+    svgEl('path', { d: whSector(WH.r1, WH.R + 44, Math.min(f0, w) - 9, Math.max(f1, w) + 9, 0) }, 'wh-bridge'),
+    svgEl('path', { d: whSector(145, 151, w - whStep / 2, w + whStep / 2, 1) }, 'wh-band'),
+    svgEl('path', { d: whArc(WH.arc, f0 - 4, f1 + 4) }, 'wh-arc'),
+    svgEl('path', { d: `M${whPt(151, w)}L${whPt(WH.bus, w)}A${WH.bus} ${WH.bus} 0 0 ${e > w ? 1 : 0} ${whPt(WH.bus, e)}L${whPt(WH.arc, e)}` }, 'wh-link'));
+  fan.replaceChildren(svg);
+  parts.forEach((p, k) => {
+    const [x, y] = whAt(WH.R, f0 + k * sp);
+    const b = el('button', 'wh-part');
+    b.type = 'button';
+    b.dataset.part = p.id;
+    b.style.left = `${x.toFixed(1)}px`;
+    b.style.top = `${y.toFixed(1)}px`;
+    b.style.setProperty('--k', k);
+    for (const t of ['light', 'greyscale', 'blueprint', 'dark']) b.style.setProperty(`--p-${t}`, `url("thumbs/${t}/${p.id}.webp")`);
+    b.setAttribute('aria-label', `${p.name}${p.count > 1 ? ` ×${p.count}` : ''}, part ${p.n} of ${DOCS.PARTS.length}`);
+    b.append(el('span', `basis ${p.basis}`));
+    if (p.count > 1) b.append(el('b', 'cnt', `×${p.count}`));
+    const lb = el('span', 'wh-lbl', p.name);
+    lb.append(el('small'));
+    b.append(lb);
+    b.addEventListener('click', () => select(p.id));
+    b.addEventListener('dblclick', () => inspect(p.id));
+    lights(b, () => { state.legendHot = p.id; refreshLit(); }, () => { state.legendHot = null; refreshLit(); });
+    fan.append(b);
+  });
+  const [hx, hy] = whAt(WH.R, f1);
+  const head = el('div', 'wh-head');
+  head.style.left = `${(hx - 30).toFixed(1)}px`;
+  head.style.top = `${(hy + 50).toFixed(1)}px`;
+  const t = el('span', 't', `${n} `);
+  t.append(el('b', null, n > 1 ? 'parts' : 'part'));
+  head.append(el('span', 'k', `${ROMAN[gi]} · ${g.name}`), t);
+  fan.append(head);
+  fan.setAttribute('aria-label', `${g.name}: ${n} part${n > 1 ? 's' : ''}`);
+  fan.hidden = false;
+}
+function updateWheel() {
   const gid = state.select ? partById.get(state.select)?.group : null;
   const i = DOCS.GROUPS.findIndex((g) => g.id === gid);
-  for (const b of $('dialList').querySelectorAll('button')) b.setAttribute('aria-current', b.dataset.group === gid ? 'true' : 'false');
-  const a = i < 0 ? 0 : Math.atan2(dialAt(i).y, dialAt(i).x + DIAL_IN) / DEG;
-  $('dialKnob').style.setProperty('--a', `${a.toFixed(1)}deg`);
+  for (const s of $('whRing').querySelectorAll('.wh-seg')) {
+    const open = s.dataset.group === wheel.open, j = DOCS.GROUPS.findIndex((g) => g.id === s.dataset.group);
+    s.classList.toggle('cur', s.dataset.group === gid);
+    s.classList.toggle('open', open);
+    s.querySelector('.wh-wedge').setAttribute('d', whSector(WH.r0, open ? WH.lift : WH.r1, whMid(j) - whStep / 2, whMid(j) + whStep / 2, 2));
+  }
+  for (const b of $('whGroups').querySelectorAll('button')) b.setAttribute('aria-expanded', b.dataset.group === wheel.open ? 'true' : 'false');
+  for (const nm of $('whGroups').querySelectorAll('.wh-name')) nm.classList.toggle('cur', nm.dataset.group === gid);
+  $('wheel').classList.toggle('open', !!wheel.open);
+  $('wheel').style.setProperty('--a', `${(i < 0 ? 0 : whMid(i)).toFixed(1)}deg`);
+  for (const b of $('whFan').querySelectorAll('.wh-part')) {
+    const on = b.dataset.part === state.select, p = partById.get(b.dataset.part);
+    b.classList.toggle('on', on);
+    b.style.setProperty('--d', `${on ? WH.dOn : WH.d}px`);
+    if (on) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current');
+    b.querySelector('.wh-lbl small').textContent = `No. ${p.n}${on ? ' · selected' : ''}`;
+  }
 }
+$('wheel').addEventListener('pointerenter', () => clearTimeout(wheel.closeT));
+$('wheel').addEventListener('pointerleave', () => { clearTimeout(wheel.openT); if (!wheel.pinned) wheel.closeT = setTimeout(whClose, 320); });
+document.addEventListener('pointerdown', (e) => { if (wheel.open && !$('wheel').contains(e.target)) whClose(); }, true);
+// Esc folds the fan and goes back to its group; the arrows step through the open group's parts.
+$('wheel').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && wheel.open) {
+    const gid = wheel.open;
+    whClose();
+    $('whGroups').querySelector(`button[data-group="${gid}"]`)?.focus();
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  const tiles = [...$('whFan').querySelectorAll('.wh-part')], at = tiles.indexOf(document.activeElement);
+  if (at < 0) return;
+  const to = { ArrowDown: at + 1, ArrowRight: at + 1, ArrowUp: at - 1, ArrowLeft: at - 1, Home: 0, End: tiles.length - 1 }[e.key];
+  if (to == null) return;
+  tiles[(to + tiles.length) % tiles.length].focus();
+  e.preventDefault();
+  e.stopPropagation();
+});
 // The turntable under the machine: an eighth of a turn each way.
 $('bSpinL').addEventListener('click', () => { touched = true; lookFrom(goal.az + 45, goal.el); });
 $('bSpinR').addEventListener('click', () => { touched = true; lookFrom(goal.az - 45, goal.el); });
@@ -5412,7 +5612,7 @@ function renderInspector() {
   else if (!state.select) box.append(el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
   else renderPart(box, false);
   if (fk) (box.querySelector(`[data-fk="${CSS.escape(fk)}"]`) || box.querySelector('h2'))?.focus({ preventScroll: true });
-  updateDial();
+  updateWheel();
 }
 // The piece in view, by its place, and which of how many it is.
 function pieceLine(p) {
