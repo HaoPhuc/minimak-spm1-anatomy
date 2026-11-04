@@ -55,8 +55,8 @@
     color-scheme: dark;
     scrollbar-color: #4b5670 transparent;
   }
-  /* The hologram: the model glows ice blue, and the panels round it are a game's HUD in a light emerald, the blue's
-     neighbour on the cool side, so frame and model read as one light. The model's orange, the blue's opposite, stays
+  /* The hologram: the model glows ice blue, and the panels round it are a game's HUD in the same ice blue, on glass a
+     step off the black, so frame and model read as one light. The model's orange, the blue's opposite, stays
      the one warm colour (the selection), and the plasma's violet stays the model's own. The stage is a deep navy
      night (hue about 225), dark so the model's added light has the most to stand on, and greyed so its colours keep
      their own: between the model's ice blue (about 205) and the plasma's violet (about 275), so both read as one cool
@@ -64,19 +64,19 @@
      machine, and its beams are the model's blue. The class is set before first paint (script below) and by
      applyTheme. */
   :root.holo {
-    --paper: #03100d;
-    --card: #061a17;
-    --ink: #ecfff8;
-    --muted: #9fc9bb;
-    --rule: #17493f;
-    --soft: #0a2420;
-    --chip: #10332c;
-    --accent: #5ef2c0;
-    --accent-ink: #03140f;
+    --paper: #03080f;
+    --card: #06121e;
+    --ink: #cfe3f2;
+    --muted: #7a9fb9;
+    --rule: #16314a;
+    --soft: #0a1b2a;
+    --chip: #0e2436;
+    --accent: #6fb8e8;
+    --accent-ink: #06121e;
     --sel: #ff7a1a;
-    --spec: #5ef2c0;
-    --photo: #ffc46b;
-    --assumed: #7f9a94;
+    --spec: #3cf0b4;
+    --photo: #ffb54d;
+    --assumed: #6a8ea8;
     --glass: 0.72;
     --stage-top: #0f1526;
     --stage-bot: #070a14;
@@ -87,7 +87,7 @@
     --ring-a: 0;
     --vignette: rgb(0 0 0 / 0.45);
     color-scheme: dark;
-    scrollbar-color: #1d5a4d transparent;
+    scrollbar-color: #1b3a55 transparent;
   }
   /* Blueprint: the stage is the print itself, its frame and title block drawn on it; the panels are blue glass with
      light text, square, and the selection is the red of a red pencil. */
@@ -708,52 +708,52 @@
   }
 
   /* ---------- Hologram: the model glows, the frame is a HUD ----------
-     The glow is the model's: its shaders, the projector's floor, the plasma. The frame round it is a game's HUD in a
-     light emerald: square glass held in emerald corner marks, a chosen tab or an action filled with the emerald, names
-     white and wide, the selection in the model's orange. A sheet is a readout: a faint scan across it, a lit strip under
+     The glow is the model's: its shaders, the projector's floor, the plasma. The frame round it is a game's HUD in the
+     model's ice blue: square glass held in blue corner marks, a chosen tab or an action filled with the blue, names
+     pale and wide, the selection in the model's orange. A sheet is a readout: a faint scan across it, a lit strip under
      its head, its labels in the mono's capitals and its figures in the mono. */
-  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #ffffff; }
+  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; }
   .holo .eyebrow, .holo .tg-head .caret { color: var(--accent); }
   .holo .scale { color: var(--accent); }
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle),
-  .holo .actions button[aria-checked="true"], .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(94 242 192 / 0.16); color: #ffffff; box-shadow: inset 0 -2px 0 var(--accent); }
+  .holo .actions button[aria-checked="true"], .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(111 184 232 / 0.16); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--accent); }
   .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: none; }
-  .holo .ti.sel, .holo table.ptab tr.on { background: rgb(94 242 192 / 0.12); box-shadow: inset 2px 0 0 var(--sel); }
+  .holo .ti.sel, .holo table.ptab tr.on { background: rgb(111 184 232 / 0.12); box-shadow: inset 2px 0 0 var(--sel); }
   .holo .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
   .holo .chips span.chip { background: var(--accent); color: var(--accent-ink); }
   .holo .chips span.chip .basis { border-color: var(--accent-ink); }
   .holo .dial-list button[aria-current="true"] .rn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-  .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(94 242 192 / 0.45); box-shadow: none; }
+  .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(111 184 232 / 0.45); box-shadow: none; }
   .holo .screen.dragging { box-shadow: none; border-color: var(--accent); }
-  .holo .callout { background: var(--card); border-color: rgb(94 242 192 / 0.45); box-shadow: none; }
+  .holo .callout { background: var(--card); border-color: rgb(111 184 232 / 0.45); box-shadow: none; }
   .holo .callout.balloon { border-color: var(--sel); }
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
   .holo :is(.panel, .screen, .isobar, .sheets-head, .mb, .glance div, table.specs, .srclist, .know) { border-radius: 2px; }
   .holo .panel, .holo .screen:not(.hot) { --bk: var(--accent); }
-  .holo .corner.tl .ttl { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 15px; letter-spacing: 0.01em; color: #ffffff; }
+  .holo .corner.tl .ttl { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 15px; letter-spacing: 0.01em; color: #dcecf8; }
   .holo .corner.tl .ttl span { font-weight: 300; color: var(--accent); }
-  .holo .xp-bar .pub { box-shadow: 0 0 8px rgb(94 242 192 / 0.6); }
+  .holo .xp-bar .pub { box-shadow: 0 0 8px rgb(111 184 232 / 0.6); }
   .holo .screen {
-    border-color: rgb(94 242 192 / 0.3);
+    border-color: rgb(111 184 232 / 0.3);
     background-image: linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
       linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
-      repeating-linear-gradient(to bottom, rgb(94 242 192 / 0.045) 0 1px, transparent 1px 3px), linear-gradient(to bottom, rgb(94 242 192 / 0.1), transparent 72px);
+      repeating-linear-gradient(to bottom, rgb(111 184 232 / 0.045) 0 1px, transparent 1px 3px), linear-gradient(to bottom, rgb(111 184 232 / 0.1), transparent 72px);
     background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, auto, auto;
     background-position: 3px 3px, 3px 3px, calc(100% - 3px) 3px, calc(100% - 3px) 3px, 3px calc(100% - 3px), 3px calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), 0 0, 0 0;
     background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, no-repeat;
   }
-  .holo .screen .bar { position: relative; border-bottom-color: rgb(94 242 192 / 0.32); }
+  .holo .screen .bar { position: relative; border-bottom-color: rgb(111 184 232 / 0.32); }
   .holo .screen .bar::before { content: ''; position: absolute; left: 12px; bottom: -1px; width: 44px; height: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
   .holo .screen:not(.part) .bar .ttl { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
   .holo .screen .bar .line2, .holo .screen .from, .holo .screen .note { font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; }
-  .holo .screen h4 { font-family: var(--mono); font-stretch: 100%; font-weight: 600; letter-spacing: 0.06em; text-shadow: 0 0 14px rgb(94 242 192 / 0.45); }
-  .holo table.specs { border-color: rgb(94 242 192 / 0.28); }
-  .holo table.specs td { border-top: 1px dashed rgb(94 242 192 / 0.2); }
+  .holo .screen h4 { font-family: var(--mono); font-stretch: 100%; font-weight: 600; letter-spacing: 0.06em; text-shadow: 0 0 14px rgb(111 184 232 / 0.45); }
+  .holo table.specs { border-color: rgb(111 184 232 / 0.28); }
+  .holo table.specs td { border-top: 1px dashed rgb(111 184 232 / 0.2); }
   .holo table.specs tr:first-child > td { border-top: 0; }
-  .holo table.specs td:first-child { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; border-right-color: rgb(94 242 192 / 0.2); }
-  .holo .glance div { border-color: rgb(94 242 192 / 0.24); background: rgb(94 242 192 / 0.05); }
-  .holo .glance b { font-family: var(--mono); font-weight: 400; letter-spacing: -0.03em; color: #ffffff; text-shadow: 0 0 16px rgb(94 242 192 / 0.4); }
+  .holo table.specs td:first-child { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; border-right-color: rgb(111 184 232 / 0.2); }
+  .holo .glance div { border-color: rgb(111 184 232 / 0.24); background: rgb(111 184 232 / 0.05); }
+  .holo .glance b { font-family: var(--mono); font-weight: 400; letter-spacing: -0.03em; color: #dcecf8; text-shadow: 0 0 16px rgb(111 184 232 / 0.4); }
   .holo .doc h2 .count { color: var(--accent); }
 
   /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
@@ -836,7 +836,7 @@
   .brand p { font-size: 12px; color: var(--stage-muted); }
 
   /* Frosted glass: panels, bars, sheets and the tool groups. A sheet or panel that holds the eye is held in corner
-     marks (--bk): the lit sheet in the selection's colour, and in the hologram every panel and sheet, in emerald. A
+     marks (--bk): the lit sheet in the selection's colour, and in the hologram every panel and sheet, in ice blue. A
      hairline of light along the top edge is the glass's own. */
   .panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb {
     background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent);
