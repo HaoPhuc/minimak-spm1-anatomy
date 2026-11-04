@@ -190,10 +190,13 @@
   .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
   /* The page's one h1: the machine's name and then what this is, in two tones on one line, in every theme set as the
      names are on the sheets: wide capitals, the name heavy and what this is light. It keeps the room the two
-     lines had (37.7 px), so the view under it stands where it did, and wrapped in two lines it still fits. Stacked,
-     the tools share its row while 211 px is left for it, and it wraps in the rest of the row. */
-  .brand { flex: 1 1 0; min-width: 211px; line-height: 1.2; min-height: 37.7px; display: flex; align-items: center; }
-  .brand h1 { margin: 0; font-size: 15px; line-height: 18px; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+     lines had (37.7 px), so the view under it stands where it did, and wrapped in two lines it still fits: it is drawn
+     at 15 px, smaller where its room beside the tools is short, down to 10 px. Beside the tools it always leaves the
+     room Explode's Spread slider takes when it shows (104 px of its column), so it keeps its size when Explode is
+     switched.
+     Stacked, the tools share its row while 211 px is left for it, and it wraps in the rest of the row. */
+  .brand { flex: 1 1 0; min-width: 211px; line-height: 1.2; min-height: 37.7px; display: flex; align-items: center; container-type: inline-size; }
+  .brand h1 { margin: 0; font-size: clamp(10px, 4.5cqi, 15px); line-height: 18px; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
   .brand h1 span { font-weight: 300; color: var(--muted); }
   /* The tools wrap to a second row rather than scroll out of sight. */
   .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
@@ -823,15 +826,12 @@
   .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 58%, var(--vignette) 100%); }
   .top, .panel, .grip { position: relative; z-index: 2; }
 
-  /* The top: the name small at the left, the tools in the middle, over the machine. The name keeps to two lines beside
-     the tools: in a window under about 1140 px it is drawn smaller, down to 11 px at 961 px. On the narrowest phones
-     it is 14 px for the same reason. */
+  /* The top: the name small at the left, the tools in the middle, over the machine. */
   @media (min-width: 961px) {
     .top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
     .top .modebar { grid-column: 2; margin: 0; justify-content: center; }
-    .brand h1 { font-size: clamp(11px, 11px + (100vw - 961px) / 45, 15px); }
+    .top:not(:has(#spreadWrap:not([hidden]))) .brand h1 { font-size: clamp(10px, 4.5cqi - 4.68px, 15px); }
   }
-  @media (max-width: 339px) { .brand h1 { font-size: 14px; } }
   /* What stands on the stage itself, not on glass (the name, the dial's names, the turntable), takes the stage's ink. */
   .brand { color: var(--stage-ink); }
   .brand h1 span { color: var(--stage-muted); }
@@ -6062,6 +6062,8 @@ function renderHelp(box) {
       ['Right-drag, Shift-drag, middle-drag', 'pan'],
       ['Wheel', 'zoom toward the pointer'],
       ['The buttons at the view’s left edge', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis, and the side panels'],
+      ['The half-wheel at the view’s left edge (assembly list folded)', 'the seven groups: rest the pointer on one, or click it, and its parts fan out as pictures; a click selects one, a double-click inspects it. From the keyboard, Enter opens a group, the arrows step through its parts, Esc folds it'],
+      ['The turntable under the machine', 'turn it an eighth of a turn either way'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
       ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
@@ -6107,7 +6109,7 @@ function renderHelp(box) {
       ['Space', 'show or hide it'],
     ]],
     ['Theme buttons (one Tab stop)', [
-      ['← →', 'switch to the next theme: Colour, Greyscale, Hologram'],
+      ['← →', 'switch to the next theme: Colour, Greyscale, Blueprint, Hologram'],
     ]],
     ['Keys (click the model first; with single-letter keys off, only the arrows, Esc and Backspace)', [
       ['← → ↑ ↓', 'turn'],
@@ -6916,7 +6918,8 @@ window.addEventListener('keydown', (e) => {
 // lets you try it, and says what shows when it works; Show this step does it with the call a click makes. A step is
 // { ch, id, q, how, look, need, act, done, base, target }: `need` sets up the state it starts from with the controls'
 // own calls, `done(base)` says whether the page is in the state it asks for (null: nothing to check), `target` is the
-// control (an element) or a part ({ box }). The guide keeps its own state and leaves none: nothing is stored or written
+// control (an element) or a part ({ box }); `right` puts the card at the view's lower right, clear of what opens at its
+// left (the wheel's fan). The guide keeps its own state and leaves none: nothing is stored or written
 // to the address while it runs, and Exit or Finish gives back everything it found.
 const GUIDE_CHAPTERS = ['A viewport, bolt by bolt', 'Orient the view', 'Find hardware', 'See inside', 'Inspect a connection', 'Read the evidence', 'Use the result'];
 const gPiece = (part, start) => (piecesOf.get(part) || []).find((pc) => pc.userData.label.startsWith(start)) || null;
@@ -6951,6 +6954,7 @@ function gHome() { gGlide(() => { lookFrom(HOME.az, HOME.el); fitAll(); }, 0.9);
 function gAssembly(o = {}) {
   if (quiz.on) endQuiz(false);
   setMore(false);
+  whClose();
   if (iso.part) { endShow(false); endInspect(); }
   if (state.explode !== !!o.explode) setExplode(!!o.explode);
   if (o.cut != null && state.cut !== o.cut) setCut(o.cut);
@@ -7015,6 +7019,10 @@ const gNd = () => [...document.querySelectorAll('#treePanel .caret')].find((b) =
 const gCallout = (name) => [...$('callouts').children].find((c) => c.textContent.includes(name)) || null;
 const gRun = () => $('inspBody').querySelector('ol.run .chip');
 const gDims = () => [...document.querySelectorAll('#draft [data-dim]')].filter((g) => g.getClientRects().length);
+const gShown = (e) => !!e?.getClientRects().length;
+const gWheel = () => gShown($('wheel')) && !$('wheel').classList.contains('away');
+const gWedge = (gid) => $('whGroups').querySelector(`button[data-group="${gid}"]`);
+const gGroup = (name) => [...document.querySelectorAll('#treePanel .caret')].find((b) => b.textContent === name) || null;
 // Light one piece with the viewer's own highlight (the light a Pieces row gives), until the step is done or left.
 function gLight(pc) { gUnlight(); guide.lit = pc; state.rowPiece = pc; refreshLit(); }
 function gUnlight() { if (guide.lit && state.rowPiece === guide.lit) { state.rowPiece = null; refreshLit(); } guide.lit = null; }
@@ -7092,8 +7100,8 @@ const GUIDE_STEPS = [
 
   // 2. Orient the view.
   { ch: 1, id: 'orient.turn', q: 'What does the far side look like?',
-    how: () => tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.'),
-    look: 'Sideways spins the machine about its vertical axis; up and down tilts it. The vertical always stays up.',
+    how: () => `${tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.')}${gShown($('turnTable')) ? ' The arrows of the turntable under the machine turn it an eighth at a time.' : ''}`,
+    look: 'Sideways spins the machine about its own axis, the middle of the ring on the floor; up and down tilts it. The vertical always stays up.',
     need: () => { gAssembly(); gHome(); },
     base: () => ({ az: goal.az, el: goal.el }),
     act: () => gGlide(() => lookFrom(goal.az + 150, goal.el)),
@@ -7101,11 +7109,18 @@ const GUIDE_STEPS = [
     target: () => stage },
   { ch: 1, id: 'orient.pan', q: 'Can you slide the machine aside?',
     how: () => tapOr('Drag with two fingers.', 'Right-drag, Shift-drag or middle-drag. Or switch on the pan button at the view’s left edge (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.'),
-    look: 'The machine slides without turning, and the point it turns about moves with it.',
+    look: () => (spinAxis ? 'The machine slides without turning. A turn still goes about its own axis, so it turns in place where it now stands.' : 'The machine slides without turning, and the point it turns about moves with it: the middle of the view.'),
     base: () => ({ t: goal.target.clone() }),
     act: () => gGlide(() => panBy(-140, 0)),
     done: (b) => goal.target.distanceTo(b.t) > 3,
     target: () => (coarse ? stage : document.querySelector('[data-drag]')) },
+  { ch: 1, id: 'orient.axis', q: 'Should a turn go about the machine, or about the middle of the view?',
+    how: 'The axis button at the view’s left edge, under the pan button, switches it (<kbd>R</kbd>). Lit, as every visit starts, a turn goes about the machine’s own axis wherever you slide it; off, about the middle of the view.',
+    look: () => (spinAxis ? 'Locked: turn the machine and it spins in place, its axis fixed on the screen.' : 'Unlocked: turn the machine and, after a slide, it swings round the middle of the view instead. Exit gives your choice back.'),
+    base: () => ({ a: spinAxis }),
+    act: () => setSpinAxis(!spinAxis),
+    done: (b) => spinAxis !== b.a,
+    target: () => $('bAxis') },
   { ch: 1, id: 'orient.zoom', q: 'Can you get close to the coils?',
     how: () => tapOr('Pinch on the model.', 'Scroll the wheel over the coils: it zooms toward the pointer. The zoom buttons and <kbd>+</kbd> <kbd>−</kbd> zoom too.'),
     look: 'The machine grows about the pointer, and the scale bar’s length and label change with it.',
@@ -7140,6 +7155,15 @@ const GUIDE_STEPS = [
     target: () => (stacked() ? $('inspPanel') : $('bPanels')) },
 
   // 3. Find hardware.
+  { ch: 2, id: 'find.wheel', right: true, q: 'Which parts are the magnets?',
+    how: () => (gWheel() ? `While the assembly list is folded to its rail, the half-wheel at the view’s left edge holds the seven groups. Rest the pointer on <b>II</b>, the magnets, or click it. ${tapOr('Tap', 'Click')} a picture to select that part; ${tapOr('double-tap', 'double-click')} to inspect it.`
+      : 'With a mouse and the assembly list folded, a half-wheel of the seven groups stands at the view’s left edge. Here it has no room, so the groups in the assembly list are the way in.'),
+    look: () => (gWheel() ? 'The magnets’ wedge lifts and its five parts fan out as pictures, each with its count: the TF coils, the inner PF coils, the satellite coils, the central solenoid and its former. The pointer on one lights it on the model.'
+      : 'Magnets is the second group in the list, with its five parts.'),
+    need: () => { gAssembly(); if (!stacked() && panels.tree) setPanel('tree', false); },
+    act: () => (gWheel() ? whOpen('magnets', true) : gGroup('Magnets')?.scrollIntoView({ block: 'center', behavior: reduceMotion.matches ? 'auto' : 'smooth' })),
+    done: () => (gWheel() ? wheel.open === 'magnets' : null),
+    target: () => (gWheel() ? gWedge('magnets') : gGroup('Magnets')) },
   { ch: 2, id: 'find.search', below: true, q: 'Which parts use M8 bolts?',
     how: 'Type <b>M8</b> in the assembly list’s search box. <kbd>/</kbd> puts the cursor there; when the list is folded to its rail, its magnifier opens it.',
     look: 'The list narrows to the parts with M8 hardware, each with its matching rows: the joint flanges’ 20 bolts and nuts, the viewports’ 16 bolts and nuts…',
@@ -7215,7 +7239,7 @@ const GUIDE_STEPS = [
     done: () => !state.explode,
     target: () => $('bExplode') },
   { ch: 3, id: 'inside.themes', q: 'Which drawing reads best for you?',
-    how: 'Pick a theme at the right of the top bar: <b>Colour</b>, <b>Greyscale</b>, <b>Blueprint</b> or <b>Hologram</b>. In the group, <kbd>←</kbd> <kbd>→</kbd> move to the next.',
+    how: 'Pick a theme with the last buttons in the top bar: <b>Colour</b>, <b>Greyscale</b>, <b>Blueprint</b> or <b>Hologram</b>. In the group, <kbd>←</kbd> <kbd>→</kbd> move to the next.',
     look: 'The same machine drawn again. Greyscale shades it like a CAD rendering, Blueprint sets it out as a drawing sheet, Hologram lets you see through it. Everything works in every theme, and Exit gives yours back.',
     need: () => gAssembly(),
     base: () => ({ t: themeName() }),
@@ -7499,7 +7523,8 @@ function gBoxRect(box) {
   const x0 = Math.max(s.left, s.left + r.x0), y0 = Math.max(s.top, s.top + r.y0), x1 = Math.min(s.right, s.left + r.x1), y1 = Math.min(s.bottom, s.top + r.y1);
   return x1 > x0 && y1 > y0 ? { left: x0, top: y0, width: x1 - x0, height: y1 - y0 } : null;
 }
-// The card: at the view's lower left, above the scale bar, on a desktop; across the window's foot where panels stack.
+// The card: at the view's lower left, above the scale bar, on a desktop (at its lower right for a step that asks, while
+// the wheel shows); across the window's foot where panels stack.
 function gPlace() {
   const g = $('guide'), dock = stacked(), card = $('card');
   g.classList.toggle('dock', dock);
@@ -7514,7 +7539,8 @@ function gPlace() {
   if (card.style.height) card.style.height = '';
   const v = card.getBoundingClientRect(), sc = $('scale').getBoundingClientRect();
   const foot = sc.height ? sc.top : v.bottom - 12;
-  const left = `${Math.round(v.left + Math.max(navReserve(), 12))}px`, bottom = `${Math.round(innerHeight - foot + 8)}px`;
+  const right = GUIDE_STEPS[guide.i]?.right && gWheel();
+  const left = `${Math.round(right ? v.right - 12 - g.offsetWidth : v.left + Math.max(navReserve(), 12))}px`, bottom = `${Math.round(innerHeight - foot + 8)}px`;
   const mh = `${Math.max(180, Math.round(foot - 8 - v.top - 12))}px`;
   if (g.style.left !== left) g.style.left = left;
   if (g.style.bottom !== bottom) g.style.bottom = bottom;
