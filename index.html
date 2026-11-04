@@ -57,8 +57,12 @@
   }
   /* The hologram: the model glows ice blue, and the panels round it are a game's HUD in a light emerald, the blue's
      neighbour on the cool side, so frame and model read as one light. The model's orange, the blue's opposite, stays
-     the one warm colour (the selection), and the plasma's violet stays the model's own. The class is set before first
-     paint (script below) and by applyTheme. */
+     the one warm colour (the selection), and the plasma's violet stays the model's own. The stage is a deep navy
+     night (hue about 225), dark so the model's added light has the most to stand on, and greyed so its colours keep
+     their own: between the model's ice blue (about 205) and the plasma's violet (about 275), so both read as one cool
+     light on it, and near the selection's opposite, so the orange stands out most. It is a little lighter behind the
+     machine, and its beams are the model's blue. The class is set before first paint (script below) and by
+     applyTheme. */
   :root.holo {
     --paper: #03100d;
     --card: #061a17;
@@ -74,11 +78,11 @@
     --photo: #ffc46b;
     --assumed: #7f9a94;
     --glass: 0.72;
-    --stage-top: #04110f;
-    --stage-bot: #010605;
-    --stage-glow: #0a2b2e;
+    --stage-top: #0f1526;
+    --stage-bot: #070a14;
+    --stage-glow: #1c2747;
     --glow-a: 0.9;
-    --rays: rgb(94 242 192 / 0.05);
+    --rays: rgb(150 200 245 / 0.05);
     --ring: #000000;
     --ring-a: 0;
     --vignette: rgb(0 0 0 / 0.45);
@@ -727,7 +731,7 @@
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
   .holo :is(.panel, .screen, .isobar, .sheets-head, .mb, .glance div, table.specs, .srclist, .know) { border-radius: 2px; }
   .holo .panel, .holo .screen:not(.hot) { --bk: var(--accent); }
-  .holo .corner.tl .ttl { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 36px; letter-spacing: 0.01em; color: #ffffff; }
+  .holo .corner.tl .ttl { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 15px; letter-spacing: 0.01em; color: #ffffff; }
   .holo .corner.tl .ttl span { font-weight: 300; color: var(--accent); }
   .holo .xp-bar .pub { box-shadow: 0 0 8px rgb(94 242 192 / 0.6); }
   .holo .screen {
@@ -808,11 +812,12 @@
 
   /* ---------- The showroom, in every theme ----------
      The machine stands centre stage, as a car in a showroom or a character on a game's select screen, and the rest
-     stands round it: the name large over it, the groups on a dial at its left, the view's own buttons at its right,
-     the turntable under it, and the panels and sheets of frosted glass at the sides. The view has no frame: its
-     backdrop is the page's (see body, and the post pass's stageAt), and one light lies over the whole window, above the
-     drawing and under every panel, bar and control: beams from the top right, and a fall-off at the window's edges,
-     never in the middle, where the machine stands. Blueprint keeps its sheet, drawn on the stage. */
+     stands round it, at the edges, so the machine keeps the whole view: its caption in the top left corner, the view's
+     own buttons at its left, the turntable under it, and the panels and sheets of frosted glass at the sides. The view
+     has no frame: its backdrop is the page's (see body, and the post pass's stageAt), and one light lies over the
+     whole window, above the drawing and under every panel, bar and control: beams from the top right, and a fall-off
+     at the window's edges, never in the middle, where the machine stands. Blueprint keeps its sheet, drawn on the
+     stage. */
   .app > .view { background: transparent; border-color: transparent; border-radius: 0; box-shadow: none; }
   .stage::before, .stage::after { content: ''; position: fixed; inset: 0; pointer-events: none; }
   .stage::before { background: repeating-linear-gradient(118deg, transparent 0, var(--rays) 70px, transparent 150px, transparent 270px);
@@ -863,28 +868,23 @@
   .isobar button.done, .isobar button.next, .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .search { background: color-mix(in srgb, var(--card) 50%, transparent); }
 
-  /* The machine's name over it, centred, large and light in two tones, as a showroom names a car; a small line over it
-     on where the figure comes from. It steps aside for the inspect bar and the quiz, which take the top. */
-  .corner.tl { left: 0; right: 0; top: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--stage-ink); }
-  .corner.tl .kick { font: 500 11px/14px var(--mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--stage-ink); opacity: 0.85; }
-  .corner.tl .ttl { font-size: 44px; line-height: 52px; font-weight: 300; letter-spacing: -0.025em; color: var(--stage-ink); white-space: nowrap; }
-  .corner.tl .ttl span { color: var(--stage-muted); }
+  /* The machine's name in the view's top left corner, as a figure's caption, in two tones under a small line on where the
+     figure comes from. It stands in the margin over the machine, so it takes nothing from it, and steps aside for the
+     inspect bar and the quiz, which take the top. */
+  .corner.tl { color: var(--stage-ink); }
+  .corner.tl .kick { display: block; font: 500 11px/14px var(--mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--stage-ink); opacity: 0.85; }
+  .corner.tl .ttl { display: block; font-size: 16px; line-height: 20px; font-weight: 500; letter-spacing: -0.005em; color: var(--stage-ink); white-space: nowrap; }
+  .corner.tl .ttl span { font-weight: 400; color: var(--stage-muted); }
   .view:has(.isobar.on) .corner.tl { visibility: hidden; }
-  @media (max-width: 1180px) { .corner.tl .ttl { font-size: 34px; line-height: 40px; } .holo .corner.tl .ttl { font-size: 28px; } }
-  /* Stacked, the name keeps to the left, clear of the triad, and wraps. */
-  @media (max-width: 960px) {
-    .corner.tl { right: 100px; left: 14px; align-items: flex-start; text-align: left; }
-    .corner.tl .ttl { font-size: 22px; line-height: 26px; white-space: normal; }
-    .holo .corner.tl .ttl { font-size: 20px; }
-  }
+  /* Stacked, the name wraps clear of the triad. */
+  @media (max-width: 960px) { .corner.tl { right: 100px; } .corner.tl .ttl { white-space: normal; } }
 
   /* The groups on a dial at the stage's left, as a showroom's rail of a car's sections, and the knob of a bench
      instrument's selector: it turns to the group of the selected part, its numerals on an arc round it, the group in
-     use large. Shown while the assembly list is folded (it is the list's quick way in), on a wide view with a mouse. */
+     use large. Not shown for now: the view's left edge is its buttons', and the room its names would take (some 280 px
+     with the list folded) is the machine's. `.app.fold-tree .dial { display: block; }` brings it back, with a
+     navReserve that keeps the machine clear of it. */
   .dial { display: none; position: absolute; left: 0; top: 52%; width: 0; height: 0; z-index: 3; }
-  .app.fold-tree .dial { display: block; }
-  .view.compact-iso .dial, .view.docked .dial { display: none; }
-  @media (max-width: 960px), (pointer: coarse) { .app .dial, .app.fold-tree .dial { display: none; } }
   .dial-knob { position: absolute; left: -136px; top: -96px; width: 192px; height: 192px; border-radius: 50%;
     background: radial-gradient(circle, color-mix(in srgb, var(--card) 88%, transparent) 0 60%, transparent 60.5%),
       repeating-conic-gradient(from 89deg, color-mix(in srgb, var(--stage-ink) 55%, transparent) 0 1.2deg, transparent 1.2deg 7.5deg);
@@ -902,14 +902,8 @@
   .dial-list button[aria-current="true"] .rn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .dial-list button[aria-current="true"] .nm { font-size: 22px; font-weight: 300; letter-spacing: -0.01em; text-transform: none; }
 
-  /* The view's own buttons stand at its right edge, as a showroom's zoom keys, so the sheet column steps in from them. */
-  .navcluster { left: auto; right: 12px; }
-  .navcluster .vmenu { left: auto; right: calc(100% + 6px); }
-  .blueprint .navcluster { left: auto; right: 26px; }
-  .blueprint .triad { right: 70px; }
+  /* The view's own buttons keep its left edge, so the sheet column keeps the right one. */
   .navcluster .mb { border-radius: 14px; }
-  .hud .sheets { right: 60px; }
-  .blueprint .hud .sheets { right: 74px; }
 
   /* The turntable under the machine: turn it an eighth at a time, between two rulers of ticks. */
   .turn { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 12px; color: var(--stage-ink); }
@@ -2615,13 +2609,12 @@ function fitView() {
     machinePts = [];
     for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) machinePts.push(new V3(x, y, z));
   }
-  // The machine is framed in the room between the dial and the view's buttons, under its name and over the turntable, a
-  // little in from the other edges.
-  const side = Math.max(navReserve(), 16), far = Math.max(rightReserve(), 16), top = Math.max(titleReserve(), 56), bot = 64;
-  const room = 1 - (side + far) / width, vroom = 1 - (top + bot) / height;
+  // The machine is framed in the room right of the view's buttons, a little in from the other edges; its caption and
+  // the turntable stand in the margins over and under it.
+  const side = Math.max(navReserve(), 16), far = 16, edge = 56;
+  const room = 1 - (side + far) / width, vroom = 1 - (2 * edge) / height;
   const f = frameOf(machinePts, HOME.az, HOME.el, 1.03, Math.max(0.5, room), Math.max(0.5, vroom));
-  const hb = basis(HOME.az, HOME.el), k = (2 * f.half) / height;
-  f.centre.addScaledVector(hb.right, -((side - far) / 2) * k).addScaledVector(hb.up, ((top - bot) / 2) * k);
+  f.centre.addScaledVector(basis(HOME.az, HOME.el).right, -((side - far) / 2) * ((2 * f.half) / height));
   const again = homeWaits();
   fit = z;
   home.zoom = z.half / f.half;
@@ -3267,7 +3260,7 @@ function frameQuiz(glideFor = 0) {
   const b = quizRegion();
   for (const pc of quizPieces(quiz.list[quiz.i])) b.union(boxOfPiece(pc));
   const bar = $('quizbar').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6;
-  frameBox(b, 1.08, { l: navReserve(), r: rightReserve(), b: 0, t: bar });
+  frameBox(b, 1.08, { l: navReserve(), r: 0, b: 0, t: bar });
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000, dur: glideFor, from: null };
 }
 // An answer: a part named in the bar (`id`), or a piece clicked on the model (`pc`).
@@ -3907,30 +3900,16 @@ function barBottom() {
   const bar = $('isobar');
   return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
 }
-// The dial takes the view's left edge while it shows (its names reach about 170 px past a numeral at their largest),
-// and the view's own buttons its right edge: what is framed stays clear of both.
+// The view's controls take its left edge: what is framed stays clear of them.
 function navReserve() {
-  const d = $('dialList');
-  if (!d?.getClientRects().length) return 0;
-  let r = 0;
-  for (const li of d.children) r = Math.max(r, li.getBoundingClientRect().left + 170);
-  return r ? Math.max(0, Math.round(r - $('card').getBoundingClientRect().left)) : 0;
-}
-function rightReserve() {
   const c = $('navCluster');
   if (!c?.getClientRects().length) return 0;
-  return Math.max(0, Math.round($('card').getBoundingClientRect().right - c.getBoundingClientRect().left + 8));
-}
-// The machine's name over the view, while it shows.
-function titleReserve() {
-  const t = document.querySelector('.corner.tl');
-  if (!t?.getClientRects().length || getComputedStyle(t).visibility === 'hidden') return 0;
-  return Math.round(t.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 10);
+  return Math.max(0, Math.round(c.getBoundingClientRect().right - $('card').getBoundingClientRect().left + 8));
 }
 function hudInsets() {
-  const t = barBottom(), l = navReserve(), g = guideInset(), rr = rightReserve();
-  if (!iso.part || !HUD.on) return { l, r: rr, b: g, t };
-  return dockLayout() ? { l, r: rr, b: Math.max(g, Math.round(height * DOCK_H) + 8), t } : { l, r: SCREEN_W * uiScale + 20 + rr, b: g, t };
+  const t = barBottom(), l = navReserve(), g = guideInset();
+  if (!iso.part || !HUD.on) return { l, r: 0, b: g, t };
+  return dockLayout() ? { l, r: 0, b: Math.max(g, Math.round(height * DOCK_H) + 8), t } : { l, r: SCREEN_W * uiScale + 20, b: g, t };
 }
 // The guide's card sits at the foot of the view on a desktop, so what is framed stays above it. Stacked, it is under
 // the view and takes nothing.
