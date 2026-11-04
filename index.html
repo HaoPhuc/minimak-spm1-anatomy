@@ -1095,7 +1095,7 @@
       <div class="mb" role="group" aria-label="Model">
         <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="ind" aria-hidden="true"></span></button>
         <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
-        <button type="button" id="bCut" class="toggle" aria-pressed="true" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="ind" aria-hidden="true"></span></button>
+        <button type="button" id="bCut" class="toggle" aria-pressed="false" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="ind" aria-hidden="true"></span></button>
       </div>
       <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
@@ -2574,9 +2574,9 @@ let dragMode = store.get('spm1-drag') === 'pan' ? 'pan' : 'orbit';
 // A turn goes about the machine's own axis, the torus axis (x = y = 0) through the middle of the ring on the floor: it
 // carries the view's centre round that axis with the camera, so the machine turns in place wherever a pan put it. Tilt,
 // pan and zoom are as they were. Unlocked (R, or the button under the pan button), a turn goes about the middle of the
-// view. Inspecting, a turn is always about the part.
+// view, until the page is opened again: every visit starts locked. Inspecting, a turn is always about the part.
 const ZUP = new V3(0, 0, 1);
-let spinAxis = store.get('spm1-spin') !== 'view';
+let spinAxis = true;
 const axisSpin = () => spinAxis && !iso.part;
 function turnGoal(d) {
   if (axisSpin()) goal.target.applyAxisAngle(ZUP, d * DEG);
@@ -2731,7 +2731,7 @@ function frameBox(box, pad = 1.35, ins = { l: 0, r: 0, b: 0 }) {
 
 // ---------- State ----------
 // A sheet is a sub-part of the inspected part, { part, sub }: kept ones in `pins`, the preview in `live`.
-const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: true, cutZ: 0, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
+const state = { explode: false, explodeAt: -1e9, ep: 0, spread: 1, spreadNow: 1, cut: false, cutZ: 45, select: null, hover: null, hoverPiece: null, hoverMesh: null, hoverSub: null, rowPiece: null, legendHot: null, leaveUntil: 0, pins: [], live: null, hotSheet: null, pNow: 1, plasmaHold: 0 };
 // `foldTree`: Inspect folded the assembly list to make room, so Done unfolds it. `tour`: the stop of the guided tour
 // (an index into TOUR), or null off the tour. `show`: the sub-part Show me frames, { pc, sub, saved }, `saved` being
 // the frame to go back to.
@@ -6035,7 +6035,6 @@ function setDragMode(m) {
 for (const b of document.querySelectorAll('[data-drag]')) b.addEventListener('click', () => setDragMode(dragMode === 'pan' ? 'orbit' : 'pan'));
 function setSpinAxis(on) {
   spinAxis = on;
-  store.set('spm1-spin', on ? 'axis' : 'view');
   setPressed('bAxis', on);
 }
 $('bAxis').addEventListener('click', () => setSpinAxis(!spinAxis));
@@ -6960,7 +6959,7 @@ const GUIDE_STEPS = [
 
   // 4. See inside.
   { ch: 3, id: 'inside.cut', q: 'Where is the glow?',
-    how: 'Switch <b>Cutaway</b> in the top bar off, then on again (<kbd>C</kbd>).',
+    how: 'Switch <b>Cutaway</b> in the top bar on, then off again (<kbd>C</kbd>).',
     look: 'With Cutaway on, the top of the vessel is cut away to show the plasma inside; off, the vessel is closed over it.',
     need: () => { gAssembly({ unhide: true }); gGlide(() => { lookFrom(HOME.az, 34); fitAll(); }, 0.9); },
     base: () => ({ last: state.cut, n: 0 }),
