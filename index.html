@@ -7,57 +7,92 @@
 <meta name="description" content="An interactive anatomy of the MinimaK SPM1 simple magnetised torus: turn it like a turntable, take it apart, inspect each component on its own and read where every number comes from.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=Red+Hat+Mono:wght@400;500;600&display=swap">
 <style>
-  /* The type of a parts catalogue: IBM Plex Sans for names, prose, labels and actions; IBM Plex Mono, with tabular
-     figures, only for what is measured, counted or compared (dimensions, counts, part and source numbers). Each falls
-     back to the system's own. --line is a secondary button's 1 px outline, a step stronger than the rule between rows. */
+  /* One type in every theme, in three voices: Archivo for names, prose, labels and actions; light and large for the
+     machine's name and the big figures, as a showroom sets a car's; wide and heavy for a part's name, as a game sets a
+     character's. Red Hat Mono, with tabular figures, only for what is measured, counted or compared (dimensions,
+     counts, part and source numbers) and for the readouts. Each falls back to the system's own. --line is a secondary
+     button's 1 px outline, a step stronger than the rule between rows. */
   :root {
-    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, Menlo, monospace;
+    --sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "Red Hat Mono", ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, Menlo, monospace;
     --line: color-mix(in srgb, var(--ink) 38%, var(--card));
   }
+  /* Every theme is a showroom. The machine stands centre stage on a lit backdrop, --stage-top down to --stage-bot and
+     lighter behind the machine (--stage-glow at --glow-a), and the panels round it are frosted glass: --card at
+     --glass. The post pass paints the same backdrop in the view as the page has in CSS (applyTheme reads these), so
+     one light runs across both. --rays are the light's beams from the top right, and --ring the turntable's ticks on
+     the floor (transparent: none). */
+  /* Colour: steel-blue glass on a steel-blue stage, white type. The blue (hue about 220) is the copper's complement, so
+     the coils stand out on it, and it stays clear of the selection's teal, a step lighter than the model's so it reads
+     on the blue. */
   :root {
-    --paper: #f1f1ef;
-    --card: #fafaf9;
-    --ink: #1c1c1a;
-    --muted: #5c5c59;
-    --rule: #d9d9d5;
-    --soft: #eeeeeb;
-    --chip: #e6e6e2;
-    --accent: #008080;
-    --accent-ink: var(--card);
-    --sel: #008080;
-    --spec: #2b8a6e;
-    --photo: #9a6a0f;
-    --assumed: #787873;
-    color-scheme: light;
-  }
-  /* The dark theme is a hologram. The class is set before first paint (script below) and by applyTheme. */
-  :root.holo {
-    --paper: #03080f;
-    --card: #06121e;
-    --ink: #cfe3f2;
-    --muted: #7a9fb9;
-    --rule: #16314a;
-    --soft: #0a1b2a;
-    --chip: #0e2436;
-    --accent: #6fb8e8;
-    --accent-ink: var(--card);
-    --sel: #ff7a1a;
-    --spec: #3cf0b4;
-    --photo: #ffb54d;
-    --assumed: #6a8ea8;
+    --paper: #222a39;
+    --card: #1c2332;
+    --ink: #f3f5f9;
+    --muted: #c0c8d6;
+    --rule: #3a4459;
+    --soft: #262e3f;
+    --chip: #343e54;
+    --accent: #f3f5f9;
+    --accent-ink: #1c2332;
+    --sel: #45c2c2;
+    --spec: #66d9ae;
+    --photo: #f1c76c;
+    --assumed: #a9b2c2;
+    --glass: 0.64;
+    --stage-top: #4b5b78;
+    --stage-bot: #222a3b;
+    --stage-glow: #b9c3d6;
+    --glow-a: 0.9;
+    --rays: rgb(255 255 255 / 0.08);
+    --ring: #ffffff;
+    --ring-a: 0.5;
+    --vignette: rgb(12 16 28 / 0.34);
+    --stage-ink: var(--ink);
+    --stage-muted: var(--muted);
     color-scheme: dark;
-    scrollbar-color: #1b3a55 transparent;
+    scrollbar-color: #4b5670 transparent;
   }
-  /* Blueprint: the chrome in the blue of the print, light text, and the red of a red pencil for the selection. */
+  /* The hologram: the model glows ice blue, and the panels round it are a game's HUD in a light emerald, the blue's
+     neighbour on the cool side, so frame and model read as one light. The model's orange, the blue's opposite, stays
+     the one warm colour (the selection), and the plasma's violet stays the model's own. The class is set before first
+     paint (script below) and by applyTheme. */
+  :root.holo {
+    --paper: #03100d;
+    --card: #061a17;
+    --ink: #ecfff8;
+    --muted: #9fc9bb;
+    --rule: #17493f;
+    --soft: #0a2420;
+    --chip: #10332c;
+    --accent: #5ef2c0;
+    --accent-ink: #03140f;
+    --sel: #ff7a1a;
+    --spec: #5ef2c0;
+    --photo: #ffc46b;
+    --assumed: #7f9a94;
+    --glass: 0.72;
+    --stage-top: #04110f;
+    --stage-bot: #010605;
+    --stage-glow: #0a2b2e;
+    --glow-a: 0.9;
+    --rays: rgb(94 242 192 / 0.05);
+    --ring: #000000;
+    --ring-a: 0;
+    --vignette: rgb(0 0 0 / 0.45);
+    color-scheme: dark;
+    scrollbar-color: #1d5a4d transparent;
+  }
+  /* Blueprint: the stage is the print itself, its frame and title block drawn on it; the panels are blue glass with
+     light text, square, and the selection is the red of a red pencil. */
   :root.blueprint {
     --paper: #0f2a4d;
     --card: #15375f;
     --ink: #eaf2ff;
     --muted: #a9bfdc;
-    --rule: #2b5584;
+    --rule: #2f5a8a;
     --soft: #1b4170;
     --chip: #234b7c;
     --accent: #eaf2ff;
@@ -67,33 +102,59 @@
     --photo: #f3cf86;
     --assumed: #a9bfdc;
     --bp-line: rgb(234 242 255 / 0.88);
+    --glass: 0.8;
+    --stage-top: #1b4a84;
+    --stage-bot: #1b4a84;
+    --stage-glow: #1b4a84;
+    --glow-a: 0;
+    --rays: transparent;
+    --ring: #000000;
+    --ring-a: 0;
+    --vignette: rgb(4 18 40 / 0.3);
     color-scheme: dark;
     scrollbar-color: #2f5d90 transparent;
   }
-  /* The greyscale drawing: a white CAD line rendering, every part white and shaded in greys and black, on a white
-     page. The orange marks the selection, as in the hologram, and nothing else, so the accent (focus rings, the
-     tour's rule) is ink. The basis dots keep their shapes. */
+  /* Greyscale: the white CAD drawing in a white studio, and the panels round it smoked glass, graphite with white type,
+     as Colour's are; what stands on the stage itself (the name, the dial, the turntable) is in ink (--stage-ink). The
+     orange marks the selection and nothing else, so the accent (focus rings, the tour's rule) is white. The basis dots
+     keep their shapes. */
   :root.greyscale {
-    --paper: #f2f2f2;
-    --card: #ffffff;
-    --ink: #121212;
-    --muted: #4a4a4a;
-    --rule: #e4e4e4;
-    --soft: #f0f0f0;
-    --chip: #e6e6e6;
-    --accent: #121212;
-    --accent-ink: var(--card);
-    --sel: #e25f0c;
-    --spec: #1f1f1e;
-    --photo: #1f1f1e;
-    --assumed: #555555;
-    color-scheme: light;
-    scrollbar-color: #bdbdbd transparent;
+    --paper: #2a2a29;
+    --card: #202020;
+    --ink: #f4f4f2;
+    --muted: #c9c9c5;
+    --rule: #403f3d;
+    --soft: #2b2b2a;
+    --chip: #3b3b39;
+    --accent: #f4f4f2;
+    --accent-ink: #1c1c1c;
+    --sel: #ff7a1a;
+    --spec: #f4f4f2;
+    --photo: #f4f4f2;
+    --assumed: #9a9a96;
+    --glass: 0.8;
+    --stage-ink: #161616;
+    --stage-muted: #4a4a48;
+    --stage-top: #fbfbfa;
+    --stage-bot: #d3d4d1;
+    --stage-glow: #ffffff;
+    --glow-a: 0.95;
+    --rays: rgb(255 255 255 / 0.4);
+    --ring: #161616;
+    --ring-a: 0.32;
+    --vignette: rgb(0 0 0 / 0.1);
+    color-scheme: dark;
+    scrollbar-color: #5a5a58 transparent;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
+  /* The page's backdrop, the same as the view's: the light behind the machine over the fall from top to bottom, fixed
+     to the window as the post pass draws it (uWin). */
   body {
-    background: var(--paper);
+    background: var(--stage-bot);
+    background: radial-gradient(ellipse 42% 56% at 50% 50% in srgb, color-mix(in srgb, var(--stage-glow) calc(var(--glow-a) * 100%), transparent), transparent),
+      linear-gradient(to bottom in srgb, var(--stage-top), var(--stage-bot));
+    background-attachment: fixed;
     color: var(--ink);
     font: 14px/1.5 var(--sans);
     -webkit-font-smoothing: antialiased;
@@ -460,7 +521,7 @@
   .overlay .line { fill: none; stroke: var(--sel); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .overlay .stub { stroke-width: 1.5; }
   .overlay .dot { fill: var(--sel); stroke: var(--card); stroke-width: 2; }
-  .overlay text { font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
+  .overlay text { font: 600 12px var(--sans); fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round; }
   /* The trail of a sub-part taken off its piece: dashed, from a hollow ring where it sits. */
   .overlay .trail .line { stroke-dasharray: 2 4; stroke-width: 1.75; }
   /* A ring's star order, numbered on the heads; a number whose head is hidden is drawn faint. And a sample bolt's sizes. */
@@ -472,7 +533,7 @@
   .callouts { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   .callout {
     position: absolute; pointer-events: auto; cursor: pointer; padding: 2px 6px; border-radius: 6px; white-space: normal; overflow-wrap: anywhere;
-    font: 12px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: calc(12px * var(--ui-scale, 1)); color: var(--ink);
+    font: 12px/1.3 var(--sans); font-size: calc(12px * var(--ui-scale, 1)); color: var(--ink);
     background: color-mix(in srgb, var(--card) 92%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
   }
   .callout b { font-weight: 650; color: var(--muted); margin-right: 4px; font-variant-numeric: tabular-nums; }
@@ -642,30 +703,54 @@
     .corner.bl .hint { display: none; }
   }
 
-  /* ---------- Hologram: the model glows, the frame does not ----------
-     The glow is the model's: its shaders, the projector's floor, the plasma. The panels, bars, sheets and buttons are
-     flat, as in the other themes: opaque surfaces one step off the black, rules about 1.5:1 against it, ice-blue text,
-     and no glow, glass, brackets, scan or grid. A choice is a pale blue tint; an action (Done, Next, the Part tab's
-     first button) is the ink on black, inverted. */
-  .holo body { background: var(--paper); }
-  .holo .panel, .holo .view, .holo .isobar, .holo .sheets-head { background: var(--card); border-color: var(--rule); box-shadow: none; }
-  .holo .isobar .isomore, .holo .hud .sheets.dock { box-shadow: none; }
-  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #dcecf8; }
-  .holo .eyebrow, .holo .doc h3, .holo .tg-head .caret { color: var(--accent); }
-  .holo .corner.tl, .holo .corner.br, .holo .scale { color: var(--accent); }
+  /* ---------- Hologram: the model glows, the frame is a HUD ----------
+     The glow is the model's: its shaders, the projector's floor, the plasma. The frame round it is a game's HUD in a
+     light emerald: square glass held in emerald corner marks, a chosen tab or an action filled with the emerald, names
+     white and wide, the selection in the model's orange. A sheet is a readout: a faint scan across it, a lit strip under
+     its head, its labels in the mono's capitals and its figures in the mono. */
+  .holo .brand h1, .holo .doc h2, .holo .screen h4 { color: #ffffff; }
+  .holo .eyebrow, .holo .tg-head .caret { color: var(--accent); }
+  .holo .scale { color: var(--accent); }
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle),
-  .holo .actions button[aria-checked="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--ink); }
-  .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(90 170 225 / 0.16); color: #dcecf8; box-shadow: none; }
-  .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: none; }
-  .holo .ti.sel, .holo table.ptab tr.on { background: rgb(90 170 225 / 0.14); box-shadow: inset 2px 0 0 var(--sel); }
-  .holo .tabs button[aria-selected="true"] { background: rgb(90 170 225 / 0.14); color: #dcecf8; box-shadow: none; }
-  .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(90 170 225 / 0.35); box-shadow: none; }
+  .holo .actions button[aria-checked="true"], .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(94 242 192 / 0.16); color: #ffffff; box-shadow: inset 0 -2px 0 var(--accent); }
+  .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: none; }
+  .holo .ti.sel, .holo table.ptab tr.on { background: rgb(94 242 192 / 0.12); box-shadow: inset 2px 0 0 var(--sel); }
+  .holo .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+  .holo .chips span.chip { background: var(--accent); color: var(--accent-ink); }
+  .holo .chips span.chip .basis { border-color: var(--accent-ink); }
+  .holo .dial-list button[aria-current="true"] .rn { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(94 242 192 / 0.45); box-shadow: none; }
   .holo .screen.dragging { box-shadow: none; border-color: var(--accent); }
-  .holo .screen.hot { border-color: var(--sel); box-shadow: none; outline: 1px solid var(--sel); }
-  .holo .callout { background: var(--card); border-color: rgb(90 170 225 / 0.35); border-radius: 4px; box-shadow: none; }
-  .holo .callout.balloon { border-radius: 50%; border-color: var(--sel); }
+  .holo .callout { background: var(--card); border-color: rgb(94 242 192 / 0.45); box-shadow: none; }
+  .holo .callout.balloon { border-color: var(--sel); }
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
+  .holo :is(.panel, .screen, .isobar, .sheets-head, .mb, .glance div, table.specs, .srclist, .know) { border-radius: 2px; }
+  .holo .panel, .holo .screen:not(.hot) { --bk: var(--accent); }
+  .holo .corner.tl .ttl { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 36px; letter-spacing: 0.01em; color: #ffffff; }
+  .holo .corner.tl .ttl span { font-weight: 300; color: var(--accent); }
+  .holo .xp-bar .pub { box-shadow: 0 0 8px rgb(94 242 192 / 0.6); }
+  .holo .screen {
+    border-color: rgb(94 242 192 / 0.3);
+    background-image: linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
+      linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)), linear-gradient(var(--bk), var(--bk)),
+      repeating-linear-gradient(to bottom, rgb(94 242 192 / 0.045) 0 1px, transparent 1px 3px), linear-gradient(to bottom, rgb(94 242 192 / 0.1), transparent 72px);
+    background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, auto, auto;
+    background-position: 3px 3px, 3px 3px, calc(100% - 3px) 3px, calc(100% - 3px) 3px, 3px calc(100% - 3px), 3px calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), 0 0, 0 0;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat, no-repeat;
+  }
+  .holo .screen .bar { position: relative; border-bottom-color: rgb(94 242 192 / 0.32); }
+  .holo .screen .bar::before { content: ''; position: absolute; left: 12px; bottom: -1px; width: 44px; height: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .holo .screen:not(.part) .bar .ttl { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  .holo .screen .bar .line2, .holo .screen .from, .holo .screen .note { font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; }
+  .holo .screen h4 { font-family: var(--mono); font-stretch: 100%; font-weight: 600; letter-spacing: 0.06em; text-shadow: 0 0 14px rgb(94 242 192 / 0.45); }
+  .holo table.specs { border-color: rgb(94 242 192 / 0.28); }
+  .holo table.specs td { border-top: 1px dashed rgb(94 242 192 / 0.2); }
+  .holo table.specs tr:first-child > td { border-top: 0; }
+  .holo table.specs td:first-child { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; border-right-color: rgb(94 242 192 / 0.2); }
+  .holo .glance div { border-color: rgb(94 242 192 / 0.24); background: rgb(94 242 192 / 0.05); }
+  .holo .glance b { font-family: var(--mono); font-weight: 400; letter-spacing: -0.03em; color: #ffffff; text-shadow: 0 0 16px rgb(94 242 192 / 0.4); }
+  .holo .doc h2 .count { color: var(--accent); }
 
   /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
      ink edge so the mark stands out from the white. ---------- */
@@ -688,7 +773,7 @@
   .draft .frame { fill: none; stroke: var(--bp-line); stroke-width: 1; }
   .draft .frame.in { stroke-width: 1.6; }
   .draft .tick { stroke: var(--bp-line); stroke-width: 1; }
-  .draft text { font: 600 10px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--bp-line); text-anchor: middle; dominant-baseline: middle; }
+  .draft text { font: 600 10px var(--mono); fill: var(--bp-line); text-anchor: middle; dominant-baseline: middle; }
   .draft .dl { fill: none; stroke: var(--bp-line); stroke-width: 1; }
   .draft .arrow { fill: var(--bp-line); }
   .draft text.dim { font-size: 11.5px; font-variant-numeric: tabular-nums; dominant-baseline: auto; }
@@ -720,6 +805,211 @@
   .blueprint .view.tight .corner.br .tb-title { font-size: 12px; }
   .blueprint .view.tight .corner.br > div:nth-child(n+3) { display: none; }
   .blueprint .view.tight:has(.isobar.on) .corner.br { display: none; }
+
+  /* ---------- The showroom, in every theme ----------
+     The machine stands centre stage, as a car in a showroom or a character on a game's select screen, and the rest
+     stands round it: the name large over it, the groups on a dial at its left, the view's own buttons at its right,
+     the turntable under it, and the panels and sheets of frosted glass at the sides. The view has no frame: its
+     backdrop is the page's (see body, and the post pass's stageAt), and one light lies over the whole window, above the
+     drawing and under every panel, bar and control: beams from the top right, and a fall-off at the window's edges,
+     never in the middle, where the machine stands. Blueprint keeps its sheet, drawn on the stage. */
+  .app > .view { background: transparent; border-color: transparent; border-radius: 0; box-shadow: none; }
+  .stage::before, .stage::after { content: ''; position: fixed; inset: 0; pointer-events: none; }
+  .stage::before { background: repeating-linear-gradient(118deg, transparent 0, var(--rays) 70px, transparent 150px, transparent 270px);
+    -webkit-mask-image: radial-gradient(ellipse 60% 75% at 100% 0%, #000, transparent 80%); mask-image: radial-gradient(ellipse 60% 75% at 100% 0%, #000, transparent 80%); }
+  .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 58%, var(--vignette) 100%); }
+  .top, .panel, .grip { position: relative; z-index: 2; }
+
+  /* The top: the name small at the left, the tools in the middle, over the machine. */
+  @media (min-width: 961px) {
+    .top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+    .top .modebar { grid-column: 2; margin: 0; justify-content: center; }
+  }
+  /* What stands on the stage itself, not on glass (the name, the dial's names, the turntable), takes the stage's ink. */
+  .brand { color: var(--stage-ink); }
+  .brand h1 { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
+  .brand p { font-size: 12px; color: var(--stage-muted); }
+
+  /* Frosted glass: panels, bars, sheets and the tool groups. A sheet or panel that holds the eye is held in corner
+     marks (--bk): the lit sheet in the selection's colour, and in the hologram every panel and sheet, in emerald. A
+     hairline of light along the top edge is the glass's own. */
+  .panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb {
+    background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent);
+    border-color: color-mix(in srgb, var(--ink) 14%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15);
+  }
+  .panel, .screen {
+    background-image: linear-gradient(var(--bk, transparent), var(--bk, transparent)), linear-gradient(var(--bk, transparent), var(--bk, transparent)),
+      linear-gradient(var(--bk, transparent), var(--bk, transparent)), linear-gradient(var(--bk, transparent), var(--bk, transparent)),
+      linear-gradient(var(--bk, transparent), var(--bk, transparent)), linear-gradient(var(--bk, transparent), var(--bk, transparent)),
+      linear-gradient(var(--bk, transparent), var(--bk, transparent)), linear-gradient(var(--bk, transparent), var(--bk, transparent));
+    background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+    background-position: 3px 3px, 3px 3px, calc(100% - 3px) 3px, calc(100% - 3px) 3px, 3px calc(100% - 3px), 3px calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) calc(100% - 3px);
+    background-repeat: no-repeat;
+  }
+  .panel { border-radius: 18px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 18px 40px rgb(0 0 0 / 0.18); }
+  .screen { border-radius: 10px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 10px 26px rgb(0 0 0 / 0.16); }
+  .screen.hot { --bk: var(--sel); border-color: var(--sel); box-shadow: none; }
+  :is(.isobar, .sheets-head, .isomore, .vmenu) { border-radius: 12px; }
+  .mb { border-radius: 12px; }
+  .hud .sheets.dock .screen { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: transparent; }
+  .hud .sheets.dock { background: color-mix(in srgb, var(--card) 94%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  .mb button[aria-pressed="true"]:not(.toggle), .mb button[aria-checked="true"], .navcluster .mb button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+  .isobar button, .actions button, .search, .src-back { border-radius: 8px; }
+  .isobar .step button { border-radius: 0; }
+  .isobar .step button:first-child { border-radius: 8px 0 0 8px; }
+  .isobar .step button:last-child { border-radius: 0 8px 8px 0; }
+  .isobar button, .actions button { background: color-mix(in srgb, var(--card) 50%, transparent); }
+  .isobar button.done, .isobar button.next, .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .search { background: color-mix(in srgb, var(--card) 50%, transparent); }
+
+  /* The machine's name over it, centred, large and light in two tones, as a showroom names a car; a small line over it
+     on where the figure comes from. It steps aside for the inspect bar and the quiz, which take the top. */
+  .corner.tl { left: 0; right: 0; top: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; color: var(--stage-ink); }
+  .corner.tl .kick { font: 500 11px/14px var(--mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--stage-ink); opacity: 0.85; }
+  .corner.tl .ttl { font-size: 44px; line-height: 52px; font-weight: 300; letter-spacing: -0.025em; color: var(--stage-ink); white-space: nowrap; }
+  .corner.tl .ttl span { color: var(--stage-muted); }
+  .view:has(.isobar.on) .corner.tl { visibility: hidden; }
+  @media (max-width: 1180px) { .corner.tl .ttl { font-size: 34px; line-height: 40px; } .holo .corner.tl .ttl { font-size: 28px; } }
+  /* Stacked, the name keeps to the left, clear of the triad, and wraps. */
+  @media (max-width: 960px) {
+    .corner.tl { right: 100px; left: 14px; align-items: flex-start; text-align: left; }
+    .corner.tl .ttl { font-size: 22px; line-height: 26px; white-space: normal; }
+    .holo .corner.tl .ttl { font-size: 20px; }
+  }
+
+  /* The groups on a dial at the stage's left, as a showroom's rail of a car's sections, and the knob of a bench
+     instrument's selector: it turns to the group of the selected part, its numerals on an arc round it, the group in
+     use large. Shown while the assembly list is folded (it is the list's quick way in), on a wide view with a mouse. */
+  .dial { display: none; position: absolute; left: 0; top: 52%; width: 0; height: 0; z-index: 3; }
+  .app.fold-tree .dial { display: block; }
+  .view.compact-iso .dial, .view.docked .dial { display: none; }
+  @media (max-width: 960px), (pointer: coarse) { .app .dial, .app.fold-tree .dial { display: none; } }
+  .dial-knob { position: absolute; left: -136px; top: -96px; width: 192px; height: 192px; border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--card) 88%, transparent) 0 60%, transparent 60.5%),
+      repeating-conic-gradient(from 89deg, color-mix(in srgb, var(--stage-ink) 55%, transparent) 0 1.2deg, transparent 1.2deg 7.5deg);
+    border: 1px solid color-mix(in srgb, var(--stage-ink) 20%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    transform: rotate(var(--a, 0deg)); transition: transform .5s cubic-bezier(.3, .7, .2, 1); }
+  .dial-knob i { position: absolute; left: 50%; top: 50%; width: 50%; height: 3px; margin-top: -1.5px; border-radius: 2px; background: var(--sel); transform-origin: 0 50%; }
+  .dial-knob::after { content: ''; position: absolute; inset: 34%; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); }
+  @media (prefers-reduced-motion: reduce) { .dial-knob { transition: none; } }
+  .dial-list { list-style: none; margin: 0; padding: 0; }
+  .dial-list li { position: absolute; left: var(--x); top: var(--y); transform: translateY(-50%); }
+  .dial-list button { display: flex; align-items: center; gap: 9px; min-height: 30px; padding: 2px 8px 2px 2px; border: 0; border-radius: 8px; background: none; color: var(--stage-ink); cursor: pointer; white-space: nowrap; text-align: left; }
+  .dial-list .rn { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; font: 500 11px/1 var(--mono); color: var(--ink); background: color-mix(in srgb, var(--card) 80%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent); }
+  .dial-list .nm { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
+  .dial-list button:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
+  .dial-list button[aria-current="true"] .rn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .dial-list button[aria-current="true"] .nm { font-size: 22px; font-weight: 300; letter-spacing: -0.01em; text-transform: none; }
+
+  /* The view's own buttons stand at its right edge, as a showroom's zoom keys, so the sheet column steps in from them. */
+  .navcluster { left: auto; right: 12px; }
+  .navcluster .vmenu { left: auto; right: calc(100% + 6px); }
+  .blueprint .navcluster { left: auto; right: 26px; }
+  .blueprint .triad { right: 70px; }
+  .navcluster .mb { border-radius: 14px; }
+  .hud .sheets { right: 60px; }
+  .blueprint .hud .sheets { right: 74px; }
+
+  /* The turntable under the machine: turn it an eighth at a time, between two rulers of ticks. */
+  .turn { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 2; display: flex; align-items: center; gap: 12px; color: var(--stage-ink); }
+  .turn::before, .turn::after { content: ''; width: 110px; height: 9px; background: repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 5px); opacity: 0.5; }
+  .turn::before { -webkit-mask-image: linear-gradient(to right, transparent, #000); mask-image: linear-gradient(to right, transparent, #000); }
+  .turn::after { -webkit-mask-image: linear-gradient(to left, transparent, #000); mask-image: linear-gradient(to left, transparent, #000); }
+  .turn button { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); background: color-mix(in srgb, var(--card) 72%, transparent); color: var(--ink); cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .turn button:hover { background: color-mix(in srgb, var(--card) 90%, transparent); }
+  .turn button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .turn .deg { font: 400 15px/1 var(--mono); }
+  .view.docked .turn { display: none; }
+  .corner.bl { --bl-max: calc(50% - 200px); }
+  @media (max-width: 1180px) { .turn::before, .turn::after { display: none; } .corner.bl { --bl-max: calc(50% - 90px); } }
+  /* On a phone the machine turns under a finger; the scale bar and the readout keep the foot of the view. */
+  @media (max-width: 700px) { .turn { display: none; } .corner.bl { --bl-max: 52%; } }
+  /* The hint reads as a game's key hints; the readout as an instrument's display. */
+  .corner.bl .hint { font-size: 11px; letter-spacing: 0.04em; }
+  .corner.br { font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-radius: 8px; padding: 4px 8px; }
+  .greyscale .corner.br { background: #c4c7c0; color: #1b1e18; border-color: transparent; box-shadow: inset 0 2px 5px rgb(0 0 0 / 0.18); }
+
+  /* Tabs: a game's tab bar, the one in use a filled block. */
+  .tabs { gap: 0; }
+  .tabs button { padding: 7px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; font-weight: 600; }
+  .ti { border-radius: 8px; }
+  .ti.sel { background: color-mix(in srgb, var(--sel) 20%, transparent); box-shadow: inset 2px 0 0 var(--sel); }
+  .ti.sel .name { font-weight: 600; }
+
+  /* A part reads like a character's card: its group and number, the name wide and heavy with its count in a diamond,
+     how much of its specification the sources publish as a bar (sourceBar), what it is drawn from as a banner, and its
+     figures large (glance), before the rest. */
+  .doc .piece-of { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 8px; }
+  .doc h2 { font-size: 24px; line-height: 1.05; font-weight: 800; font-stretch: 118%; letter-spacing: -0.005em; text-transform: uppercase; margin: 10px 0 6px; }
+  .doc h2 .count { position: relative; display: inline-grid; place-items: center; width: 36px; height: 36px; margin-left: 6px; vertical-align: middle; font: 600 12px/1 var(--mono); letter-spacing: 0; text-transform: none; color: var(--accent); }
+  .doc h2 .count::before { content: ''; position: absolute; inset: 6px; border: 1.5px solid currentColor; transform: rotate(45deg); }
+  .xp { margin: 0 0 12px; }
+  .xp-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 5px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .xp-head b { font-weight: 500; letter-spacing: 0; color: var(--ink); }
+  .xp-bar { display: flex; gap: 2px; height: 6px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--ink) 12%, transparent); }
+  .xp-bar span { min-width: 3px; }
+  .xp-bar .pub { background: var(--spec); }
+  .xp-bar .photo { background: var(--photo); }
+  .xp-bar .derived { background: color-mix(in srgb, var(--spec) 45%, transparent); }
+  .xp-bar .none { background: transparent; }
+  .chips span.chip { padding: 3px 14px 3px 8px; border-radius: 0; font-size: 10.5px; font-weight: 700; font-style: italic; letter-spacing: 0.07em; text-transform: uppercase;
+    background: var(--accent); color: var(--accent-ink); clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); }
+  .chips span.chip .basis { border-color: var(--accent-ink); }
+  .glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; margin: 2px 0 14px; }
+  .glance div { min-width: 0; padding: 10px 11px 9px; border-radius: 12px; background: color-mix(in srgb, var(--ink) 6%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 11%, transparent); }
+  .glance b { display: block; font-size: 26px; line-height: 1.05; font-weight: 300; letter-spacing: -0.02em; white-space: nowrap; }
+  .glance b small { margin-left: 3px; font-size: 12px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
+  .glance span { display: block; margin-top: 4px; font-size: 11.5px; line-height: 1.25; color: var(--muted); overflow-wrap: anywhere; }
+  button.chip { border-radius: 6px; background: color-mix(in srgb, var(--ink) 8%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); }
+  button.chip:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
+
+  /* The sections read like a drawing sheet: each heading a label ruled out to the edge, the specification a ruled grid,
+     a sub-part's number a balloon as its callout on the model, and the sources a title block. */
+  .doc > h3, .screen h5 { display: flex; align-items: center; gap: 10px; margin: 24px 0 8px; font: 600 11px/1.2 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  .doc > h3::after, .screen h5::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+  table.specs { border-collapse: separate; border-spacing: 0; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  table.specs td { padding: 6px 10px 7px; border-top: 1px solid var(--rule); }
+  table.specs tr:first-child > td { border-top: 0; padding-top: 6px; }
+  table.specs td:first-child { width: 36%; border-right: 1px solid var(--rule); font-size: 12px; }
+  table.specs td.v { padding-right: 4px; }
+  table.specs td.src { padding-right: 10px; }
+  table.specs tr.defrow td { padding: 0 10px 6px; }
+  .subs .no { flex: none; align-self: center; display: inline-grid; place-items: center; width: 22px; height: 22px; min-width: 22px; border: 1px solid currentColor; border-radius: 50%; font-size: 11px; color: var(--ink); }
+  .subs button.sub { align-items: center; }
+  .srclist { border: 1px solid var(--rule); border-radius: 10px; }
+  .srclist li { padding: 8px 10px; }
+  .know { padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .tourline { border-left: 0; border-radius: 10px; background: color-mix(in srgb, var(--accent) 9%, transparent); }
+  .def { border-radius: 8px; }
+  .screen h4 { font-size: 16px; font-weight: 700; font-stretch: 112%; text-transform: uppercase; letter-spacing: 0; }
+  .screen.part .bar .ttl { font-weight: 700; font-stretch: 112%; text-transform: uppercase; }
+
+  /* Blueprint keeps the drawing's square corners. */
+  .blueprint :is(.panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb, .isobar button, .actions button, .search, .tabs button, .glance div, table.specs, .srclist, .know, .tourline, .def, button.chip, .dial-list .rn) { border-radius: 0; }
+  .blueprint .panel { border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent); }
+  .blueprint .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 62%, var(--vignette) 100%); }
+  /* Blueprint's sheets are drawing sheets: a double frame (the lit one's inner line in red pencil), squared paper, the
+     head a title block of ruled cells, and the names, labels and figures in the mono's capitals. */
+  .blueprint :is(.panel, .screen) { box-shadow: none; }
+  .blueprint .turn::before, .blueprint .turn::after { display: none; }
+  .blueprint .screen { border: 1.5px solid var(--bp-line);
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--card) 90%, transparent), inset 0 0 0 4px rgb(234 242 255 / 0.4);
+    background-image: linear-gradient(rgb(234 242 255 / 0.07) 1px, transparent 1px), linear-gradient(90deg, rgb(234 242 255 / 0.07) 1px, transparent 1px);
+    background-size: 12px 12px; background-position: -1px -1px; background-repeat: repeat; }
+  .blueprint .screen.hot { border-color: var(--bp-line); box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--card) 90%, transparent), inset 0 0 0 5px var(--sel); }
+  .blueprint .screen .bar { margin-bottom: 12px; border-bottom: 1.5px solid var(--bp-line); background: rgb(234 242 255 / 0.07); font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .blueprint .screen .bar button { border-left: 1px solid rgb(234 242 255 / 0.4); border-radius: 0; }
+  .blueprint .screen .bar .line2 { text-transform: none; letter-spacing: 0; }
+  .blueprint .screen h4, .blueprint .screen.part .bar .ttl { font-family: var(--mono); font-stretch: 100%; font-weight: 600; letter-spacing: 0.06em; }
+  .blueprint .screen .from { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .blueprint .screen h5 { padding: 3px 6px; border: 1px solid rgb(234 242 255 / 0.45); background: rgb(234 242 255 / 0.07); }
+  .blueprint .screen h5::after { display: none; }
+  .blueprint table.specs { border-color: rgb(234 242 255 / 0.6); }
+  .blueprint table.specs td { border-top-color: rgb(234 242 255 / 0.32); }
+  .blueprint table.specs td:first-child { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; border-right-color: rgb(234 242 255 / 0.32); }
+
   /* ---------- Guided analysis ----------
      The launcher opens the modebar: the one bar on screen with both panels folded, and the row above the view on a
      phone, where it keeps its short label. The card is fixed: at the view's lower left on a desktop, above the scale
@@ -804,7 +1094,7 @@
         <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
         <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
         <button type="button" role="radio" data-look="blueprint" aria-checked="false" tabindex="-1" title="Blueprint: white drafting lines on blue paper, with centre lines and dimensions"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M9.5 13.5v-3h5M4 6h5M4 6v4"/></svg><span class="lbl">Blueprint</span></button>
-        <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on black"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
+        <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on night"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
       </div>
     </nav>
   </header>
@@ -826,7 +1116,7 @@
       <canvas id="canvas"></canvas>
     </div>
     <div class="fallback" id="fallback">This figure needs WebGL. The parts list and the sources still work.</div>
-    <div class="corner tl">Fig 1 <span>· SPM1, Rideo Systems</span></div>
+    <div class="corner tl"><span class="kick">Fig 1 · Rideo Systems</span> <span class="ttl">SPM1 <span>Simple magnetised torus</span></span></div>
     <div class="navcluster" id="navCluster" role="group" aria-label="View">
       <div class="mb zoom" role="group" aria-label="Zoom">
         <button type="button" id="bZoomIn" title="Zoom in (+)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4M7 5v4"/></svg></button>
@@ -847,6 +1137,15 @@
         <button type="button" role="menuitem" data-view="left">Left</button>
         <button type="button" role="menuitem" data-view="bottom">Below</button>
       </div>
+    </div>
+    <nav class="dial" id="dial" aria-label="Groups">
+      <div class="dial-knob" id="dialKnob" aria-hidden="true"><i></i></div>
+      <ol class="dial-list" id="dialList"></ol>
+    </nav>
+    <div class="turn" id="turnTable" role="group" aria-label="Turn the machine">
+      <button type="button" id="bSpinL" title="Turn the machine an eighth to the left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
+      <span class="deg" aria-hidden="true">360°</span>
+      <button type="button" id="bSpinR" title="Turn the machine an eighth to the right" aria-label="Turn right"><svg viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></svg></button>
     </div>
     <svg class="triad" id="triad" viewBox="-42 -42 84 84" aria-label="Orientation. Click an axis to look along it." role="group"></svg>
     <div class="isobar" id="isobar">
@@ -1041,7 +1340,7 @@ const METAL = {
 // lines carry more and fade less.
 // Blueprint is a contact print: Prussian-blue paper, white drafting lines (`ink`), faces nearly flat (uFlat).
 const THEME = {
-  light: { lineFar: 0.45, paper: '#fafaf9', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
+  light: { lineFar: 0.45, paper: '#acb6ca', cut: '#ecebe7', ink: '#1d1d1b', lit: '#008080', shadow: 0.14, shadowInk: '#383836', inkAlpha: 0.92, ghost: 0.12, glass: 0.26 },
   greyscale: { lineFar: 0.7, paper: '#ffffff', cut: '#dcdcda', ink: '#0e0e0e', lit: '#ff7a1a', shadow: 0, shadowInk: '#000000', inkAlpha: 0.94, ghost: 0.1, glass: 0.32, light: [-0.55, 0.6, 0.6] },
   blueprint: { lineFar: 0.55, paper: '#1d4f8c', cut: '#2b5f9e', ink: '#eef4ff', lit: '#ff5a4a', shadow: 0, shadowInk: '#0a2546', inkAlpha: 0.9, ghost: 0.14, glass: 0.16 },
   dark: { lineFar: 0.45, paper: '#000000', cut: '#000000', ink: '#5aaae0', lit: '#ff7a1a', shadow: 0.7, shadowInk: '#4a90c8', inkAlpha: 0.5, ghost: 0.14, glass: 0.3 },
@@ -1818,12 +2117,14 @@ for (const pc of pieces) {
 }
 
 // In the hologram the shadow becomes the projector's floor: rings every 10 cm, spokes, and a pulse running outward.
+// In the other themes the floor carries the showroom's turntable (uRing, alpha 0 for none): a ring of ticks, one every
+// 3°, 78–82 cm from the axis, clear of the table's feet.
 const shadow = (() => {
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uInk: { value: new THREE.Color(0, 0, 0) }, uA: { value: 0.12 }, uHolo: { value: 0 }, uTime: shared.uTime },
+    uniforms: { uInk: { value: new THREE.Color(0, 0, 0) }, uA: { value: 0.12 }, uHolo: { value: 0 }, uTime: shared.uTime, uRing: { value: new THREE.Vector4(1, 1, 1, 0) } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
     fragmentShader: /* glsl */`
-      uniform vec3 uInk; uniform float uA; uniform float uHolo; uniform float uTime; varying vec2 vUv;
+      uniform vec3 uInk; uniform float uA; uniform float uHolo; uniform float uTime; uniform vec4 uRing; varying vec2 vUv;
       void main() {
         vec2 q = (vUv - 0.5) * 2.0;
         if (uHolo > 0.5) {
@@ -1840,7 +2141,15 @@ const shadow = (() => {
           return;
         }
         float t = 1.0 - smoothstep(0.22, 0.62, max(abs(q.x), abs(q.y)) * 0.75 + length(q) * 0.25);
-        gl_FragColor = vec4(uInk, uA * t);
+        float sa = uA * t;
+        vec2 x = q * 120.0;
+        float d = length(x), pw = fwidth(d);
+        float band = smoothstep(78.0 - pw, 78.0 + pw, d) * (1.0 - smoothstep(82.0 - pw, 82.0 + pw, d));
+        float k = atan(x.y, x.x) / 6.2831853 * 120.0;
+        float tick = 1.0 - smoothstep(0.16, 0.16 + fwidth(k) * 1.5, abs(fract(k) - 0.5));
+        float ra = uRing.a * band * tick;
+        float a = ra + sa * (1.0 - ra);
+        gl_FragColor = vec4((uRing.rgb * ra + uInk * sa * (1.0 - ra)) / max(a, 0.0001), a);
       }
     `,
     transparent: true, depthWrite: false,
@@ -1892,6 +2201,8 @@ const post = (() => {
       uTexel: { value: new THREE.Vector2() }, uThick: { value: 1 }, uLineW: { value: 1 }, uInk: shared.uInk,
       uRange: { value: camera.far - camera.near }, uDepthT: { value: 0.45 }, uInkAlpha: { value: 0.9 },
       uHolo: { value: 0 }, uDpr: shared.uDpr, uLitColor: shared.uLitColor,
+      uStage: { value: 0 }, uPaper: shared.uPaper, uStageTop: { value: new THREE.Color() }, uStageBot: { value: new THREE.Color() },
+      uStageGlow: { value: new THREE.Color() }, uGlowA: { value: 0 }, uWin: { value: new THREE.Vector4(0, 0, 1, 1) },
     },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: /* glsl */`
@@ -1912,8 +2223,25 @@ const post = (() => {
       uniform float uHolo;
       uniform float uDpr;
       uniform vec3 uLitColor;
+      uniform float uStage;
+      uniform vec3 uPaper;
+      uniform vec3 uStageTop;
+      uniform vec3 uStageBot;
+      uniform vec3 uStageGlow;
+      uniform float uGlowA;
+      uniform vec4 uWin;
       varying vec2 vUv;
       float dep(sampler2D d, vec2 uv) { return texture2D(d, uv).x * uRange; }
+      // The page's backdrop at this pixel, as the body's CSS draws it: a fall from top to bottom of the window, under a
+      // light behind the machine that fades out to an ellipse 42% of the window wide and 56% high. \`uWin\` is the
+      // view's top left in the window and the window's size, in CSS px.
+      vec3 stageAt() {
+        vec2 px = gl_FragCoord.xy / uDpr;
+        vec2 w = vec2(uWin.x + px.x, uWin.y + 1.0 / (uTexel.y * uDpr) - px.y);
+        vec3 c = mix(uStageTop, uStageBot, clamp(w.y / uWin.w, 0.0, 1.0));
+        vec2 g = (w / uWin.zw - 0.5) / vec2(0.42, 0.56);
+        return mix(c, uStageGlow, uGlowA * (1.0 - clamp(length(g), 0.0, 1.0)));
+      }
       vec3 nrm(vec4 t) {
         if (t.a <= 0.0) return vec3(0.0);
         vec2 xy = t.xy * 2.0 - 1.0;
@@ -2012,6 +2340,8 @@ const post = (() => {
               }
             }
           }
+          // The stage: where nothing is drawn, the page's backdrop shows, and a shadow on the floor keeps its share of it.
+          if (uStage > 0.5 && texture2D(tNid, vUv).a <= 0.0) col *= stageAt() / max(uPaper, vec3(0.01));
           vec3 c = mix(col, uInk, e * uInkAlpha);
           // Two tones of one hue: a soft light glow outside the part, a crisp line on its edge, pale under the pointer
           // (the glass's own edge) and deep selected or kept.
@@ -2020,13 +2350,13 @@ const post = (() => {
           gl_FragColor = vec4(mix(c, lineC, outline * 0.95), 1.0);
           return;
         }
-        // Hologram: a dark blue field with a faint grid, the added light toned down so it never clips, and edges that
-        // glow in the colour of the part they belong to, with a soft halo.
+        // Hologram: the stage's night-violet field with a faint grid, the added light toned down so it never clips, and
+        // edges that glow in the colour of the part they belong to, with a soft halo.
         vec2 p = (vUv - 0.5) * vec2(uTexel.y / uTexel.x, 1.0);
         float r = length(p);
-        vec3 bg = mix(vec3(0.018, 0.045, 0.085), vec3(0.004, 0.01, 0.022), smoothstep(0.05, 0.85, r));
+        vec3 bg = uStage > 0.5 ? stageAt() : mix(vec3(0.045, 0.02, 0.085), vec3(0.012, 0.005, 0.024), smoothstep(0.05, 0.85, r));
         vec2 cell = mod(gl_FragCoord.xy, 32.0 * uDpr);
-        bg += vec3(0.35, 0.62, 0.88) * 0.022 * max(step(cell.x, uDpr), step(cell.y, uDpr));
+        bg += vec3(0.32, 0.92, 0.72) * 0.022 * max(step(cell.x, uDpr), step(cell.y, uDpr));
         float halo = edge(s * 3.5) * thin;
         float m = max(max(col.r, col.g), col.b);
         vec3 ec = m > 0.03 ? col / m : uInk;
@@ -2218,6 +2548,9 @@ function draw() {
   for (const m of solids) { m.material = m.userData.colorMat; m.visible = true; }
 
   renderer.setRenderTarget(null);
+  // Where the view is in the window, so the stage's backdrop lines up with the page's.
+  const cr = canvas.getBoundingClientRect(), de = document.documentElement;
+  post.mat.uniforms.uWin.value.set(cr.left, cr.top, de.clientWidth, de.clientHeight);
   renderer.render(post.scene, post.camera);
 }
 
@@ -2282,11 +2615,13 @@ function fitView() {
     machinePts = [];
     for (const x of [b.min.x, b.max.x]) for (const y of [b.min.y, b.max.y]) for (const z of [b.min.z, b.max.z]) machinePts.push(new V3(x, y, z));
   }
-  // The machine is framed in the room right of the controls, a little in from the other edges.
-  const side = Math.max(navReserve(), 16), far = 16, edge = 56;
-  const room = 1 - (side + far) / width, vroom = 1 - (2 * edge) / height;
+  // The machine is framed in the room between the dial and the view's buttons, under its name and over the turntable, a
+  // little in from the other edges.
+  const side = Math.max(navReserve(), 16), far = Math.max(rightReserve(), 16), top = Math.max(titleReserve(), 56), bot = 64;
+  const room = 1 - (side + far) / width, vroom = 1 - (top + bot) / height;
   const f = frameOf(machinePts, HOME.az, HOME.el, 1.03, Math.max(0.5, room), Math.max(0.5, vroom));
-  f.centre.addScaledVector(basis(HOME.az, HOME.el).right, -((side - far) / 2) * ((2 * f.half) / height));
+  const hb = basis(HOME.az, HOME.el), k = (2 * f.half) / height;
+  f.centre.addScaledVector(hb.right, -((side - far) / 2) * k).addScaledVector(hb.up, ((top - bot) / 2) * k);
   const again = homeWaits();
   fit = z;
   home.zoom = z.half / f.half;
@@ -2932,7 +3267,7 @@ function frameQuiz(glideFor = 0) {
   const b = quizRegion();
   for (const pc of quizPieces(quiz.list[quiz.i])) b.union(boxOfPiece(pc));
   const bar = $('quizbar').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6;
-  frameBox(b, 1.08, { l: navReserve(), r: 0, b: 0, t: bar });
+  frameBox(b, 1.08, { l: navReserve(), r: rightReserve(), b: 0, t: bar });
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000, dur: glideFor, from: null };
 }
 // An answer: a part named in the bar (`id`), or a piece clicked on the model (`pc`).
@@ -3572,16 +3907,30 @@ function barBottom() {
   const bar = $('isobar');
   return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
 }
-// The view's controls take its left edge: what is framed stays clear of them.
+// The dial takes the view's left edge while it shows (its names reach about 170 px past a numeral at their largest),
+// and the view's own buttons its right edge: what is framed stays clear of both.
 function navReserve() {
+  const d = $('dialList');
+  if (!d?.getClientRects().length) return 0;
+  let r = 0;
+  for (const li of d.children) r = Math.max(r, li.getBoundingClientRect().left + 170);
+  return r ? Math.max(0, Math.round(r - $('card').getBoundingClientRect().left)) : 0;
+}
+function rightReserve() {
   const c = $('navCluster');
   if (!c?.getClientRects().length) return 0;
-  return Math.max(0, Math.round(c.getBoundingClientRect().right - $('card').getBoundingClientRect().left + 8));
+  return Math.max(0, Math.round($('card').getBoundingClientRect().right - c.getBoundingClientRect().left + 8));
+}
+// The machine's name over the view, while it shows.
+function titleReserve() {
+  const t = document.querySelector('.corner.tl');
+  if (!t?.getClientRects().length || getComputedStyle(t).visibility === 'hidden') return 0;
+  return Math.round(t.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 10);
 }
 function hudInsets() {
-  const t = barBottom(), l = navReserve(), g = guideInset();
-  if (!iso.part || !HUD.on) return { l, r: 0, b: g, t };
-  return dockLayout() ? { l, r: 0, b: Math.max(g, Math.round(height * DOCK_H) + 8), t } : { l, r: SCREEN_W * uiScale + 20, b: g, t };
+  const t = barBottom(), l = navReserve(), g = guideInset(), rr = rightReserve();
+  if (!iso.part || !HUD.on) return { l, r: rr, b: g, t };
+  return dockLayout() ? { l, r: rr, b: Math.max(g, Math.round(height * DOCK_H) + 8), t } : { l, r: SCREEN_W * uiScale + 20 + rr, b: g, t };
 }
 // The guide's card sits at the foot of the view on a desktop, so what is framed stays above it. Stacked, it is under
 // the view and takes nothing.
@@ -4679,6 +5028,48 @@ function revealRow(row) {
   else if (r.bottom > b.bottom) box.scrollTop += r.bottom - b.bottom;
 }
 
+// ---------- The dial ----------
+// The groups on a knob at the stage's left, as a showroom's rail of a car's sections: a click on a group selects its
+// first part, and again its next one, round the group. The knob turns to the group of the selected part. Its names lie
+// on an arc round the knob, a numeral each, 38 px apart.
+const DIAL_R = 150, DIAL_IN = 40, DIAL_STEP = 38;
+const DIAL_NAME = { vessel: 'Vessel', magnets: 'Magnets', discharge: 'Plasma', vacuum: 'Vacuum', diag: 'Diagnostics', structure: 'Structure', power: 'Power' };
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+const dialAt = (i) => {
+  const y = (i - (DOCS.GROUPS.length - 1) / 2) * DIAL_STEP;
+  return { x: Math.sqrt(DIAL_R * DIAL_R - y * y) - DIAL_IN, y };
+};
+DOCS.GROUPS.forEach((g, i) => {
+  const { x, y } = dialAt(i);
+  const li = el('li');
+  li.style.setProperty('--x', `${x.toFixed(1)}px`);
+  li.style.setProperty('--y', `${y}px`);
+  const b = el('button');
+  b.type = 'button';
+  b.dataset.group = g.id;
+  b.title = `${g.name}: select its parts in turn`;
+  b.append(el('span', 'rn', ROMAN[i] || String(i + 1)), el('span', 'nm', DIAL_NAME[g.id] || g.name));
+  b.addEventListener('click', () => {
+    const list = DOCS.PARTS.filter((p) => p.group === g.id);
+    const at = list.findIndex((p) => p.id === state.select);
+    select(list[(at + 1) % list.length].id);
+  });
+  li.append(b);
+  $('dialList').append(li);
+});
+function updateDial() {
+  const gid = state.select ? partById.get(state.select)?.group : null;
+  const i = DOCS.GROUPS.findIndex((g) => g.id === gid);
+  for (const b of $('dialList').querySelectorAll('button')) b.setAttribute('aria-current', b.dataset.group === gid ? 'true' : 'false');
+  const a = i < 0 ? 0 : Math.atan2(dialAt(i).y, dialAt(i).x + DIAL_IN) / DEG;
+  $('dialKnob').style.setProperty('--a', `${a.toFixed(1)}deg`);
+}
+// The turntable under the machine: an eighth of a turn each way.
+$('bSpinL').addEventListener('click', () => { touched = true; lookFrom(goal.az + 45, goal.el); });
+$('bSpinR').addEventListener('click', () => { touched = true; lookFrom(goal.az - 45, goal.el); });
+// Stacked, the page scrolls under the window's backdrop: the view's own backdrop is drawn again to stay in line.
+addEventListener('scroll', () => { dirty = true; }, { passive: true });
+
 // ---------- Assembly tree ----------
 // The list is one Tab stop, the ARIA tree pattern: ↑ ↓ move between rows, → ← open and close groups (or move into and
 // out of them), Home and End go to the ends, Enter selects a part (or opens a group or a search hit), Space shows or
@@ -5013,6 +5404,7 @@ function renderInspector() {
   else if (!state.select) box.append(el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
   else renderPart(box, false);
   if (fk) (box.querySelector(`[data-fk="${CSS.escape(fk)}"]`) || box.querySelector('h2'))?.focus({ preventScroll: true });
+  updateDial();
 }
 // The piece in view, by its place, and which of how many it is.
 function pieceLine(p) {
@@ -5045,6 +5437,8 @@ function renderPart(box, card) {
     // Under the name: its group and number, and the piece in view.
     const line = pieceLine(p);
     box.append(el('div', 'piece-of', `${grp.name} · part ${p.n} of ${DOCS.PARTS.length}${line ? ` · ${line}` : ''}`));
+    const bar = sourceBar(p);
+    if (bar) box.append(bar);
   }
   const chips = el('div', 'chips');
   const c = el('span', 'chip');
@@ -5052,6 +5446,8 @@ function renderPart(box, card) {
   c.append(el('span', `basis ${p.basis}`), BASIS[p.basis]);
   chips.append(c);
   box.append(chips);
+  const big = glance(p);
+  if (big) box.append(big);
   // On the tour, why this part matters at this point of a run.
   const stop = here && iso.tour !== null ? DOCS.TOUR[iso.tour] : null;
   if (stop?.part === p.id) {
@@ -5108,6 +5504,54 @@ function renderPart(box, card) {
   box.append(ul);
   tagKey(box);
   markTerms(box, `${card ? 'card' : 'part'}-${p.id}`);
+}
+// How much of a part's specification the sources publish, as a bar: its rows by their tag, published (S1…, the
+// standard) first, then read from photos or measured, then derived, and the rest (assumed) left empty.
+function sourceBar(p) {
+  const n = p.specs?.length || 0;
+  if (!n) return null;
+  const k = { pub: 0, photo: 0, derived: 0, none: 0 };
+  for (const r of p.specs) {
+    const t = String(r[2] ?? '');
+    k[/^(S\d+|std)\b/.test(t) ? 'pub' : t === 'photo' || t === 'measured' ? 'photo' : t === 'derived' ? 'derived' : 'none']++;
+  }
+  const box = el('div', 'xp');
+  const head = el('div', 'xp-head');
+  head.append(el('span', null, 'Published figures'), el('b', 'fig', `${k.pub} / ${n}`));
+  const bar = el('div', 'xp-bar');
+  bar.setAttribute('role', 'img');
+  bar.setAttribute('aria-label', `${k.pub} of ${n} rows published, ${k.photo} from photos or measured, ${k.derived} derived, ${k.none} assumed`);
+  for (const t of ['pub', 'photo', 'derived', 'none']) {
+    if (!k[t]) continue;
+    const s = el('span', t);
+    s.style.flex = `${k[t]} 1 0`;
+    bar.append(s);
+  }
+  box.append(head, bar);
+  return box;
+}
+// A part's figures at a glance, large: the first three rows of its specification whose value starts with a figure (a
+// count, or a size with its unit), not a pair of sizes.
+const GLANCE = /^(≈\s*)?(\d(?:[\d.,]*\d)?)(?:\s*(mm|cm|m|kg|g|L|A|mA|V|kV|mT|T|mbar|bar|Pa|W|kW|Hz|kHz|°|%|turns)(?![\w]))?/;
+function glance(p) {
+  const out = [];
+  for (const [label, v] of p.specs || []) {
+    if (typeof v !== 'string' || /^\S+\s*×/.test(v)) continue;
+    const m = GLANCE.exec(v);
+    if (!m || /^[\d.,]+[A-Za-z]/.test(v)) continue;
+    out.push([label, `${m[1] ? '≈' : ''}${m[2]}`, m[3] || '']);
+    if (out.length === 3) break;
+  }
+  if (out.length < 2) return null;
+  const box = el('div', 'glance');
+  for (const [label, num, unit] of out) {
+    const d = el('div');
+    const b = el('b', null, num);
+    if (unit) b.append(el('small', null, unit));
+    d.append(b, el('span', null, label));
+    box.append(d);
+  }
+  return box;
 }
 // What kind of note a part's `know` is, as the lead-in run into it. "Before you touch it" is kept for the notes that
 // say how to handle the part itself.
@@ -5681,6 +6125,17 @@ function applyTheme() {
   shared.uLitColor.value.set(pal.lit);
   shared.uPaper.value.set(pal.paper);
   clearColor.copy(shared.uPaper.value);
+  // The stage: the page's backdrop (its CSS), painted in the view too, and the turntable's ring on the floor. Blueprint
+  // keeps its print.
+  const css = getComputedStyle(document.documentElement), cv = (n) => css.getPropertyValue(n).trim();
+  const pu = post.mat.uniforms;
+  pu.uStage.value = blueprint ? 0 : 1;
+  pu.uStageTop.value.set(cv('--stage-top') || pal.paper);
+  pu.uStageBot.value.set(cv('--stage-bot') || pal.paper);
+  pu.uStageGlow.value.set(cv('--stage-glow') || pal.paper);
+  pu.uGlowA.value = parseFloat(cv('--glow-a')) || 0;
+  const ring = new THREE.Color(cv('--ring') || '#000000');
+  shadow.uniforms.uRing.value.set(ring.r, ring.g, ring.b, holo ? 0 : parseFloat(cv('--ring-a')) || 0);
   shared.uGhost.value = pal.ghost;
   shared.uGlass.value = pal.glass;
   post.mat.uniforms.uInkAlpha.value = pal.inkAlpha;
