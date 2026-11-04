@@ -186,10 +186,13 @@
     grid-template-areas: "top top top top top" "tree gl view gr insp";
   }
   .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
-  .brand { flex: none; line-height: 1.2; }
-  /* The page's one h1: the machine's name, then what this is. */
-  .brand h1 { margin: 0; font-size: 20px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; }
-  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; line-height: 15px; }
+  /* The page's one h1: the machine's name and then what this is, in two tones on one line, in every theme set as the
+     names are on the sheets: wide capitals, the name heavy and what this is light. It keeps the room the two
+     lines had (37.7 px), so the view under it stands where it did, and wrapped in two lines it still fits. Stacked,
+     the tools share its row while 211 px is left for it, and it wraps in the rest of the row. */
+  .brand { flex: 1 1 0; min-width: 211px; line-height: 1.2; min-height: 37.7px; display: flex; align-items: center; }
+  .brand h1 { margin: 0; font-size: 15px; line-height: 18px; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+  .brand h1 span { font-weight: 300; color: var(--muted); }
   /* The tools wrap to a second row rather than scroll out of sight. */
   .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
   /* A group of tools is a secondary control: one 1 px outline round it, a rule between its buttons. */
@@ -317,8 +320,6 @@
   .stage.pointing { cursor: pointer; }
   canvas { display: block; width: 100%; height: 100%; }
   .corner { position: absolute; font-size: 12px; line-height: 1.35; font-variant-numeric: tabular-nums; color: var(--muted); pointer-events: none; }
-  .corner.tl { top: 12px; left: 14px; color: var(--ink); }
-  .corner.tl span { color: var(--muted); }
   /* The hint stops short of the sheet column (--hud-r). Lengths on a zoomed box are scaled by its zoom, so the inset is divided back. */
   .corner.bl { --bl-max: 60%; bottom: 10px; left: 12px; max-width: min(var(--bl-max), calc(100% - (var(--hud-r, 0px) + 24px) / var(--ui-scale, 1))); }
   .corner.br { bottom: 10px; right: 12px; text-align: right; color: var(--ink); max-width: 38%; }
@@ -515,7 +516,6 @@
   .isomore > .step[hidden] { display: none; }
   .isomore > .step::before { content: 'Piece'; flex: 1 1 auto; font-size: 13px; color: var(--muted); }
   .isomore > .step button:first-child { border-radius: 2px 0 0 2px; }
-  .view.compact-iso .corner.tl { visibility: hidden; }
   .view.compact-iso .triad { top: var(--bar-b, 64px); width: 56px; height: 56px; }
   /* The model's own labels, drawn only while the view is still: the leader line from a sheet to its sub-part, the trail
      of a sub-part taken off, and the callouts on a part taken apart. Each line has a band of the card under it, so it
@@ -730,8 +730,7 @@
   .holo .triad .ring { fill: var(--card); stroke: var(--rule); }
   .holo :is(.panel, .screen, .isobar, .sheets-head, .mb, .glance div, table.specs, .srclist, .know) { border-radius: 2px; }
   .holo .panel, .holo .screen:not(.hot) { --bk: var(--accent); }
-  .holo .corner.tl .ttl { font-weight: 800; font-stretch: 125%; text-transform: uppercase; font-size: 15px; letter-spacing: 0.01em; color: #dcecf8; }
-  .holo .corner.tl .ttl span { font-weight: 300; color: var(--accent); }
+  .holo .brand h1 span { color: var(--accent); }
   .holo .xp-bar .pub { box-shadow: 0 0 8px rgb(111 184 232 / 0.6); }
   .holo .screen {
     border-color: rgb(111 184 232 / 0.3);
@@ -788,9 +787,7 @@
   .draft .dg:hover { --bp-line: #fff; }
   body.dimming { cursor: grabbing; user-select: none; }
   body.dimming .draft .dh, body.dimming .draft text.dim { cursor: grabbing; }
-  /* The sheet's frame takes the view's edge, so the view's own labels move inside it, and the caption moves into the
-     title block. */
-  .blueprint .corner.tl { display: none; }
+  /* The sheet's frame takes the view's edge, so the view's own labels move inside it. */
   .blueprint .corner { z-index: 2; }
   .blueprint .triad { top: 26px; right: 26px; }
   .blueprint .navcluster { left: 26px; }
@@ -824,15 +821,18 @@
   .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 58%, var(--vignette) 100%); }
   .top, .panel, .grip { position: relative; z-index: 2; }
 
-  /* The top: the name small at the left, the tools in the middle, over the machine. */
+  /* The top: the name small at the left, the tools in the middle, over the machine. The name keeps to two lines beside
+     the tools: in a window under about 1140 px it is drawn smaller, down to 11 px at 961 px. On the narrowest phones
+     it is 14 px for the same reason. */
   @media (min-width: 961px) {
     .top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
     .top .modebar { grid-column: 2; margin: 0; justify-content: center; }
+    .brand h1 { font-size: clamp(11px, 11px + (100vw - 961px) / 45, 15px); }
   }
+  @media (max-width: 339px) { .brand h1 { font-size: 14px; } }
   /* What stands on the stage itself, not on glass (the name, the dial's names, the turntable), takes the stage's ink. */
   .brand { color: var(--stage-ink); }
-  .brand h1 { font-size: 18px; font-weight: 500; letter-spacing: -0.01em; }
-  .brand p { font-size: 12px; color: var(--stage-muted); }
+  .brand h1 span { color: var(--stage-muted); }
 
   /* Frosted glass: panels, bars, sheets and the tool groups. A sheet or panel that holds the eye is held in corner
      marks (--bk): the lit sheet in the selection's colour, and in the hologram every panel and sheet, in ice blue. A
@@ -866,17 +866,6 @@
   .isobar button, .actions button { background: color-mix(in srgb, var(--card) 50%, transparent); }
   .isobar button.done, .isobar button.next, .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .search { background: color-mix(in srgb, var(--card) 50%, transparent); }
-
-  /* The machine's name in the view's top left corner, as a figure's caption, in two tones under a small line on where the
-     figure comes from. It stands in the margin over the machine, so it takes nothing from it, and steps aside for the
-     inspect bar and the quiz, which take the top. */
-  .corner.tl { color: var(--stage-ink); }
-  .corner.tl .kick { display: block; font: 500 11px/14px var(--mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--stage-ink); opacity: 0.85; }
-  .corner.tl .ttl { display: block; font-size: 16px; line-height: 20px; font-weight: 500; letter-spacing: -0.005em; color: var(--stage-ink); white-space: nowrap; }
-  .corner.tl .ttl span { font-weight: 400; color: var(--stage-muted); }
-  .view:has(.isobar.on) .corner.tl { visibility: hidden; }
-  /* Stacked, the name wraps clear of the triad. */
-  @media (max-width: 960px) { .corner.tl { right: 100px; } .corner.tl .ttl { white-space: normal; } }
 
   /* The groups on a half-wheel at the stage's left, its flat side on the assembly panel's edge (the strip between them
      closes while the list is folded): a wedge for each group with its sign, its numeral and a dot for each of its parts,
@@ -1137,7 +1126,7 @@
 <a class="skip" id="skip" href="#tree">Skip to the assembly</a>
 <div class="app">
   <header class="top">
-    <div class="brand"><h1>MinimaK SPM1</h1><p>Anatomy of a tabletop magnetised torus</p></div>
+    <div class="brand"><h1>MinimaK SPM1 <span>Anatomy of a tabletop magnetised torus</span></h1></div>
     <nav class="modebar" aria-label="View tools">
       <div class="mb" role="group" aria-label="Guide">
         <button type="button" id="bGuide" aria-pressed="false" aria-label="Guided analysis" title="Guided analysis: find a part, see how it attaches and where its numbers come from, with the page’s own controls"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3"/><path d="M10.7 5.3 9.1 9.1 5.3 10.7 6.9 6.9z"/></svg><span class="lbl"><span class="long">Guided analysis</span><span class="short" aria-hidden="true">Guide</span></span></button>
@@ -1173,7 +1162,6 @@
       <canvas id="canvas"></canvas>
     </div>
     <div class="fallback" id="fallback">This figure needs WebGL. The parts list and the sources still work.</div>
-    <div class="corner tl"><span class="kick">Fig 1 · Rideo Systems</span> <span class="ttl">SPM1 <span>Simple magnetised torus</span></span></div>
     <div class="navcluster" id="navCluster" role="group" aria-label="View">
       <div class="mb zoom" role="group" aria-label="Zoom">
         <button type="button" id="bZoomIn" title="Zoom in (+)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4M7 5v4"/></svg></button>
@@ -2497,8 +2485,7 @@ let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
 // drawing's shadows, so it keeps up on a tablet; it sharpens again when it is still.
 let lowRes = false;
 let dirty = true;
-// The wheel and the view's buttons share the view's left edge: the wheel under the figure's name, the buttons over the
-// scale bar. The wheel is drawn as large as the room between them allows, from its full size (its ticks 168 px either
+// The wheel and the view's buttons share the view's left edge: the wheel at the top, the buttons over the scale bar. The wheel is drawn as large as the room between them allows, from its full size (its ticks 168 px either
 // side of its hub) down to 82%, where its names stay readable. With less room the buttons lie in a row, which an open
 // group's pictures would reach (268 px under the hub), so the wheel is drawn to clear it with them; with less still,
 // only the wheel itself clears the row, and an open group's pictures lie over it while they are open. The group's
@@ -2506,10 +2493,12 @@ let dirty = true;
 // buttons stand in their column again: the assembly list is still the way in. Lengths are the wheel's own, at its full
 // size.
 function fitWheel() {
-  const card = $('card'), w = $('wheel'), nav = $('navCluster'), tl = document.querySelector('.corner.tl');
+  const card = $('card'), w = $('wheel'), nav = $('navCluster');
   if (!card || !w || !nav) return;
   const c = card.getBoundingClientRect();
-  const top = (tl?.getClientRects().length ? tl.getBoundingClientRect().bottom - c.top : 24) + 8, gap = 12;
+  // The wheel stays where it stood under the view's name, which is now the page's (47 px at the text size), or under
+  // the sheet's frame in Blueprint.
+  const top = (blueprint ? 24 : 1 + 46 * uiScale) + 8, gap = 12;
   nav.classList.remove('row');
   w.classList.remove('away', 'nohead');
   const shows = document.querySelector('.app').classList.contains('fold-tree') && !matchMedia('(max-width: 960px), (pointer: coarse)').matches;
@@ -6409,7 +6398,7 @@ function applyTheme() {
     b.setAttribute('aria-checked', b.dataset.look === t ? 'true' : 'false');
     b.tabIndex = b.dataset.look === t ? 0 : -1;
   }
-  // Blueprint moves the view's buttons and the name inside the sheet's frame.
+  // Blueprint moves the view's buttons inside the sheet's frame.
   fitWheel();
   applyLook();
   dirty = true;
