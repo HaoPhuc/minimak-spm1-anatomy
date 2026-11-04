@@ -813,7 +813,7 @@
   /* ---------- The showroom, in every theme ----------
      The machine stands centre stage, as a car in a showroom or a character on a game's select screen, and the rest
      stands round it, at the edges, so the machine keeps the whole view: its caption in the top left corner, the view's
-     own buttons at its left, the turntable under it, and the panels and sheets of frosted glass at the sides. The view
+     own buttons at its left with the groups' dial beside them while the list is folded, the turntable under it, and the panels and sheets of frosted glass at the sides. The view
      has no frame: its backdrop is the page's (see body, and the post pass's stageAt), and one light lies over the
      whole window, above the drawing and under every panel, bar and control: beams from the top right, and a fall-off
      at the window's edges, never in the middle, where the machine stands. Blueprint keeps its sheet, drawn on the
@@ -881,11 +881,17 @@
 
   /* The groups on a dial at the stage's left, as a showroom's rail of a car's sections, and the knob of a bench
      instrument's selector: it turns to the group of the selected part, its numerals on an arc round it, the group in
-     use large. Not shown for now: the view's left edge is its buttons', and the room its names would take (some 280 px
-     with the list folded) is the machine's. `.app.fold-tree .dial { display: block; }` brings it back, with a
-     navReserve that keeps the machine clear of it. */
-  .dial { display: none; position: absolute; left: 0; top: 52%; width: 0; height: 0; z-index: 3; }
-  .dial-knob { position: absolute; left: -136px; top: -96px; width: 192px; height: 192px; border-radius: 50%;
+     use picked out. Shown while the assembly list is folded (it is the list's quick way in), on a wide view with a
+     mouse, and not while a part is inspected, when the room is the part's. It keeps small: the knob's hub sits behind
+     the view's buttons at the edge, and the dial is cut off at their right side, so the knob's ring comes out from
+     behind them; the numerals lie close round it, 32 px apart. In Blueprint it stands inside the sheet's frame. */
+  .dial { display: none; position: absolute; left: 44px; top: 50%; width: 0; height: 0; z-index: 2;
+    clip-path: polygon(0 -1000px, 2000px -1000px, 2000px 1000px, 0 1000px); }
+  .blueprint .dial { left: 60px; }
+  .app.fold-tree .dial { display: block; }
+  .view.compact-iso .dial, .view.docked .dial, .view:has(.isobar.on) .dial { display: none; }
+  @media (max-width: 960px), (pointer: coarse) { .app .dial, .app.fold-tree .dial { display: none; } }
+  .dial-knob { position: absolute; left: -120px; top: -80px; width: 160px; height: 160px; border-radius: 50%;
     background: radial-gradient(circle, color-mix(in srgb, var(--card) 88%, transparent) 0 60%, transparent 60.5%),
       repeating-conic-gradient(from 89deg, color-mix(in srgb, var(--stage-ink) 55%, transparent) 0 1.2deg, transparent 1.2deg 7.5deg);
     border: 1px solid color-mix(in srgb, var(--stage-ink) 20%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
@@ -900,7 +906,14 @@
   .dial-list .nm { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; }
   .dial-list button:hover .nm { text-decoration: underline; text-underline-offset: 3px; }
   .dial-list button[aria-current="true"] .rn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-  .dial-list button[aria-current="true"] .nm { font-size: 22px; font-weight: 300; letter-spacing: -0.01em; text-transform: none; }
+  .dial-list button[aria-current="true"] .nm { font-weight: 700; }
+  /* In a narrower window the names make way for the machine: the numerals stay, and the names show while the pointer
+     or focus is on the dial, on glass, since they may then lie over the machine. They stay in each button's name for a
+     screen reader. */
+  @media (max-width: 1180px) {
+    .dial:not(:hover, :focus-within) .dial-list .nm { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    .dial-list .nm { padding: 3px 7px; border-radius: 6px; color: var(--ink); background: color-mix(in srgb, var(--card) 82%, transparent); }
+  }
 
   /* The view's own buttons keep its left edge, so the sheet column keeps the right one. */
   .navcluster .mb { border-radius: 14px; }
@@ -3900,11 +3913,14 @@ function barBottom() {
   const bar = $('isobar');
   return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
 }
-// The view's controls take its left edge: what is framed stays clear of them.
+// The view's controls take its left edge, and while it shows the dial beyond them, to the end of its longest name (or
+// of its numerals, where the names make way): what is framed stays clear of both.
 function navReserve() {
-  const c = $('navCluster');
-  if (!c?.getClientRects().length) return 0;
-  return Math.max(0, Math.round(c.getBoundingClientRect().right - $('card').getBoundingClientRect().left + 8));
+  let r = 0;
+  const c = $('navCluster'), d = $('dialList');
+  if (c?.getClientRects().length) r = c.getBoundingClientRect().right + 8;
+  if (d?.getClientRects().length) for (const b of d.querySelectorAll('button')) r = Math.max(r, b.getBoundingClientRect().right + 8);
+  return r ? Math.max(0, Math.round(r - $('card').getBoundingClientRect().left)) : 0;
 }
 function hudInsets() {
   const t = barBottom(), l = navReserve(), g = guideInset();
@@ -5010,8 +5026,8 @@ function revealRow(row) {
 // ---------- The dial ----------
 // The groups on a knob at the stage's left, as a showroom's rail of a car's sections: a click on a group selects its
 // first part, and again its next one, round the group. The knob turns to the group of the selected part. Its names lie
-// on an arc round the knob, a numeral each, 38 px apart.
-const DIAL_R = 150, DIAL_IN = 40, DIAL_STEP = 38;
+// on an arc round the knob, a numeral each, 32 px apart, clear of its 80 px rim.
+const DIAL_R = 130, DIAL_IN = 40, DIAL_STEP = 32;
 const DIAL_NAME = { vessel: 'Vessel', magnets: 'Magnets', discharge: 'Plasma', vacuum: 'Vacuum', diag: 'Diagnostics', structure: 'Structure', power: 'Power' };
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const dialAt = (i) => {
