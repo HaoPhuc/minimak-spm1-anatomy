@@ -64,8 +64,8 @@ listed after the table.
 
 | # | Function | Question | Inputs | Needs | Visible result | Step | Verify |
 |---|---|---|---|---|---|---|---|
-| 1 | Turn | How does the back look? | drag · arrows on the view · one finger | — | spins about z, tilts | orient.turn | `goal.az` moves ≥ 25° |
-| 2 | Pan | Can I slide it aside? | right-, Shift- or middle-drag, or pan mode (O/P) · Shift+arrows · two fingers | — | the machine slides | orient.pan | `goal.target` moves |
+| 1 | Turn | How does the back look? | drag, the turntable's arrows · arrows on the view · one finger | — | spins about the machine's axis, tilts | orient.turn | `goal.az` moves ≥ 25° |
+| 2 | Pan | Can I slide it aside? | right-, Shift- or middle-drag, or pan mode (O/P) · Shift+arrows · two fingers | — | the machine slides; a turn stays about its axis | orient.pan | `goal.target` moves |
 | 3 | Zoom | Closer on the coils? | wheel, ± buttons · + − · pinch | — | grows about the pointer; scale bar changes | orient.zoom | `goal.zoom` × 1.3 |
 | 4 | Scale | How big is it? | scale bar; Blueprint title block 1:N | — | true length label | orient.scale | read only |
 | 5 | Home | I'm lost | home button, double-click space · 0 · home button | — | whole machine (the part while inspecting) | orient.home | `goal` ≈ home |
@@ -116,6 +116,8 @@ listed after the table.
 | 50 | Loupe, near picks | Small parts on a phone? | hold a finger · — · (a mouse picks within 12 px) | touch | 3× loupe, name | use.loupe | loupe shown |
 | 51 | Controls reference | Every binding? | Controls tab | — | the list | use.controls | tab |
 | 52 | The guide itself | Again later? | Guided analysis, Chapters, Exit | — | resumes, jumps, restores | use.finish | state back |
+| 53 | Axis lock | Turn about the machine or the view? | axis button · R · same | — | the machine turns in place, or swings round the view's middle | orient.axis | `spinAxis` toggled |
+| 54 | Groups' wheel | Which parts are the magnets? | rest on or click a wedge, a picture · Enter, arrows, Esc · (list) | list folded, desktop | the group's parts fan out as pictures | find.wheel | `wheel.open` = magnets |
 
 ## Steps
 
@@ -130,9 +132,9 @@ Seven chapters, each replayable from **Chapters**. **Next** runs through all of 
    6. The **S9** tag on *Holes they pass*: the Sources tab.
    7. **← Back to the part tab**: the same piece and sheet.
    8. **Done**: the viewport goes back together and flies home, and the machine faces you again.
-2. **Orient the view**: turn, pan, zoom, scale, a side, home, panels.
-3. **Find hardware**: search M8, pick the left viewport's bolts, select vs inspect, hide the table, show it, listed not
-   drawn.
+2. **Orient the view**: turn (with the turntable), pan, the axis lock, zoom, scale, a side, home, panels.
+3. **Find hardware**: the magnets on the groups' wheel, search M8, pick the left viewport's bolts, select vs inspect,
+   hide the table, show it, listed not drawn.
 4. **See inside**: Cutaway, Explode, Spread, back together, themes, Blueprint dimensions.
 5. **Inspect a connection**: TF pieces and All, Ghost, How it attaches to the vessel, back, take the viewport apart
    with its Spread, steps and one bolt, open the right–back joint, Turn to see.

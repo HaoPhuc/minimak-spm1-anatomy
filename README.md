@@ -108,7 +108,7 @@ key and touch inputs, the state it needs, what shows, the step that teaches it, 
   6. The **S9** tag on *Holes they pass*, to the Sources tab.
   7. **← Back to the part tab**, to the same piece.
   8. **Done**, the viewport flying home and the machine facing you again.
-- **Seven chapters**, 54 steps, each replayable from **Chapters**:
+- **Seven chapters**, 56 steps, each replayable from **Chapters**:
   1. A viewport, bolt by bolt
   2. Orient the view
   3. Find hardware
@@ -122,7 +122,8 @@ key and touch inputs, the state it needs, what shows, the step that teaches it, 
   there. The ring never takes a click, so every control still works.
 - **Hidden controls.** When a control is out of sight, the ring shows the way in, and the card says so: **⋯** on a
   phone, a folded panel's rail.
-- **The card** sits at the view's lower left on a desktop, and the camera frames everything above it. Where the panels
+- **The card** sits at the view's lower left on a desktop, and the camera frames everything above it. For the
+  wheel's step it sits at the lower right, so the open group's pictures are clear of it. Where the panels
   stack, it is fixed at the window's foot, and the view shrinks to stay whole above it.
 - **Motion.** A step's text fades out, the camera and parts settle with the viewer's own glides, then the text fades in
   (180 ms) with its ring. A drag or pinch takes over at once. Under reduced motion it all cuts.
