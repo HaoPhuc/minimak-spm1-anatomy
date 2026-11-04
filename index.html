@@ -1133,6 +1133,7 @@
         <button type="button" id="bHome" title="Home view: the whole machine, stand and pump included (0, or double-click empty space)" aria-label="Home view"><svg viewBox="0 0 16 16"><path d="M2 7.5L8 2l6 5.5M3.8 6v8h8.4V6"/></svg></button>
         <button type="button" id="bViews" aria-haspopup="menu" aria-expanded="false" aria-controls="viewMenu" title="Look from a side (1–4), as a click on an axis of the triad does" aria-label="Look from a side"><svg viewBox="0 0 16 16"><path d="M8 1.8l5.5 3.1v6.2L8 14.2l-5.5-3.1V4.9z"/><path d="M2.5 4.9L8 8l5.5-3.1M8 8v6.2"/></svg></button>
         <button type="button" data-drag="pan" aria-pressed="false" title="Left-drag pans the view rather than turning it (P; shift-drag always pans)" aria-label="Pan with left-drag"><svg viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M6 3.5l2-2 2 2M6 12.5l2 2 2-2M3.5 6l-2 2 2 2M12.5 6l2 2-2 2"/></svg></button>
+        <button type="button" id="bAxis" aria-pressed="true" title="Turn about the machine’s own axis, the middle of the ring under it, wherever you pan; off, a turn goes about the middle of the view (R)" aria-label="Turn about the machine’s axis"><svg viewBox="0 0 16 16"><path d="M8 1.5v13"/><ellipse cx="8" cy="9" rx="6" ry="2.4"/><path d="M9.6 10.3 8 11.4l1.6 1.1"/></svg></button>
         <button type="button" id="bPanels" aria-pressed="true" title="Side panels: hide both to give the view the window (F)" aria-label="Side panels"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg></button>
       </div>
       <div class="vmenu" id="viewMenu" role="menu" aria-label="Look from" hidden>
@@ -2570,6 +2571,17 @@ const view = { az: HOME.az, el: HOME.el, zoom: 1, target: new V3() };
 const goal = { az: HOME.az, el: HOME.el, zoom: 1, target: new V3() };
 let fit = { half: 100, centre: new V3() };
 let dragMode = store.get('spm1-drag') === 'pan' ? 'pan' : 'orbit';
+// A turn goes about the machine's own axis, the torus axis (x = y = 0) through the middle of the ring on the floor: it
+// carries the view's centre round that axis with the camera, so the machine turns in place wherever a pan put it. Tilt,
+// pan and zoom are as they were. Unlocked (R, or the button under the pan button), a turn goes about the middle of the
+// view. Inspecting, a turn is always about the part.
+const ZUP = new V3(0, 0, 1);
+let spinAxis = store.get('spm1-spin') !== 'view';
+const axisSpin = () => spinAxis && !iso.part;
+function turnGoal(d) {
+  if (axisSpin()) goal.target.applyAxisAngle(ZUP, d * DEG);
+  goal.az += d;
+}
 let touched = false;
 // A timed camera move to `goal` that starts at `at` (seconds), used to fly slowly back to the assembly.
 // Any other camera move ends it where it is.
@@ -2613,7 +2625,9 @@ const home = { zoom: 1, centre: new V3() };
 // pixel or so across, and home there lies far off to one side, so until then each new size frames it at home again,
 // while the page is untouched and nothing (a link) has moved the view.
 let homed = false;
-const homeWaits = () => !homed && !touched && goal.zoom === home.zoom && goal.target.equals(home.centre);
+// Home's centre with the machine turned to `az`: the idle spin carries it round the axis.
+const homeAt = (az) => (axisSpin() ? home.centre.clone().applyAxisAngle(ZUP, (az - HOME.az) * DEG) : home.centre.clone());
+const homeWaits = () => !homed && !touched && goal.zoom === home.zoom && goal.target.distanceTo(homeAt(goal.az)) < 1e-6;
 function fitView() {
   const z = frameOf(dev.fit, HOME.az, HOME.el, 1.12);
   if (!machinePts) {
@@ -2633,7 +2647,7 @@ function fitView() {
   home.zoom = z.half / f.half;
   home.centre.copy(f.centre);
   if (again) {
-    view.target.copy(f.centre); goal.target.copy(f.centre);
+    view.target.copy(homeAt(view.az)); goal.target.copy(homeAt(goal.az));
     view.zoom = goal.zoom = home.zoom;
   }
   // Room enough: the machine has half the view's width and height or more.
@@ -2652,10 +2666,9 @@ function placeCamera() {
 function nearestAz(target) { return goal.az + ((((target - goal.az) % 360) + 540) % 360) - 180; }
 function lookFrom(az, elv, o = {}) {
   stopGlide();
-  goal.az = nearestAz(az);
+  if (o.target) { goal.az = nearestAz(az); goal.target.copy(o.target); } else turnGoal(nearestAz(az) - goal.az);
   goal.el = elv;
   if (o.zoom != null) goal.zoom = o.zoom;
-  if (o.target) goal.target.copy(o.target);
   dirty = true;
 }
 function resetView() {
@@ -2696,7 +2709,7 @@ function panBy(dx, dy) {
 }
 function orbitBy(dx, dy) {
   stopGlide();
-  goal.az -= dx * 0.38;
+  turnGoal(-dx * 0.38);
   goal.el = clamp(goal.el + dy * 0.3, -89, 89);
   dirty = true;
 }
@@ -5747,7 +5760,7 @@ function renderOverview(box) {
   box.append(el('h3', null, 'Headline numbers'), specTable(HEADLINE));
   box.append(el('h3', null, 'How to use it'));
   for (const s of [
-    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The buttons at the view’s left edge zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, and fold the side panels.',
+    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The buttons at the view’s left edge zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, turn about the machine’s own axis (the middle of the ring under it, wherever you pan) or about the middle of the view, and fold the side panels.',
     'The assembly list starts folded to its rail, so the machine has the room: the magnifier at the top of the rail, or /, opens it to search.',
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
@@ -5821,10 +5834,10 @@ function renderHelp(box) {
   box.append(el('h2', 'gap', 'Moving around'));
   const groups = [
     ['Mouse', [
-      ['Left-drag', 'turn (turntable): sideways spins about the vertical, up and down tilts'],
+      ['Left-drag', 'turn (turntable): sideways spins about the machine’s own axis (unlocked, about the middle of the view), up and down tilts'],
       ['Right-drag, Shift-drag, middle-drag', 'pan'],
       ['Wheel', 'zoom toward the pointer'],
-      ['The buttons at the view’s left edge', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, and the side panels'],
+      ['The buttons at the view’s left edge', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis, and the side panels'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
       ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
@@ -5881,6 +5894,7 @@ function renderHelp(box) {
       ['1 2 3 4', 'three-quarter, front, right, above'],
       ['/', 'find a part: open the assembly list with the cursor in its search box'],
       ['O / P', 'left-drag turns / pans'],
+      ['R', 'turn about the machine’s own axis, or about the middle of the view'],
       ['E', 'explode'],
       ['[ ]', 'less or more spread of what is apart: the part taken apart, else the machine exploded'],
       ['C', 'cutaway'],
@@ -6019,6 +6033,12 @@ function setDragMode(m) {
   setHint();
 }
 for (const b of document.querySelectorAll('[data-drag]')) b.addEventListener('click', () => setDragMode(dragMode === 'pan' ? 'orbit' : 'pan'));
+function setSpinAxis(on) {
+  spinAxis = on;
+  store.set('spm1-spin', on ? 'axis' : 'view');
+  setPressed('bAxis', on);
+}
+$('bAxis').addEventListener('click', () => setSpinAxis(!spinAxis));
 for (const b of document.querySelectorAll('[data-view]')) b.addEventListener('click', () => { touched = true; lookFrom(...VIEWS[b.dataset.view]); });
 // Views: the sides to look from, the triad's axes for the keyboard. Arrows move, Enter picks, Esc or Tab closes.
 const viewMenu = $('viewMenu'), bViews = $('bViews');
@@ -6619,6 +6639,7 @@ window.addEventListener('keydown', (e) => {
   else if (k === '4') lookFrom(...VIEWS.top);
   else if (k === 'o') setDragMode('orbit');
   else if (k === 'p') setDragMode('pan');
+  else if (k === 'r') { setSpinAxis(!spinAxis); announce(spinAxis ? 'Turns go about the machine’s axis.' : 'Turns go about the middle of the view.'); }
   else if (k === 'i' && state.select) inspect(state.select);
   else if (k === 't' && iso.part) setApart(!iso.apart);
   else if (k === 'j' && (iso.joint || jointHere())) setJoint(!iso.joint);
@@ -7366,7 +7387,7 @@ function gSnapshot() {
     select: state.select, kept, hudOn: HUD.on, up: HUD.up, card: HUD.card,
     hidden: new Set(hidden), explode: state.explode, spread: state.spread, cut: state.cut,
     panels: { ...panels }, theme: document.documentElement.dataset.theme ?? null, dims: draft.dims.map((d) => ({ ...d })),
-    scale: uiScale, keys: letterKeys, drag: dragMode, tab, search: $('search').value, nd: gNd()?.getAttribute('aria-expanded') === 'true',
+    scale: uiScale, keys: letterKeys, drag: dragMode, spin: spinAxis, tab, search: $('search').value, nd: gNd()?.getAttribute('aria-expanded') === 'true',
     scroll: scrollY, active: document.activeElement,
   };
 }
@@ -7379,6 +7400,7 @@ function gRestore(s, o = {}) {
   if (uiScale !== s.scale) setScale(s.scale);
   if (letterKeys !== s.keys) setLetterKeys(s.keys);
   if (dragMode !== s.drag) setDragMode(s.drag);
+  if (spinAxis !== s.spin) setSpinAxis(s.spin);
   if ((document.documentElement.dataset.theme ?? null) !== s.theme) {
     if (s.theme) document.documentElement.dataset.theme = s.theme; else delete document.documentElement.dataset.theme;
     applyTheme();
@@ -7517,7 +7539,7 @@ function frame() {
   if (low !== lowRes) { lowRes = low; resize(); }
 
   // A slow turntable spin until the first touch or keyboard focus, never after it.
-  if (!touched && !reduceMotion.matches && now - idleSince > 2.5) { goal.az += 5 * dt; active = true; }
+  if (!touched && !reduceMotion.matches && now - idleSince > 2.5) { turnGoal(5 * dt); active = true; }
 
   const k = reduceMotion.matches ? 1 : 1 - Math.exp(-dt * 16);
   const d = Math.abs(goal.az - view.az) + Math.abs(goal.el - view.el) + Math.abs(Math.log(goal.zoom / view.zoom)) * 50 + goal.target.distanceTo(view.target);
@@ -7534,10 +7556,16 @@ function frame() {
     }
     active = true;
   } else if (d > 1e-3) {
+    const az0 = view.az;
     view.az += (goal.az - view.az) * k;
     view.el += (goal.el - view.el) * k;
     view.zoom = Math.exp(Math.log(view.zoom) + (Math.log(goal.zoom) - Math.log(view.zoom)) * k);
-    view.target.lerp(goal.target, k);
+    // Turning about the axis, the centre eases in the frame that turns with the camera, so the machine turns in place
+    // all the way rather than cutting across the turn.
+    if (axisSpin()) {
+      const to = goal.target.clone().applyAxisAngle(ZUP, -goal.az * DEG);
+      view.target.applyAxisAngle(ZUP, -az0 * DEG).lerp(to, k).applyAxisAngle(ZUP, view.az * DEG);
+    } else view.target.lerp(goal.target, k);
     active = true;
   } else { view.az = goal.az; view.el = goal.el; view.zoom = goal.zoom; view.target.copy(goal.target); }
 
@@ -7676,6 +7704,7 @@ function frame() {
 // ---------- Start ----------
 setHint();
 setDragMode(dragMode);
+setSpinAxis(spinAxis);
 applyPanels();
 buildTree();
 renderInspector();
@@ -7691,7 +7720,7 @@ if (renderer) {
 applyTheme();
 if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
-window.__spm1 = { view, goal, iso, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
+window.__spm1 = { view, goal, iso, setSpinAxis, spinAxis: () => spinAxis, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
   lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf, draft, dimAt,
   setGrid: (v) => { draft.grid = v; applyTheme(); },
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
