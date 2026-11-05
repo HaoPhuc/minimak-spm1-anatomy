@@ -80,9 +80,9 @@
     --photo: #ffb54d;
     --assumed: #6a8ea8;
     --glass: 0.72;
-    --stage-top: #0f1526;
-    --stage-bot: #070a14;
-    --stage-glow: #1c2747;
+    --stage-top: #070a12;
+    --stage-bot: #010204;
+    --stage-glow: #0e1a30;
     --glow-a: 0.9;
     --rays: rgb(150 200 245 / 0.05);
     --ring: #000000;
@@ -726,9 +726,11 @@
   .holo .scale i { border-color: var(--accent); }
   .holo .mb button[aria-pressed="true"]:not(.toggle), .holo .mb button[aria-checked="true"], .holo .isobar button[aria-pressed="true"]:not(.toggle),
   .holo .actions button[aria-checked="true"], .holo .navcluster .mb button[aria-pressed="true"] { background: rgb(111 184 232 / 0.16); color: #dcecf8; box-shadow: inset 0 -2px 0 var(--accent); }
-  .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: none; }
+  /* An action and the chosen tab are drawn in light, not filled: an outline in the accent over a faint tint, with a glowing
+     line under it, so the brightest thing on screen stays the machine. */
+  .holo .isobar button.done, .holo .isobar button.next, .holo .actions button.primary { background: rgb(111 184 232 / 0.1); color: #eaf6ff; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent), 0 0 12px rgb(111 184 232 / 0.25); }
   .holo .ti.sel, .holo table.ptab tr.on { background: rgb(111 184 232 / 0.12); box-shadow: inset 2px 0 0 var(--sel); }
-  .holo .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+  .holo .tabs button[aria-selected="true"] { background: rgb(111 184 232 / 0.1); color: #eaf6ff; box-shadow: inset 0 -2px 0 var(--accent), 0 6px 12px -8px rgb(111 184 232 / 0.6); }
   .holo .chips span.chip { background: var(--accent); color: var(--accent-ink); }
   .holo .chips span.chip .basis { border-color: var(--accent-ink); }
   .holo .tip { background: var(--card); color: var(--ink); border: 1px solid rgb(111 184 232 / 0.45); box-shadow: none; }
@@ -1412,6 +1414,10 @@ const LIGHT = [-0.42, 0.58, 0.7];
 // that are light in the drawing. Only what carries energy (the plasma, lit displays) adds another colour, and the
 // selection is orange (THEME.dark.lit), the blue's opposite.
 const HOLO = new THREE.Color('#4f9fd6');
+// In the hologram the vessel, its magnets and the discharge are lit at full strength; what stands round them less, the
+// stand and the cabinets least, so the torus is what the eye finds. A part lit (selected, kept, under the pointer) or
+// inspected is always at full strength.
+const HOLO_WEIGHT = { diag: 0.8, vacuum: 0.6, power: 0.38, structure: 0.32 };
 let holo = false, greyscale = false, blueprint = false;
 const clearColor = new THREE.Color();
 // The greyscale drawing is white, like a CAD line rendering: every material is white, and its greys and black come only
@@ -1468,8 +1474,11 @@ const shared = {
   tFront: { value: null },
   uRes: { value: new THREE.Vector2(1, 1) },
   uTime: { value: 0 },
-  uScan: { value: 0.6 },
+  uScan: { value: 0.08 },
   uSweep: { value: -200 },
+  // Hologram: the depth fade, from the nearest to the furthest of what is framed (cm past the camera's near plane), and
+  // the camera's depth range, so a fragment's depth reads in the same cm.
+  uFade: { value: new THREE.Vector3(0, 1, camera.far - camera.near) },
   // Greyscale: the shadow map's depth, world to shadow-map space, one texel there, its size in cm, and the depth bias.
   tShadow: { value: null },
   uShadowM: { value: new THREE.Matrix4() },
@@ -1700,6 +1709,7 @@ const FRAG_HOLO = /* glsl */`
   uniform float uTime;
   uniform float uScan;
   uniform float uSweep;
+  uniform vec3 uFade;
   varying vec3 vNv;
   varying vec3 vWp;
   void main() {
@@ -1713,12 +1723,17 @@ const FRAG_HOLO = /* glsl */`
     float behind = smoothstep(0.0003, 0.0015, gl_FragCoord.z - texture2D(tFront, gl_FragCoord.xy / uRes).x);
     float band = pow(fract(vWp.z * uScan - uTime * 0.35), 3.0);
     float sweep = exp(-pow((vWp.z - uSweep) / 2.5, 2.0));
-    vec3 c = uColor * ((0.055 + 0.04 * w + 0.22 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
+    // Glass of light: a faint fill on the faces, the light gathered at the rims where the surface turns away.
+    vec3 c = uColor * ((0.03 + 0.025 * w + 0.26 * rim) * (0.75 + 0.25 * band) + 0.12 * sweep);
     // The highlight: brighter, under a thin layer of the selection colour, fuller selected or kept; the rest of the machine is never
     // dimmed. Selected or kept, it still shows faintly through what is in front of it.
     float kept = step(0.4, uLit);
-    if (uLit > 0.2) c = c * mix(1.25, 1.7, kept) * mix(vec3(1.0), uLitColor, mix(0.35, 0.45, kept)) + uLitColor * (0.02 + mix(0.12, 0.18, kept) * rim);
+    // A gentle lift and a thin rim of the selection colour: the bloom adds its own light round it, so more would glare.
+    if (uLit > 0.2) c = c * mix(1.0, 1.12, kept) * mix(vec3(1.0), uLitColor, mix(0.35, 0.45, kept)) + uLitColor * (0.005 + mix(0.035, 0.05, kept) * rim);
     float vis = max(mix(1.0, 0.12, behind), 0.32 * kept);
+    // Depth cueing, as the vector displays did: the front quarter of what is framed at full strength, then fading to 60%
+    // at the back, so the back of a ring reads as the back. (The camera is orthographic, so the depth is linear.)
+    vis *= mix(1.0, 0.6, smoothstep(mix(uFade.x, uFade.y, 0.25), uFade.y, gl_FragCoord.z * uFade.z));
     gl_FragColor = vec4((c * vis + uEmit) * uDim, 1.0);
   }
 `;
@@ -1825,7 +1840,7 @@ function colorMat(tone, clip) {
     uniforms: {
       uColor: { value: new THREE.Color() }, uMetal: { value: new THREE.Vector3() }, uEye: shared.uEye, uLit: { value: 0 }, uEmit: { value: new THREE.Color(0, 0, 0) }, uDim: { value: 1 },
       uLight: shared.uLight, uCut: shared.uCut, uInk: shared.uInk, uLitColor: shared.uLitColor, uPaper: shared.uPaper, uDpr: shared.uDpr, uGlass: shared.uGlass, uFocus: shared.uFocus, uFlat: shared.uFlat, uRedline: shared.uRedline, uLoose: { value: 0 },
-      tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep,
+      tFront: shared.tFront, uRes: shared.uRes, uTime: shared.uTime, uScan: shared.uScan, uSweep: shared.uSweep, uFade: shared.uFade,
       tShadow: shared.tShadow, uShadowM: shared.uShadowM, uShadowTexel: shared.uShadowTexel, uShadowCm: shared.uShadowCm, uShadowBias: shared.uShadowBias, uShadowOn: shared.uShadowOn,
     },
     vertexShader: VERT, fragmentShader: glass ? FRAG_GLASS : FRAG_COLOR, side: glass ? THREE.FrontSide : THREE.DoubleSide,
@@ -2199,7 +2214,10 @@ const shadow = (() => {
           float fade = 1.0 - smoothstep(25.0, 105.0, d);
           float pulse = exp(-pow(d - mod(uTime * 14.0, 130.0), 2.0) / 18.0);
           float glow = exp(-d / 34.0);
-          gl_FragColor = vec4(uInk * (fade * (0.32 * ring + 0.14 * spoke + 0.35 * pulse * ring) + 0.09 * glow) * uA, 1.0);
+          // The projector's emitter: a lit lip round the stand, a fainter one inside it, and the disc between them lit.
+          float lip = exp(-pow((d - 62.0) / 1.1, 2.0)) + 0.45 * exp(-pow((d - 56.5) / 0.7, 2.0));
+          float disc = 0.035 * (1.0 - smoothstep(50.0, 62.0, d));
+          gl_FragColor = vec4(uInk * (fade * (0.32 * ring + 0.14 * spoke + 0.35 * pulse * ring) + 0.09 * glow + 0.45 * lip + disc) * uA, 1.0);
           return;
         }
         float t = 1.0 - smoothstep(0.22, 0.62, max(abs(q.x), abs(q.y)) * 0.75 + length(q) * 0.25);
@@ -2221,6 +2239,58 @@ const shadow = (() => {
   m.layers.set(1);
   scene.add(m);
   return mat;
+})();
+
+// The hologram's projector: over the emitter on the floor (the floor's shader draws it), a faint cone of light rises round
+// the machine, brightest at its edges and fading upward, and dust drifts up through it. Colour pass only, in the
+// hologram only, and not while a part is inspected, when the room is the part's.
+const projector = (() => {
+  const floor = DIMS.table.floor, H = 48 - floor;
+  const cone = new THREE.Mesh(new THREE.CylinderGeometry(70, 62, H, 128, 1, true), new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: HOLO.clone() } },
+    vertexShader: /* glsl */`
+      varying float vH; varying float vF;
+      void main() {
+        vH = position.y / ${H.toFixed(1)} + 0.5;
+        vF = 1.0 - abs(normalize(normalMatrix * normal).z);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+    fragmentShader: /* glsl */`
+      uniform vec3 uColor; varying float vH; varying float vF;
+      void main() { gl_FragColor = vec4(uColor * pow(1.0 - vH, 1.8) * (0.012 + 0.045 * pow(vF, 3.0)), 1.0); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+  }));
+  cone.rotation.x = Math.PI / 2;
+  cone.position.z = floor + H / 2;
+  const n = 240, pos = new Float32Array(n * 3), seed = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const r = 62 * Math.sqrt(Math.random()), a = Math.random() * 2 * Math.PI;
+    pos.set([r * Math.cos(a), r * Math.sin(a), Math.random()], 3 * i);
+    seed[i] = Math.random();
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('seed', new THREE.BufferAttribute(seed, 1));
+  // Each mote rises the cone's height in 20 to 50 s, fading in at the floor and out toward the top; it stands still with
+  // reduced motion, as the clock does.
+  const motes = new THREE.Points(g, new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: HOLO.clone() }, uTime: shared.uTime, uDpr: shared.uDpr },
+    vertexShader: /* glsl */`
+      attribute float seed; uniform float uTime; uniform float uDpr; varying float vA;
+      void main() {
+        float h = fract(position.z + uTime * (0.02 + 0.03 * seed));
+        vA = smoothstep(0.0, 0.12, h) * (1.0 - smoothstep(0.6, 1.0, h)) * (0.4 + 0.6 * seed);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position.xy, ${floor.toFixed(1)} + h * ${H.toFixed(1)}, 1.0);
+        gl_PointSize = (1.5 + 2.0 * seed) * uDpr;
+      }`,
+    fragmentShader: /* glsl */`
+      uniform vec3 uColor; varying float vA;
+      void main() { gl_FragColor = vec4(uColor * vA * 0.55 * (1.0 - smoothstep(0.2, 0.5, length(gl_PointCoord - 0.5))), 1.0); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  }));
+  motes.frustumCulled = false;
+  for (const o of [cone, motes]) { o.layers.set(1); o.visible = false; scene.add(o); }
+  return { cone, motes };
 })();
 
 // ---------- Quarter names on the table ----------
@@ -2418,17 +2488,24 @@ const post = (() => {
         float r = length(p);
         vec3 bg = uStage > 0.5 ? stageAt() : mix(vec3(0.045, 0.02, 0.085), vec3(0.012, 0.005, 0.024), smoothstep(0.05, 0.85, r));
         vec2 cell = mod(gl_FragCoord.xy, 32.0 * uDpr);
-        bg += vec3(0.32, 0.92, 0.72) * 0.022 * max(step(cell.x, uDpr), step(cell.y, uDpr));
+        bg += vec3(0.35, 0.62, 0.88) * 0.016 * max(step(cell.x, uDpr), step(cell.y, uDpr));
         float halo = edge(s * 3.5) * thin;
         float m = max(max(col.r, col.g), col.b);
         vec3 ec = m > 0.03 ? col / m : uInk;
+        // A line is as bright as the light it bounds (looked for a pixel and a half round, so both sides of an outline
+        // count): a part's outline at full strength, its inner creases and the parts kept faint (the stand, the drawer)
+        // fainter, so the vessel and its coils read first.
+        vec2 o = uTexel * 1.5 * uDpr;
+        float mn = m;
+        mn = max(mn, max(max(texture2D(tColor, vUv + vec2(o.x, 0.0)).r, texture2D(tColor, vUv + vec2(o.x, 0.0)).b), max(texture2D(tColor, vUv - vec2(o.x, 0.0)).r, texture2D(tColor, vUv - vec2(o.x, 0.0)).b)));
+        mn = max(mn, max(max(texture2D(tColor, vUv + vec2(0.0, o.y)).r, texture2D(tColor, vUv + vec2(0.0, o.y)).b), max(texture2D(tColor, vUv - vec2(0.0, o.y)).r, texture2D(tColor, vUv - vec2(0.0, o.y)).b)));
+        float k = clamp(mn / 0.16, 0.2, 1.0);
         vec3 c = bg + (1.0 - exp(-col * 1.1));
-        c += ec * 0.85 * (e * uInkAlpha + halo * 0.18 * ctx);
-        c *= 0.94 + 0.06 * step(1.5 * uDpr, mod(gl_FragCoord.y, 3.0 * uDpr));
+        c += ec * 0.85 * k * (e * uInkAlpha + halo * 0.18 * ctx);
         c *= 1.0 - 0.3 * smoothstep(0.5, 1.05, r);
         // The highlight's glow adds light, and its line is in the selection colour, as in the other themes.
-        c += uLitColor * glow * 0.55;
-        c = mix(c, uLitColor * 1.1, outline * 0.85);
+        c += uLitColor * glow * 0.16;
+        c = mix(c, uLitColor * 0.9, outline * 0.8);
         gl_FragColor = vec4(c, 1.0);
       }
     `,
@@ -2442,6 +2519,70 @@ const post = (() => {
   const s = new THREE.Scene();
   s.add(mesh);
   return { scene: s, camera: new THREE.Camera(), mat };
+})();
+
+// ---------- The hologram's bloom ----------
+// Light bleeds round what glows. In the hologram the post pass draws to a target; its bright parts (the lines, the plasma,
+// the emitter) are taken at half size and blurred twice, narrow and wide, and both glows are added back over it. The
+// drawings stay crisp.
+const bloom = (() => {
+  const VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
+  const mk = (uniforms, frag) => new THREE.ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: frag, depthTest: false, depthWrite: false });
+  const pick = mk({ tSrc: { value: null }, uTexel: { value: new THREE.Vector2() } }, /* glsl */`
+    uniform sampler2D tSrc; uniform vec2 uTexel; varying vec2 vUv;
+    void main() {
+      vec3 c = 0.25 * (texture2D(tSrc, vUv + uTexel * vec2(-0.5, -0.5)).rgb + texture2D(tSrc, vUv + uTexel * vec2(0.5, -0.5)).rgb
+        + texture2D(tSrc, vUv + uTexel * vec2(-0.5, 0.5)).rgb + texture2D(tSrc, vUv + uTexel * vec2(0.5, 0.5)).rgb);
+      gl_FragColor = vec4(c * 0.8 * smoothstep(0.18, 0.75, max(max(c.r, c.g), c.b)), 1.0);
+    }`);
+  const blur = mk({ tSrc: { value: null }, uStep: { value: new THREE.Vector2() } }, /* glsl */`
+    uniform sampler2D tSrc; uniform vec2 uStep; varying vec2 vUv;
+    void main() {
+      vec3 c = texture2D(tSrc, vUv).rgb * 0.2270;
+      c += (texture2D(tSrc, vUv + uStep).rgb + texture2D(tSrc, vUv - uStep).rgb) * 0.1946;
+      c += (texture2D(tSrc, vUv + 2.0 * uStep).rgb + texture2D(tSrc, vUv - 2.0 * uStep).rgb) * 0.1216;
+      c += (texture2D(tSrc, vUv + 3.0 * uStep).rgb + texture2D(tSrc, vUv - 3.0 * uStep).rgb) * 0.0541;
+      c += (texture2D(tSrc, vUv + 4.0 * uStep).rgb + texture2D(tSrc, vUv - 4.0 * uStep).rgb) * 0.0162;
+      gl_FragColor = vec4(c, 1.0);
+    }`);
+  const add = mk({ tSrc: { value: null }, tNear: { value: null }, tWide: { value: null } }, /* glsl */`
+    uniform sampler2D tSrc; uniform sampler2D tNear; uniform sampler2D tWide; varying vec2 vUv;
+    void main() { gl_FragColor = vec4(texture2D(tSrc, vUv).rgb + texture2D(tNear, vUv).rgb * 0.3 + texture2D(tWide, vUv).rgb * 0.2, 1.0); }`);
+  const quad = new THREE.Mesh(post.scene.children[0].geometry, pick);
+  quad.frustumCulled = false;
+  const sc = new THREE.Scene();
+  sc.add(quad);
+  const rt = {};
+  let size = '';
+  const pass = (mat, target) => { quad.material = mat; renderer.setRenderTarget(target); renderer.render(sc, post.camera); };
+  const step = (src, dst, x, y) => { blur.uniforms.tSrc.value = src.texture; blur.uniforms.uStep.value.set(x, y); pass(blur, dst); };
+  return {
+    // The target the post pass draws to, at the canvas's size.
+    target(w, h) {
+      if (size !== `${w}x${h}`) {
+        size = `${w}x${h}`;
+        for (const r of Object.values(rt)) r.dispose();
+        const hw = Math.max(1, Math.ceil(w / 2)), hh = Math.max(1, Math.ceil(h / 2));
+        rt.full = new THREE.WebGLRenderTarget(w, h);
+        for (const k of ['a', 'b', 'near', 'wide']) rt[k] = new THREE.WebGLRenderTarget(hw, hh);
+      }
+      return rt.full;
+    },
+    run(w, h) {
+      const hw = rt.a.width, hh = rt.a.height;
+      pick.uniforms.tSrc.value = rt.full.texture;
+      pick.uniforms.uTexel.value.set(1 / w, 1 / h);
+      pass(pick, rt.a);
+      step(rt.a, rt.b, 1 / hw, 0);
+      step(rt.b, rt.near, 0, 1 / hh);
+      step(rt.near, rt.b, 3 / hw, 0);
+      step(rt.b, rt.wide, 0, 3 / hh);
+      add.uniforms.tSrc.value = rt.full.texture;
+      add.uniforms.tNear.value = rt.near.texture;
+      add.uniforms.tWide.value = rt.wide.texture;
+      pass(add, null);
+    },
+  };
 })();
 
 // ---------- Greyscale: a shadow map from the drawing's light ----------
@@ -2631,6 +2772,19 @@ function draw() {
     else if (g >= 1 && lit) { m.material = GHOST_FADE; m.userData.solid = 0.55; }
     else if (g >= 1) { m.material = GHOST; m.visible = !FINE.has(m.userData.tone); }
     else { m.material = GHOST_FADE; m.userData.solid = 1 - g; }
+    if (holo && !iso.part && !lit) m.userData.dim *= HOLO_WEIGHT[partById.get(m.userData.part)?.group] ?? 1;
+  }
+  projector.cone.visible = projector.motes.visible = holo && !iso.part;
+  // The hologram's depth fade runs across what is framed: the part inspected, or the whole machine.
+  if (holo && machinePts) {
+    const { dir } = basis(view.az, view.el), b = iso.part ? boxOfPart(iso.part) : null;
+    let d0 = Infinity, d1 = -Infinity;
+    for (let i = 0; i < 8; i++) {
+      const p = b ? new V3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z) : machinePts[i];
+      const d = DIST - new V3().subVectors(p, view.target).dot(dir) - camera.near;
+      d0 = Math.min(d0, d); d1 = Math.max(d1, d);
+    }
+    if (d1 > d0) shared.uFade.value.set(d0, d1, camera.far - camera.near);
   }
   camera.layers.enable(1);
   renderer.setRenderTarget(rtColor);
@@ -2643,7 +2797,12 @@ function draw() {
   // Where the view is in the window, so the stage's backdrop lines up with the page's.
   const cr = canvas.getBoundingClientRect(), de = document.documentElement;
   post.mat.uniforms.uWin.value.set(cr.left, cr.top, de.clientWidth, de.clientHeight);
-  renderer.render(post.scene, post.camera);
+  if (holo) {
+    const w = Math.round(width * dpr), h = Math.round(height * dpr);
+    renderer.setRenderTarget(bloom.target(w, h));
+    renderer.render(post.scene, post.camera);
+    bloom.run(w, h);
+  } else renderer.render(post.scene, post.camera);
 }
 
 // ---------- Turntable camera: azimuth about the vertical, elevation, orthographic zoom, pan ----------
@@ -2978,14 +3137,15 @@ function applyLook() {
       else { u.uCore.value.set('#ffe2f6'); u.uRim.value.set('#b84ad6'); }
     }
   }
-  // Lit displays and LEDs: green and red in colour, a pale grey glow in greyscale.
-  const lcdOn = new THREE.Color(t === 'dark' ? '#3f9a5c' : '#5fbf78').multiplyScalar(0.5);
+  // Lit displays and LEDs: green and red in colour, a pale grey glow in greyscale, and in the hologram its own blue, a
+  // step paler, so the plasma stays the one other colour there.
+  const lcdOn = new THREE.Color(t === 'dark' ? '#5aa8e0' : '#5fbf78').multiplyScalar(0.5);
   for (const m of solids) {
     const tone = m.userData.tone;
     if (t === 'greyscale') { if (tone === 'lcd' || tone === 'hvlcd' || tone === 'led') m.userData.emit.setScalar(tone === 'led' ? 0.42 : 0.26); }
     else if (tone === 'lcd') m.userData.emit.copy(lcdOn);
-    else if (tone === 'hvlcd') m.userData.emit.set(t === 'dark' ? '#8a2f2a' : '#d2473b').multiplyScalar(0.55);
-    else if (tone === 'led') m.userData.emit.set(t === 'dark' ? '#2fae55' : '#36c060').multiplyScalar(0.7);
+    else if (tone === 'hvlcd') m.userData.emit.set(t === 'dark' ? '#7cc2f0' : '#d2473b').multiplyScalar(0.55);
+    else if (tone === 'led') m.userData.emit.set(t === 'dark' ? '#a8dcff' : '#36c060').multiplyScalar(0.7);
   }
 }
 
