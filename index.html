@@ -589,8 +589,11 @@
   button.chip { cursor: pointer; color: var(--ink); font-size: 13px; padding: 2px 8px; }
   button.chip:hover { background: var(--rule); }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 14px; }
-  .actions button { border: 1px solid var(--line); background: var(--card); border-radius: 2px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
-  .actions button:hover { background: var(--soft); }
+  .actions :is(button, .dl) { border: 1px solid var(--line); background: var(--card); border-radius: 2px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions :is(button, .dl):hover { background: var(--soft); }
+  /* The user guide as a PDF to keep or print: a link, so the browser downloads it as any file. */
+  .actions .dl { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); text-decoration: none; line-height: normal; }
+  .actions .dl svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .actions button.primary { background: var(--ink); color: var(--card); border-color: var(--ink); font-weight: 500; }
   .actions button[aria-checked="true"] { background: var(--chip); color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); font-weight: 500; }
   .switch { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin: 2px 0 12px; }
@@ -861,11 +864,11 @@
   .hud .sheets.dock .screen { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: transparent; }
   .hud .sheets.dock { background: color-mix(in srgb, var(--card) 94%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
   .mb button[aria-pressed="true"]:not(.toggle), .mb button[aria-checked="true"], .navcluster .mb button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
-  .isobar button, .actions button, .search, .src-back { border-radius: 8px; }
+  .isobar button, .actions :is(button, .dl), .search, .src-back { border-radius: 8px; }
   .isobar .step button { border-radius: 0; }
   .isobar .step button:first-child { border-radius: 8px 0 0 8px; }
   .isobar .step button:last-child { border-radius: 0 8px 8px 0; }
-  .isobar button, .actions button { background: color-mix(in srgb, var(--card) 50%, transparent); }
+  .isobar button, .actions :is(button, .dl) { background: color-mix(in srgb, var(--card) 50%, transparent); }
   .isobar button.done, .isobar button.next, .actions button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
   .search { background: color-mix(in srgb, var(--card) 50%, transparent); }
 
@@ -1035,7 +1038,7 @@
   .screen.part .bar .ttl { font-weight: 700; font-stretch: 112%; text-transform: uppercase; }
 
   /* Blueprint keeps the drawing's square corners. */
-  .blueprint :is(.panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb, .isobar button, .actions button, .search, .tabs button, .glance div, table.specs, .srclist, .know, .tourline, .def, button.chip) { border-radius: 0; }
+  .blueprint :is(.panel, .screen, .isobar, .sheets-head, .isomore, .vmenu, .mb, .isobar button, .actions button, .actions .dl, .search, .tabs button, .glance div, table.specs, .srclist, .know, .tourline, .def, button.chip) { border-radius: 0; }
   .blueprint .panel { border: 1.5px solid color-mix(in srgb, var(--ink) 45%, transparent); }
   .blueprint .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 62%, var(--vignette) 100%); }
   /* Blueprint's sheets are drawing sheets: a double frame (the lit one's inner line in red pencil), squared paper, the
@@ -1062,7 +1065,8 @@
      The launcher opens the modebar: the one bar on screen with both panels folded, and the row above the view on a
      phone, where it keeps its short label. The card is fixed: at the view's lower left on a desktop, above the scale
      bar (the camera frames what is above it), and across the window's foot under the view where the panels stack. Its
-     text sizes with the Controls tab's text size. The ring around the real control never takes a click. */
+     text sizes with the Controls tab's text size. The page is dimmed round the step's control, the spotlight (below), and
+     only the card and the spotlight take the pointer; the ring around the control never takes a click itself. */
   #bGuide .short { display: none; }
   @media (max-width: 1320px) { #bGuide .long { display: none; } #bGuide .short { display: inline; } }
   @media (max-width: 960px) { #bGuide .lbl { position: static; width: auto; height: auto; overflow: visible; clip-path: none; } }
@@ -1103,8 +1107,16 @@
   .g-ring { position: fixed; z-index: 31; pointer-events: none; border: 2px solid var(--accent); border-radius: 4px;
             box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 24%, transparent); animation: g-pulse 1.6s ease-in-out infinite; }
   @keyframes g-pulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 8%, transparent); } }
+  /* The shade: four panels round the spotlight darken the page and take every pointer outside it. Once the step is done,
+     and while the next one sets itself up, they lighten so the result and the camera's move show, but still take the
+     pointer; while a step sets itself up the shade also covers the spotlight. */
+  .g-shade { position: fixed; inset: 0; z-index: 29; pointer-events: none; }
+  .g-shade[hidden] { display: none; }
+  .g-shade.busy { pointer-events: auto; }
+  .g-shade i { position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: auto; background: rgb(4 8 16 / 0.64); transition: background-color 0.3s ease-out; }
+  .g-shade:is(.busy, .lit) i { background: rgb(4 8 16 / 0.16); }
   .holo .guide button.primary { background: var(--ink); color: var(--paper); }
-  @media (prefers-reduced-motion: reduce) { .g-body { transition: none; } .g-ring { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .g-body { transition: none; } .g-ring { animation: none; } .g-shade i { transition: none; } }
   /* Stacked, the card spans the window's foot, under the view; the body scrolls when the step is long. */
   .guide.dock { left: 8px; right: 8px; bottom: 8px; width: auto; height: min(38vh, 290px); }
   .guide.dock .g-body { flex: 1; min-height: 0; }
@@ -1302,6 +1314,7 @@
     <button type="button" id="gNext">Next ›</button>
   </div>
 </section>
+<div class="g-shade" id="gShade" aria-hidden="true" hidden><i></i><i></i><i></i><i></i></div>
 <div class="g-ring" id="gRing" aria-hidden="true" hidden></div>
 <p class="sr-only" id="gLive" aria-live="polite"></p>
 
@@ -5613,6 +5626,16 @@ function refButton(id) {
   b.addEventListener('click', () => showSource(id === 'std' ? 'S9' : id));
   return b;
 }
+// The printed user guide, docs/user-guide.pdf (15 A4 pages of screenshots), downloaded as a file.
+function manualLink() {
+  const a = el('a', 'dl');
+  a.href = 'docs/user-guide.pdf';
+  a.download = 'SPM1-anatomy-user-guide.pdf';
+  a.dataset.fk = 'act:manual';
+  a.title = 'Download the user guide: how to use this page, in 15 A4 pages of screenshots, to read or print';
+  a.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10"/></svg>User guide (PDF)';
+  return a;
+}
 function action(label, fn, primary, fk) {
   const b = el('button', primary ? 'primary' : null, label);
   b.type = 'button';
@@ -5957,7 +5980,7 @@ function renderOverview(box) {
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
   const acts = el('div', 'actions');
   acts.append(action('Take the tour', startTour, true, 'act:tour'), action('Where does it go?', () => { startQuiz(); $('quizChoices').querySelector('button')?.focus(); }, false, 'act:quiz'),
-    action('Guided analysis', () => guideStart(), false, 'act:guide'));
+    action('Guided analysis', () => guideStart(), false, 'act:guide'), manualLink());
   box.append(acts, el('p', 'note', `The tour: ${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow; Next in the inspect bar goes on, Done leaves. Where does it go?: ${QUIZ_N} parts are lifted out in turn, and you click where each one goes.`));
   box.append(el('h3', null, 'How a run goes'));
   const ol = el('ol', 'run');
@@ -6851,6 +6874,8 @@ function setHover(mesh, inst = null) {
 window.addEventListener('keydown', (e) => {
   const tag = (e.target && e.target.tagName) || '';
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  // In the guide a key acts only when the step teaches it.
+  if (guide.on && !gKeyOk(e)) return;
   // With single-letter keys off (Controls tab), only keys that are not characters act: arrows, Esc, Backspace.
   if (!letterKeys && e.key.length === 1) return;
   const k = e.key.toLowerCase();
@@ -6918,8 +6943,9 @@ window.addEventListener('keydown', (e) => {
 // lets you try it, and says what shows when it works; Show this step does it with the call a click makes. A step is
 // { ch, id, q, how, look, need, act, done, base, target }: `need` sets up the state it starts from with the controls'
 // own calls, `done(base)` says whether the page is in the state it asks for (null: nothing to check), `target` is the
-// control (an element) or a part ({ box }); `right` puts the card at the view's lower right, clear of what opens at its
-// left (the wheel's fan). The guide keeps its own state and leaves none: nothing is stored or written
+// control (an element) or a part ({ box }); `zone` is the part of the page the step needs lit and live, when that is more
+// than its control (the view, to drag in; the list, to search), else the spotlight is the ring; `right` puts the card at
+// the view's lower right, clear of what opens at its left (the wheel's fan). The guide keeps its own state and leaves none: nothing is stored or written
 // to the address while it runs, and Exit or Finish gives back everything it found.
 const GUIDE_CHAPTERS = ['A viewport, bolt by bolt', 'Orient the view', 'Find hardware', 'See inside', 'Inspect a connection', 'Read the evidence', 'Use the result'];
 const gPiece = (part, start) => (piecesOf.get(part) || []).find((pc) => pc.userData.label.startsWith(start)) || null;
@@ -7022,6 +7048,7 @@ const gDims = () => [...document.querySelectorAll('#draft [data-dim]')].filter((
 const gShown = (e) => !!e?.getClientRects().length;
 const gWheel = () => gShown($('wheel')) && !$('wheel').classList.contains('away');
 const gWedge = (gid) => $('whGroups').querySelector(`button[data-group="${gid}"]`);
+const gTreeZone = () => (panels.tree || stacked() ? $('treePanel') : null);
 const gGroup = (name) => [...document.querySelectorAll('#treePanel .caret')].find((b) => b.textContent === name) || null;
 // Light one piece with the viewer's own highlight (the light a Pieces row gives), until the step is done or left.
 function gLight(pc) { gUnlight(); guide.lit = pc; state.rowPiece = pc; refreshLit(); }
@@ -7100,6 +7127,7 @@ const GUIDE_STEPS = [
 
   // 2. Orient the view.
   { ch: 1, id: 'orient.turn', q: 'What does the far side look like?',
+    zone: () => $('card'),
     how: () => `${tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.')}${gShown($('turnTable')) ? ' The arrows of the turntable under the machine turn it an eighth at a time.' : ''}`,
     look: 'Sideways spins the machine about its own axis, the middle of the ring on the floor; up and down tilts it. The vertical always stays up.',
     need: () => { gAssembly(); gHome(); },
@@ -7108,6 +7136,7 @@ const GUIDE_STEPS = [
     done: (b) => Math.abs(goal.az - b.az) > 25 || Math.abs(goal.el - b.el) > 15,
     target: () => stage },
   { ch: 1, id: 'orient.pan', q: 'Can you slide the machine aside?',
+    zone: () => $('card'),
     how: () => tapOr('Drag with two fingers.', 'Right-drag, Shift-drag or middle-drag. Or switch on the pan button at the view’s left edge (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.'),
     look: () => (spinAxis ? 'The machine slides without turning. A turn still goes about its own axis, so it turns in place where it now stands.' : 'The machine slides without turning, and the point it turns about moves with it: the middle of the view.'),
     base: () => ({ t: goal.target.clone() }),
@@ -7115,6 +7144,7 @@ const GUIDE_STEPS = [
     done: (b) => goal.target.distanceTo(b.t) > 3,
     target: () => (coarse ? stage : document.querySelector('[data-drag]')) },
   { ch: 1, id: 'orient.axis', q: 'Should a turn go about the machine, or about the middle of the view?',
+    zone: () => $('card'),
     how: 'The axis button at the view’s left edge, under the pan button, switches it (<kbd>R</kbd>). Lit, as every visit starts, a turn goes about the machine’s own axis wherever you slide it; off, about the middle of the view.',
     look: () => (spinAxis ? 'Locked: turn the machine and it spins in place, its axis fixed on the screen.' : 'Unlocked: turn the machine and, after a slide, it swings round the middle of the view instead. Exit gives your choice back.'),
     base: () => ({ a: spinAxis }),
@@ -7122,6 +7152,7 @@ const GUIDE_STEPS = [
     done: (b) => spinAxis !== b.a,
     target: () => $('bAxis') },
   { ch: 1, id: 'orient.zoom', q: 'Can you get close to the coils?',
+    zone: () => $('card'),
     how: () => tapOr('Pinch on the model.', 'Scroll the wheel over the coils: it zooms toward the pointer. The zoom buttons and <kbd>+</kbd> <kbd>−</kbd> zoom too.'),
     look: 'The machine grows about the pointer, and the scale bar’s length and label change with it.',
     base: () => ({ z: goal.zoom }),
@@ -7133,12 +7164,14 @@ const GUIDE_STEPS = [
     look: 'The bar is true at every zoom, because the view has no perspective: a part at the back is drawn at the same scale as one at the front.',
     target: () => $('scale') },
   { ch: 1, id: 'orient.views', q: 'What does the machine look like from above?',
+    zone: () => $('card'),
     how: 'Open <b>Views</b> at the view’s left edge and pick <b>Above</b> (<kbd>4</kbd>). A click on an axis end of the triad, top right, looks along that axis.',
     look: 'The view turns to look straight down: the ring of eight TF coils round the vessel, and the four corner posts.',
     act: () => gGlide(() => lookFrom(...VIEWS.top)),
     done: () => goal.el > 80,
     target: () => $('bViews') },
   { ch: 1, id: 'orient.home', q: 'Lost? Get back to the whole machine.',
+    zone: () => $('card'),
     how: () => `Press the home button at the view’s left edge, or <kbd>0</kbd>${coarse ? '' : ', or double-click empty space'}. While you inspect a part, home frames that part.`,
     look: 'The three-quarter view of the whole SPM1, stand and pump included.',
     act: () => gGlide(resetView),
@@ -7156,6 +7189,7 @@ const GUIDE_STEPS = [
 
   // 3. Find hardware.
   { ch: 2, id: 'find.wheel', right: true, q: 'Which parts are the magnets?',
+    zone: () => (gWheel() ? [$('whRing'), ...$('whGroups').children, $('whFan')] : gTreeZone()),
     how: () => (gWheel() ? `While the assembly list is folded to its rail, the half-wheel at the view’s left edge holds the seven groups. Rest the pointer on <b>II</b>, the magnets, or click it. ${tapOr('Tap', 'Click')} a picture to select that part; ${tapOr('double-tap', 'double-click')} to inspect it.`
       : 'With a mouse and the assembly list folded, a half-wheel of the seven groups stands at the view’s left edge. Here it has no room, so the groups in the assembly list are the way in.'),
     look: () => (gWheel() ? 'The magnets’ wedge lifts and its five parts fan out as pictures, each with its count: the TF coils, the inner PF coils, the satellite coils, the central solenoid and its former. The pointer on one lights it on the model.'
@@ -7165,6 +7199,7 @@ const GUIDE_STEPS = [
     done: () => (gWheel() ? wheel.open === 'magnets' : null),
     target: () => (gWheel() ? gWedge('magnets') : gGroup('Magnets')) },
   { ch: 2, id: 'find.search', below: true, q: 'Which parts use M8 bolts?',
+    zone: gTreeZone,
     how: 'Type <b>M8</b> in the assembly list’s search box. <kbd>/</kbd> puts the cursor there; when the list is folded to its rail, its magnifier opens it.',
     look: 'The list narrows to the parts with M8 hardware, each with its matching rows: the joint flanges’ 20 bolts and nuts, the viewports’ 16 bolts and nuts…',
     need: () => { gAssembly(); gTree(); gType(''); },
@@ -7172,6 +7207,7 @@ const GUIDE_STEPS = [
     done: () => /\bm8\b/i.test($('search').value),
     target: () => $('search') },
   { ch: 2, id: 'find.pick', q: 'Which row is the left viewport’s?',
+    zone: gTreeZone,
     how: 'Click the row <b>Left viewport (webcam) · 16 bolts</b> under Viewports.',
     look: 'It inspects that piece and keeps the bolts’ sheet: a hit takes you straight to the hardware.',
     need: () => { gAssembly(); gTree(); gType('M8'); },
@@ -7179,6 +7215,7 @@ const GUIDE_STEPS = [
     done: () => iso.part === 'viewport' && iso.focus === gLeft() && isPinned(BOLTS),
     target: () => gHit('Left viewport (webcam) · 16 bolts') },
   { ch: 2, id: 'find.select', q: 'What is the difference between selecting and inspecting?',
+    zone: () => [gTreeZone(), $('card')],
     how: () => `${tapOr('Tap', 'Click')} <b>Toroidal field coils</b> in the list or on the model: that selects. ${tapOr('Double-tap', 'Double-click')}, <b>Inspect on its own</b> or <kbd>I</kbd> inspects. From the keyboard the list is one Tab stop: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> selects, <kbd>Space</kbd> hides.`,
     look: 'Selected, the coils take the selection colour and outline, the rest fades back and the Part tab describes them, but the machine stays whole. <b>Zoom to it</b> frames them without lifting them out.',
     need: () => { gAssembly(); gTree(); gType(''); },
@@ -7186,6 +7223,7 @@ const GUIDE_STEPS = [
     done: () => state.select === 'tf' && !iso.part,
     target: () => document.querySelector('#tree .ti[data-part="tf"]') },
   { ch: 2, id: 'find.hide', below: true, q: 'Can you see past the table?',
+    zone: gTreeZone,
     how: 'Press the eye on the <b>Optical table</b> row in the list. <b>Hide</b> in the Part tab, or <kbd>H</kbd>, hides the selected part; the eye on a group hides the whole group.',
     look: 'The table goes and its eye closes: the pump and supplies under it are in the open.',
     need: () => { gAssembly(); gTree(); gType(''); if (hidden.has('table')) setHidden(['table'], false); document.querySelector('#tree .ti[data-part="table"]')?.scrollIntoView({ block: 'nearest' }); },
@@ -7193,6 +7231,7 @@ const GUIDE_STEPS = [
     done: () => hidden.has('table'),
     target: () => document.querySelector('#tree .ti[data-part="table"] .eye') },
   { ch: 2, id: 'find.show', below: true, q: 'And back again?',
+    zone: gTreeZone,
     how: 'Press the same eye again, or select the table and press <kbd>H</kbd>.',
     look: 'The table is back. Inspecting a hidden part shows it again too.',
     need: () => { gAssembly(); gTree(); gType(''); if (!hidden.has('table')) setHidden(['table'], true); },
@@ -7200,6 +7239,7 @@ const GUIDE_STEPS = [
     done: () => !hidden.has('table'),
     target: () => document.querySelector('#tree .ti[data-part="table"] .eye') },
   { ch: 2, id: 'find.notdrawn', below: true, q: 'Is the turbomolecular pump in the model?',
+    zone: gTreeZone,
     how: 'Open <b>Listed, not drawn</b> at the foot of the assembly list.',
     look: 'Options and upgrades named in the sources but not drawn, each with its status and source. The turbomolecular pump is an upgrade (S4). Everything drawn is in the groups above.',
     need: () => { gAssembly({ unhide: true }); gTree(); gType(''); gNd()?.scrollIntoView({ block: 'nearest' }); },
@@ -7247,6 +7287,7 @@ const GUIDE_STEPS = [
     done: (b) => themeName() !== b.t,
     target: () => $('looks') },
   { ch: 3, id: 'inside.dims', q: 'How tall is the table, and can you move that dimension?',
+    zone: () => $('card'),
     how: () => (gDims().length ? 'In Blueprint the whole machine at rest carries three dimensions in millimetres. Drag a dimension’s line further off, or drag its figure along it; double-click it to put it back.'
       : 'Blueprint draws three dimensions on the whole machine at rest, on a desktop: there is no room for them here. The title block still gives the scale.'),
     look: () => { const f = [...document.querySelectorAll('#draft [data-dim] .dim')].map((e) => e.textContent).filter(Boolean); return `The dimension moves as on a drawing. The figures${f.length ? ` (${esc(f.join(', '))})` : ''} are the model’s own sizes: the table’s height and width, and the torus’s centre circle, twice R₀ = 230 mm (S2).`; },
@@ -7295,6 +7336,7 @@ const GUIDE_STEPS = [
     done: (b) => iso.apart && Math.abs(iso.apartSpread - b.s) > 0.05,
     target: () => $('sApart') },
   { ch: 4, id: 'connect.steps', q: 'Which bolt is which?',
+    zone: () => $('card'),
     how: () => `Step to <b>Step 2 / 4</b>, then ${tapOr('hold a finger on one bolt head: the loupe names it', 'rest the pointer on one bolt head')}.`,
     look: 'Each head carries its turn in the star order, the cross pattern a flange is tightened in. The tooltip names the bolt under the pointer, <b>Bolt n of 16 · star m</b>: its place round the ring from the top, and its turn.',
     need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
@@ -7328,6 +7370,7 @@ const GUIDE_STEPS = [
     need: () => gPart('viewport', gLeft(), { apart: true, pins: [], tab: 'part', view: [HOME.az, HOME.el] }),
     target: () => gHost().querySelector('ul.subs') },
   { ch: 5, id: 'evidence.preview', q: 'Can you glance at a sheet without keeping it?',
+    zone: () => $('card'),
     how: () => tapOr('Tap a sub-part, or a numbered callout on the model.', 'Rest the pointer on a sub-part for a moment, or click a numbered callout.'),
     look: 'Its sheet opens labelled <b>Preview</b> under its name. It stays until you rest on another sub-part; <b>Keep</b> keeps it.',
     need: () => gPart('viewport', gLeft(), { apart: true, pins: [], view: [HOME.az, HOME.el] }),
@@ -7335,6 +7378,7 @@ const GUIDE_STEPS = [
     done: () => !!state.live,
     target: () => gCallout('Viewport flange') || stage },
   { ch: 5, id: 'evidence.compare', q: 'Can you compare two sheets?',
+    zone: () => $('card'),
     how: () => `Keep two: ${tapOr('press <b>Keep</b> on a preview', 'click a sub-part, or press <b>Keep</b> on its preview')}. Here, the flange and the gasket.`,
     look: () => (dockLayout() ? 'Both are kept: the bottom sheet’s arrows step between them, <b>Kept 1 of 2</b>.' : 'Both sheets stack in the column, each row with its tag. A leader line runs from the sheet under the pointer to its sub-part: the flange’s 16 × Ø8.4 mm holes against the gasket’s 120.5 mm outside diameter.'),
     need: () => gPart('viewport', gLeft(), { apart: true, pins: [], view: [HOME.az, HOME.el] }),
@@ -7349,6 +7393,7 @@ const GUIDE_STEPS = [
     done: () => state.pins.length < 2 || state.pins.some((x) => HUD.folded.has(sheetKey(x))),
     target: () => (dockLayout() ? $('bCloseAll') : $('bFoldAll')) },
   { ch: 5, id: 'evidence.float', q: 'Can you set a sheet aside, or read it larger?',
+    zone: () => $('card'),
     how: () => (dockLayout() ? 'The sheets are a bottom sheet that peeks under the part. Pull it up by its head (or tap the head, or <b>⌃</b>) to read; push it down, or <kbd>Esc</kbd>, to let it peek.'
       : 'Drag a sheet by its bar out of the column and drop it on the view. It floats there, kept.'),
     look: () => (dockLayout() ? 'Pulled up, the sheet takes most of the view to read; let down, it peeks and the part is framed above it. The camera never moves for it.' : 'The sheet floats where you dropped it, and <b>Tidy</b> appears in the column’s head.'),
@@ -7454,7 +7499,7 @@ const GUIDE_STEPS = [
     target: () => $('tHelp') },
   { ch: 6, id: 'use.finish', q: 'That is the whole viewer.',
     how: 'Replay any chapter from <b>Chapters</b>, or press <b>Finish</b>: your view, sheets and settings come back as they were.',
-    look: '<b>Guided analysis</b> in the top bar opens this again, with <b>Resume</b> to pick up where you left.',
+    look: '<b>Guided analysis</b> in the top bar opens this again, with <b>Resume</b> to pick up where you left. To keep or print, <b>User guide (PDF)</b> in the Machine tab downloads the same in 15 pages of screenshots.',
     need: () => { gAssembly(); gHome(); } },
 ];
 const gText = (v) => (typeof v === 'function' ? v() : v || '');
@@ -7516,6 +7561,66 @@ function gRing(r) {
   g.dataset.k = k;
   Object.assign(g.style, { left: `${Math.round(r.left) - 4}px`, top: `${Math.round(r.top) - 4}px`, width: `${Math.round(r.width) + 8}px`, height: `${Math.round(r.height) + 8}px` });
 }
+// The spotlight: the step's zone (one box round all its elements), else its ring, padded a little, in the window.
+function gHole(s, r) {
+  let h = null;
+  for (const e of [].concat(s.zone?.() ?? [])) {
+    if (!e?.getClientRects().length) continue;
+    const b = e.getBoundingClientRect();
+    if (b.width < 1 || b.height < 1) continue;
+    h = h ? { l: Math.min(h.l, b.left), t: Math.min(h.t, b.top), r: Math.max(h.r, b.right), b: Math.max(h.b, b.bottom) } : { l: b.left, t: b.top, r: b.right, b: b.bottom };
+  }
+  if (!h && r) h = { l: r.left, t: r.top, r: r.left + r.width, b: r.top + r.height };
+  if (!h) return null;
+  const W = document.documentElement.clientWidth, H = innerHeight, p = 6;
+  return { l: Math.max(0, h.l - p), t: Math.max(0, h.t - p), r: Math.min(W, h.r + p), b: Math.min(H, h.b + p) };
+}
+// The shade's four panels round the hole: above, below, left and right of it (the whole window when there is none).
+function gShade(h) {
+  const sh = $('gShade'), W = document.documentElement.clientWidth, H = innerHeight;
+  const k = h ? [h.l, h.t, h.r, h.b, W, H].map(Math.round).join(',') : `-,${W},${H}`;
+  if (sh.dataset.k === k) return;
+  sh.dataset.k = k;
+  const put = (e, l, t, w, hh) => Object.assign(e.style, { left: `${Math.round(l)}px`, top: `${Math.round(t)}px`, width: `${Math.max(0, Math.round(w))}px`, height: `${Math.max(0, Math.round(hh))}px` });
+  const [a, b, c, d] = sh.children;
+  if (!h) { put(a, 0, 0, W, H); for (const e of [b, c, d]) put(e, 0, 0, 0, 0); return; }
+  put(a, 0, 0, W, h.t);
+  put(b, 0, h.b, W, H - h.b);
+  put(c, 0, h.t, h.l, h.b - h.t);
+  put(d, h.r, h.t, W - h.r, h.b - h.t);
+}
+// What Tab reaches in the guide: the card and the spotlight's controls, in the page's order.
+function gTabbable() {
+  const s = GUIDE_STEPS[guide.i], sel = 'button:not([disabled]), a[href], input:not([disabled]), select, [tabindex]:not([tabindex="-1"])';
+  const t = guide.ready ? s.target?.() : null, reach = t instanceof Element ? gReach(t) : null;
+  const roots = [$('guide'), ...[].concat((guide.ready && s.zone?.()) || []), reach].filter((e) => e?.getClientRects().length);
+  const out = new Set();
+  for (const r of roots) for (const e of [r, ...r.querySelectorAll(sel)]) if (e.matches(sel) && e.getClientRects().length) out.add(e);
+  return [...out].sort((x, y) => (x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+}
+// A key the step teaches: one of its <kbd>s, or the view's arrows and zoom keys while the view is lit.
+function gKeyOk(e) {
+  if (!guide.ready) return false;
+  const s = GUIDE_STEPS[guide.i], name = { esc: 'escape', '←': 'arrowleft', '→': 'arrowright', '↑': 'arrowup', '↓': 'arrowdown', '−': '-' };
+  const taught = new Set([...$('gHow').querySelectorAll('kbd')].map((x) => { const v = x.textContent.trim().toLowerCase(); return name[v] || v; }));
+  const k = e.key.toLowerCase(), view = s.target?.() === stage || [].concat(s.zone?.() ?? []).includes($('card'));
+  if (taught.has(k) || (k === '=' && taught.has('+')) || (k === '_' && taught.has('-'))) return true;
+  if (k.startsWith('arrow') && (view || taught.has('shift'))) return true;
+  return view && ['+', '=', '-', '_'].includes(k);
+}
+// Tab stays in the card and the spotlight, round and round.
+document.addEventListener('keydown', (e) => {
+  if (!guide.on || e.key !== 'Tab') return;
+  const list = gTabbable(), a = document.activeElement;
+  if (!list.length) return;
+  const i = list.indexOf(a);
+  let j;
+  if (i >= 0) j = (i + (e.shiftKey ? -1 : 1) + list.length) % list.length;
+  else if (e.shiftKey) { j = list.findLastIndex((x) => a.compareDocumentPosition(x) & Node.DOCUMENT_POSITION_PRECEDING); if (j < 0) j = list.length - 1; }
+  else { j = list.findIndex((x) => a.compareDocumentPosition(x) & Node.DOCUMENT_POSITION_FOLLOWING); if (j < 0) j = 0; }
+  e.preventDefault();
+  list[j].focus();
+}, true);
 // A part's place on screen, inside the view.
 function gBoxRect(box) {
   if (!box || box.isEmpty()) return null;
@@ -7549,7 +7654,8 @@ function gPlace() {
 // Every frame while the guide is on (from frame()): the card's place, the ring, and the step's check.
 function guideTick() {
   gPlace();
-  if (!guide.ready) { $('gRing').hidden = true; return; }
+  const sh = $('gShade');
+  if (!guide.ready) { $('gRing').hidden = true; sh.classList.add('busy'); return; }
   const s = GUIDE_STEPS[guide.i];
   gMark();
   let r = null, via = null;
@@ -7557,6 +7663,9 @@ function guideTick() {
   if (t?.box) r = gBoxRect(t.box);
   else if (t) { const e = gReach(t); if (e) { r = e.getBoundingClientRect(); if (e !== t) via = e; } }
   gRing(r);
+  sh.classList.remove('busy');
+  sh.classList.toggle('lit', guide.ok === true);
+  gShade(gHole(s, r));
   const say = !via ? '' : via === $('bMore') ? 'It is under ⋯: open ⋯ first.' : via.classList.contains('rail-search') ? 'Open the assembly list first: its magnifier, or /.' : 'Open the panel from its rail first.';
   if ($('gReach').textContent !== say) { $('gReach').textContent = say; $('gReach').hidden = !say; }
 }
@@ -7719,6 +7828,9 @@ function guideStart(at = 0) {
   store.quiet = true;
   touched = true;
   $('guide').hidden = false;
+  $('gShade').hidden = false;
+  $('gShade').classList.add('busy');
+  $('gShade').dataset.k = '';
   $('bGuide').setAttribute('aria-pressed', 'true');
   gPlace();
   guideGo(at, { focus: true });
@@ -7737,6 +7849,7 @@ function guideExit(o = {}) {
   guide.saved = null;
   $('guide').hidden = true;
   $('gRing').hidden = true;
+  $('gShade').hidden = true;
   $('card').style.height = '';
   $('bGuide').setAttribute('aria-pressed', 'false');
   $('gLive').textContent = 'Guided analysis closed. Your view, sheets and settings are back as they were.';
