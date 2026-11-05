@@ -801,6 +801,9 @@
   .blueprint .corner { z-index: 2; }
   .blueprint .triad { top: 26px; right: 26px; }
   .blueprint .navcluster { left: 26px; }
+  /* The wheel's flat side stands on the sheet's inner frame line (22 px in), as it stands on the panel's edge in the
+     other themes, so it never crosses the frame or the zone letters. */
+  .blueprint .wheel { left: 22px; }
   .blueprint .corner.bl { bottom: 26px; left: 26px; }
   .blueprint .corner.br { bottom: 26px; right: 26px; padding: 0; border-radius: 0; background: var(--card); border: 1.5px solid var(--bp-line); text-align: left; font-size: 11px; min-width: 250px; }
   .blueprint .corner.br > div { padding: 3px 8px; }
@@ -2652,9 +2655,11 @@ function fitWheel() {
   const card = $('card'), w = $('wheel'), nav = $('navCluster');
   if (!card || !w || !nav) return;
   const c = card.getBoundingClientRect();
-  // The wheel stays where it stood under the view's name, which is now the page's (47 px at the text size), or under
-  // the sheet's frame in Blueprint.
-  const top = (blueprint ? 24 : 1 + 46 * uiScale) + 8, gap = 12;
+  // The wheel's ticks start 55 px under the view's top at the text size, in every theme: in Blueprint that clears the
+  // sheet's frame and its zone numbers. In a narrow Blueprint view the title block takes the top left corner, so the
+  // wheel stands under it.
+  const tb = $('readout'), under = blueprint && card.classList.contains('tight') && tb.getClientRects().length ? tb.getBoundingClientRect().bottom - c.top + 8 : 0;
+  const top = Math.max(1 + 46 * uiScale + 8, under), gap = 12;
   nav.classList.remove('row');
   w.classList.remove('away', 'nohead');
   const shows = document.querySelector('.app').classList.contains('fold-tree') && !matchMedia('(max-width: 960px), (pointer: coarse)').matches;
@@ -6599,7 +6604,7 @@ function updateDraft() {
   const svg = $('draft');
   if (!blueprint) { if (svg.firstChild) svg.replaceChildren(); $('card').classList.remove('tight'); return; }
   const W = width, H = height, o = 8, i = 22;
-  $('card').classList.toggle('tight', W < 760);
+  if ($('card').classList.contains('tight') !== W < 760) { $('card').classList.toggle('tight', W < 760); updateReadout(); fitWheel(); }
   // A view with no room for the frame (a hidden or collapsed pane) gets no sheet until it has.
   if (W < 4 * i || H < 4 * i) { if (svg.firstChild) svg.replaceChildren(); return; }
   const parts = [];
