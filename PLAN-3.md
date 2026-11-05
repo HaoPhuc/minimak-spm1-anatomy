@@ -22,7 +22,12 @@ are.
   (it is a bottom inset in `hudInsets`). Where the panels stack (≤ 960 px) it is fixed at the window's foot, under the
   view, so the bottom sheet and the inspect bar keep the view. Its text sizes with the Controls tab's text size, like
   the inspect bar.
-- **Pointing.** A ring marks the real control. It never takes a click, so every control still works. When the control
+- **Pointing.** A ring marks the real control, in a spotlight: the rest of the page is shaded, and only the spotlight
+  and the card take the pointer, as a first-run tour of an app does. The spotlight is the control's ring, or the step's
+  `zone` where it needs more (the view to drag in, the list to search, the wheel and its fan). Once the step is done
+  the shade lightens so its result shows, still taking the pointer. A key acts only when the step names it in a
+  `<kbd>` (or the view's arrows and zoom keys while the view is lit), and Tab goes round the card and the spotlight. The
+  ring itself never takes a click. When the control
   is hidden, the ring shows how to reach it, and the card says so. A control under **⋯** rings **⋯**. One in a folded
   panel rings the rail. One in the folded bottom sheet rings its head. A part in the model is lit with the viewer's own
   highlight (`state.rowPiece`, the light a Pieces row gives) and ringed by its screen rect. The leader line from a sheet
@@ -35,8 +40,8 @@ are.
   `frame()` moves the ring and checks `done`.
 - **Motion.** It uses the viewer's own glides: inspect 1.2 s, take apart 0.8 s, a piece 0.9 s, Show me 0.8 s, a view
   button's ease. A new step's text fades out, waits for the camera and parts to settle (the overlay's own clock,
-  `ov.at`, at most 2.5 s), then fades in over 180 ms with its ring. A drag or pinch takes over at once, as it always
-  has. Under reduced motion the viewer already cuts, and the card does not fade.
+  `ov.at`, at most 2.5 s), then fades in over 180 ms with its ring; meanwhile the shade covers the spotlight too, so
+  nothing takes the pointer. Under reduced motion the viewer already cuts, and the card does not fade.
 - **Its own state.** `guide = { on, i, seq, saved, base, … }`. Every `need` and `act` checks a token (`seq`) after
   each wait, so fast Back or Next, a replay, or Exit mid-glide leaves no stale callback.
 - **What it leaves behind: nothing.**
