@@ -330,7 +330,19 @@
   .corner.br { bottom: 10px; right: 12px; text-align: right; color: var(--ink); max-width: 38%; }
   .corner.bl .hint, .corner.br { background: color-mix(in srgb, var(--card) 84%, transparent); padding: 3px 6px; border-radius: 6px; }
   /* The scale bar on the same backing as the hint, so its length reads over a dark part of the machine. */
-  .scale { display: flex; align-items: flex-end; gap: 6px; width: fit-content; margin: 0 0 6px; padding: 3px 6px; border-radius: 6px; background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); }
+  .scale { display: flex; align-items: flex-end; gap: 6px; width: fit-content; margin: 0 0 6px; padding: 3px 6px; border-radius: 6px; background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); white-space: nowrap; }
+  /* The hint takes two lines at most. Where the corner is too narrow for that (both panels open, a large text size), it
+     folds into an i beside the scale bar, and the same text shows above it while the pointer or focus is on the i, or
+     after a tap. The view's buttons stand over a corner of the scale bar and two lines (fitFoot). */
+  .hint-btn { display: none; }
+  .view.hint-fold .corner.bl { display: flex; align-items: flex-end; gap: 6px; }
+  .view.hint-fold .corner.bl .scale { margin: 0; }
+  .view.hint-fold .hint-btn { display: grid; place-items: center; flex: none; width: 22px; height: 22px; padding: 0; border-radius: 50%; pointer-events: auto; cursor: help;
+                              border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); font: italic 600 12px/1 Georgia, 'Times New Roman', serif; }
+  .view.hint-fold .corner.bl .hint { display: none; position: absolute; left: 0; bottom: calc(100% + 6px); width: max-content; max-width: 260px; }
+  .view.hint-fold .corner.bl:has(.hint-btn:is(:hover, :focus-visible, [aria-expanded="true"])) { z-index: 4; }
+  .view.hint-fold .corner.bl:has(.hint-btn:is(:hover, :focus-visible, [aria-expanded="true"])) .hint { display: block; }
+  @media (pointer: coarse) { .view.hint-fold .hint-btn { width: 44px; height: 44px; } }
   .scale i { display: block; height: 7px; border: 1.5px solid var(--ink); border-top: 0; }
   .triad { position: absolute; top: 8px; right: 8px; width: 84px; height: 84px; }
   /* The view's own controls, at its left edge and clear of what is framed: zoom, the home view, Views, pan, panels. */
@@ -956,10 +968,10 @@
   /* The view's own buttons stand at its lower left, over the scale bar, since the wheel has the middle of the edge. They
      keep small (26 px). Where the view is too short for the wheel over their column, they lie in a row (fitWheel),
      and the views menu opens above them. */
-  .navcluster { top: auto; bottom: 92px; transform: none; gap: 6px; }
+  .navcluster { top: auto; bottom: calc(18px + 74px * var(--ui-scale, 1)); transform: none; gap: 6px; }
   .navcluster .mb button { padding: 6px; }
   .navcluster .mb svg { width: 13px; height: 13px; }
-  .blueprint .navcluster { bottom: 108px; }
+  .blueprint .navcluster { bottom: calc(18px + 90px * var(--ui-scale, 1)); }
   .navcluster.row { flex-direction: row; align-items: flex-end; }
   .navcluster.row .mb { flex-direction: row; }
   .navcluster.row .mb button + button { border-top: 0; border-left: 1px solid var(--rule); }
@@ -979,6 +991,9 @@
   .view.docked .turn { display: none; }
   .corner.bl { --bl-max: calc(50% - 200px); }
   @media (max-width: 1180px) { .turn::before, .turn::after { display: none; } .corner.bl { --bl-max: calc(50% - 90px); } }
+  /* The same in a narrow view of a wide window (both panels open): the rulers would reach the readout. */
+  .view.foot-tight .turn::before, .view.foot-tight .turn::after { display: none; }
+  .view.foot-tight .corner.bl { --bl-max: calc(50% - 90px); }
   /* On a phone the machine turns under a finger; the scale bar and the readout keep the foot of the view. */
   @media (max-width: 700px) { .turn { display: none; } .corner.bl { --bl-max: 52%; } }
   /* The hint reads as a game's key hints; the readout as an instrument's display. */
@@ -1274,7 +1289,7 @@
     <p id="status" class="sr-only" aria-live="polite"></p>
     <div class="tip" id="tip"></div>
     <div class="loupe" id="loupe" aria-hidden="true" hidden><span></span><canvas></canvas></div>
-    <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><div class="hint" id="hint"></div></div>
+    <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><button type="button" class="hint-btn" id="bHint" aria-label="What a click or a drag does here" aria-describedby="hint" aria-expanded="false" title="What a click or a drag does here">i</button><div class="hint" id="hint"></div></div>
     <div class="corner br" id="readout"></div>
   </figure>
 
@@ -2642,7 +2657,7 @@ function aimShadow() {
 let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
 // On a touch screen, while a finger is down or the camera glides, the view renders at 1x and without the greyscale
 // drawing's shadows, so it keeps up on a tablet; it sharpens again when it is still.
-let lowRes = false;
+let lowRes = false, footFitted = false;
 let dirty = true;
 // The wheel and the view's buttons share the view's left edge: the wheel at the top, the buttons over the scale bar. The wheel is drawn as large as the room between them allows, from its full size (its ticks 168 px either
 // side of its hub) down to 82%, where its names stay readable. With less room the buttons lie in a row, which an open
@@ -2702,6 +2717,7 @@ function resize() {
   shared.uDpr.value = dpr;
   // Only the resolution changed (a finger down or lifted on a touch screen): the framing stays.
   if (!sized) { dirty = true; return; }
+  fitFoot();
   fitWheel();
   fitView();
   // The width of the view picks the sheet column or the dock, so frame the part again.
@@ -4646,7 +4662,7 @@ function renderHud() {
   col.classList.toggle('none', dock && !listed.length);
   col.style.top = dock ? '' : `${hudTop()}px`;
   $('card').style.setProperty('--hud-r', `${hudInsets().r}px`);
-  $('card').classList.toggle('docked', dock && listed.length > 0);
+  if ($('card').classList.contains('docked') !== (dock && listed.length > 0)) { $('card').classList.toggle('docked', dock && listed.length > 0); fitFoot(); }
   setSheetUp(HUD.up, false);
   // A new card in the dock starts at its top; a sheet just kept or pointed at is scrolled into view in the column.
   const shown = dock ? listed[0]?.dataset.key || null : null;
@@ -6342,6 +6358,8 @@ function setScale(v) {
   uiScale = v;
   store.set('spm1-scale', String(v));
   document.documentElement.style.setProperty('--ui-scale', String(v));
+  fitFoot();
+  fitWheel();
   updateIsoBar();
   renderHud();
   if (iso.part) frameIsolated(false);
@@ -6782,7 +6800,30 @@ const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick
   : iso.part ? `Point at a sub-part to preview · ${allShown() ? 'click a piece to pick it' : 'click to keep · double-click to show it'} · Esc steps back`
     : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
       : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
-function setHint(text) { $('hint').textContent = text || HINT(); }
+function setHint(text) {
+  const h = $('hint'), t = text || HINT();
+  if (h.textContent === t) return;
+  h.textContent = t;
+  fitFoot();
+}
+// The foot of the view: the turntable's rulers only where they clear the readout (with room for a longer line in it),
+// and the hint on two lines at most, else folded into its i. Lines are counted from the text's own line boxes, so the
+// text size is taken in.
+function fitFoot() {
+  const card = $('card'), h = $('hint'), t = $('turnTable'), ro = $('readout');
+  if (!card) return;
+  card.classList.remove('foot-tight');
+  if (t.getClientRects().length && ro.getClientRects().length && t.getBoundingClientRect().right > ro.getBoundingClientRect().left - 40) card.classList.add('foot-tight');
+  card.classList.remove('hint-fold');
+  const range = document.createRange();
+  range.selectNodeContents(h);
+  const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+  if (lines > 2) card.classList.add('hint-fold');
+  else $('bHint').setAttribute('aria-expanded', 'false');
+}
+// A tap on the i shows the hint until the next tap anywhere.
+$('bHint').addEventListener('click', (e) => { const b = e.currentTarget; b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); });
+document.addEventListener('pointerdown', (e) => { if (e.target !== $('bHint')) $('bHint').setAttribute('aria-expanded', 'false'); }, true);
 
 // ---------- Pointer, wheel and keys ----------
 const pointers = new Map();
@@ -8228,6 +8269,8 @@ function frame() {
   drawTriad();
   drawScale();
   updateReadout();
+  // The foot is fitted again once the readout has its text, which it gets in the first frame.
+  if (!footFitted) { footFitted = true; fitFoot(); }
 }
 
 // ---------- Start ----------
