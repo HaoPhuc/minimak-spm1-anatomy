@@ -8,7 +8,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 S, O = os.path.join(HERE, 'shots'), os.path.join(HERE, 'img')
 os.makedirs(O, exist_ok=True)
 
-FULL = ['first', 'guide', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'greyscale', 'blueprint', 'hologram']
+FULL = ['first', 'guide', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'desk', 'greyscale', 'blueprint', 'hologram']
 PHONE = ['phone', 'phone-inspect', 'phone-more']
 CROPS = {
     'bar': ('apart', 150, 98, 856, 168),        # the inspect bar's two rows, without the step's caption
@@ -24,6 +24,10 @@ CROPS = {
     'joint': ('joint', 61, 66, 953, 782),       # the view only, without the panels
     'tour': ('tour', 168, 60, 1264, 700),
     'quiz': ('quiz', 47, 60, 953, 720),
+    # The control desk's monitor in three states: VIDEO 1, its options and what the tracking reads.
+    'desk-glow': ('desk-glow', 980, 294, 1248, 548),
+    'desk-tf': ('desk', 980, 294, 1248, 548),
+    'desk-pf': ('desk-pf', 980, 294, 1248, 548),
 }
 PHOTO = {'select', 'wheel', 'joint', 'tour', 'quiz'}               # crops with much of the model in them go as JPEG
 
