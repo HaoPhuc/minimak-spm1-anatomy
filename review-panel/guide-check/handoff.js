@@ -1,4 +1,4 @@
-// The tour and the quiz take over from the guide; the standalone controls still work afterwards.
+// The tour, the quiz and the control desk take over from the guide; the standalone controls still work afterwards.
 $('bGuide').click(); await until(() => A.guide.ready);
 await go('use.tour'); await A.gShowStep(); await sleep(2500);
 log.push(`tour handoff: guide.on=${A.guide.on}, tour stop=${A.iso.tour}, part=${A.iso.part}, quiet=${A.store.quiet}`);
@@ -13,6 +13,11 @@ document.querySelector('#quizChoices button')?.click(); await sleep(2500);
 log.push(`quiz answered: answered=${A.quiz.answered}`);
 $('bQuizDone').click(); await sleep(1500);
 log.push(`quiz Done: quiz.on=${A.quiz.on}`);
+$('bGuide').click(); await until(() => A.guide.ready);
+await go('use.desk'); await A.gShowStep(); await sleep(2000);
+log.push(`desk handoff: guide.on=${A.guide.on}, desk.on=${A.desk.on}, quiet=${A.store.quiet}, focus=${document.activeElement.id}`);
+$('bDeskDone').click(); await sleep(1500);
+log.push(`desk Done: desk.on=${A.desk.on}`);
 const h0 = history.length;
 $('bExplode').click(); await sleep(1500); const ex = A.state.explode;
 $('bExplode').click(); await sleep(1500);
