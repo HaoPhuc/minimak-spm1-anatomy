@@ -11,7 +11,7 @@ for (let i = 0; i < S.length; i++) {
   await sleep(120);
   const ready = g.ready, before = g.ok, r0 = ring(), reach = document.getElementById('gReach').textContent;
   let after = '-';
-  if (s.act && !/use\.(tour|quiz)/.test(s.id)) { await __spm1.gShowStep(); await sleep(2400); after = g.ok; }
+  if (s.act && !/use\.(tour|quiz|desk)/.test(s.id)) { await __spm1.gShowStep(); await sleep(2400); after = g.ok; }
   out.push(`${i + 1} ${s.id}: ready=${ready} before=${before} after=${after} ring=${r0}${reach ? ' reach=' + reach : ''}`);
 }
 return out;

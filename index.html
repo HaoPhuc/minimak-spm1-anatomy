@@ -5927,13 +5927,13 @@ function refButton(id) {
   b.addEventListener('click', () => showSource(id === 'std' ? 'S9' : id));
   return b;
 }
-// The printed user guide, docs/user-guide.pdf (15 A4 pages of screenshots), downloaded as a file.
+// The printed user guide, docs/user-guide.pdf (16 A4 pages of screenshots), downloaded as a file.
 function manualLink() {
   const a = el('a', 'dl');
   a.href = 'docs/user-guide.pdf';
   a.download = 'SPM1-anatomy-user-guide.pdf';
   a.dataset.fk = 'act:manual';
-  a.title = 'Download the user guide: how to use this page, in 15 A4 pages of screenshots, to read or print';
+  a.title = 'Download the user guide: how to use this page, in 16 A4 pages of screenshots, to read or print';
   a.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10"/></svg>User guide (PDF)';
   return a;
 }
@@ -8368,6 +8368,12 @@ const GUIDE_STEPS = [
     need: () => { gAssembly(); setTab('machine'); },
     act: () => $('inspBody').querySelector('[data-fk="act:quiz"]')?.click(),
     target: () => $('inspBody').querySelector('[data-fk="act:quiz"]') },
+  { ch: 6, id: 'use.desk', q: 'Can you run the machine yourself?',
+    how: '<b>Control desk</b> in the Machine tab is a stand-in for the SPM1’s own control software: INITIALISE, pump down and let in a little gas, GLOW ON, then the TF and PF coils shape the glow. Like the tour, it closes this guide first.',
+    look: 'The desk at the view’s left, its monitor in the Machine tab, and the first thing to try: INITIALISE.',
+    need: () => { gAssembly(); setTab('machine'); },
+    act: () => $('inspBody').querySelector('[data-fk="act:desk"]')?.click(),
+    target: () => $('inspBody').querySelector('[data-fk="act:desk"]') },
   { ch: 6, id: 'use.settings', below: true, q: 'Is the text too small, or do letters get pressed by accident?',
     how: 'In the <b>Controls</b> tab, <b>Text size</b> 1×, 1.5× or 2× scales the sheets, the inspect bar, the view’s labels and this card; <b>Single-letter keys</b> can be turned off for speech input.',
     look: 'The text grows at once. The guide stores nothing, and Exit gives your settings back.',
@@ -8393,7 +8399,7 @@ const GUIDE_STEPS = [
     target: () => $('tHelp') },
   { ch: 6, id: 'use.finish', q: 'That is the whole viewer.',
     how: 'Replay any chapter from <b>Chapters</b>, or press <b>Finish</b>: your view, sheets and settings come back as they were.',
-    look: '<b>Guided analysis</b> in the top bar opens this again, with <b>Resume</b> to pick up where you left. To keep or print, <b>User guide (PDF)</b> in the Machine tab downloads the same in 15 pages of screenshots.',
+    look: '<b>Guided analysis</b> in the top bar opens this again, with <b>Resume</b> to pick up where you left. To keep or print, <b>User guide (PDF)</b> in the Machine tab downloads the same in 16 pages of screenshots.',
     need: () => { gAssembly(); gHome(); } },
 ];
 const gText = (v) => (typeof v === 'function' ? v() : v || '');

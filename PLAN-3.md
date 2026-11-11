@@ -117,6 +117,7 @@ listed after the table.
 | 46 | How a run goes | In what order is it used? | Machine tab, part chips | — | selects a part | use.run | tab |
 | 47 | Tour | The machine's role, stop by stop | Take the tour | — | guide ends, tour starts | use.tour | `iso.tour` = 0 |
 | 48 | Quiz | Can I place parts? | Where does it go? | — | guide ends, quiz starts | use.quiz | `quiz.on` |
+| 55 | Control desk | Can I run the machine? | Control desk | — | guide ends, the desk opens | use.desk | `desk.on` |
 | 49 | Settings | Bigger text? | Controls tab: text size, single-letter keys | — | scales; letters off | use.settings | `uiScale`/`letterKeys` |
 | 50 | Loupe, near picks | Small parts on a phone? | hold a finger · — · (a mouse picks within 12 px) | touch | 3× loupe, name | use.loupe | loupe shown |
 | 51 | Controls reference | Every binding? | Controls tab | — | the list | use.controls | tab |
@@ -145,8 +146,8 @@ Seven chapters, each replayable from **Chapters**. **Next** runs through all of 
    with its Spread, steps and one bolt, open the right–back joint, Turn to see.
 6. **Read the evidence**: callouts, preview, keep two, fold and close, float (or the bottom sheet), Tidy, the
    breadcrumb, a gasket's S6, basis vs tags, a glossary word.
-7. **Use the result**: Copy link, Back, how a run goes, the tour, the quiz, settings, the loupe, the Controls tab,
-   finish.
+7. **Use the result**: Copy link, Back, how a run goes, the tour, the quiz, the control desk, settings, the loupe, the
+   Controls tab, finish.
 
 ## Verification
 

@@ -4,7 +4,7 @@ An interactive 3D anatomy of the MinimaK SPM1 simple magnetised torus by Rideo S
 
 Open [`index.html`](index.html) in a browser. The first time it needs an internet connection, to load three.js from jsDelivr. There is no build step.
 
-[`docs/user-guide.pdf`](docs/user-guide.pdf) shows how to use the page, in 15 A4 pages of screenshots, for anyone who opens it for the first time. The page offers it too: **User guide (PDF)** in the Machine tab downloads it.
+[`docs/user-guide.pdf`](docs/user-guide.pdf) shows how to use the page, in 16 A4 pages of screenshots, for anyone who opens it for the first time. The page offers it too: **User guide (PDF)** in the Machine tab downloads it.
 
 ## The page
 
@@ -154,7 +154,7 @@ key and touch inputs, the state it needs, what shows, the step that teaches it, 
   6. The **S9** tag on *Holes they pass*, to the Sources tab.
   7. **← Back to the part tab**, to the same piece.
   8. **Done**, the viewport flying home and the machine facing you again.
-- **Seven chapters**, 56 steps, each replayable from **Chapters**:
+- **Seven chapters**, 57 steps, each replayable from **Chapters**:
   1. A viewport, bolt by bolt
   2. Orient the view
   3. Find hardware
@@ -190,8 +190,8 @@ key and touch inputs, the state it needs, what shows, the step that teaches it, 
 
   **Copy link** copies only when you press it. Browser **Back** first gives everything back, then goes back. Opened
   again, the guide offers **Resume** at the step it left.
-- **The tour and the quiz.** **Take the tour** and **Where does it go?** close the guide first, giving everything back,
-  so two modes never share input.
+- **The tour, the quiz and the control desk.** **Take the tour**, **Where does it go?** and **Control desk** close the
+  guide first, giving everything back, so two modes never share input.
 - **Accessibility.** Focus moves to the step's question. The card's buttons are in reading order, and each step is
   announced. Inside the card, Esc closes the chapter list.
 
