@@ -1,0 +1,16 @@
+[
+ {"name":"run","w":1280,"h":800,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","run.js"]},{"shot":"run"}]},
+ {"name":"stop","w":1280,"h":800,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","stop.js"]},{"click":"window.__estop"},{"jsFile":["common.js","stop2.js"]}]},
+ {"name":"leave","w":1280,"h":800,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","leave.js"]},{"keys":["Escape"]},{"jsFile":["common.js","leave2.js"]}]},
+ {"name":"layout-1440x900","w":1440,"h":900,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-1440x900"}]},
+ {"name":"layout-1280x800","w":1280,"h":800,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-1280x800"}]},
+ {"name":"layout-1366x700","w":1366,"h":700,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-1366x700"}]},
+ {"name":"layout-1280x660","w":1280,"h":660,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-1280x660"}]},
+ {"name":"layout-1024x768","w":1024,"h":768,"dpr":1,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-1024x768"}]},
+ {"name":"layout-greyscale","w":1440,"h":900,"dpr":1,"theme":"greyscale","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-greyscale"}]},
+ {"name":"layout-blueprint","w":1440,"h":900,"dpr":1,"theme":"blueprint","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-blueprint"}]},
+ {"name":"layout-hologram","w":1440,"h":900,"dpr":1,"theme":"dark","dark":true,"steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-hologram"}]},
+ {"name":"layout-text-2x","w":1440,"h":900,"dpr":1,"theme":"light","setup":"localStorage.setItem(\"spm1-scale\",\"2\")","steps":[{"wait":2500},{"jsFile":["common.js","layout.js"]},{"shot":"layout-text-2x"}]},
+ {"name":"phone","w":390,"h":844,"mobile":true,"theme":"light","steps":[{"wait":2500},{"jsFile":["common.js","phone.js"]}]},
+ {"name":"reduced","w":1280,"h":800,"dpr":1,"theme":"light","reduced":true,"steps":[{"wait":2500},{"jsFile":["common.js","reduced.js"]}]}
+]

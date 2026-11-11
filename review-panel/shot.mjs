@@ -17,6 +17,7 @@
 //       { "wait": 2500 },                                   // ms
 //       { "keys": ["Tab", "Enter", "ArrowRight", "Escape", "i", "."] },
 //       { "move": [x, y] }, { "click": [x, y] }, { "dblclick": [x, y] }, { "rclick": [x, y] },
+//       { "click": "window.__at" },                         // a point may be a page expression that gives [x, y]
 //       { "wheel": [x, y, dy] },                            // dy < 0 zooms in
 //       { "drag": [x1, y1, x2, y2] },                       // left-drag in 12 steps
 //       { "tap": [x, y] },                                  // touch tap (mobile scenarios)
@@ -116,6 +117,8 @@ for (const s of scen) {
     if (js) { const v = await evalJs(`(async () => { ${js} })()`); if (v !== undefined) console.log('  →', JSON.stringify(v)); }
     if (st.wait) await sleep(st.wait);
     for (const k of st.keys || []) await key(k);
+    // A point given as a string is a page expression for [x, y]: a place only the page knows, such as a part's.
+    for (const k of ['move', 'click', 'rclick', 'dblclick', 'tap']) if (typeof st[k] === 'string') st[k] = await evalJs(st[k]);
     if (st.move) { await mouse('mouseMoved', ...st.move); await sleep(60); }
     if (st.click) { await click(...st.click); await sleep(120); }
     if (st.rclick) { await click(...st.rclick, 'right'); await sleep(120); }
