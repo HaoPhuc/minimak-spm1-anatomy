@@ -1081,6 +1081,92 @@
   .blueprint table.specs td { border-top-color: rgb(234 242 255 / 0.32); }
   .blueprint table.specs td:first-child { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; border-right-color: rgb(234 242 255 / 0.32); }
 
+  /* ---------- Control desk ----------
+     A mode like the tour and the quiz: its bar where theirs stand, the desk's panel at the view's left (the wheel steps
+     aside and the view's buttons lie in a row under it), and its monitor in the Machine tab. Where the panels stack,
+     the desk's panel sits in the Machine tab too, under the monitor. Its text sizes with the Controls tab's text size.
+     The readbacks are an instrument's display, green on black, in every theme. */
+  .desk { position: absolute; z-index: 4; left: 12px; top: 12px; width: min(calc(292px * var(--ui-scale, 1)), 48%); max-height: calc(100% - 68px - 74px * var(--ui-scale, 1)); overflow: auto;
+          color: var(--ink); font-size: calc(12px * var(--ui-scale, 1)); line-height: 1.3;
+          background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+          -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15); border-radius: 14px;
+          box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 18px 40px rgb(0 0 0 / 0.18); }
+  .desk[hidden] { display: none; }
+  .holo .desk, .blueprint .desk, .holo .dk-mon, .blueprint .dk-mon { border-radius: 2px; }
+  .blueprint .desk { left: 26px; top: 26px; max-height: calc(100% - 82px - 90px * var(--ui-scale, 1)); }
+  .desk.in-page { position: static; width: auto; max-height: none; margin: 0 0 14px; box-shadow: none; }
+  .dk-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px 6px; }
+  .dk-head b { font-weight: 800; font-stretch: 118%; text-transform: uppercase; font-size: 1.08em; letter-spacing: 0.02em; }
+  .dk-io { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font: 500 0.88em/1 var(--mono); color: var(--muted); white-space: nowrap; }
+  .dk-io i { width: 9px; height: 9px; border-radius: 2px; background: color-mix(in srgb, var(--ink) 30%, transparent); }
+  .dk-io.on i { background: #3ddc84; box-shadow: 0 0 6px #3ddc84; }
+  .dk-io.trip { color: #ff8f86; }
+  .dk-io.trip i { background: #e2574c; box-shadow: 0 0 6px #e2574c; }
+  .dk-sec { padding: 6px 12px 4px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; }
+  .dk-sec h3 { margin: 0; font: 600 0.88em/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .dk-sec h3::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--ink) 16%, transparent); }
+  .dk-sec h3 small { order: 2; font: 400 0.95em/1 var(--sans); letter-spacing: 0; text-transform: none; }
+  .dk-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.6em 9.4em; align-items: center; gap: 6px; min-height: 2.1em; }
+  .dk-row > * { min-width: 0; }
+  .dk-row.v { grid-template-columns: auto minmax(0, 1fr); }
+  .dk-row.s { grid-template-columns: auto minmax(0, 1fr) 4.6em; }
+  .dk-sw { display: inline-flex; align-items: center; gap: 7px; padding: 0.34em 0.66em; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+           background: color-mix(in srgb, var(--card) 50%, transparent); color: var(--ink); font: inherit; font-size: 0.96em; white-space: nowrap; cursor: pointer; }
+  .dk-sw small { opacity: 0.7; font-size: 0.86em; }
+  .dk-sw[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .holo .dk-sw[aria-pressed="true"], .holo .dk-tabs button[aria-selected="true"] { background: rgb(111 184 232 / 0.16); color: #eaf6ff; border-color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
+  .dk-sw[aria-disabled="true"] { opacity: 0.55; }
+  .dk-sw.nudge { animation: dk-nudge 0.6s ease-out; }
+  @keyframes dk-nudge { 30% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--sel) 70%, transparent); } }
+  .dk-set { width: 100%; font: 500 0.92em/1 var(--mono); text-align: right; padding: 0.42em 0.5em; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+            background: color-mix(in srgb, var(--card) 40%, transparent); color: var(--ink); }
+  select.dk-set { text-align: left; font-family: var(--sans); }
+  select.dk-set option { color: #111; background: #fff; }
+  .desk select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .dk-rd { display: block; font: 500 0.92em/1 var(--mono); text-align: right; padding: 0.46em 0.5em; border-radius: 6px; background: #0b1410; color: #58e08c; letter-spacing: 0.02em;
+           white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dk-rd.off { color: #3e6b52; }
+  .dk-rd.warn { color: #f0b35a; }
+  .desk input[type="range"], .dk-replay input { width: 100%; accent-color: var(--accent); }
+  .dk-foot { display: flex; gap: 6px; padding: 6px 12px 12px; }
+  .dk-btn { flex: 1; padding: 0.5em 0.6em; border-radius: 8px; font: 600 0.92em/1 var(--sans); letter-spacing: 0.04em; border: 1px solid color-mix(in srgb, var(--ink) 26%, transparent);
+            background: color-mix(in srgb, var(--card) 50%, transparent); color: var(--ink); cursor: pointer; }
+  .dk-btn.stop { border-color: #e2574c; color: #ff8f86; }
+  .dk-btn.stop:hover { background: rgb(226 87 76 / 0.16); }
+  @media (prefers-reduced-motion: reduce) { .dk-sw.nudge { animation: none; } }
+  /* In a short window the rows close up, so STOP and SHUT DOWN stay in sight without scrolling the desk. */
+  @media (max-height: 720px) {
+    .desk:not(.in-page) .dk-head { padding: 7px 12px 3px; }
+    .desk:not(.in-page) .dk-sec { padding: 3px 12px 2px; gap: 3px; }
+    .desk:not(.in-page) .dk-row { min-height: 1.8em; }
+    .desk:not(.in-page) .dk-sw { padding-block: 0.22em; }
+    .desk:not(.in-page) :is(.dk-set, .dk-rd) { padding-block: 0.3em; }
+    .desk:not(.in-page) .dk-foot { padding: 4px 12px 8px; }
+  }
+  /* The desk's page in the Machine tab: the monitor, then what you are seeing, what to try, and what it is not. */
+  .dk-page .lead { margin: 0 0 10px; }
+  .dk-mon { margin: 0 0 14px; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--card) 55%, transparent); overflow: hidden; }
+  .dk-tabs { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 6px 0; }
+  .dk-tabs button { border: 0; background: none; color: var(--muted); font: 600 10px/1 var(--mono); letter-spacing: 0.1em; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+  .dk-tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+  .dk-mon canvas { display: block; width: calc(100% - 12px); height: auto; margin: 6px; border-radius: 6px; background: #05040a; }
+  .dk-chk { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 0 8px 6px; font-size: 11.5px; color: var(--muted); }
+  .dk-chk label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+  .dk-note { margin: 0; padding: 0 8px 8px; font: 500 11px/1.4 var(--mono); color: var(--muted); }
+  .dk-replay { display: flex; align-items: center; gap: 8px; padding: 0 8px 6px; font-size: 12px; color: var(--muted); }
+  .dk-replay button { flex: none; border: 1px solid var(--line); background: color-mix(in srgb, var(--card) 50%, transparent); color: var(--ink); border-radius: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  .dk-mon table.specs { width: calc(100% - 16px); margin: 8px; }
+  .dk-tag { font: 500 10px/1 var(--mono); vertical-align: super; color: var(--muted); margin-left: 4px; white-space: nowrap; }
+  .dk-tag.as { font-style: italic; }
+  .dk-tasks { list-style: none; margin: 4px 0 12px; padding: 0; display: grid; gap: 9px; }
+  .dk-tasks li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
+  .dk-tasks li i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink) 40%, transparent); display: grid; place-items: center; font: 600 10px/1 var(--mono); font-style: normal; color: var(--muted); }
+  .dk-tasks li.done i { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .dk-tasks li.now { outline: 1px solid color-mix(in srgb, var(--sel) 70%, transparent); outline-offset: 5px; border-radius: 6px; }
+  .dk-tasks li span { display: block; color: var(--muted); font-size: 12px; }
+  .dk-honest { margin: 12px 0; padding: 8px 10px; border-left: 3px solid var(--sel); background: color-mix(in srgb, var(--card) 60%, transparent); font-size: 12px; color: var(--muted); border-radius: 0 6px 6px 0; }
+  .dk-honest b { color: var(--ink); }
+
   /* ---------- Guided analysis ----------
      The launcher opens the modebar: the one bar on screen with both panels folded, and the row above the view on a
      phone, where it keeps its short label. The card is fixed: at the view's lower left on a desktop, above the scale
@@ -1266,6 +1352,11 @@
       <button type="button" class="done" id="bQuizDone" title="Leave the questions (Esc)">Done</button>
       <div class="stepcap" id="quizSay" hidden></div>
     </div>
+    <div class="isobar deskbar" id="deskbar" role="region" aria-label="Control desk">
+      <span class="lbl" id="deskLbl"></span>
+      <button type="button" class="done" id="bDeskDone" title="Leave the control desk (Esc)">Done</button>
+    </div>
+    <section class="desk" id="desk" aria-label="Control desk: the controls" hidden></section>
     <svg class="overlay" id="overlay" aria-hidden="true"></svg>
     <svg class="draft" id="draft" aria-hidden="true"></svg>
     <div class="callouts" id="callouts" aria-hidden="true"></div>
@@ -2101,12 +2192,14 @@ const composite = (id) => partById.get(id)?.count === 1 && (piecesOf.get(id) || 
 const GLOW_VERT = /* glsl */`
   uniform float uR0;
   uniform float uMinor;
+  uniform float uZ;
   varying vec3 vNv;
   varying float vPhi;
   void main() {
     float phi = atan(position.y, position.x);
     vec3 c = vec3(uR0 * cos(phi), uR0 * sin(phi), 0.0);
     vec3 p = c + (position - c) * uMinor;
+    p.z += uZ;
     vNv = normalize(normalMatrix * normal);
     vPhi = phi;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
@@ -2118,12 +2211,13 @@ const GLOW_FRAG = /* glsl */`
   uniform float uI;
   uniform float uTime;
   uniform float uStip;
+  uniform float uStri;
   varying vec3 vNv;
   varying float vPhi;
   void main() {
     float f = abs(normalize(vNv).z);
     float core = pow(f, 1.6);
-    float s = 1.0 - 0.12 * (0.5 - 0.5 * cos(vPhi * 22.0 - uTime * 0.8));
+    float s = 1.0 - uStri * (0.5 - 0.5 * cos(vPhi * 22.0 - uTime * 0.8));
     float a = clamp(uI * (0.16 + 0.84 * core) * s, 0.0, 0.95);
     // Blueprint: a drawing cannot glow, so the plasma is stippled, denser at its core.
     if (uStip > 0.5) {
@@ -2138,7 +2232,7 @@ const GLOW_FRAG = /* glsl */`
 const torusUnit = new THREE.TorusGeometry(R0, 1, 40, 320);
 const glow = [[1, 5.0], [1.38, 5.0]].map(([sc, minor], i) => {
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uR0: { value: R0 }, uMinor: { value: minor * sc }, uCore: { value: new THREE.Color('#ffe2f6') }, uRim: { value: new THREE.Color('#b84ad6') }, uI: { value: 0 }, uTime: { value: 0 }, uStip: { value: 0 } },
+    uniforms: { uR0: { value: R0 }, uMinor: { value: minor * sc }, uCore: { value: new THREE.Color('#ffe2f6') }, uRim: { value: new THREE.Color('#b84ad6') }, uI: { value: 0 }, uTime: { value: 0 }, uStip: { value: 0 }, uZ: { value: 0 }, uStri: { value: 0.12 } },
     vertexShader: GLOW_VERT, fragmentShader: GLOW_FRAG, transparent: true, depthWrite: false,
   });
   mat.userData.scale = sc;
@@ -2689,6 +2783,8 @@ function fitWheel() {
   }
   w.style.setProperty('--ws', s.toFixed(3));
   w.style.top = `${Math.round(top + 168 * s)}px`;
+  // At the control desk the wheel is away and the desk's panel takes the edge: the buttons lie in a row under it.
+  if (desk.on && !stackedMQ.matches) nav.classList.add('row');
 }
 function resize() {
   if (!renderer) return;
@@ -2719,6 +2815,7 @@ function resize() {
   if (!sized) { dirty = true; return; }
   fitFoot();
   fitWheel();
+  if (desk.on) placeDesk();
   fitView();
   // The width of the view picks the sheet column or the dock, so frame the part again.
   if (iso.part) { updateIsoBar(); renderHud(); frameIsolated(false); }
@@ -2937,6 +3034,7 @@ function lookFrom(az, elv, o = {}) {
 }
 function resetView() {
   if (iso.part) { endShow(false); return frameIsolated(true); }
+  if (desk.on) return deskFrame(0.8);
   lookFrom(HOME.az, HOME.el, { zoom: home.zoom, target: home.centre });
 }
 function fitAll() {
@@ -3007,6 +3105,19 @@ const quiz = { on: false, list: [], i: 0, tries: 0, score: 0, answered: false, p
 // The guided analysis (PLAN-3.md): the step shown (`i`), a token that every wait checks (`seq`), what it found and gives
 // back on Exit (`saved`), the step's starting point for its check (`base`), whether the step's text is up (`ready`) and
 // done (`ok`), the step it left (`last`, for Resume), and Copy link presses (`copies`).
+// The control desk (below, "Control desk"): `io` is its link to the supplies, `trip` the emergency stop, `p` the vessel's
+// pressure in mbar; each coil has a switch, a setpoint and the current it has reached (A). `now` is the glow as drawn
+// (strength, striation depth, minor radius and height in cm), eased toward what the rules give. `deskLive`: the
+// pieces of the coils whose supplies are on, lit on the model.
+const desk = {
+  on: false, saved: null, cutWas: false, treeWas: false, inspWas: true, io: false, trip: false, pump: false, gas: 0, p: 1013,
+  coils: Object.fromEntries(['tf1', 'tf2', 'sol', 'pf1', 'pf2', 'pf3'].map((k) => [k, { on: false, set: 10, I: 0 }])),
+  hv: false, struck: false, prog: 1, interval: 200, seq: null, rec: [], replay: null, playing: false, playAt: 0,
+  mon: 'video', edge: true, falseColour: false, blob: true, done: new Set(), scene: 'off', hot: null, falling: false,
+  now: { k: 0, stri: 0.12, minor: 5, z: 0 }, vidAt: 0, drawnOn: null,
+};
+const deskLive = new Set();
+let deskEl = null;
 const guide = { on: false, i: 0, seq: 0, saved: null, base: null, ready: false, ok: false, last: null, copies: 0, lit: null };
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
@@ -3105,6 +3216,7 @@ function refreshLit() {
     else if (pc && bear.has(pc)) { lit = 0.3; code = 0.25; }
     else if (!iso.part && (p === state.select || (quiz.on && p === quiz.list[quiz.i] && (quiz.answered || quizLifts(pc))))) { lit = 0.42; code = 0.75; }
     else if (quiz.on && quiz.answered && pc && quiz.places.includes(pc)) { lit = 0.3; code = 0.25; }
+    else if (desk.on && pc && deskLive.has(pc)) { lit = 0.3; code = 0.25; }
     else if ((state.hoverSub && sub === state.hoverSub && p === (iso.part || state.select)) || (state.rowPiece && pc === state.rowPiece) || pointed
       || (iso.part ? p === state.legendHot && p !== iso.part : p === state.hover || p === state.legendHot)) { lit = 0.3; code = 0.25; }
     m.userData.lit = lit;
@@ -3148,7 +3260,11 @@ function applyLook() {
   const glowI = I * (t === 'dark' ? 0.3 : 1);
   for (const g of glow) {
     const u = g.material.uniforms, sc = g.material.userData.scale;
-    u.uI.value = sc > 1 ? glowI * 0.32 : glowI;
+    // At the control desk the glow is as strong, as striated, as thick and as high as the desk's rules make it.
+    u.uI.value = (sc > 1 ? glowI * 0.32 : glowI) * (desk.on ? desk.now.k : 1);
+    u.uMinor.value = (desk.on ? desk.now.minor : 5) * sc;
+    u.uZ.value = desk.on ? desk.now.z : 0;
+    u.uStri.value = desk.on ? desk.now.stri : 0.12;
     g.visible = state.pNow > 0;
     // In greyscale the plasma keeps the drawing's pink-violet, the colour nitrogen glows: a grey glow on the white and grey parts
     // could not be seen. It turns amber while it is selected or under the pointer, but not while it is inspected, as
@@ -3200,6 +3316,7 @@ function announceInspect() {
 function inspect(id, focusPiece = null, o = {}) {
   if (!id || !partById.has(id)) return;
   endQuiz(false);
+  endDesk(false);
   endShow(false);
   if (iso.part !== id || iso.focus !== focusPiece) { iso.step = null; iso.joint = null; }
   // A part made of different objects (the gauge and its cable, the valve and its line) opens on its main object, so
@@ -3491,6 +3608,7 @@ function quizRound() {
 }
 function startQuiz(list = quizRound(), at = 0) {
   if (guide.on) guideExit({ focus: false });
+  endDesk();
   list = list.filter((id) => DOCS.QUIZ[id] && partById.has(id) && placesOf(id).length);
   if (!list.length) return;
   if (iso.part) endInspect();
@@ -4199,6 +4317,7 @@ function navReserve() {
   const c = $('navCluster'), w = $('whRing');
   if (c?.getClientRects().length) r = c.getBoundingClientRect().right + 8;
   if (w?.getClientRects().length) { const b = w.getBoundingClientRect(); r = Math.max(r, b.left + 262 * (b.width / 172)); }
+  if (desk.on && deskEl?.parentNode === $('card') && deskEl.getClientRects().length) r = Math.max(r, deskEl.getBoundingClientRect().right + 12);
   return r ? Math.max(0, Math.round(r - $('card').getBoundingClientRect().left)) : 0;
 }
 function hudInsets() {
@@ -5280,8 +5399,9 @@ function select(id, o = {}) {
   touched = true;
   if (iso.part && id && id !== iso.part) inspect(id);
   refreshLit();
-  // A part opens its Part tab; clearing the selection goes back to the Machine tab.
-  setTab(id ? 'part' : 'machine');
+  // A part opens its Part tab; clearing the selection goes back to the Machine tab. At the control desk the Machine
+  // tab stays, as the monitor is there.
+  if (!desk.on) setTab(id ? 'part' : 'machine');
   renderInspector();
   const row = id && document.querySelector(`.ti[data-part="${id}"]`);
   if (row && o.scroll !== false) revealRow(row);
@@ -5834,7 +5954,7 @@ function renderInspector() {
   if (shown !== inspShown) { inspShown = shown; box.scrollTop = 0; }
   const fk = box.contains(document.activeElement) ? document.activeElement.dataset.fk : null;
   box.replaceChildren();
-  if (tab === 'machine') renderOverview(box);
+  if (tab === 'machine') (desk.on ? renderDesk : renderOverview)(box);
   else if (tab === 'sources') renderSources(box);
   else if (tab === 'help') renderHelp(box);
   else if (!state.select) box.append(el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
@@ -6161,8 +6281,8 @@ function renderOverview(box) {
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
   const acts = el('div', 'actions');
   acts.append(action('Take the tour', startTour, true, 'act:tour'), action('Where does it go?', () => { startQuiz(); $('quizChoices').querySelector('button')?.focus(); }, false, 'act:quiz'),
-    action('Guided analysis', () => guideStart(), false, 'act:guide'), manualLink());
-  box.append(acts, el('p', 'note', `The tour: ${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow; Next in the inspect bar goes on, Done leaves. Where does it go?: ${QUIZ_N} parts are lifted out in turn, and you click where each one goes.`));
+    action('Control desk', startDesk, false, 'act:desk'), action('Guided analysis', () => guideStart(), false, 'act:guide'), manualLink());
+  box.append(acts, el('p', 'note', `The tour: ${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow; Next in the inspect bar goes on, Done leaves. Where does it go?: ${QUIZ_N} parts are lifted out in turn, and you click where each one goes. Control desk: run the machine yourself with a stand-in for its own software: pump down, strike the glow, and shape it with the coils.`));
   box.append(el('h3', null, 'How a run goes'));
   const ol = el('ol', 'run');
   for (const s of DOCS.RUN) {
@@ -6287,6 +6407,7 @@ function renderHelp(box) {
       ['Hover a sheet', 'light its sub-part in the model'],
       ['Click a connected part', 'inspect it at the piece nearest this one; ← in the inspect bar goes back'],
       ['Take the tour (Machine tab)', 'inspect the parts in the order of a run; Next › in the inspect bar goes on, Done leaves'],
+      ['Control desk (Machine tab)', 'run the machine with a stand-in for its own software: INITIALISE, pump down and let in gas, GLOW ON, then the TF and PF coils; SEQUENCE runs a program, and a click on the emergency stop on the table trips it. Esc or Done leaves'],
       ['Where does it go? (Machine tab)', 'a part is lifted out: click its place on the model, or pick in the bar; five make a round, scored on first tries. Esc or Done ends it'],
       ['Search box (assembly list)', 'names, sizes (M8) and seals (o-ring), in plain words; the best matches show, and a line says which words found nothing'],
       ['A word with a dotted underline', 'click it, or Tab onto it, for what it means; click again to close'],
@@ -6360,6 +6481,7 @@ function setScale(v) {
   document.documentElement.style.setProperty('--ui-scale', String(v));
   fitFoot();
   fitWheel();
+  if (desk.on) placeDesk();
   updateIsoBar();
   renderHud();
   if (iso.part) frameIsolated(false);
@@ -6380,7 +6502,7 @@ function setLetterKeys(on) {
 const slug = (t) => t.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 // An exact slug wins; otherwise the first label that starts with it (so piece=right-back finds the joint).
 const slugFind = (list, w, label) => list.find((x) => slug(label(x)) === w) || list.find((x) => slug(label(x)).startsWith(`${w}-`));
-const linkKeyNow = () => `${iso.part}|${iso.focus ? iso.focus.userData.label : ''}`;
+const linkKeyNow = () => `${iso.part}|${iso.focus ? iso.focus.userData.label : ''}|${desk.on ? 'desk' : ''}`;
 function linkOf() {
   const kv = [];
   if (iso.part) {
@@ -6392,6 +6514,7 @@ function linkOf() {
     if (iso.step) kv.push(['step', String(iso.step)]);
     if (iso.show) kv.push(['show', `${slug(iso.show.pc.userData.label)}.${slug(iso.show.sub)}`]);
   } else if (quiz.on) kv.push(['quiz', quiz.list.join(',')], ['q', String(quiz.i + 1)]);
+  else if (desk.on) kv.push(['desk', '1']);
   else if (state.select) kv.push(['select', state.select]);
   const az = (((goal.az % 360) + 540) % 360) - 180;
   // Not while the view waits for room to start at home: a reload would keep it off to one side.
@@ -6435,9 +6558,12 @@ function applyLink(h) {
   } else if (q.get('quiz')) {
     const list = q.get('quiz').split(',').filter((id) => partById.has(id)), at = Math.max(0, (+q.get('q') || 1) - 1);
     if (!quiz.on || list.join() !== quiz.list.join() || at !== quiz.i) startQuiz(list, at);
+  } else if (q.get('desk')) {
+    startDesk();
   } else {
     if (iso.part) endInspect();
     endQuiz(false);
+    endDesk();
     const sel = q.get('select');
     if ((sel || null) !== state.select) select(sel && partById.has(sel) ? sel : null);
   }
@@ -6495,6 +6621,7 @@ $('bZoomIn').addEventListener('click', () => { touched = true; zoomBy(1.35); });
 $('bZoomOut').addEventListener('click', () => { touched = true; zoomBy(1 / 1.35); });
 $('bHome').addEventListener('click', () => { touched = true; resetView(); });
 function setExplode(on) {
+  if (on) endDesk(false);
   state.explode = on;
   state.explodeAt = performance.now() / 1000;
   setPressed('bExplode', on);
@@ -6608,8 +6735,9 @@ function applyTheme() {
     b.setAttribute('aria-checked', b.dataset.look === t ? 'true' : 'false');
     b.tabIndex = b.dataset.look === t ? 0 : -1;
   }
-  // Blueprint moves the view's buttons inside the sheet's frame.
+  // Blueprint moves the view's buttons inside the sheet's frame, and the control desk with them.
   fitWheel();
+  if (desk.on) placeDesk();
   applyLook();
   dirty = true;
 }
@@ -6664,7 +6792,7 @@ function updateDraft() {
     const m = { x: A2.x + (B2.x - A2.x) * at + up.x * 5, y: A2.y + (B2.y - A2.y) * at + up.y * 5 };
     parts.push(`<text class="dim" x="${m.x.toFixed(1)}" y="${m.y.toFixed(1)}" transform="rotate(${ang.toFixed(1)} ${m.x.toFixed(1)} ${m.y.toFixed(1)})">${text}</text></g>`);
   };
-  if (W >= 520 && !iso.part && !quiz.on && state.ep < 0.02 && !hidden.has('table')) {
+  if (W >= 520 && !iso.part && !quiz.on && !desk.on && state.ep < 0.02 && !hidden.has('table')) {
     const T = DIMS.table, h = T.half;
     dim(0, new V3(-h, -h, T.floor), new V3(-h, -h, T.top), new V3(-14, 0, 0), String(Math.round((T.top - T.floor) * 10)));
     dim(1, new V3(-h, -h, T.floor), new V3(h, -h, T.floor), new V3(0, 0, -12), String(Math.round(2 * h * 10)));
@@ -6793,10 +6921,11 @@ function updateReadout() {
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
 // While inspecting, the hint says what the pointer does now; outside, how to move and how to inspect.
-const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : desk.on ? 'Work the desk below the view · tap the emergency stop on the table to trip it' : iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
   : iso.show ? 'Show me · drag to turn round it · Esc goes back'
   : iso.joint ? 'Step through the joint with ‹ › · point at a bolt to name it · Esc closes the joint'
   : quiz.on ? 'Click where the lifted part goes, or pick in the bar · drag to turn · Esc ends the questions'
+  : desk.on ? 'Work the desk at the left · the emergency stop on the table trips it · drag to turn · Esc or Done leaves'
   : iso.part ? `Point at a sub-part to preview · ${allShown() ? 'click a piece to pick it' : 'click to keep · double-click to show it'} · Esc steps back`
     : dragMode === 'pan' ? 'Drag to pan · right-drag to turn · scroll to zoom · double-click to inspect · I inspects the selected part'
       : 'Drag to turn · right-drag to pan · scroll to zoom · double-click to inspect · I inspects the selected part');
@@ -6924,6 +7053,7 @@ function liftLoupe() {
     if (allShown()) setFocus(pc);
     else if (m.userData.sub && m.userData.part === iso.part) stoppedOn(m);
   } else if (quiz.on) answerQuiz(pc.userData.part, pc);
+  else if (desk.on && pc.userData.part === 'estop') deskTrip();
   else select(pc.userData.part);
 }
 // Drawn in the frame, before the view: the view's middle third around the point, filling the canvas, is copied into
@@ -7000,7 +7130,8 @@ function endPointer(e) {
     if (pc) answerQuiz(pc.userData.part, pc);
   } else if (tapped && !iso.part) {
     const id = pick(ndcOf(e))?.userData.part || null;
-    select(id && id === state.select ? null : id);
+    if (desk.on && id === 'estop') deskTrip();
+    else select(id && id === state.select ? null : id);
   }
   if (pointers.size === 0) { drag = null; stage.classList.remove('dragging'); }
   else if (pointers.size === 1) { const [p] = [...pointers.values()]; drag.x = p.x; drag.y = p.y; drag.pinch = null; }
@@ -7038,6 +7169,7 @@ stage.addEventListener('dblclick', (e) => {
   if (quiz.on) return;
   const pc = pick(ndcOf(e));
   if (!pc) return resetView();
+  if (desk.on) return;
   inspect(pc.userData.part);
 });
 stage.addEventListener('wheel', (e) => {
@@ -7132,6 +7264,7 @@ window.addEventListener('keydown', (e) => {
     else if (iso.part && iso.tour !== null) announce('On the tour: Done leaves it.');
     else if (iso.part) endInspect();
     else if (quiz.on) endQuiz();
+    else if (desk.on && !state.select) endDesk();
     else select(null);
   }
   else if (onStage && k.startsWith('arrow')) {
@@ -7143,6 +7276,561 @@ window.addEventListener('keydown', (e) => {
   else used = false;
   if (used) { touched = true; dirty = true; if (onStage) e.preventDefault(); }
 });
+
+// ---------- Control desk ----------
+// A stand-in for the SPM1's own control software, the .NET program "MiniMak" on the PC beside the table (S4 slides
+// 17-18): its left column of buttons in its order (INITIALISE, the TF banks, the solenoid, PF1 to PF3, the discharge,
+// SEQUENCE, STOP, SHUT DOWN), each coil with a setpoint and a current read back, and its tabs as a monitor in the
+// Machine tab (VIDEO 1, REPLAY, SPECTROMETER, HALL). The pump, the gas valve and the gauge are worked by hand on the
+// machine, so they stand in their own section. The glow answers as the webinar's demonstrations show it (S4 slides
+// 20-27): an even violet with no field, brighter and striated in a toroidal field, gathered into a ring by PF1 and
+// PF2 and moved up or down by the difference between them. It is a sketch of those demonstrations by a few rules, not
+// a simulation: the page models no plasma physics, and every threshold and rate here is assumed and says so.
+const DESK = {
+  tfmT: 0.348,                 // mT on the axis per ampere through all eight TF coils: μ0·400·I / (2π·0.23 m), as the Part tab derives it
+  pfmT: 0.42,                  // mT per ampere through PF1 and PF2, assumed: 12 A gives the demonstrations' 5 mT (S4)
+  Imax: 40,                    // A continuous per coil (S1, S4 slide 17)
+  ramp: 40,                    // A per second: a coil is an inductor, so its current follows its setpoint
+  pBase: 0.03, pLo: 0.1, pHi: 2, // mbar: the pump's base pressure, and the window the glow strikes in (assumed)
+};
+const DESK_COILS = [
+  { k: 'tf1', name: 'TF B1', sub: '1–4', what: 'Toroidal field bank 1: four of the eight TF coils', part: 'tf', of: (i) => i < 4 },
+  { k: 'tf2', name: 'TF B2', sub: '5–8', what: 'Toroidal field bank 2: the other four TF coils', part: 'tf', of: (i) => i >= 4 },
+  { k: 'sol', name: 'SOLENOID', sub: '', what: 'Central solenoid', part: 'solenoid', of: () => true },
+  { k: 'pf1', name: 'PF1', sub: 'upper', what: 'Upper inner poloidal field coil', part: 'pfInner', of: (i, pc) => /upper/i.test(pc.userData.label || '') },
+  { k: 'pf2', name: 'PF2', sub: 'lower', what: 'Lower inner poloidal field coil', part: 'pfInner', of: (i, pc) => /lower/i.test(pc.userData.label || '') },
+  { k: 'pf3', name: 'PF3', sub: 'outer', what: 'Outer (satellite) poloidal field coils', part: 'satellite', of: () => true },
+];
+// A program is a list of steps, one each interval: the currents to set (A; 0 switches the coil off) and the discharge.
+const DESK_PROGS = [
+  { name: 'TF ramp', steps: [0, 5, 10, 15, 20, 25, 30, 35, 40, 35, 30, 25, 20, 15, 10, 5, 0].map((a) => ({ hv: true, tf1: a, tf2: a, pf1: 0, pf2: 0, pf3: 0, sol: 0, say: `TF ${a} A` })) },
+  { name: 'PF sweep', steps: [6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6].map((d) => ({ hv: true, tf1: 10, tf2: 10, pf1: 9 + d / 2, pf2: 9 - d / 2, pf3: 0, sol: 0, say: `PF1 ${9 + d / 2} A · PF2 ${9 - d / 2} A` })) },
+  { name: 'Pulses', steps: [1, 0, 1, 0, 1, 0, 1, 0].map((on) => ({ hv: !!on, tf1: 30, tf2: 30, pf1: 0, pf2: 0, pf3: 0, sol: 0, say: on ? 'glow on' : 'glow off' })) },
+];
+const DESK_TASKS = [
+  ['vac', 'Pump down, let in gas', 'The gauge settles between 0.1 and 2 mbar'],
+  ['glow', 'Strike the glow', 'An even violet fills the vessel'],
+  ['tf', 'Brighten it with the toroidal field', 'Past 10 mT, bands appear across the field'],
+  ['pf', 'Move it with PF1 and PF2', 'The ring rises or falls'],
+  ['seq', 'Run a sequence', 'A programmed run, kept frame by frame in REPLAY'],
+];
+const DESK_SCENES = {
+  off: ['Not connected', 'Nothing is connected yet. <b>INITIALISE</b> opens the link to the coil supplies, the glow supply and the I/O, as the first button of the real program does. The pump and the gas valve are worked by hand on the machine.', 'S4 slide 18'],
+  trip: ['Emergency stop', 'The emergency stop on the table top was pressed: the PLC safety monitor dropped the high voltage and every coil supply at once. The pump keeps running. <b>INITIALISE</b> resets the desk.', 'S4 slides 17, 19'],
+  pumping: ['Pumping down', 'The rotary vane pump is emptying the vessel through the pump port, and the gauge follows the pressure down from atmosphere. The real pump takes minutes over this: here time is compressed.', 'S4 slide 16'],
+  air: ['At atmosphere', 'The vessel is full of air. Switch the <b>PUMP</b> on: the rotary vane pump empties it through the pump port, and the gauge shows the pressure fall.', 'S4 slide 16'],
+  thin: ['Pumped down', 'Pumped down to the pump’s base pressure, the vessel holds too little gas to break down: an electron crosses it without meeting a molecule. Open the <b>gas valve</b> a little.', 'S2'],
+  thick: ['Too much gas', 'There is too much gas for a glow: an electron meets a molecule before the field has given it the energy to ionise it. Close the <b>gas valve</b> a little, with the <b>PUMP</b> on.', 'S2'],
+  ready: ['Ready', 'The pressure is in the window where the gas breaks down. Nothing is energised, so the vessel is dark. Press <b>GLOW ON</b>.', 'S4 slide 16'],
+  glow: ['Chamber glow', 'High voltage between the electrodes, the anode, and the chamber wall, the cathode, breaks the gas down. With no magnetic field the glow fills the whole vessel: a soft, even violet. Now switch the <b>TF</b> banks on.', 'S4 slide 20'],
+  tf: ['Toroidal field', 'In the toroidal field the electrons spiral along the field lines and stay in the gas longer: the glow is much <b>brighter</b>, and it breaks into bands, <b>striations</b>, across the field. More current, more of both.', 'S4 slides 21–23'],
+  pf: ['Position control', 'PF1 and PF2 make a dipole field that gathers the glow into a bright ring. Give the upper coil more current than the lower and the ring moves <b>up</b>; swap them and it moves down. The camera tracks where it is.', 'S4 slides 24–26'],
+  both: ['Toroidal and poloidal field', 'Both fields at once, as a tokamak has them: the toroidal field brightens the ring that PF1 and PF2 gather and place.', 'S4 slide 27'],
+};
+// The fields the coils make, from the currents they have reached.
+function deskFields(I = Object.fromEntries(Object.entries(desk.coils).map(([k, c]) => [k, c.I]))) {
+  return { Btf: (DESK.tfmT * (I.tf1 + I.tf2)) / 2, Bpf: (DESK.pfmT * (I.pf1 + I.pf2)) / 2, sum: I.pf1 + I.pf2 + 0.5 * I.pf3, diff: I.pf1 - I.pf2, sol: I.sol };
+}
+// The glow those fields give: its strength, how deep its striations are, its minor radius and its height (cm).
+function deskGlow(f, p = desk.p) {
+  const tf = clamp01(f.Btf / 14), g = clamp01(f.sum / 18);
+  const pres = clamp(1 - (0.3 * Math.abs(Math.log10(p / 0.45))) / 0.65, 0.7, 1);
+  return { k: (0.62 + 0.73 * tf + 0.25 * g + 0.012 * f.sol) * pres, stri: 0.06 + 0.74 * tf * (1 - 0.6 * g), minor: 5 - 2.7 * g, z: g * clamp(f.diff / 6, -1, 1) * 3.2 };
+}
+const deskDark = () => ({ k: 0, stri: 0.12, minor: desk.now.minor, z: desk.now.z });
+const deskInWindow = () => desk.p >= DESK.pLo && desk.p <= DESK.pHi;
+function deskSceneNow() {
+  if (desk.trip) return 'trip';
+  if (!desk.io) return 'off';
+  if (desk.struck) { const f = deskFields(), t = f.Btf >= 3, g = f.sum >= 4; return g ? (f.Btf >= 8 ? 'both' : 'pf') : t ? 'tf' : 'glow'; }
+  if (desk.p > DESK.pHi) return desk.falling ? 'pumping' : desk.pump || desk.p < 900 ? 'thick' : 'air';
+  return desk.p < DESK.pLo ? 'thin' : 'ready';
+}
+const fmtP = (p) => (p >= 100 ? `${Math.round(p)} mbar` : p >= 10 ? `${p.toFixed(1)} mbar` : `${p.toFixed(2)} mbar`);
+const fmtA = (a) => `${a.toFixed(1)} A`;
+
+// The desk's panel, built once: real buttons, number boxes and a slider, each labelled, in the program's order.
+function buildDesk() {
+  if (deskEl) return;
+  deskEl = $('desk');
+  const sw = (id, label, sub, title) => {
+    const b = el('button', 'dk-sw');
+    b.type = 'button'; b.id = id; b.title = title;
+    b.setAttribute('aria-pressed', 'false');
+    b.append(el('span', 'ind'), label);
+    if (sub) b.append(' ', el('small', null, sub));
+    return b;
+  };
+  const sec = (title, note) => { const s = el('div', 'dk-sec'), h = el('h3', null, title); if (note) h.append(el('small', null, note)); s.append(h); return s; };
+  const out = (id, label) => { const o = el('output', 'dk-rd'); o.id = id; o.setAttribute('aria-label', label); return o; };
+  const head = el('div', 'dk-head');
+  const io = el('span', 'dk-io'); io.id = 'dkIo'; io.append(el('i'), el('span', null, 'I/O off'));
+  head.append(el('b', null, 'MiniMak'), sw('dkInit', 'INITIALISE', '', 'Open the link to the supplies and the I/O; after an emergency stop, reset it'), io);
+  const vac = sec('Vacuum', 'by hand on the machine');
+  const r1 = el('div', 'dk-row v'); r1.append(sw('dkPump', 'PUMP', '', 'Rotary vane pump on or off'), out('dkP', 'Vessel pressure'));
+  const gasL = el('label', 'dk-row v'); const gas = el('input'); Object.assign(gas, { type: 'range', id: 'dkGas', min: 0, max: 100, step: 1, value: 0 });
+  gas.setAttribute('aria-label', 'Gas valve, nitrogen: how far it is open');
+  gasL.append(el('span', null, 'Gas valve N₂'), gas);
+  vac.append(r1, gasL);
+  const mag = sec('Magnets');
+  for (const c of DESK_COILS) {
+    const row = el('div', 'dk-row');
+    const set = el('input', 'dk-set'); Object.assign(set, { type: 'number', id: `dkSet-${c.k}`, min: 0, max: DESK.Imax, step: 0.5, value: 10 });
+    set.setAttribute('aria-label', `${c.name} setpoint, amperes, up to ${DESK.Imax}`);
+    row.append(sw(`dkCoil-${c.k}`, c.name, c.sub, `${c.what}: supply on or off`), set, out(`dkI-${c.k}`, `${c.name} current`));
+    mag.append(row);
+    row.firstChild.addEventListener('click', () => deskCoil(c.k, !desk.coils[c.k].on));
+    set.addEventListener('change', () => { const v = clamp(+set.value || 0, 0, DESK.Imax); set.value = v; desk.coils[c.k].set = v; deskSync(); });
+    lights(row, () => { desk.hot = c.k; deskLit(); }, () => { if (desk.hot === c.k) { desk.hot = null; deskLit(); } });
+  }
+  const dis = sec('Discharge');
+  const r2 = el('div', 'dk-row v'); r2.append(sw('dkHv', 'GLOW ON', 'HV', 'High voltage between the electrodes and the chamber wall, on or off'), out('dkHvOut', 'Glow supply'));
+  dis.append(r2);
+  const seq = sec('Sequence');
+  const r3 = el('div', 'dk-row s');
+  const prog = el('select', 'dk-set'); prog.id = 'dkProg'; prog.setAttribute('aria-label', 'Program');
+  DESK_PROGS.forEach((p, i) => { const o = el('option', null, `P${i + 1} · ${p.name}`); o.value = String(i + 1); prog.append(o); });
+  const iv = el('input', 'dk-set'); Object.assign(iv, { type: 'number', id: 'dkIv', min: 100, max: 1000, step: 50, value: 200 });
+  iv.setAttribute('aria-label', 'Interval between steps, milliseconds');
+  iv.title = 'Interval between steps (ms)';
+  r3.append(sw('dkSeq', 'SEQUENCE', '', 'Run the program: a step each interval, kept frame by frame in REPLAY'), prog, iv);
+  seq.append(r3);
+  const foot = el('div', 'dk-foot');
+  const stop = el('button', 'dk-btn stop', 'STOP'); stop.type = 'button'; stop.id = 'dkStop'; stop.title = 'End the sequence and switch the high voltage and the coils off';
+  const down = el('button', 'dk-btn stop', 'SHUT DOWN'); down.type = 'button'; down.id = 'dkDown'; down.title = 'Everything off: the supplies, the pump, the gas and the I/O';
+  foot.append(stop, down);
+  deskEl.append(head, vac, mag, dis, seq, foot);
+  $('dkInit').addEventListener('click', deskInit);
+  $('dkPump').addEventListener('click', () => { desk.pump = !desk.pump; announce(desk.pump ? 'Pump on: the pressure falls.' : 'Pump off.'); deskSync(); });
+  gas.addEventListener('input', () => { desk.gas = +gas.value / 100; });
+  $('dkHv').addEventListener('click', () => deskHv(!desk.hv));
+  $('dkSeq').addEventListener('click', () => (desk.seq ? deskSeqEnd(false) : deskSeqStart()));
+  prog.addEventListener('change', () => { desk.prog = +prog.value; });
+  iv.addEventListener('change', () => { const v = clamp(Math.round(+iv.value / 50) * 50 || 200, 100, 1000); iv.value = v; desk.interval = v; });
+  stop.addEventListener('click', () => { deskStop(); announce('Stopped: the high voltage and the coils are off.'); });
+  down.addEventListener('click', deskShutDown);
+}
+// A control that needs the I/O link says so, and the desk's INITIALISE takes the eye.
+function deskNeedsIo() {
+  if (desk.io) return false;
+  announce(desk.trip ? 'Emergency stop: press INITIALISE to reset the desk first.' : 'Press INITIALISE first: nothing is connected yet.');
+  const b = $('dkInit');
+  b.classList.remove('nudge'); void b.offsetWidth; b.classList.add('nudge');
+  return true;
+}
+function deskInit() {
+  const was = desk.trip;
+  desk.io = true; desk.trip = false;
+  announce(was ? 'Emergency stop reset: the I/O link is up again.' : 'Initialised: the supplies and the I/O answer.');
+  deskSync();
+}
+function deskCoil(k, on) {
+  if (on && deskNeedsIo()) return;
+  desk.coils[k].on = on;
+  const c = DESK_COILS.find((x) => x.k === k);
+  announce(`${c.name} ${on ? `on, ${fmtA(desk.coils[k].set)}` : 'off'}.`);
+  deskSync();
+  deskLit();
+}
+function deskHv(on) {
+  if (on && deskNeedsIo()) return;
+  desk.hv = on;
+  if (!on) announce('High voltage off.');
+  else if (!deskInWindow()) announce(desk.p > DESK.pHi ? 'High voltage on, but no glow: there is too much gas.' : 'High voltage on, but no glow: there is too little gas.');
+  deskSync();
+}
+// STOP: the sequence ends, and the high voltage and the coils go off. The vacuum and the I/O stay as they are.
+function deskStop() {
+  desk.seq = null;
+  desk.hv = false;
+  for (const c of Object.values(desk.coils)) c.on = false;
+  deskSync();
+  deskLit();
+}
+function deskShutDown() {
+  deskStop();
+  desk.pump = false; desk.gas = 0; desk.io = false; desk.trip = false;
+  $('dkGas').value = 0;
+  announce('Shut down: the supplies, the pump, the gas and the I/O are off.');
+  deskSync();
+}
+// The emergency stop on the table top (a click on it in the model): the PLC drops the high voltage and the coils.
+function deskTrip() {
+  if (!desk.on) return;
+  deskStop();
+  desk.io = false; desk.trip = true;
+  announce('Emergency stop: the PLC dropped the high voltage and the coil supplies. INITIALISE resets the desk.');
+  deskSync();
+}
+function deskSeqStart() {
+  if (deskNeedsIo()) return;
+  desk.seq = { prog: desk.prog, i: 0, at: 0 };
+  desk.rec = []; desk.replay = null; desk.playing = false;
+  announce(`Sequence ${desk.prog}, ${DESK_PROGS[desk.prog - 1].name}: started.`);
+  deskSync();
+}
+function deskSeqEnd(done) {
+  if (!desk.seq) return;
+  const name = DESK_PROGS[desk.seq.prog - 1].name;
+  desk.seq = null;
+  if (done) desk.done.add('seq');
+  announce(done ? `Sequence done: ${name}. Its ${desk.rec.length} frames are in REPLAY.` : 'Sequence stopped.');
+  deskSync();
+  deskPage();
+}
+// One step of the running program: its currents and its discharge, and a frame of what it gives kept for REPLAY.
+function deskSeqStep(now) {
+  const q = desk.seq, steps = DESK_PROGS[q.prog - 1].steps;
+  if (q.i >= steps.length) return deskSeqEnd(true);
+  const st = steps[q.i++];
+  for (const [k, c] of Object.entries(desk.coils)) { c.on = st[k] > 0; if (st[k] > 0) { c.set = st[k]; $(`dkSet-${k}`).value = st[k]; } }
+  desk.hv = st.hv;
+  const lit = st.hv && deskInWindow();
+  desk.rec.push({ say: st.say, glow: lit ? deskGlow(deskFields(st)) : { k: 0, stri: 0.12, minor: 5, z: 0 } });
+  q.at = now + desk.interval / 1000;
+  deskSync();
+  deskLit();
+}
+// The coils a supply drives take a light layer on the model while it is on, or while the pointer is on its row.
+function deskLit() {
+  deskLive.clear();
+  if (desk.on) for (const c of DESK_COILS) {
+    if (!(desk.coils[c.k].on && desk.io) && desk.hot !== c.k) continue;
+    (piecesOf.get(c.part) || []).forEach((pc, i) => { if (c.of(i, pc)) deskLive.add(pc); });
+  }
+  refreshLit();
+}
+// Every switch, box and readout from the desk's state.
+function deskSync() {
+  if (!deskEl) return;
+  const press = (id, on) => $(id).setAttribute('aria-pressed', on ? 'true' : 'false');
+  press('dkInit', desk.io); press('dkPump', desk.pump); press('dkHv', desk.hv && desk.io); press('dkSeq', !!desk.seq);
+  const io = $('dkIo');
+  io.className = `dk-io${desk.trip ? ' trip' : desk.io ? ' on' : ''}`;
+  io.lastChild.textContent = desk.trip ? 'E-STOP' : desk.io ? 'I/O ready' : 'I/O off';
+  $('dkP').textContent = fmtP(desk.p);
+  for (const c of DESK_COILS) {
+    const s = desk.coils[c.k], live = s.on && desk.io;
+    press(`dkCoil-${c.k}`, live);
+    const o = $(`dkI-${c.k}`), tf = c.part === 'tf';
+    o.textContent = `${fmtA(s.I)}${tf && s.I > 0.05 ? ` ${(DESK.tfmT * s.I).toFixed(1)} mT` : ''}`;
+    o.classList.toggle('off', s.I < 0.05);
+  }
+  const hv = desk.hv && desk.io, o = $('dkHvOut');
+  o.textContent = !hv ? '0.0 kV' : desk.struck ? '4.0 kV · glow' : `4.0 kV · no glow`;
+  o.classList.toggle('off', !hv);
+  o.classList.toggle('warn', hv && !desk.struck);
+  for (const b of deskEl.querySelectorAll('.dk-sw:not(#dkInit):not(#dkPump)')) b.setAttribute('aria-disabled', desk.io ? 'false' : 'true');
+}
+// Each frame while the desk is on: the pressure, the coil currents, the running program, whether the glow is struck,
+// and the glow easing toward what the rules give. Says whether anything is still moving.
+function deskTick(dt, now) {
+  const still = reduceMotion.matches;
+  let moved = false;
+  const lp = Math.log10(desk.p);
+  const eq = desk.pump ? Math.log10(DESK.pBase) + 2.5 * desk.gas : desk.gas > 0.02 ? Math.log10(1013) : lp;
+  if (Math.abs(eq - lp) > 1e-4) {
+    const rate = desk.pump ? 1.6 : 0.7; // decades a second: time is compressed
+    desk.p = 10 ** (still ? eq : lp + clamp(eq - lp, -rate * dt, rate * dt));
+    moved = true;
+  }
+  const settled = Math.abs(eq - Math.log10(desk.p)) < 0.02;
+  desk.falling = desk.pump && !settled && eq < lp;
+  for (const c of Object.values(desk.coils)) {
+    const to = c.on && desk.io ? c.set : 0;
+    if (c.I === to) continue;
+    c.I = still ? to : c.I + clamp(to - c.I, -DESK.ramp * dt, DESK.ramp * dt);
+    moved = true;
+  }
+  if (desk.seq && now >= desk.seq.at) { deskSeqStep(now); moved = true; }
+  const struck = desk.hv && desk.io && deskInWindow();
+  if (struck !== desk.struck) {
+    desk.struck = struck;
+    if (struck) announce('The glow strikes.');
+    else if (desk.hv && desk.io) announce(`The glow goes out: there is too ${desk.p > DESK.pHi ? 'much' : 'little'} gas.`);
+    moved = true;
+  }
+  const to = struck ? deskGlow(deskFields()) : deskDark(), n = desk.now;
+  let glowMoved = false;
+  for (const [key, rate] of [['k', 4], ['stri', 4], ['minor', 5], ['z', 5]]) {
+    if (Math.abs(to[key] - n[key]) < 1e-3) { if (n[key] !== to[key]) { n[key] = to[key]; glowMoved = true; } continue; }
+    n[key] = still ? to[key] : n[key] + (to[key] - n[key]) * (1 - Math.exp(-dt * rate));
+    glowMoved = true;
+  }
+  if (glowMoved) { applyLook(); dirty = true; }
+  // What the try-it list ticks off.
+  const f = deskFields(), had = desk.done.size;
+  if (desk.pump && desk.gas > 0 && settled && deskInWindow()) desk.done.add('vac');
+  if (struck) desk.done.add('glow');
+  if (struck && f.Btf >= 10) desk.done.add('tf');
+  if (struck && Math.abs(n.z) >= 1.5) desk.done.add('pf');
+  if (moved) deskSync();
+  const scene = deskSceneNow();
+  if (scene !== desk.scene || desk.done.size !== had) { desk.scene = scene; deskPage(); }
+  deskMonitor(now, glowMoved || moved);
+  return moved || glowMoved || !!desk.seq || desk.playing;
+}
+
+// ---- The monitor and the page in the Machine tab ----
+// VIDEO 1: the webcam's picture through the left viewport, drawn from the glow's own state: the far wall and the port
+// opposite, the haze that fills the vessel, its striations, and the ring PF1 and PF2 gather. Then what the program's
+// image processing lays over it: the glow's edge and its centre.
+function deskVideo(cv, s, t, tag) {
+  const c = cv.getContext('2d'), W = cv.width / 2, H = cv.height / 2;
+  c.setTransform(2, 0, 0, 2, 0, 0);
+  c.globalCompositeOperation = 'source-over'; c.filter = 'none';
+  c.fillStyle = '#06050b'; c.fillRect(0, 0, W, H);
+  const wall = c.createRadialGradient(W * 0.5, H * 0.5, 10, W * 0.5, H * 0.5, W * 0.62);
+  wall.addColorStop(0, '#191622'); wall.addColorStop(1, '#07060c');
+  c.fillStyle = wall; c.beginPath(); c.ellipse(W * 0.5, H * 0.5, W * 0.56, H * 0.62, 0, 0, 7); c.fill();
+  c.strokeStyle = 'rgb(160 160 190 / .16)'; c.lineWidth = 1.2;
+  for (const x of [0.08, 0.93]) { c.beginPath(); c.ellipse(W * x, H * 0.5, W * 0.2, H * 0.56, 0, 0, 7); c.stroke(); }
+  c.fillStyle = '#020204'; c.beginPath(); c.ellipse(W * 0.84, H * 0.52, W * 0.035, H * 0.1, 0, 0, 7); c.fill();
+  const lum = clamp01(s.k / 1.4), g = clamp01((5 - s.minor) / 2.7), y0 = H * (0.5 - (s.z / 7.5) * 0.62);
+  if (s.k > 0.01) {
+    c.save(); c.globalCompositeOperation = 'lighter';
+    const hz = (0.3 + 0.55 * lum) * (1 - 0.7 * g), pink = clamp01((s.stri - 0.06) / 0.74);
+    const haze = c.createRadialGradient(W * 0.48, H * 0.5, 0, W * 0.48, H * 0.5, W * 0.62);
+    haze.addColorStop(0, `rgb(${150 + 64 * pink} ${92 + 28 * pink} 255 / ${hz})`); haze.addColorStop(0.7, `rgb(${104 + 30 * pink} 52 226 / ${hz * 0.78})`); haze.addColorStop(1, `rgb(60 24 160 / ${hz * 0.42})`);
+    c.fillStyle = haze; c.fillRect(0, 0, W, H);
+    if (s.stri > 0.12) {
+      c.filter = 'blur(3px)';
+      for (let i = 0; i < 7; i++) {
+        const x = W * (0.12 + i * 0.118) + Math.sin(i * 2.1 + t * 0.5) * 3, w = 5 + (i % 3) * 3, a = (s.stri - 0.12) * (0.75 + (i % 2) * 0.3);
+        const band = c.createLinearGradient(x - w, 0, x + w, 0);
+        band.addColorStop(0, 'rgb(255 220 255 / 0)'); band.addColorStop(0.5, `rgb(255 226 255 / ${clamp01(a)})`); band.addColorStop(1, 'rgb(255 220 255 / 0)');
+        c.fillStyle = band; c.beginPath(); c.ellipse(x, y0, w, H * (0.4 - Math.abs(i - 3) * 0.03) * (1 - 0.55 * g), 0.04 * (i - 3), 0, 7); c.fill();
+      }
+      c.filter = 'none';
+    }
+    if (g > 0.04) {
+      const ring = (lw, col, blur) => { c.filter = `blur(${blur}px)`; c.strokeStyle = col; c.lineWidth = lw; c.lineCap = 'round';
+        c.beginPath(); c.moveTo(W * 0.07, y0 + H * 0.06); c.bezierCurveTo(W * 0.3, y0 - H * 0.12, W * 0.62, y0 - H * 0.12, W * 0.86, y0); c.stroke(); };
+      ring(6 + 9 * (s.minor / 2.3 - 1) + 9, `rgb(140 90 255 / ${0.55 * g})`, 7); ring(5, `rgb(214 190 255 / ${0.9 * g * (0.5 + 0.5 * lum)})`, 2.5); ring(1.8, `rgb(255 255 255 / ${0.95 * g})`, 0.6);
+      c.filter = 'none';
+    }
+    c.restore();
+  }
+  if (desk.falseColour && s.k > 0.01) {
+    // False colour: brightness mapped onto a heat scale, as the program's own option does.
+    const im = c.getImageData(0, 0, cv.width, cv.height), d = im.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const v = (0.3 * d[i] + 0.4 * d[i + 1] + 0.3 * d[i + 2]) / 255;
+      d[i] = 255 * clamp01(3 * v - 0.6); d[i + 1] = 255 * clamp01(3 * v - 1.5); d[i + 2] = 255 * clamp01(v < 0.35 ? 2.2 * v : 3 * v - 2.2);
+    }
+    c.putImageData(im, 0, 0);
+  }
+  c.font = `500 9px ${getComputedStyle(document.documentElement).getPropertyValue('--mono')}`;
+  c.fillStyle = '#ff6a5e'; c.fillText(tag, 8, 14);
+  if (desk.edge && s.k > 0.01) {
+    c.strokeStyle = '#58e08c'; c.lineWidth = 1; c.setLineDash([4, 3]);
+    const hh = g > 0.3 ? H * (0.1 + 0.16 * (s.minor / 5)) : H * 0.38, cy = g > 0.3 ? y0 - H * 0.04 : y0;
+    const y1 = Math.max(20, cy - hh), y2 = Math.min(H - 4, cy + hh);
+    c.strokeRect(W * 0.06, y1, W * 0.82, y2 - y1); c.setLineDash([]);
+    if (desk.blob) { const cx = W * 0.47; c.beginPath(); c.moveTo(cx - 6, cy); c.lineTo(cx + 6, cy); c.moveTo(cx, cy - 6); c.lineTo(cx, cy + 6); c.stroke(); }
+  }
+}
+// What the tracking reads off the picture, in words.
+function deskTrack(s) {
+  if (s.k <= 0.01) return 'No glow to track';
+  const g = clamp01((5 - s.minor) / 2.7), mm = Math.round(s.z * 10);
+  const where = `centre ${mm > 0 ? '+' : ''}${mm} mm${mm ? (mm > 0 ? ' above the midplane' : ' below the midplane') : ''}`;
+  return `Glow tracked: ${where} · ${g > 0.3 ? `${Math.round(s.minor * 18)} mm high` : 'fills the vessel'}${s.stri > 0.3 && g < 0.5 ? ' · 7 bands' : ''}`;
+}
+// Nitrogen's strongest bands in a glow, the second positive system and N2+ first negative, as high as the glow is bright.
+const DESK_LINES = [[315.9, 0.35], [337.1, 1], [357.7, 0.7], [380.5, 0.3], [391.4, 0.55], [405.9, 0.16], [427.8, 0.3]];
+function deskSpectrum(cv, k) {
+  const c = cv.getContext('2d'), W = cv.width / 2, H = cv.height / 2;
+  c.setTransform(2, 0, 0, 2, 0, 0);
+  c.fillStyle = '#05040a'; c.fillRect(0, 0, W, H);
+  const x = (nm) => 10 + ((nm - 300) / 200) * (W - 20);
+  c.strokeStyle = 'rgb(255 255 255 / .25)'; c.beginPath(); c.moveTo(8, H - 14); c.lineTo(W - 8, H - 14); c.stroke();
+  c.fillStyle = 'rgb(255 255 255 / .6)'; c.font = '500 8px monospace';
+  for (const nm of [300, 350, 400, 450, 500]) c.fillText(String(nm), x(nm) - 8, H - 3);
+  for (const [nm, h] of DESK_LINES) {
+    const hh = (H - 22) * h * clamp01(k / 1.4);
+    c.fillStyle = nm < 385 ? '#b79cff' : '#8f9bff'; c.fillRect(x(nm) - 1.2, H - 14 - hh, 2.4, hh);
+    if (H > 100 && hh > 14) c.fillText(nm.toFixed(0), x(nm) - 8, H - 18 - hh);
+  }
+}
+// The monitor's canvases, drawn when the glow or the frame replayed changes, and a few times a second while the
+// striations drift.
+function deskMonitor(now, changed) {
+  const video = $('dkVideo'), spec = $('dkSpec');
+  if (desk.playing && desk.rec.length && now >= desk.playAt) {
+    desk.replay = ((desk.replay ?? -1) + 1) % desk.rec.length;
+    desk.playAt = now + Math.max(0.12, desk.interval / 1000);
+    const r = $('dkFrame'); if (r) r.value = desk.replay;
+    changed = true;
+  }
+  const rp = desk.mon === 'replay' && desk.replay != null && desk.rec[desk.replay] ? desk.rec[desk.replay] : null;
+  const s = rp ? rp.glow : desk.now, drift = s.stri > 0.12 && s.k > 0.01 && !reduceMotion.matches;
+  if (!changed && !(drift && now - desk.vidAt > 0.12) && desk.drawnOn === video) return;
+  desk.vidAt = now; desk.drawnOn = video;
+  if (video) deskVideo(video, s, now, rp ? `REPLAY · frame ${desk.replay + 1} of ${desk.rec.length} · ${rp.say}` : 'VIDEO 1 · webcam, left viewport');
+  if (spec) deskSpectrum(spec, s.k);
+  const tr = $('dkTrack'); if (tr) tr.textContent = desk.blob ? deskTrack(s) : 'Blob analysis is off';
+  const f = deskFields();
+  for (const [id, v] of [['dkBtf', `${f.Btf.toFixed(1)} mT`], ['dkBpf', `${f.Bpf.toFixed(1)} mT`], ['dkBsol', fmtA(f.sol)], ['dkB1', fmtA(desk.coils.tf1.I)], ['dkB2', fmtA(desk.coils.tf2.I)]]) { const e = $(id); if (e) e.textContent = v; }
+}
+function deskTag(text, assumed) { const s = el('span', `dk-tag${assumed ? ' as' : ''}`, text); return s; }
+// The Machine tab while the desk is on: the monitor, what you are seeing and why, and what to try. Stacked, the desk's
+// own panel sits in it too, under the monitor.
+function renderDesk(box) {
+  const page = el('div', 'dk-page');
+  const h = el('h2', null, 'Control desk'); h.tabIndex = -1; h.dataset.fk = 'name';
+  const lead = el('p', 'lead', 'A stand-in for the SPM1’s own control software: its buttons, in its order, on this model.'); lead.append(deskTag('S4'));
+  page.append(h, lead);
+  const mon = el('div', 'dk-mon');
+  const tabs = el('div', 'dk-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Monitor');
+  for (const [k, name] of [['video', 'VIDEO 1'], ['replay', 'REPLAY'], ['spec', 'SPECTROMETER'], ['hall', 'HALL']]) {
+    const b = el('button', null, name); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', desk.mon === k ? 'true' : 'false'); b.dataset.fk = `mon:${k}`;
+    b.addEventListener('click', () => { desk.mon = k; desk.playing = false; if (k === 'replay' && desk.replay == null && desk.rec.length) desk.replay = 0; deskPage(); });
+    tabs.append(b);
+  }
+  mon.append(tabs);
+  const canvas = (id, hh, label) => { const c = el('canvas'); c.id = id; c.width = 568; c.height = hh * 2; c.style.aspectRatio = `284 / ${hh}`; c.setAttribute('role', 'img'); c.setAttribute('aria-label', label); return c; };
+  const check = (label, key) => { const l = el('label'), i = el('input'); i.type = 'checkbox'; i.checked = desk[key]; i.dataset.fk = `opt:${key}`; i.addEventListener('change', () => { desk[key] = i.checked; desk.drawnOn = null; }); l.append(i, ` ${label}`); return l; };
+  if (desk.mon === 'video' || desk.mon === 'replay') {
+    mon.append(canvas('dkVideo', 170, 'The glow as the webcam sees it through the left viewport'));
+    if (desk.mon === 'replay') {
+      const row = el('div', 'dk-replay');
+      if (!desk.rec.length) row.append(el('span', null, 'No frames yet: run a SEQUENCE, and its frames are kept here.'));
+      else {
+        const r = el('input'); Object.assign(r, { type: 'range', id: 'dkFrame', min: 0, max: desk.rec.length - 1, step: 1, value: desk.replay ?? 0 }); r.setAttribute('aria-label', `Frame, of ${desk.rec.length}`); r.dataset.fk = 'replay:frame';
+        r.addEventListener('input', () => { desk.replay = +r.value; desk.playing = false; desk.drawnOn = null; });
+        const play = el('button', null, desk.playing ? 'Pause' : 'Animate'); play.type = 'button'; play.dataset.fk = 'replay:play';
+        play.addEventListener('click', () => { desk.playing = !desk.playing; desk.playAt = 0; play.textContent = desk.playing ? 'Pause' : 'Animate'; });
+        row.append(r, play);
+      }
+      mon.append(row);
+    }
+    const opts = el('div', 'dk-chk'); opts.append(check('Edge detect', 'edge'), check('False colour', 'falseColour'), check('Blob analysis', 'blob'));
+    const tr = el('p', 'dk-note'); tr.id = 'dkTrack'; tr.setAttribute('role', 'status');
+    mon.append(opts, tr, canvas('dkSpec', 70, 'The glow’s spectrum: nitrogen’s bands between 300 and 500 nm'));
+    const cap = el('p', 'dk-note', 'Spectrometer · N₂ bands, nm'); cap.append(deskTag('heights assumed', true)); mon.append(cap);
+  } else if (desk.mon === 'spec') {
+    mon.append(canvas('dkSpec', 170, 'The glow’s spectrum: nitrogen’s bands between 300 and 500 nm'));
+    const cap = el('p', 'dk-note', 'Nitrogen’s strongest bands in a glow: the second positive system (316, 337, 358, 380 and 406 nm) and N₂⁺ (391 and 428 nm). They rise and fall with the glow’s brightness.'); cap.append(deskTag('heights assumed', true)); mon.append(cap);
+  } else {
+    const t = el('table', 'specs');
+    for (const [k, id, tag, as] of [['Toroidal field on the axis', 'dkBtf', 'derived', false], ['TF bank 1', 'dkB1', 'S4', false], ['TF bank 2', 'dkB2', 'S4', false], ['Poloidal field, PF1 and PF2', 'dkBpf', 'scale assumed', true], ['Solenoid', 'dkBsol', 'S4', false]]) {
+      const tr = el('tr'), v = el('td'); const o = el('span'); o.id = id; v.append(o, deskTag(tag, as)); tr.append(el('td', null, k), v); t.append(tr);
+    }
+    mon.append(t, el('p', 'dk-note', 'What the Hall sensors would read. The toroidal field is μ₀ · 400 turns · I over 2π · 0.23 m, with each bank driving half the turns.'));
+  }
+  page.append(mon);
+  if (stacked() && deskEl) { deskEl.classList.add('in-page'); page.append(deskEl); }
+  const sc = DESK_SCENES[desk.scene] || DESK_SCENES.off;
+  const see = el('p'); see.innerHTML = sc[1]; see.append(deskTag(sc[2]));
+  const s3 = el('h3', null, 'What you are seeing');
+  page.append(s3, see);
+  if (desk.scene === 'ready' || desk.scene === 'thin' || desk.scene === 'thick') { const n = el('p', 'note', `The gauge reads ${fmtP(desk.p)}; the glow strikes between ${DESK.pLo} and ${DESK.pHi} mbar.`); n.append(deskTag('window assumed', true)); page.append(n); }
+  page.append(el('h3', null, 'Try it'));
+  const ol = el('ol', 'dk-tasks'); let next = true;
+  for (const [k, t, d] of DESK_TASKS) {
+    const done = desk.done.has(k), li = el('li', done ? 'done' : next ? 'now' : null), body = el('div');
+    if (!done) next = false;
+    body.append(el('b', null, t), el('span', null, d));
+    li.append(el('i', null, done ? '✓' : String(ol.children.length + 1)), body);
+    if (done) li.setAttribute('aria-label', `${t}: done`);
+    ol.append(li);
+  }
+  page.append(ol);
+  const honest = el('p', 'dk-honest'); honest.append(el('b', null, 'A sketch, not a simulation. '), 'It shows what the webinar’s demonstrations show, by a few fixed rules. The pressure window, the rates, the PF scale and the picture in VIDEO 1 are drawn, not computed; time is compressed.'); honest.append(deskTag('assumed', true));
+  const done = action('Done', () => endDesk(), false, 'act:deskdone'); done.title = 'Leave the control desk (Esc)';
+  const acts = el('div', 'actions'); acts.append(done);
+  page.append(honest, acts);
+  box.append(page);
+  desk.drawnOn = null;
+  deskMonitor(performance.now() / 1000, true);
+}
+// The page again, when what it says has changed, and the bar's line with it.
+function deskPage() {
+  $('deskLbl').replaceChildren(el('b', null, 'Control desk'), ` · ${(DESK_SCENES[desk.scene] || DESK_SCENES.off)[0]}`);
+  if (tab === 'machine') renderInspector();
+}
+// Where the desk's panel stands: at the view's left on a desktop, with the bar centred in the room beside it; in the
+// Machine tab where the panels stack.
+function placeDesk() {
+  if (!deskEl) return;
+  const card = $('card'), bar = $('deskbar');
+  if (stacked()) { bar.style.left = bar.style.right = bar.style.maxWidth = ''; if (tab === 'machine') renderInspector(); return; }
+  deskEl.classList.remove('in-page');
+  if (deskEl.parentNode !== card) card.append(deskEl);
+  const c = card.getBoundingClientRect(), l = deskEl.getBoundingClientRect().right - c.left + 8, r = c.right - $('triad').getBoundingClientRect().left + 8;
+  bar.style.left = `${Math.round(l / uiScale)}px`;
+  bar.style.right = `${Math.round(r / uiScale)}px`;
+  bar.style.maxWidth = `${Math.max(120, Math.round((c.width - l - r) / uiScale))}px`;
+}
+// The whole machine beside the desk and under the bar, from a little higher, so the glow shows in the cut vessel.
+function deskFrame(glideFor = MOVE.fly) {
+  const b = new THREE.Box3();
+  for (const pc of pieces) if (pc.visible) b.union(pc.userData.restBox);
+  const bar = $('deskbar').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6;
+  goal.az = nearestAz(HOME.az); goal.el = 34;
+  frameBox(b, 1.08, { l: navReserve(), r: 0, b: 0, t: bar });
+  if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000, dur: glideFor, from: null };
+}
+function startDesk() {
+  if (desk.on) return;
+  if (guide.on) guideExit({ focus: false });
+  if (quiz.on) endQuiz(false);
+  if (iso.part) endInspect();
+  if (state.explode) setExplode(false);
+  Object.assign(desk, { saved: snapshot(), cutWas: state.cut, treeWas: panels.tree, inspWas: panels.insp, on: true, io: false, trip: false, pump: false, gas: 0, p: 1013, hv: false, struck: false,
+    seq: null, rec: [], replay: null, playing: false, mon: 'video', scene: 'off', hot: null, drawnOn: null, now: { k: 0, stri: 0.12, minor: 5, z: 0 } });
+  for (const c of Object.values(desk.coils)) Object.assign(c, { on: false, set: 10, I: 0 });
+  desk.done.clear();
+  buildDesk();
+  for (const c of DESK_COILS) $(`dkSet-${c.k}`).value = 10;
+  $('dkGas').value = 0; $('dkProg').value = '1'; $('dkIv').value = 200; desk.prog = 1; desk.interval = 200;
+  if (!state.cut) setCut(true);
+  if (state.select) select(null);
+  if (!stacked()) { if (panels.tree) setPanel('tree', false); if (!panels.insp) setPanel('insp', true); }
+  deskEl.hidden = false;
+  $('deskbar').classList.add('on');
+  $('card').classList.add('desk-on');
+  setTab('machine', false);
+  deskSync();
+  deskPage();
+  placeDesk();
+  fitWheel();
+  touched = true;
+  deskFrame();
+  setHint();
+  deskLit();
+  announce('Control desk open: a stand-in for the SPM1’s control software. Press INITIALISE, pump down, let in gas, then GLOW ON.');
+  $('dkInit').focus({ preventScroll: true });
+  dirty = true;
+}
+// Leave the desk: everything off, and the cutaway, the panels and the view come back.
+function endDesk(restore = true) {
+  if (!desk.on) return;
+  const lost = deskEl.contains(document.activeElement) || $('deskbar').contains(document.activeElement) || $('inspBody').contains(document.activeElement);
+  desk.on = false; desk.seq = null; desk.struck = false; desk.playing = false; desk.hot = null;
+  deskLive.clear();
+  $('deskbar').classList.remove('on');
+  $('card').classList.remove('desk-on');
+  deskEl.classList.remove('in-page');
+  $('card').append(deskEl);
+  deskEl.hidden = true;
+  if (state.cut !== desk.cutWas && !state.explode) setCut(desk.cutWas);
+  if (!stacked()) { if (panels.tree !== desk.treeWas) setPanel('tree', desk.treeWas); if (panels.insp !== desk.inspWas) setPanel('insp', desk.inspWas); }
+  if (restore && desk.saved) {
+    stopGlide();
+    goal.az = nearestAz(desk.saved.az); goal.el = desk.saved.el; goal.zoom = desk.saved.zoom; goal.target.copy(desk.saved.target);
+    glide = reduceMotion.matches ? null : { at: performance.now() / 1000, dur: MOVE.fly, from: null };
+  }
+  fitWheel();
+  refreshLit();
+  setHint();
+  renderInspector();
+  if (lost) { const b = $('inspBody').querySelector('[data-fk="act:desk"]'); (b?.getClientRects().length ? b : stage).focus({ preventScroll: true }); }
+  announce('Control desk closed: everything is off.');
+  dirty = true;
+}
+$('bDeskDone').addEventListener('click', () => endDesk());
 
 // ---------- Guided analysis ----------
 // A walkthrough of the viewer on the SPM1 itself (PLAN-3.md). Each step asks one question, rings the real control,
@@ -8028,6 +8716,7 @@ function gRestore(s, o = {}) {
 function guideStart(at = 0) {
   if (guide.on) return guideGo(at, { focus: true });
   if (quiz.on) endQuiz();
+  endDesk();
   setViewMenu(false, false);
   guide.saved = gSnapshot();
   guide.on = true;
@@ -8104,6 +8793,7 @@ function frame() {
   const dt = Math.min(0.05, now - lastT);
   lastT = now;
   let active = false;
+  if (desk.on && deskTick(dt, now)) active = true;
   if (now - linkAt > 0.3) { linkAt = now; writeLink(); }
   const low = coarse && (pointers.size > 0 || !!glide);
   if (low !== lowRes) { lowRes = low; resize(); }
@@ -8292,7 +8982,7 @@ if (renderer) {
 applyTheme();
 if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
-window.__spm1 = { view, goal, iso, setSpinAxis, spinAxis: () => spinAxis, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
+window.__spm1 = { desk, DESK, deskLive, startDesk, endDesk, deskTrip, deskFields, deskGlow, view, goal, iso, setSpinAxis, spinAxis: () => spinAxis, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
   lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf, draft, dimAt,
   setGrid: (v) => { draft.grid = v; applyTheme(); },
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,

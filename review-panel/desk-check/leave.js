@@ -1,0 +1,44 @@
+// Leaving the desk gives back what it found, and the other modes end it.
+const snap = () => ({ cut: A.state.cut, tree: A.panels.tree, insp: A.panels.insp, az: A.goal.az, el: A.goal.el, zoom: A.goal.zoom, t: A.goal.target.toArray() });
+const same = (a, b) => a.cut === b.cut && a.tree === b.tree && a.insp === b.insp && near(a.az, b.az, 0.01) && near(a.el, b.el, 0.01) && near(a.zoom, b.zoom, 1e-4) && a.t.every((v, i) => near(v, b.t[i], 0.01));
+A.setPanel('tree', true); A.lookFrom(20, 30); A.goal.zoom *= 1.3; await sleep(900);
+const before = snap();
+await open(); await ready(); $('dkHv').click(); $('dkCoil-tf1').click(); await settle(1200);
+ok('the desk changes the view while it is on', !same(before, snap()));
+$('bDeskDone').click(); await sleep(600);
+ok('Done: desk off and hidden', !d.on && $('desk').hidden && !$('deskbar').classList.contains('on'));
+ok('Done gives back the cutaway, the panels and the view', same(before, snap()), JSON.stringify(snap()));
+ok('focus goes back to the button that opened it', document.activeElement.dataset.fk === 'act:desk', document.activeElement.dataset.fk || document.activeElement.id);
+ok('no coil is left lit', A.deskLive.size === 0);
+await sleep(500);
+ok('the address drops desk=1', !/desk=1/.test(location.hash), location.hash.split('&')[0]);
+
+await open(); await sleep(300);
+ok('opened again: a fresh desk', d.on && !d.io && !d.pump && d.p === 1013 && d.done.size === 0 && +$('dkGas').value === 0);
+A.startTour(); await sleep(400);
+ok('the tour ends the desk', !d.on && A.iso.part === 'vessel');
+A.endInspect(); await sleep(2600);
+await open(); A.startQuiz(['gauge'], 0); await sleep(400);
+ok('the quiz ends the desk', !d.on && A.quiz.on);
+A.endQuiz(); await sleep(400);
+await open(); A.guideStart(); await sleep(600);
+ok('the guided analysis ends the desk', !d.on && A.guide.on);
+A.guideExit(); await sleep(600);
+await open(); A.setExplode(true); await sleep(300);
+ok('Explode ends the desk', !d.on && A.state.explode);
+A.setExplode(false); await sleep(1200);
+await open(); A.inspect('pump'); await sleep(400);
+ok('inspecting a part ends the desk', !d.on && A.iso.part === 'pump');
+A.endInspect(); await sleep(2600);
+
+A.applyLink('#desk=1'); await sleep(500);
+ok('a link with desk=1 opens it', d.on);
+A.applyLink('#'); await sleep(400);
+ok('a link without it closes it', !d.on);
+const h0 = history.length;
+await open(); await sleep(700);
+ok('opening adds a step to the history', history.length === h0 + 1, `${h0} → ${history.length}`);
+history.back(); await sleep(900);
+ok('Back leaves the desk', !d.on);
+await open();
+return out;
