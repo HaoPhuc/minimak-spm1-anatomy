@@ -8,7 +8,10 @@ for (let i = 0; i < S.length; i++) {
   __spm1.guideGo(i);
   const t0 = performance.now();
   while (!g.ready && performance.now() - t0 < 9000) await sleep(50);
-  await sleep(120);
+  // guide.ready is set by guideGo; the ring is painted by the next guideTick.
+  // Wait for that frame (and its layout), including on a busy touch renderer.
+  await new Promise(requestAnimationFrame);
+  await new Promise(requestAnimationFrame);
   const ready = g.ready, before = g.ok, r0 = ring(), reach = document.getElementById('gReach').textContent;
   let after = '-';
   if (s.act && !/use\.(tour|quiz|desk)/.test(s.id)) { await __spm1.gShowStep(); await sleep(2400); after = g.ok; }

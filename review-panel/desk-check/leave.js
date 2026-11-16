@@ -8,7 +8,7 @@ ok('the desk changes the view while it is on', !same(before, snap()));
 $('bDeskDone').click(); await sleep(600);
 ok('Done: desk off and hidden', !d.on && $('desk').hidden && !$('deskbar').classList.contains('on'));
 ok('Done gives back the cutaway, the panels and the view', same(before, snap()), JSON.stringify(snap()));
-ok('focus goes back to the button that opened it', document.activeElement.dataset.fk === 'act:desk', document.activeElement.dataset.fk || document.activeElement.id);
+ok('focus goes back to the button that opened it', document.activeElement.id === 'tsRun', document.activeElement.id || document.activeElement.tagName);
 ok('no coil is left lit', A.deskLive.size === 0);
 await sleep(500);
 ok('the address drops desk=1', !/desk=1/.test(location.hash), location.hash.split('&')[0]);

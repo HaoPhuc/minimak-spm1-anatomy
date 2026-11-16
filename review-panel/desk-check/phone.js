@@ -10,5 +10,5 @@ ok('the page re-rendered and kept the panel', $('inspBody').contains($('desk')) 
 A.deskTrip(); await sleep(300);
 ok('the emergency stop trips it', d.trip && !d.struck);
 $('bDeskDone').click(); await sleep(500);
-ok('Done: the panel is gone from the page, the Machine tab is back', !d.on && !$('inspBody').querySelector('.desk') && !!$('inspBody').querySelector('[data-fk="act:desk"]'));
+ok('Done: the panel is gone from the page, the Machine tab is back', !d.on && !$('inspBody').querySelector('.desk') && A.tab() === 'machine' && !!$('tsRun').getClientRects().length);
 return out;
