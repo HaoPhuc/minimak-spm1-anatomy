@@ -9,15 +9,20 @@ log.push(`tour Done: part=${A.iso.part}, tour=${A.iso.tour}`);
 $('bGuide').click(); await until(() => A.guide.ready);
 await go('use.quiz'); await A.gShowStep(); await sleep(2500);
 log.push(`quiz handoff: guide.on=${A.guide.on}, quiz.on=${A.quiz.on}, question=${A.quiz.list[A.quiz.i]}`);
-document.querySelector('#quizChoices button')?.click(); await sleep(2500);
+// Choose a known correct place, not the alphabetically first (possibly wrong) answer.
+const answer = A.quiz.places[0].userData.part;
+$('quizChoices').querySelector(`[data-part="${answer}"]`).click(); await sleep(2500);
 log.push(`quiz answered: answered=${A.quiz.answered}`);
 $('bQuizDone').click(); await sleep(1500);
 log.push(`quiz Done: quiz.on=${A.quiz.on}`);
+// main predates the control desk; keep the shared comparison runnable there.
+if (A.desk) {
 $('bGuide').click(); await until(() => A.guide.ready);
 await go('use.desk'); await A.gShowStep(); await sleep(2000);
 log.push(`desk handoff: guide.on=${A.guide.on}, desk.on=${A.desk.on}, quiet=${A.store.quiet}, focus=${document.activeElement.id}`);
 $('bDeskDone').click(); await sleep(1500);
 log.push(`desk Done: desk.on=${A.desk.on}`);
+} else log.push('desk: unavailable on baseline');
 const h0 = history.length;
 $('bExplode').click(); await sleep(1500); const ex = A.state.explode;
 $('bExplode').click(); await sleep(1500);

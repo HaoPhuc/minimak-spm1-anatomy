@@ -1,0 +1,1327 @@
+[
+  {
+    "name": "tabs",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "tabs.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "themes",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "themes.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "explore",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "explore.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "learn",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "learn.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "start-dismiss",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__startMode=\"dismiss\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "start.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "start-tour",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__startMode=\"tour\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "start.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "start-about",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__startMode=\"about\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "start.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "start-select",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__startMode=\"select\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "start.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "start-return",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "setup": "localStorage.setItem('spm1-start','0')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "arrival.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "part-address",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "js": "location.hash='part=tf'; location.reload()"
+      },
+      {
+        "wait": 3500
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "arrival.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "keyboard",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "document.getElementById('tsExplore').focus()"
+      },
+      {
+        "keys": [
+          "Tab"
+        ]
+      },
+      {
+        "js": "window.__keyPhase=\"learn\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "keyboard.js"
+        ]
+      },
+      {
+        "keys": [
+          "Enter",
+          "Tab"
+        ]
+      },
+      {
+        "js": "window.__keyPhase=\"run\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "keyboard.js"
+        ]
+      },
+      {
+        "keys": [
+          "Enter"
+        ]
+      },
+      {
+        "wait": 700
+      },
+      {
+        "js": "window.__keyPhase=\"desk\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "keyboard.js"
+        ]
+      },
+      {
+        "keys": [
+          "Tab"
+        ]
+      },
+      {
+        "js": "window.__keyPhase=\"part\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "keyboard.js"
+        ]
+      },
+      {
+        "keys": [
+          "Enter"
+        ]
+      },
+      {
+        "wait": 1800
+      },
+      {
+        "js": "window.__keyPhase=\"inspect\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "keyboard.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "phone-touch",
+    "w": 390,
+    "h": 844,
+    "mobile": true,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "tap": "(()=>{const r=document.getElementById('tsLearn').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "phone.js"
+        ]
+      },
+      {
+        "shot": "phone"
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-light-1x",
+    "w": 1440,
+    "h": 900,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-light-2x",
+    "w": 1440,
+    "h": 900,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-greyscale-1x",
+    "w": 1440,
+    "h": 900,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-greyscale-2x",
+    "w": 1440,
+    "h": 900,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-blueprint-1x",
+    "w": 1440,
+    "h": 900,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-blueprint-2x",
+    "w": 1440,
+    "h": 900,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-dark-1x",
+    "w": 1440,
+    "h": 900,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1440x900-dark-2x",
+    "w": 1440,
+    "h": 900,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-light-1x",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-light-2x",
+    "w": 1280,
+    "h": 800,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-greyscale-1x",
+    "w": 1280,
+    "h": 800,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-greyscale-2x",
+    "w": 1280,
+    "h": 800,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-blueprint-1x",
+    "w": 1280,
+    "h": 800,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-blueprint-2x",
+    "w": 1280,
+    "h": 800,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-dark-1x",
+    "w": 1280,
+    "h": 800,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x800-dark-2x",
+    "w": 1280,
+    "h": 800,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-light-1x",
+    "w": 1366,
+    "h": 700,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-light-2x",
+    "w": 1366,
+    "h": 700,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-greyscale-1x",
+    "w": 1366,
+    "h": 700,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-greyscale-2x",
+    "w": 1366,
+    "h": 700,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-blueprint-1x",
+    "w": 1366,
+    "h": 700,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-blueprint-2x",
+    "w": 1366,
+    "h": 700,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-dark-1x",
+    "w": 1366,
+    "h": 700,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1366x700-dark-2x",
+    "w": 1366,
+    "h": 700,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-light-1x",
+    "w": 1280,
+    "h": 660,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-light-2x",
+    "w": 1280,
+    "h": 660,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-greyscale-1x",
+    "w": 1280,
+    "h": 660,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-greyscale-2x",
+    "w": 1280,
+    "h": 660,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-blueprint-1x",
+    "w": 1280,
+    "h": 660,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-blueprint-2x",
+    "w": 1280,
+    "h": 660,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-dark-1x",
+    "w": 1280,
+    "h": 660,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1280x660-dark-2x",
+    "w": 1280,
+    "h": 660,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-light-1x",
+    "w": 1024,
+    "h": 768,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-light-2x",
+    "w": 1024,
+    "h": 768,
+    "theme": "light",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-greyscale-1x",
+    "w": 1024,
+    "h": 768,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-greyscale-2x",
+    "w": 1024,
+    "h": 768,
+    "theme": "greyscale",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-blueprint-1x",
+    "w": 1024,
+    "h": 768,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-blueprint-2x",
+    "w": 1024,
+    "h": 768,
+    "theme": "blueprint",
+    "mobile": false,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-dark-1x",
+    "w": 1024,
+    "h": 768,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-1024x768-dark-2x",
+    "w": 1024,
+    "h": 768,
+    "theme": "dark",
+    "mobile": false,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-light-1x",
+    "w": 390,
+    "h": 844,
+    "theme": "light",
+    "mobile": true,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-light-2x",
+    "w": 390,
+    "h": 844,
+    "theme": "light",
+    "mobile": true,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-greyscale-1x",
+    "w": 390,
+    "h": 844,
+    "theme": "greyscale",
+    "mobile": true,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-greyscale-2x",
+    "w": 390,
+    "h": 844,
+    "theme": "greyscale",
+    "mobile": true,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-blueprint-1x",
+    "w": 390,
+    "h": 844,
+    "theme": "blueprint",
+    "mobile": true,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-blueprint-2x",
+    "w": 390,
+    "h": 844,
+    "theme": "blueprint",
+    "mobile": true,
+    "dark": false,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-dark-1x",
+    "w": 390,
+    "h": 844,
+    "theme": "dark",
+    "mobile": true,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','1')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "layout-390x844-dark-2x",
+    "w": 390,
+    "h": 844,
+    "theme": "dark",
+    "mobile": true,
+    "dark": true,
+    "setup": "localStorage.setItem('spm1-scale','2')",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "layout.js"
+        ]
+      }
+    ]
+  }
+]

@@ -182,24 +182,17 @@
   /* ---------- App shell: tree | viewer | inspector, each scrolls on its own ---------- */
   .app {
     --tw: 260px; --iw: clamp(300px, 23vw, 360px);
-    display: grid; height: 100vh; height: 100dvh; row-gap: 12px; padding: 12px 16px 16px;
-    grid-template-columns: var(--tw) var(--gl, 10px) minmax(0, 1fr) 10px var(--iw);
-    grid-template-rows: auto minmax(0, 1fr);
-    grid-template-areas: "top top top top top" "tree gl view gr insp";
+    display: grid; height: 100vh; height: 100dvh; row-gap: 8px; padding: 10px 14px 6px;
+    grid-template-columns: var(--tw) var(--gl, 10px) minmax(0, 1fr) var(--gr, 10px) var(--iw);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "top top top top top" "tree gl view gr insp" "stat stat stat stat stat";
   }
-  .top { grid-area: top; display: flex; align-items: center; gap: 14px; min-width: 0; }
-  /* The page's one h1: the machine's name and then what this is, in two tones on one line, in every theme set as the
-     names are on the sheets: wide capitals, the name heavy and what this is light. It keeps the room the two
-     lines had (37.7 px), so the view under it stands where it did, and wrapped in two lines it still fits: it is drawn
-     at 15 px, smaller where its room beside the tools is short, down to 10 px. Beside the tools it always leaves the
-     room Explode's Spread slider takes when it shows (104 px of its column), so it keeps its size when Explode is
-     switched.
-     Stacked, the tools share its row while 211 px is left for it, and it wraps in the rest of the row. */
-  .brand { flex: 1 1 0; min-width: 211px; line-height: 1.2; min-height: 37.7px; display: flex; align-items: center; container-type: inline-size; }
-  .brand h1 { margin: 0; font-size: clamp(10px, 4.5cqi, 15px); line-height: 18px; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+  .top { grid-area: top; min-width: 0; }
+  /* The page's one h1: the machine's name and then what this is, in two tones on one line at the toolstrip's left, set
+     as the names are on the sheets: wide capitals, the name heavy and what this is light. */
+  .brand { min-width: 0; display: flex; align-items: center; }
+  .brand h1 { margin: 0; font-size: 12px; line-height: 1; font-weight: 800; font-stretch: 125%; text-transform: uppercase; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .brand h1 span { font-weight: 300; color: var(--muted); }
-  /* The tools wrap to a second row rather than scroll out of sight. */
-  .modebar { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; align-items: center; margin-left: auto; padding: 2px; }
   /* A group of tools is a secondary control: one 1 px outline round it, a rule between its buttons. */
   .mb { display: inline-flex; border: 1px solid var(--line); border-radius: 2px; background: var(--card); overflow: hidden; flex: none; }
   .mb button { position: relative; border: 0; background: transparent; padding: 6px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; line-height: 1; white-space: nowrap; }
@@ -214,14 +207,6 @@
   [aria-pressed="true"] > .ind { background: currentColor; }
   [aria-disabled="true"] > .ind, :disabled > .ind { border-style: dotted; background: none; }
   .mb svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  /* Under 1440 px the theme buttons not chosen show only their icons, and under 1320 px the chosen one too, so the
-     modebar keeps to one row on a laptop, Spread slider included. A label that is not shown still names its button. */
-  @media (max-width: 1440px) {
-    .mb[role="radiogroup"] button[aria-checked="false"] .lbl { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  }
-  @media (max-width: 1320px) {
-    .mb[role="radiogroup"] .lbl { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  }
   button:focus-visible, input:focus-visible, .stage:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   /* On a touch screen every control is at least 44 px, except the tags and explained words set inside the text. */
   @media (pointer: coarse) { button:not(.term):not(.ref) { min-height: 44px; min-width: 44px; } }
@@ -235,14 +220,10 @@
 
   /* Corners: 4 px on a panel or sheet, 2 px on a button or tag, square everywhere else. */
   .panel { background: var(--card); border: 1px solid var(--rule); border-radius: 4px; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-  /* Either side panel folds to a thin rail, to give the model and its screens the room. */
+  /* Either side panel folds away, to give the model and its screens the room: the toolstrip opens it again. */
   .head-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
   .fold { flex: none; width: 26px; height: 24px; border: 0; background: none; border-radius: 2px; cursor: pointer; color: var(--muted); font-size: 17px; line-height: 1; }
   .fold:hover { background: var(--chip); color: var(--ink); }
-  .rail, .rail-search { display: none; }
-  .panel.folded .rail-search { display: grid; place-items: center; height: 34px; margin: 6px 4px 0; border: 0; border-radius: 2px; background: none; color: var(--muted); cursor: pointer; }
-  .panel.folded .rail-search:hover { background: var(--soft); color: var(--ink); }
-  .rail-search svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
   /* The grip between a panel and the view sizes the panel; a line shows while it is hovered or dragged. */
   .grip { position: relative; cursor: col-resize; touch-action: none; outline: none; }
   .grip.left { grid-area: gl; }
@@ -251,11 +232,9 @@
   .grip:hover::after, .grip.on::after, .grip:focus-visible::after { opacity: 0.7; }
   body.resizing { cursor: col-resize; user-select: none; }
   body.resizing .stage { pointer-events: none; }
-  .app.fold-tree { --tw: 34px; --gl: 0px; }
-  .app.fold-insp { --iw: 34px; }
-  .panel.folded > :not(.rail):not(.rail-search) { display: none; }
-  .panel.folded .rail { display: block; flex: 1; border: 0; background: none; cursor: pointer; writing-mode: vertical-rl; font-size: 13px; font-weight: 600; color: var(--muted); padding: 12px 0; }
-  .panel.folded .rail:hover { color: var(--ink); background: var(--soft); }
+  .app.fold-tree { --tw: 0px; --gl: 0px; }
+  .app.fold-insp { --iw: 0px; --gr: 0px; }
+  .panel.folded { display: none; }
   .panel-head { padding: 10px 14px 8px; border-bottom: 1px solid var(--rule); }
   .panel-body { overflow-y: auto; overscroll-behavior: contain; padding: 12px 14px 16px; flex: 1; min-height: 0; }
   /* A small label: sentence case in the muted ink, never tracked capitals. */
@@ -331,18 +310,6 @@
   .corner.bl .hint, .corner.br { background: color-mix(in srgb, var(--card) 84%, transparent); padding: 3px 6px; border-radius: 6px; }
   /* The scale bar on the same backing as the hint, so its length reads over a dark part of the machine. */
   .scale { display: flex; align-items: flex-end; gap: 6px; width: fit-content; margin: 0 0 6px; padding: 3px 6px; border-radius: 6px; background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); white-space: nowrap; }
-  /* The hint takes two lines at most. Where the corner is too narrow for that (both panels open, a large text size), it
-     folds into an i beside the scale bar, and the same text shows above it while the pointer or focus is on the i, or
-     after a tap. The view's buttons stand over a corner of the scale bar and two lines (fitFoot). */
-  .hint-btn { display: none; }
-  .view.hint-fold .corner.bl { display: flex; align-items: flex-end; gap: 6px; }
-  .view.hint-fold .corner.bl .scale { margin: 0; }
-  .view.hint-fold .hint-btn { display: grid; place-items: center; flex: none; width: 22px; height: 22px; padding: 0; border-radius: 50%; pointer-events: auto; cursor: help;
-                              border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); background: color-mix(in srgb, var(--card) 84%, transparent); color: var(--ink); font: italic 600 12px/1 Georgia, 'Times New Roman', serif; }
-  .view.hint-fold .corner.bl .hint { display: none; position: absolute; left: 0; bottom: calc(100% + 6px); width: max-content; max-width: 260px; }
-  .view.hint-fold .corner.bl:has(.hint-btn:is(:hover, :focus-visible, [aria-expanded="true"])) { z-index: 4; }
-  .view.hint-fold .corner.bl:has(.hint-btn:is(:hover, :focus-visible, [aria-expanded="true"])) .hint { display: block; }
-  @media (pointer: coarse) { .view.hint-fold .hint-btn { width: 44px; height: 44px; } }
   .scale i { display: block; height: 7px; border: 1.5px solid var(--ink); border-top: 0; }
   .triad { position: absolute; top: 8px; right: 8px; width: 84px; height: 84px; }
   /* The view's own controls, at its left edge and clear of what is framed: zoom, the home view, Views, pan, panels. */
@@ -356,7 +323,7 @@
   .vmenu button { display: flex; justify-content: space-between; gap: 16px; padding: 6px 10px; border: 0; border-radius: 0; background: none; text-align: left; font-size: 13px; cursor: pointer; }
   .vmenu button:hover, .vmenu button:focus-visible { background: var(--soft); outline: none; }
   .vmenu button span { color: var(--muted); font-family: var(--mono); font-variant-numeric: tabular-nums; }
-  @media (pointer: coarse) { .navcluster .zoom { display: none; } }
+  @media (pointer: coarse) { .navcluster .zoom { display: none !important; } }
   .triad text { font-size: 10px; font-weight: 650; fill: var(--ink); cursor: pointer; }
   .triad .ax { cursor: pointer; }
   .triad .ax:hover circle { stroke-width: 2.4; }
@@ -709,11 +676,9 @@
   @media (max-width: 1180px) { .app { --tw: 230px; --iw: 320px; } }
   @media (max-width: 960px) {
     html, body { height: auto; }
-    .app, .app.fold-tree, .app.fold-insp { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "top" "view" "insp" "tree"; }
-    .panel.folded > :not(.rail):not(.rail-search) { display: revert; }
-    .panel.folded .rail, .panel.folded .rail-search, .fold, #bPanels, .grip { display: none; }
-    .top { flex-wrap: wrap; }
-    .modebar { margin-left: 0; width: 100%; justify-content: flex-start; }
+    .app, .app.fold-tree, .app.fold-insp { height: auto; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "top" "view" "stat" "insp" "tree"; }
+    .panel.folded { display: flex; }
+    .fold, #bPanels, .grip { display: none; }
     .view { height: 64vh; min-height: 360px; }
     .panel { max-height: none; }
     .panel-body { overflow: visible; }
@@ -724,7 +689,6 @@
   @media (max-width: 520px) {
     .triad { width: 68px; height: 68px; }
     .corner.bl { --bl-max: 52%; }
-    .corner.bl .hint { display: none; }
   }
 
   /* ---------- Hologram: the model glows, the frame is a HUD ----------
@@ -846,15 +810,6 @@
   .stage::after { background: radial-gradient(ellipse 125% 105% at 50% 48%, transparent 58%, var(--vignette) 100%); }
   .top, .panel, .grip { position: relative; z-index: 2; }
 
-  /* The top: the name small at the left, the tools in the middle, over the machine. */
-  @media (min-width: 961px) {
-    .top { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
-    .top .modebar { grid-column: 2; margin: 0; justify-content: center; }
-    .top:not(:has(#spreadWrap:not([hidden]))) .brand h1 { font-size: clamp(10px, 4.5cqi - 4.68px, 15px); }
-  }
-  /* What stands on the stage itself, not on glass (the name, the dial's names, the turntable), takes the stage's ink. */
-  .brand { color: var(--stage-ink); }
-  .brand h1 span { color: var(--stage-muted); }
 
   /* Frosted glass: panels, bars, sheets and the tool groups. A sheet or panel that holds the eye is held in corner
      marks (--bk): the lit sheet in the selection's colour, and in the hologram every panel and sheet, in ice blue. A
@@ -972,10 +927,6 @@
   .navcluster .mb button { padding: 6px; }
   .navcluster .mb svg { width: 13px; height: 13px; }
   .blueprint .navcluster { bottom: calc(18px + 90px * var(--ui-scale, 1)); }
-  .navcluster.row { flex-direction: row; align-items: flex-end; }
-  .navcluster.row .mb { flex-direction: row; }
-  .navcluster.row .mb button + button { border-top: 0; border-left: 1px solid var(--rule); }
-  .navcluster.row .vmenu { left: 0; top: auto; bottom: calc(100% + 6px); transform: none; }
 
   .navcluster .mb { border-radius: 14px; }
 
@@ -991,13 +942,9 @@
   .view.docked .turn { display: none; }
   .corner.bl { --bl-max: calc(50% - 200px); }
   @media (max-width: 1180px) { .turn::before, .turn::after { display: none; } .corner.bl { --bl-max: calc(50% - 90px); } }
-  /* The same in a narrow view of a wide window (both panels open): the rulers would reach the readout. */
-  .view.foot-tight .turn::before, .view.foot-tight .turn::after { display: none; }
-  .view.foot-tight .corner.bl { --bl-max: calc(50% - 90px); }
   /* On a phone the machine turns under a finger; the scale bar and the readout keep the foot of the view. */
   @media (max-width: 700px) { .turn { display: none; } .corner.bl { --bl-max: 52%; } }
-  /* The hint reads as a game's key hints; the readout as an instrument's display. */
-  .corner.bl .hint { font-size: 11px; letter-spacing: 0.04em; }
+  /* The readout reads as an instrument's display. */
   .corner.br { font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-radius: 8px; padding: 4px 8px; }
   .greyscale .corner.br { background: #c4c7c0; color: #1b1e18; border-color: transparent; box-shadow: inset 0 2px 5px rgb(0 0 0 / 0.18); }
 
@@ -1086,7 +1033,7 @@
      aside and the view's buttons lie in a row under it), and its monitor in the Machine tab. Where the panels stack,
      the desk's panel sits in the Machine tab too, under the monitor. Its text sizes with the Controls tab's text size.
      The readbacks are an instrument's display, green on black, in every theme. */
-  .desk { position: absolute; z-index: 4; left: 12px; top: 12px; width: min(calc(292px * var(--ui-scale, 1)), 48%); max-height: calc(100% - 68px - 74px * var(--ui-scale, 1)); overflow: auto;
+  .desk { position: absolute; z-index: 4; left: 12px; top: 12px; width: min(calc(292px * var(--ui-scale, 1)), 48%); max-height: calc(100% - 24px); overflow: auto;
           color: var(--ink); font-size: calc(12px * var(--ui-scale, 1)); line-height: 1.3;
           background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent); border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
           -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15); border-radius: 14px;
@@ -1227,6 +1174,158 @@
   .guide.dock { left: 8px; right: 8px; bottom: 8px; width: auto; height: min(38vh, 290px); }
   .guide.dock .g-body { flex: 1; min-height: 0; }
   @media (pointer: coarse) { .guide button { min-height: 44px; } .g-picker button { min-height: 44px; } }
+  /* ---------- The toolstrip ----------
+     One place for the commands, as an engineering program has it: the name, four tabs and what is set once (find, the
+     theme, the panels, help) on its first row; the tab's tools on its second, in named groups. Explore is the whole
+     machine; Part holds the tools of the part inspected and is there only while one is; Learn the guide, the tour,
+     the quiz and the reference; Run the control desk. A tab is a view of the strip: it changes nothing on the model
+     but Part, which inspects the selected part, and Run, which opens the desk. Its controls are the ones the page
+     always had, moved: where the panels stack (a phone) the part's and the desk's stay on their bar over the view. */
+  .top { position: relative; z-index: 4; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 14px; color: var(--ink);
+    background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent); -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 10px 26px rgb(0 0 0 / 0.16); }
+  .ts-r1 { display: grid; grid-template-columns: minmax(120px, auto) auto minmax(min-content, 1fr); column-gap: 20px; align-items: stretch; min-height: 36px; padding: 0 8px 0 16px; }
+  .ts-r2 { border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+  .top svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .top kbd { font: 500 10px/1 var(--mono); padding: 2px 4px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 4px; color: var(--muted); background: none; }
+  .ts-tabs { display: flex; gap: 2px; }
+  .ts-tabs button { display: flex; align-items: center; gap: 7px; padding: 0 18px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; cursor: pointer;
+    font: 600 11.5px/1 var(--sans); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .ts-tabs button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .ts-tabs button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); background: color-mix(in srgb, var(--ink) 8%, transparent); }
+  .ts-tabs button[aria-disabled="true"] { opacity: 0.4; cursor: default; background: none; color: var(--muted); }
+  /* A tab whose mode is on (a part inspected, the desk running, the quiz or the guide) is in the selection's colour. */
+  .ts-tabs button.live { color: var(--sel); }
+  .ts-tabs button.live[aria-pressed="true"] { border-bottom-color: var(--sel); background: color-mix(in srgb, var(--sel) 14%, transparent); }
+  .ts-tabs button i { font: 500 10.5px/1 var(--sans); letter-spacing: 0.02em; text-transform: none; font-style: normal; color: var(--ink); min-width: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ts-tabs button i:empty { display: none; }
+  .ts-tabs button:focus-visible { outline-offset: -3px; }
+  .ts-tabs button[hidden], .ts-page[hidden], .ts-g[hidden] { display: none !important; }
+  #rowPart[data-inspected="false"] > .ts-g:not(.ts-selected) { display: none; }
+  .ts-util { display: flex; justify-content: flex-end; align-items: center; gap: 4px; min-width: 0; }
+  .ts-util > button, .ts-menu > button { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 7px; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; font-size: 12.5px; line-height: 1; white-space: nowrap; }
+  .ts-util > button:hover, .ts-menu > button:hover, .ts-menu > button[aria-expanded="true"] { background: var(--soft); }
+  .ts-util #bPanels[aria-pressed="false"] { color: var(--muted); }
+  .ts-util .ts-find { flex: 0 1 240px; min-width: 34px; height: 24px; margin-right: 4px; justify-content: flex-start; border-color: color-mix(in srgb, var(--ink) 16%, transparent); background: color-mix(in srgb, var(--card) 50%, transparent); color: var(--muted); font-size: 12px; cursor: text; overflow: hidden; }
+  .ts-find span { flex: 1 1 0; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+  .ts-menu { position: relative; }
+  .car { width: 0; height: 0; border: 4px solid transparent; border-top-color: currentColor; border-bottom: 0; opacity: 0.7; }
+  .lookmenu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 6; flex-direction: column; min-width: 160px; padding: 4px; overflow: visible; }
+  .lookmenu[hidden] { display: none; }
+  .lookmenu button { justify-content: flex-start; padding: 7px 10px; border-radius: 8px; }
+  .lookmenu button + button { border-left: 0; }
+  .top .lookmenu .lbl { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+  /* The second row: the tab's page, its groups each over their name. It grows with the text size, as the inspect bar
+     does, and wraps to a second line where the tools do not fit one. */
+  .ts-page { display: none; }
+  .top[data-tab="explore"] #rowExplore, .top[data-tab="part"] #rowPart, .top[data-tab="learn"] #rowLearn, .top[data-tab="run"] #rowRun { display: flex; }
+  .ts-page.isobar { position: static; width: auto; max-width: none; margin: 0; padding: 0 4px; gap: 0; align-items: stretch; justify-content: flex-start; flex-wrap: wrap; row-gap: 0; min-height: 54px;
+    background: none; border: 0; border-radius: 0; -webkit-backdrop-filter: none; backdrop-filter: none; z-index: auto; }
+  .ts-g { display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 3px; padding: 7px 12px 5px; border-right: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+  .ts-g.end { margin-left: auto; border-right: 0; border-left: 1px solid color-mix(in srgb, var(--ink) 10%, transparent); }
+  .ts-g:not(:has(.ts-c > :not([hidden]))) { display: none; }
+  .ts-c { display: flex; align-items: center; gap: 4px; min-height: 28px; }
+  /* A long back label and part name may put the piece stepper on its own line. */
+  .ts-g:has(> #gPiece) { max-width: 100%; }
+  #gPiece { min-width: 0; max-width: 100%; flex-wrap: wrap; }
+  #gPiece > .step { flex: none; }
+  .ts-page.isobar #bBack { max-width: 100%; white-space: normal; }
+  .ts-g > small { font: 500 9px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  /* A tool is text on the strip until the pointer is on it; the three ways to learn are outlined, Done and Next
+     filled, and a toggle says on or off with its square. */
+  .ts-page.isobar :is(button, a.dl) { display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; background: none; border-radius: 8px; padding: 4px 9px; font-size: 13px; line-height: 18px; white-space: nowrap; cursor: pointer; color: inherit; text-decoration: none; }
+  .ts-page.isobar :is(button, a.dl):hover { background: var(--soft); }
+  .ts-page.isobar button[hidden] { display: none; }
+  .ts-page.isobar button.line { border-color: color-mix(in srgb, var(--ink) 16%, transparent); background: color-mix(in srgb, var(--card) 50%, transparent); }
+  .ts-page.isobar button[aria-pressed="true"]:not(.toggle) { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: none; }
+  .ts-page.isobar button:is(.done, .next) { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; padding-inline: 14px; }
+  .ts-page.isobar button[aria-disabled="true"], .ts-page.isobar button:disabled { opacity: 0.5; cursor: default; }
+  .ts-page.isobar button .lbl { margin: 0; overflow: visible; }
+  .ts-page.isobar button.icon { padding: 4px 9px; }
+  .ts-page.isobar #bLink .say { display: inline; }
+  .ts-page.isobar .step { border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-radius: 8px; overflow: hidden; }
+  .ts-page.isobar .step button { border: 0; margin: 0; border-radius: 0; }
+  .ts-page.isobar .step button + button { border-left: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+  .ts-page.isobar .lbl { font-weight: 600; }
+  .ts-page.isobar .tour { padding-left: 0; border-left: 0; }
+
+  /* The view's own tools: one strip under the machine, the turntable and then home, the sides, zoom, pan and the
+     axis lock. It stands in the middle of the room the view has left, beside the desk or the sheets. Where the panels
+     stack they stay where a thumb finds them: the buttons in their column at the left, the turntable under the view. */
+  @media (min-width: 961px) {
+    .viewbar { position: absolute; left: calc((100% + var(--res-l, 0px) - var(--res-r, 0px)) / 2); bottom: 10px; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 14px; }
+    .viewbar .turn { position: static; transform: none; gap: 9px; }
+    .viewbar .turn::before, .viewbar .turn::after { display: none; }
+    .viewbar .turn button { width: 32px; height: 32px; }
+    .viewbar .turn .deg { font-size: 14px; }
+    .viewbar .navcluster { position: relative; left: auto; top: auto; bottom: auto; transform: none; flex-direction: row; }
+    .viewbar .navcluster .mb { flex-direction: row; }
+    .viewbar .navcluster .mb button { padding: 8px; }
+    .viewbar .navcluster .mb button + button { border-top: 0; border-left: 1px solid var(--rule); }
+    .viewbar .navcluster .mb svg { width: 14px; height: 14px; }
+    .viewbar .vmenu { left: 0; top: auto; bottom: calc(100% + 6px); transform: none; }
+    .viewbar.tight .turn, .view.docked .viewbar .turn { display: none; }
+    /* The scale and the readout have the status bar; Blueprint keeps them on its sheet, the readout as its title block. */
+    html:not(.blueprint) .corner.bl, html:not(.blueprint) .corner.br { display: none; }
+    .blueprint .statbar .scale, .blueprint .statbar .ro { visibility: hidden; }
+    /* The part's and the desk's controls are on the strip: what is left of their bars over the view is the caption
+       of the step shown, and nothing of the desk's. */
+    .view > #isobar { top: 10px; padding: 2px 10px; }
+    .view > #isobar.on:not(:has(> .stepcap:not([hidden]))) { display: none; }
+    .view > #isobar > .stepcap { margin: 0; padding: 4px 2px; border-top: 0; }
+    .view > .deskbar { display: none !important; }
+  }
+  @media (max-width: 960px) {
+    .viewbar { display: contents; }
+    /* Stacked, the strip keeps its two rows: the name over the tabs, and a page that scrolls sideways. */
+    .ts-r1 { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; padding: 0 6px 0 12px; }
+    .ts-r1 .brand { min-height: 34px; }
+    .ts-tabs { grid-column: 1 / -1; grid-row: 2; border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); margin: 0 -6px 0 -12px; }
+    .ts-tabs button { flex: 1 1 0; justify-content: center; min-height: 36px; padding: 0 6px; }
+    .ts-tabs button i { display: none; }
+    .ts-util .ts-find { flex: none; width: auto; border-color: transparent; background: none; color: inherit; }
+    .ts-find span, .ts-find kbd, #bLook .lbl { display: none; }
+    .ts-page.isobar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .ts-g { flex: none; }
+    .brand h1 span { display: none; }
+  }
+  @media (max-width: 1180px) {
+    .ts-tabs button { padding: 0 12px; } .ts-r1 { column-gap: 12px; }
+    .ts-util .ts-find { flex: 0 0 34px; cursor: pointer; }
+    .ts-find span, .ts-find kbd { display: none; }
+  }
+
+  /* The status bar: what a click or a drag does here, the scale of the drawing, and where the view stands. */
+  .statbar { grid-area: stat; position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: 18px; min-height: 20px; padding: 0 6px;
+    color: var(--stage-muted); font-size: 11px; line-height: 1.35; letter-spacing: 0.04em; zoom: var(--ui-scale, 1); }
+  .statbar .hint { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .statbar .scale { align-items: center; gap: 8px; margin: 0; padding: 0; background: none; color: inherit; font-family: var(--mono); }
+  .statbar .scale i { height: 6px; border-width: 1px; border-color: currentColor; }
+  .statbar .ro { text-align: right; font-family: var(--mono); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 960px) {
+    .statbar { grid-template-columns: minmax(0, 1fr); padding: 0 2px; }
+    .statbar .hint { white-space: normal; }
+    .statbar .scale, .statbar .ro { display: none; }
+  }
+
+  @media (max-width: 520px) { .statbar { display: none; } }
+
+  /* The start card: on a first visit the inspector is folded away and the machine has the window; this says what it
+     is in two lines and offers one first step. It goes for good once anything is opened. */
+  .startcard { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); z-index: 3; width: min(318px, calc(100% - 36px)); padding: 16px 18px 14px; border-radius: 16px; color: var(--ink);
+    border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 18px 40px rgb(0 0 0 / 0.18); }
+  .startcard[hidden] { display: none; }
+  .startcard small { display: block; font: 500 9.5px/1 var(--mono); letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  .startcard h2 { margin: 9px 0 6px; font-size: 19px; line-height: 1.1; font-weight: 800; font-stretch: 125%; text-transform: uppercase; }
+  .startcard p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; }
+  .startcard p.note { margin: 12px 0 0; font-size: 12px; color: var(--muted); }
+  .startcard .actions { margin: 0; flex-wrap: nowrap; }
+  .startcard .actions button { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; white-space: nowrap; }
+  .startcard svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .startcard .x { position: absolute; right: 10px; top: 9px; width: 24px; height: 24px; display: grid; place-items: center; border: 0; border-radius: 6px; background: none; color: var(--muted); cursor: pointer; }
+  .startcard .x:hover { background: var(--soft); color: var(--ink); }
+  @media (max-width: 960px) { .startcard { display: none; } }
 </style>
 <script>
   // Pick the theme before first paint, so a dark-theme viewer never sees the light page flash. A link's theme comes
@@ -1245,29 +1344,64 @@
 <body>
 <a class="skip" id="skip" href="#tree">Skip to the assembly</a>
 <div class="app">
-  <header class="top">
-    <div class="brand"><h1>MinimaK SPM1 <span>Anatomy of a tabletop magnetised torus</span></h1></div>
-    <nav class="modebar" aria-label="View tools">
-      <div class="mb" role="group" aria-label="Guide">
-        <button type="button" id="bGuide" aria-pressed="false" aria-label="Guided analysis" title="Guided analysis: find a part, see how it attaches and where its numbers come from, with the page’s own controls"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3"/><path d="M10.7 5.3 9.1 9.1 5.3 10.7 6.9 6.9z"/></svg><span class="lbl"><span class="long">Guided analysis</span><span class="short" aria-hidden="true">Guide</span></span></button>
+  <header class="top" id="strip" data-tab="explore">
+    <div class="ts-r1">
+      <div class="brand"><h1>MinimaK SPM1 <span>Anatomy of a tabletop magnetised torus</span></h1></div>
+      <div class="ts-tabs" role="tablist" aria-label="Tools for">
+        <button type="button" id="tsExplore" role="tab" aria-controls="rowExplore" data-tab="explore" aria-pressed="true" title="The whole machine: its parts as a wheel or a list, Explode and Cutaway">Explore</button>
+        <button type="button" id="tsPart" role="tab" aria-controls="rowPart" data-tab="part" aria-pressed="false" aria-disabled="true" title="Select a part first: click it on the model, in the wheel or in the list"><span>Part</span><i id="tsPartName"></i></button>
+        <button type="button" id="tsLearn" role="tab" aria-controls="rowLearn" data-tab="learn" aria-pressed="false" title="The guided analysis, the tour, the quiz, the user guide and the keys">Learn</button>
+        <button type="button" id="tsRun" role="tab" aria-controls="rowRun" data-tab="run" aria-pressed="false" title="Control desk: run the machine yourself with a stand-in for its own software">Run</button>
       </div>
-      <div class="mb" role="group" aria-label="Model">
-        <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="ind" aria-hidden="true"></span></button>
-        <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
-        <button type="button" id="bCut" class="toggle" aria-pressed="false" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="ind" aria-hidden="true"></span></button>
+      <div class="ts-util">
+        <button type="button" id="bFind" class="ts-find" title="Find a part: opens the list with the cursor in its search box (/)"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></svg><span>Find a part, a size (M8), a seal…</span><kbd aria-hidden="true">/</kbd></button>
+        <div class="ts-menu">
+          <button type="button" id="bLook" aria-haspopup="true" aria-expanded="false" aria-controls="looks" title="Theme: Colour, Greyscale, Blueprint or Hologram"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl" id="lookName">Colour</span><i class="car" aria-hidden="true"></i></button>
+          <div class="mb lookmenu" role="radiogroup" aria-label="Theme" id="looks" hidden>
+            <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
+            <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
+            <button type="button" role="radio" data-look="blueprint" aria-checked="false" tabindex="-1" title="Blueprint: white drafting lines on blue paper, with centre lines and dimensions"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M9.5 13.5v-3h5M4 6h5M4 6v4"/></svg><span class="lbl">Blueprint</span></button>
+            <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on night"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
+          </div>
+        </div>
+        <button type="button" id="bPanels" aria-pressed="true" title="Side panels: hide both to give the view the window (F)" aria-label="Side panels"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg></button>
+        <button type="button" id="bHelp" title="Keys, gestures and settings" aria-label="Keys, gestures and settings"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><path d="M6.1 6.3a1.9 1.9 0 1 1 2.8 1.7c-.6.4-.9.8-.9 1.5M8 11.6v.2"/></svg></button>
       </div>
-      <div class="mb" role="radiogroup" aria-label="Theme" id="looks">
-        <button type="button" role="radio" data-look="light" aria-checked="false" tabindex="-1" title="Colour: the drawing in colour"><svg viewBox="0 0 16 16"><circle cx="6" cy="6.3" r="3.6"/><circle cx="10" cy="6.3" r="3.6"/><circle cx="8" cy="9.7" r="3.6"/></svg><span class="lbl">Colour</span></button>
-        <button type="button" role="radio" data-look="greyscale" aria-checked="false" tabindex="-1" title="Greyscale: shaded in greys, with cast shadows"><svg viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" rx="1"/><path d="M1.5 3.5h4.3v9H1.5z" fill="currentColor"/><path d="M5.8 3.5h4.4v9H5.8z" fill="currentColor" fill-opacity=".45"/></svg><span class="lbl">Greyscale</span></button>
-        <button type="button" role="radio" data-look="blueprint" aria-checked="false" tabindex="-1" title="Blueprint: white drafting lines on blue paper, with centre lines and dimensions"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1"/><path d="M9.5 13.5v-3h5M4 6h5M4 6v4"/></svg><span class="lbl">Blueprint</span></button>
-        <button type="button" role="radio" data-look="dark" aria-checked="false" tabindex="-1" title="Hologram: glowing blue on night"><svg viewBox="0 0 16 16"><path d="M8 1.8l5 2.9v6.6l-5 2.9-5-2.9V4.7zM3 4.7l5 2.9 5-2.9M8 7.6v6.6"/></svg><span class="lbl">Hologram</span></button>
+    </div>
+    <div class="ts-r2" id="tsRow">
+      <div class="ts-page isobar" data-tab="explore" id="rowExplore" role="group" aria-label="Explore">
+        <div class="ts-g"><div class="ts-c"><span class="step seg" role="group" aria-label="How the parts are listed"><button type="button" id="bWheel" aria-pressed="true" title="The groups on a wheel at the view’s left, the list folded away"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8a6.4 6.4 0 0 1 0 12.4z"/><path d="M4 8h6.2M4 5.2l5.2-2.6M4 10.8l5.2 2.6" opacity=".7"/></svg>Wheel</button><button type="button" id="bList" aria-pressed="false" title="The assembly as a list, with its search box"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4h1.6M6.5 4h7M2.5 8h1.6M6.5 8h7M2.5 12h1.6M6.5 12h7"/></svg>List</button></span></div><small>Parts</small></div>
+        <div class="ts-g"><div class="ts-c">
+          <button type="button" id="bExplode" class="toggle" aria-pressed="false" title="Take the machine apart (E)"><svg viewBox="0 0 16 16"><rect x="5.5" y="5.5" width="5" height="5"/><path d="M8 1v2.5M8 12.5V15M1 8h2.5M12.5 8H15"/></svg><span class="lbl">Explode</span><span class="ind" aria-hidden="true"></span></button>
+          <label class="slide" id="spreadWrap" hidden title="How far apart the components move ([ and ])">Spread <input type="range" id="sSpread" min="0.4" max="2.5" step="0.05" value="1" aria-label="Explode distance"><output id="oSpread">1.0×</output></label>
+          <button type="button" id="bCut" class="toggle" aria-pressed="false" title="Cut away the top of the vessel to show the plasma (C)"><svg viewBox="0 0 16 16"><path d="M2 9a6 6 0 0 0 12 0z"/><path d="M5 6.5l1.5-3M10 6.5l-1.5-3" opacity=".55"/></svg><span class="lbl">Cutaway</span><span class="ind" aria-hidden="true"></span></button>
+        </div><small>Model</small></div>
+        <div class="ts-g"><div class="ts-c"><button type="button" id="bLinkHere" title="Copy a link to what is shown: the view, the theme and what is selected"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg>Copy link</button></div><small>Share</small></div>
       </div>
-    </nav>
+      <div class="ts-page isobar" data-tab="part" id="rowPart" role="group" aria-label="The part inspected">
+        <div class="ts-g ts-selected" id="gSelected" hidden><div class="ts-c"><button type="button" id="bInspectSelected">Inspect on its own</button></div><small>Selected part</small></div>
+        <div class="ts-g"><div class="ts-c" id="gPiece"></div><small>Piece</small></div>
+        <div class="ts-g"><div class="ts-c" id="gApart"></div><small>Take apart</small></div>
+        <div class="ts-g"><div class="ts-c" id="gShow"></div><small>Show</small></div>
+        <div class="ts-g"><div class="ts-c" id="gTour"></div><small>Tour</small></div>
+        <div class="ts-g"><div class="ts-c" id="gShare"></div><small>Share</small></div>
+        <div class="ts-g end"><div class="ts-c" id="gLeave"></div><small>Leave</small></div>
+      </div>
+      <div class="ts-page isobar" data-tab="learn" id="rowLearn" role="group" aria-label="Learn">
+        <div class="ts-g"><div class="ts-c">
+          <button type="button" id="bGuide" class="line" aria-pressed="false" aria-label="Guided analysis" title="Guided analysis: find a part, see how it attaches and where its numbers come from, with the page’s own controls"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3"/><path d="M10.7 5.3 9.1 9.1 5.3 10.7 6.9 6.9z"/></svg><span class="lbl"><span class="long">Guided analysis</span><span class="short" aria-hidden="true">Guide</span></span></button>
+        </div><small>The viewer</small></div>
+        <div class="ts-g"><div class="ts-c"><button type="button" id="bTour" class="line" aria-pressed="false" title="The tour: stops in the order of a run, from the empty chamber to the glow"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 14V2.5M3.5 3h8.5l-2 2.6 2 2.6H3.5"/></svg>Take the tour</button><button type="button" id="bQuiz" class="line" aria-pressed="false" title="Where does it go?: parts are lifted out in turn, and you click where each one goes"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.2"/><circle cx="8" cy="8" r="1.6"/><path d="M8 .8v2.4M8 12.8v2.4M.8 8h2.4M12.8 8h2.4"/></svg>Where does it go?</button></div><small>The machine</small></div>
+        <div class="ts-g"><div class="ts-c"><a class="dl" id="aManual" href="docs/user-guide.pdf" download="SPM1-anatomy-user-guide.pdf" title="Download the user guide: how to use this page, in A4 pages of screenshots, to read or print"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10"/></svg>User guide (PDF)</a><button type="button" id="bKeys" title="The Controls tab: every key and gesture, and the settings"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8" rx="1.5"/><path d="M4 6.6h.4M6.6 6.6H7M9.2 6.6h.4M11.6 6.6h.4M4.6 9.5h6.8"/></svg>Keys and gestures</button><button type="button" id="bSources" title="The Sources tab: where each number comes from"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.3 3h4.3c.9 0 1.4.5 1.4 1.4V13c0-.7-.5-1.2-1.4-1.2H2.3zM13.7 3H9.4C8.5 3 8 3.5 8 4.4V13c0-.7.5-1.2 1.4-1.2h4.3z"/></svg>Sources</button></div><small>Reference</small></div>
+      </div>
+      <div class="ts-page isobar" data-tab="run" id="rowRun" role="group" aria-label="Control desk">
+        <div class="ts-g"><div class="ts-c" id="gDesk"></div><small>Control desk</small></div>
+        <div class="ts-g end"><div class="ts-c" id="gDeskLeave"></div><small>Leave</small></div>
+      </div>
+    </div>
   </header>
 
   <aside class="panel tree" id="treePanel" aria-labelledby="treeTitle">
-    <button type="button" class="rail-search" title="Find a part (/)" aria-label="Find a part"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4"/></svg></button>
-    <button type="button" class="rail" data-panel="tree" title="Show the assembly list">Assembly</button>
     <div class="panel-head">
       <div class="head-row"><div class="eyebrow" id="treeTitle">Assembly</div><button type="button" class="fold" data-panel="tree" title="Hide the assembly list to make room (F hides both)" aria-label="Hide the assembly list">‹</button></div>
       <input class="search" id="search" type="search" placeholder="Find a part, a size (M8), a seal…" aria-label="Find a part" aria-describedby="searchNote" autocomplete="off">
@@ -1282,26 +1416,30 @@
       <canvas id="canvas"></canvas>
     </div>
     <div class="fallback" id="fallback">This figure needs WebGL. The parts list and the sources still work.</div>
-    <div class="navcluster" id="navCluster" role="group" aria-label="View">
-      <div class="mb zoom" role="group" aria-label="Zoom">
-        <button type="button" id="bZoomIn" title="Zoom in (+)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4M7 5v4"/></svg></button>
-        <button type="button" id="bZoomOut" title="Zoom out (−)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4"/></svg></button>
+    <div class="viewbar" id="viewbar">
+      <div class="turn" id="turnTable" role="group" aria-label="Turn the machine">
+        <button type="button" id="bSpinL" title="Turn the machine an eighth to the left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
+        <span class="deg" aria-hidden="true">360°</span>
+        <button type="button" id="bSpinR" title="Turn the machine an eighth to the right" aria-label="Turn right"><svg viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></svg></button>
       </div>
-      <div class="mb">
-        <button type="button" id="bHome" title="Home view: the whole machine, stand and pump included (0, or double-click empty space)" aria-label="Home view"><svg viewBox="0 0 16 16"><path d="M2 7.5L8 2l6 5.5M3.8 6v8h8.4V6"/></svg></button>
-        <button type="button" id="bViews" aria-haspopup="menu" aria-expanded="false" aria-controls="viewMenu" title="Look from a side (1–4), as a click on an axis of the triad does" aria-label="Look from a side"><svg viewBox="0 0 16 16"><path d="M8 1.8l5.5 3.1v6.2L8 14.2l-5.5-3.1V4.9z"/><path d="M2.5 4.9L8 8l5.5-3.1M8 8v6.2"/></svg></button>
-        <button type="button" data-drag="pan" aria-pressed="false" title="Left-drag pans the view rather than turning it (P; shift-drag always pans)" aria-label="Pan with left-drag"><svg viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M6 3.5l2-2 2 2M6 12.5l2 2 2-2M3.5 6l-2 2 2 2M12.5 6l2 2-2 2"/></svg></button>
-        <button type="button" id="bAxis" aria-pressed="true" title="Turn about the machine’s own axis, the middle of the ring under it, wherever you pan; off, a turn goes about the middle of the view (R)" aria-label="Turn about the machine’s axis"><svg viewBox="0 0 16 16"><path d="M8 1.5v13"/><ellipse cx="8" cy="9" rx="6" ry="2.4"/><path d="M9.6 10.3 8 11.4l1.6 1.1"/></svg></button>
-        <button type="button" id="bPanels" aria-pressed="true" title="Side panels: hide both to give the view the window (F)" aria-label="Side panels"><svg viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M5.5 2.5v11M10.5 2.5v11"/></svg></button>
-      </div>
-      <div class="vmenu" id="viewMenu" role="menu" aria-label="Look from" hidden>
-        <button type="button" role="menuitem" data-view="iso">Three-quarter <span>1</span></button>
-        <button type="button" role="menuitem" data-view="front">Front <span>2</span></button>
-        <button type="button" role="menuitem" data-view="right">Right <span>3</span></button>
-        <button type="button" role="menuitem" data-view="top">Above <span>4</span></button>
-        <button type="button" role="menuitem" data-view="back">Back</button>
-        <button type="button" role="menuitem" data-view="left">Left</button>
-        <button type="button" role="menuitem" data-view="bottom">Below</button>
+      <div class="navcluster" id="navCluster" role="group" aria-label="View">
+        <div class="mb">
+          <button type="button" id="bHome" title="Home view: the whole machine, stand and pump included (0, or double-click empty space)" aria-label="Home view"><svg viewBox="0 0 16 16"><path d="M2 7.5L8 2l6 5.5M3.8 6v8h8.4V6"/></svg></button>
+          <button type="button" id="bViews" aria-haspopup="menu" aria-expanded="false" aria-controls="viewMenu" title="Look from a side (1–4), as a click on an axis of the triad does" aria-label="Look from a side"><svg viewBox="0 0 16 16"><path d="M8 1.8l5.5 3.1v6.2L8 14.2l-5.5-3.1V4.9z"/><path d="M2.5 4.9L8 8l5.5-3.1M8 8v6.2"/></svg></button>
+          <button type="button" id="bZoomOut" class="zoom" title="Zoom out (−)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4"/></svg></button>
+          <button type="button" id="bZoomIn" class="zoom" title="Zoom in (+)"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l4 4M5 7h4M7 5v4"/></svg></button>
+          <button type="button" data-drag="pan" aria-pressed="false" title="Left-drag pans the view rather than turning it (P; shift-drag always pans)" aria-label="Pan with left-drag"><svg viewBox="0 0 16 16"><path d="M8 1.5v13M1.5 8h13M6 3.5l2-2 2 2M6 12.5l2 2 2-2M3.5 6l-2 2 2 2M12.5 6l2 2-2 2"/></svg></button>
+          <button type="button" id="bAxis" aria-pressed="true" title="Turn about the machine’s own axis, the middle of the ring under it, wherever you pan; off, a turn goes about the middle of the view (R)" aria-label="Turn about the machine’s axis"><svg viewBox="0 0 16 16"><path d="M8 1.5v13"/><ellipse cx="8" cy="9" rx="6" ry="2.4"/><path d="M9.6 10.3 8 11.4l1.6 1.1"/></svg></button>
+        </div>
+        <div class="vmenu" id="viewMenu" role="menu" aria-label="Look from" hidden>
+          <button type="button" role="menuitem" data-view="iso">Three-quarter <span>1</span></button>
+          <button type="button" role="menuitem" data-view="front">Front <span>2</span></button>
+          <button type="button" role="menuitem" data-view="right">Right <span>3</span></button>
+          <button type="button" role="menuitem" data-view="top">Above <span>4</span></button>
+          <button type="button" role="menuitem" data-view="back">Back</button>
+          <button type="button" role="menuitem" data-view="left">Left</button>
+          <button type="button" role="menuitem" data-view="bottom">Below</button>
+        </div>
       </div>
     </div>
     <nav class="wheel" id="wheel" aria-label="Groups and their parts">
@@ -1309,11 +1447,6 @@
       <div class="wh-groups" id="whGroups"></div>
       <div class="wh-fan" id="whFan" role="group" hidden></div>
     </nav>
-    <div class="turn" id="turnTable" role="group" aria-label="Turn the machine">
-      <button type="button" id="bSpinL" title="Turn the machine an eighth to the left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
-      <span class="deg" aria-hidden="true">360°</span>
-      <button type="button" id="bSpinR" title="Turn the machine an eighth to the right" aria-label="Turn right"><svg viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></svg></button>
-    </div>
     <svg class="triad" id="triad" viewBox="-42 -42 84 84" aria-label="Orientation. Click an axis to look along it." role="group"></svg>
     <div class="isobar" id="isobar">
       <button type="button" id="bBack" hidden title="Back to the part you came from (Backspace)"></button>
@@ -1380,13 +1513,20 @@
     <p id="status" class="sr-only" aria-live="polite"></p>
     <div class="tip" id="tip"></div>
     <div class="loupe" id="loupe" aria-hidden="true" hidden><span></span><canvas></canvas></div>
-    <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div><button type="button" class="hint-btn" id="bHint" aria-label="What a click or a drag does here" aria-describedby="hint" aria-expanded="false" title="What a click or a drag does here">i</button><div class="hint" id="hint"></div></div>
+    <div class="corner bl"><div class="scale" id="scale"><i></i><span></span></div></div>
     <div class="corner br" id="readout"></div>
+    <aside class="startcard" id="startCard" aria-labelledby="scTitle" hidden>
+      <button type="button" class="x" id="bStartX" aria-label="Close" title="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+      <small>Start here</small>
+      <h2 id="scTitle">MinimaK SPM1</h2>
+      <p>A tabletop “simple magnetised torus”: a ring-shaped vacuum chamber wrapped in eight copper coils, which makes a cold glow-discharge plasma.</p>
+      <div class="actions"><button type="button" class="primary" id="bStartTour"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 14V2.5M3.5 3h8.5l-2 2.6 2 2.6H3.5"/></svg>Take the tour</button><button type="button" id="bStartAbout"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><path d="M8 7.3v3.9M8 4.7v.3"/></svg>About the machine</button></div>
+      <p class="note">Or click any part of the model.</p>
+    </aside>
   </figure>
 
   <div class="grip right" data-panel="insp" role="separator" aria-orientation="vertical" aria-label="Width of the inspector" tabindex="0" title="Drag to size the inspector · double-click for the default"></div>
   <aside class="panel insp" id="inspPanel" aria-label="Inspector">
-    <button type="button" class="rail" data-panel="insp" title="Show the inspector">Inspector</button>
     <div class="panel-head">
       <div class="head-row">
         <div class="tabs" role="tablist">
@@ -1400,6 +1540,11 @@
     </div>
     <div class="panel-body doc" id="inspBody" role="tabpanel"></div>
   </aside>
+  <footer class="statbar" id="statbar">
+    <div class="hint" id="hint"></div>
+    <div class="scale" id="scale2" aria-hidden="true"><i></i><span></span></div>
+    <div class="ro" id="roLine" aria-hidden="true"></div>
+  </footer>
 </div>
 
 <!-- The guided analysis: one card and a ring that points at the real control (it never takes a click). -->
@@ -2753,38 +2898,25 @@ let rtColor = null, rtInk = null, dpr = 1, width = 1, height = 1;
 // drawing's shadows, so it keeps up on a tablet; it sharpens again when it is still.
 let lowRes = false, footFitted = false;
 let dirty = true;
-// The wheel and the view's buttons share the view's left edge: the wheel at the top, the buttons over the scale bar. The wheel is drawn as large as the room between them allows, from its full size (its ticks 168 px either
-// side of its hub) down to 82%, where its names stay readable. With less room the buttons lie in a row, which an open
-// group's pictures would reach (268 px under the hub), so the wheel is drawn to clear it with them; with less still,
-// only the wheel itself clears the row, and an open group's pictures lie over it while they are open. The group's
-// heading under the pictures goes where it would cover the row. With less room than that the wheel steps aside and the
-// buttons stand in their column again: the assembly list is still the way in. Lengths are the wheel's own, at its full
-// size.
+// The wheel has the view's left edge to itself, its hub at the middle of the edge. It is drawn at its full size (its
+// ticks 168 px either side of its hub, an open group's pictures 268 px) down to 82%, where its names stay readable;
+// with less room than that only the wheel itself is fitted, and an open group's pictures run past the view's edge;
+// with less still it steps aside, and the list is the way in. The heading of an open group shows where there is room
+// under its pictures. In a narrow Blueprint view the title block takes the top left corner, so the wheel stands under
+// it. Lengths are the wheel's own, at its full size.
 function fitWheel() {
-  const card = $('card'), w = $('wheel'), nav = $('navCluster');
-  if (!card || !w || !nav) return;
+  const card = $('card'), w = $('wheel');
+  if (!card || !w) return;
   const c = card.getBoundingClientRect();
-  // The wheel's ticks start 55 px under the view's top at the text size, in every theme: in Blueprint that clears the
-  // sheet's frame and its zone numbers. In a narrow Blueprint view the title block takes the top left corner, so the
-  // wheel stands under it.
-  const tb = $('readout'), under = blueprint && card.classList.contains('tight') && tb.getClientRects().length ? tb.getBoundingClientRect().bottom - c.top + 8 : 0;
-  const top = Math.max(1 + 46 * uiScale + 8, under), gap = 12;
-  nav.classList.remove('row');
+  const tb = $('readout'), top = blueprint && card.classList.contains('tight') && tb.getClientRects().length ? tb.getBoundingClientRect().bottom - c.top + 8 : 8;
+  const h = c.height - top - 8;
   w.classList.remove('away', 'nohead');
-  const shows = document.querySelector('.app').classList.contains('fold-tree') && !matchMedia('(max-width: 960px), (pointer: coarse)').matches;
-  const room = (below) => (nav.getBoundingClientRect().top - c.top - gap - top) / (168 + below);
-  let s = Math.min(1, room(168));
-  if (shows && s < 0.82) {
-    nav.classList.add('row');
-    s = Math.min(1, room(268));
-    if (s < 0.82) s = Math.min(1, room(168));
-    if (s < 0.82) { w.classList.add('away'); nav.classList.remove('row'); s = 1; }
-    else if (top + 500 * s > nav.getBoundingClientRect().top - c.top - 8) w.classList.add('nohead');
-  }
+  let s = Math.min(1, h / (2 * 268));
+  if (s < 0.82) s = Math.min(1, h / (2 * 168));
+  if (s < 0.82) { w.classList.add('away'); s = 1; }
+  if (h / 2 < 332 * s) w.classList.add('nohead');
   w.style.setProperty('--ws', s.toFixed(3));
-  w.style.top = `${Math.round(top + 168 * s)}px`;
-  // At the control desk the wheel is away and the desk's panel takes the edge: the buttons lie in a row under it.
-  if (desk.on && !stackedMQ.matches) nav.classList.add('row');
+  w.style.top = `${Math.round(top + h / 2)}px`;
 }
 function resize() {
   if (!renderer) return;
@@ -2816,9 +2948,17 @@ function resize() {
   fitFoot();
   fitWheel();
   if (desk.on) placeDesk();
+  syncStrip();
   fitView();
   // The width of the view picks the sheet column or the dock, so frame the part again.
-  if (iso.part) { updateIsoBar(); renderHud(); frameIsolated(false); }
+  if (iso.part) {
+    updateIsoBar(); renderHud();
+    // Wrapping tools (notably Turn to see) can resize the stage during a camera move.
+    // Reframe at its requested orientation, rather than cancelling at an intermediate angle.
+    const az = goal.az, el = goal.el;
+    stopGlide(); goal.az = az; goal.el = el;
+    frameIsolated(false);
+  }
   dirty = true;
 }
 
@@ -2999,7 +3139,7 @@ function fitView() {
   }
   // The machine is framed in the room right of the view's buttons, a little in from the other edges; its caption and
   // the turntable stand in the margins over and under it.
-  const side = Math.max(navReserve(), 16), far = 16, edge = 56;
+  const side = Math.max(navReserve(), 16), far = Math.max(16, startReserve()), edge = 56;
   const room = 1 - (side + far) / width, vroom = 1 - (2 * edge) / height;
   const f = frameOf(machinePts, HOME.az, HOME.el, 1.03, Math.max(0.5, room), Math.max(0.5, vroom));
   f.centre.addScaledVector(basis(HOME.az, HOME.el).right, -((side - far) / 2) * ((2 * f.half) / height));
@@ -3118,6 +3258,8 @@ const desk = {
 };
 const deskLive = new Set();
 let deskEl = null;
+// Which page of the toolstrip shows, and whether the start card has gone.
+const strip = { tab: 'explore', startGone: false };
 const guide = { on: false, i: 0, seq: 0, saved: null, base: null, ready: false, ok: false, last: null, copies: 0, lit: null };
 
 // Where a piece is headed: its explode group, its own explode offset, its inspect lift, and its sub-parts taken apart.
@@ -3334,6 +3476,8 @@ function inspect(id, focusPiece = null, o = {}) {
     if (panels.tree && !stacked() && width < 1000) { panels.tree = false; iso.foldTree = true; applyPanels(); resize(); }
     // A tablet in landscape under 1100 px folds the inspector too, so the sheets get their column beside the part.
     if (coarse && panels.insp && !stacked() && innerWidth < 1100 && innerWidth > innerHeight) { panels.insp = false; iso.foldInsp = true; applyPanels(); resize(); }
+    // The inspector starts folded away on a first visit: a part inspected, however it is reached, opens it for its Part tab.
+    else if (!panels.insp && !stacked() && !(coarse && innerWidth < 1100 && innerWidth > innerHeight)) { panels.insp = true; applyPanels(); resize(); }
   }
   if (hidden.has(id)) hidden.delete(id);
   // On the tour, a stop's part, however it is reached (Next, ← back, a link), becomes the current stop.
@@ -3382,7 +3526,7 @@ function endInspect() {
   const now = performance.now() / 1000;
   const slow = !reduceMotion.matches;
   // Focus on a sheet or the inspect bar would be lost as they go, so it returns to the part's row in the list.
-  const lost = hud.contains(document.activeElement) || $('isobar').contains(document.activeElement);
+  const lost = hud.contains(document.activeElement) || $('isobar').contains(document.activeElement) || $('rowPart').contains(document.activeElement);
   endShow(false);
   const mine = piecesOf.get(iso.part) || [];
   const start = slow && mine.some((pc) => pc.userData.tp > 0.02) ? BACK.together : 0;
@@ -3447,10 +3591,12 @@ function stepPiece(d) {
   setFocus(j < 0 ? null : list[j]);
 }
 function updateIsoBar() {
-  const bar = $('isobar');
+  const bar = $('isobar'), was = bar.classList.contains('on');
   bar.classList.toggle('on', !!iso.part);
+  // A part inspected brings the toolstrip's Part page; leaving it gives the page back.
+  if (was !== !!iso.part) syncStrip(iso.part ? 'part' : 'explore');
   if (!iso.part) { setMore(false); placeBar(); return; }
-  const compact = dockLayout();
+  const compact = dockLayout() && stacked();
   const p = partById.get(iso.part);
   const list = piecesOf.get(iso.part) || [];
   const lbl = $('isoLabel');
@@ -3507,9 +3653,14 @@ function updateIsoBar() {
 // and its state; a wider view puts them back in the bar's own order.
 const BAR_ORDER = ['bBack', 'isoLabel', 'crumbs', 'pieceStep', 'bApart', 'bJoint', 'apartWrap', 'stepStep', 'bTurn', 'bContext', 'bScreens', 'tourStep', 'bLink', 'bMore', 'isoMore', 'bDone', 'stepCap'];
 const MORE_ORDER = ['bApart', 'bJoint', 'apartWrap', 'stepStep', 'bTurn', 'bContext', 'bScreens', 'bLink', 'pieceStep', 'bBack'];
+// On a wide window the same controls stand on the toolstrip's Part page, each in its group; the bar over the view
+// keeps the caption of the step shown.
+const STRIP_HOME = { bBack: 'gPiece', isoLabel: 'gPiece', crumbs: 'gPiece', pieceStep: 'gPiece', bApart: 'gApart', bJoint: 'gApart', apartWrap: 'gApart', stepStep: 'gApart', bTurn: 'gApart',
+  bContext: 'gShow', bScreens: 'gShow', tourStep: 'gTour', bLink: 'gShare', bDone: 'gLeave' };
+const STRIP_GROUPS = ['gPiece', 'gApart', 'gShow', 'gTour', 'gShare', 'gLeave'];
 function placeBar() {
   const bar = $('isobar'), more = $('isoMore'), card = $('card');
-  const compact = !!iso.part && dockLayout();
+  const inStrip = !stacked(), compact = !!iso.part && dockLayout() && !inStrip;
   bar.classList.toggle('compact', compact);
   card.classList.toggle('compact-iso', compact);
   $('bMore').hidden = !compact;
@@ -3521,9 +3672,12 @@ function placeBar() {
   const a = document.activeElement;
   const put = (parent, ids) => ids.map($).forEach((e, i) => { if (parent.children[i] !== e) parent.insertBefore(e, parent.children[i] || null); });
   put(more, MORE_ORDER.filter((id) => under.has(id)));
-  put(bar, BAR_ORDER.filter((id) => !under.has(id)));
+  if (inStrip) {
+    for (const g of STRIP_GROUPS) put($(g), BAR_ORDER.filter((id) => STRIP_HOME[id] === g));
+    put(bar, BAR_ORDER.filter((id) => !STRIP_HOME[id]));
+  } else put(bar, BAR_ORDER.filter((id) => !under.has(id)));
   // Moving a control takes the focus off it; it goes back.
-  if (a && a !== document.activeElement && a.isConnected && bar.contains(a)) a.focus({ preventScroll: true });
+  if (a && a !== document.activeElement && a.isConnected && (bar.contains(a) || $('rowPart').contains(a))) a.focus({ preventScroll: true });
   // What the triad sits under, and nothing to open under ⋯ is not offered.
   card.style.setProperty('--bar-b', `${Math.round(barBottom())}px`);
   if (compact) $('bMore').disabled = ![...more.children].some((e) => !e.hidden);
@@ -3649,6 +3803,7 @@ function askQuiz() {
   $('quizSay').hidden = true;
   $('bQuizNext').hidden = true;
   $('quizbar').classList.add('on');
+  syncStrip();
   refreshLit();
   touched = true;
   frameQuiz(MOVE.fly);
@@ -3727,7 +3882,8 @@ function endQuiz(restore = true) {
   // Focus in the bar would be lost as it goes: it returns to the button that started the questions, else the view.
   const lost = $('quizbar').contains(document.activeElement);
   $('quizbar').classList.remove('on');
-  if (lost) { const b = $('inspBody').querySelector('[data-fk="act:quiz"]'); (b?.getClientRects().length ? b : stage).focus(); }
+  syncStrip();
+  if (lost) { const b = $('bQuiz'); (b.getClientRects().length ? b : stage).focus(); }
   if (quiz.cutWas && !state.cut) setCut(true);
   if (restore && quiz.saved) {
     stopGlide();
@@ -4187,10 +4343,10 @@ function crumbs() {
 const PANEL = { tree: { min: 180, max: 520, w: 'tw' }, insp: { min: 240, max: 640, w: 'iw' } };
 const panels = { tree: true, insp: true, tw: 0, iw: 0 }; // a width of 0 keeps the default from the CSS
 {
-  // A first visit opens on the machine: the assembly list starts folded to its rail (its search one click away, or /).
-  // Once someone opens or folds a panel, that choice is kept.
+  // A first visit opens on the machine: the assembly list and the inspector start folded away (the wheel, Find a part
+  // and a click on a part are the ways in). Once someone opens or folds a panel, that choice is kept.
   const saved = store.get('spm1-panels');
-  const folded = (saved == null ? 'tree' : saved).split(',');
+  const folded = (saved == null ? 'tree,insp' : saved).split(',');
   panels.tree = !folded.includes('tree');
   panels.insp = !folded.includes('insp');
   panels.tw = +store.get('spm1-tw') || 0;
@@ -4212,19 +4368,19 @@ function applyPanels() {
   store.set('spm1-panels', [!panels.tree && !iso.foldTree && 'tree', !panels.insp && !iso.foldInsp && 'insp'].filter(Boolean).join(','));
   store.set('spm1-tw', String(panels.tw));
   store.set('spm1-iw', String(panels.iw));
+  syncStrip();
   renderHud();
 }
 function setPanel(which, show) { panels[which] = show; applyPanels(); }
 function togglePanels() { const show = !(panels.tree || panels.insp); panels.tree = panels.insp = show; applyPanels(); }
 for (const b of document.querySelectorAll('.fold')) b.addEventListener('click', () => setPanel(b.dataset.panel, false));
-for (const b of document.querySelectorAll('.rail')) b.addEventListener('click', () => setPanel(b.dataset.panel, true));
 // Find a part: open the list and put the cursor in its search box.
 function findPart() {
   if (!panels.tree && !stacked()) setPanel('tree', true);
   $('search').focus();
   $('search').select();
 }
-document.querySelector('.rail-search').addEventListener('click', findPart);
+$('bFind').addEventListener('click', findPart);
 $('bPanels').addEventListener('click', togglePanels);
 // Size a panel to `w` px, leaving the view at least 360 px; well under its minimum it folds to its rail.
 function sizePanel(which, w) {
@@ -4304,18 +4460,20 @@ function nearestPiece(list) {
   const { dir } = basis(view.az, view.el);
   return list.reduce((a, b) => (boxOfPiece(b).getCenter(new V3()).dot(dir) > boxOfPiece(a).getCenter(new V3()).dot(dir) ? b : a));
 }
-// The inspect bar takes the top of the view, so a part is framed below it; the sheet column or the bottom sheet takes a side.
+// The inspect bar takes the top of the view where the panels stack (and the caption of a step on a wide window), so a
+// part is framed below it; the sheet column or the bottom sheet takes a side.
 function barBottom() {
   const bar = $('isobar');
-  return iso.part && bar.classList.contains('on') ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
+  return iso.part && bar.classList.contains('on') && bar.getClientRects().length ? bar.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
 }
-// The view's controls take its left edge, and while it shows the wheel beyond them: what is framed stays clear of both.
+// The wheel takes the view's left edge while it shows, the desk while it is open, and where the panels stack the view's
+// buttons stand there in their column: what is framed stays clear of them.
 // The wheel keeps the room the groups' dial kept (262 px from the edge at its full size), so the machine is drawn as
 // large as before and an open group's pictures fan out beside it, not over it.
 function navReserve() {
   let r = 0;
   const c = $('navCluster'), w = $('whRing');
-  if (c?.getClientRects().length) r = c.getBoundingClientRect().right + 8;
+  if (stacked() && c?.getClientRects().length) r = c.getBoundingClientRect().right + 8;
   if (w?.getClientRects().length) { const b = w.getBoundingClientRect(); r = Math.max(r, b.left + 262 * (b.width / 172)); }
   if (desk.on && deskEl?.parentNode === $('card') && deskEl.getClientRects().length) r = Math.max(r, deskEl.getBoundingClientRect().right + 12);
   return r ? Math.max(0, Math.round(r - $('card').getBoundingClientRect().left)) : 0;
@@ -5401,7 +5559,10 @@ function select(id, o = {}) {
   refreshLit();
   // A part opens its Part tab; clearing the selection goes back to the Machine tab. At the control desk the Machine
   // tab stays, as the monitor is there.
+  // A part selected opens the inspector on a wide window, where it starts folded away: its Part tab is what a click asks for.
+  if (id && !panels.insp && !stacked() && !iso.part && !quiz.on && !desk.on && !guide.on) setPanel('insp', true);
   if (!desk.on) setTab(id ? 'part' : 'machine');
+  if (!desk.on && !quiz.on && !guide.on) syncStrip(id ? 'part' : 'explore');
   renderInspector();
   const row = id && document.querySelector(`.ti[data-part="${id}"]`);
   if (row && o.scroll !== false) revealRow(row);
@@ -5928,15 +6089,6 @@ function refButton(id) {
   return b;
 }
 // The printed user guide, docs/user-guide.pdf (16 A4 pages of screenshots), downloaded as a file.
-function manualLink() {
-  const a = el('a', 'dl');
-  a.href = 'docs/user-guide.pdf';
-  a.download = 'SPM1-anatomy-user-guide.pdf';
-  a.dataset.fk = 'act:manual';
-  a.title = 'Download the user guide: how to use this page, in 16 A4 pages of screenshots, to read or print';
-  a.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M3 13.5h10"/></svg>User guide (PDF)';
-  return a;
-}
 function action(label, fn, primary, fk) {
   const b = el('button', primary ? 'primary' : null, label);
   b.type = 'button';
@@ -5949,6 +6101,7 @@ let inspShown = '';
 // part's name when that control is gone.
 function renderInspector() {
   const box = $('inspBody');
+  syncStrip();
   // A new part or piece starts at the top, so its name is in view; any other re-render keeps the reader's place.
   const shown = `${tab}|${state.select}|${iso.focus ? iso.focus.id : ''}`;
   if (shown !== inspShown) { inspShown = shown; box.scrollTop = 0; }
@@ -5957,7 +6110,7 @@ function renderInspector() {
   if (tab === 'machine') (desk.on ? renderDesk : renderOverview)(box);
   else if (tab === 'sources') renderSources(box);
   else if (tab === 'help') renderHelp(box);
-  else if (!state.select) box.append(el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Machine tab.'));
+  else if (!state.select) box.append(el('p', null, 'No part is selected. Click one in the model or in the assembly list, or take the tour from the Learn tab.'));
   else renderPart(box, false);
   if (fk) (box.querySelector(`[data-fk="${CSS.escape(fk)}"]`) || box.querySelector('h2'))?.focus({ preventScroll: true });
   updateWheel();
@@ -6279,10 +6432,7 @@ const citedBy = (() => {
 function renderOverview(box) {
   box.append(el('h2', null, 'MinimaK SPM1'));
   box.append(el('p', null, 'A tabletop “simple magnetised torus” by Rideo Systems: a ring-shaped stainless vacuum chamber wrapped in eight copper coils, with more coils above, below and in the middle, on an optical table with its pump and supplies underneath. It makes a cold glow-discharge plasma, so it has a tokamak’s magnets without a tokamak’s plasma current.'));
-  const acts = el('div', 'actions');
-  acts.append(action('Take the tour', startTour, true, 'act:tour'), action('Where does it go?', () => { startQuiz(); $('quizChoices').querySelector('button')?.focus(); }, false, 'act:quiz'),
-    action('Control desk', startDesk, false, 'act:desk'), action('Guided analysis', () => guideStart(), false, 'act:guide'), manualLink());
-  box.append(acts, el('p', 'note', `The tour: ${DOCS.TOUR.length} stops in the order of a run, from the empty chamber to the glow; Next in the inspect bar goes on, Done leaves. Where does it go?: ${QUIZ_N} parts are lifted out in turn, and you click where each one goes. Control desk: run the machine yourself with a stand-in for its own software: pump down, strike the glow, and shape it with the coils.`));
+  box.append(el('p', 'note', 'The tour, the quiz, the guided analysis and the user guide are on the toolstrip’s Learn tab; Run opens the control desk.'));
   box.append(el('h3', null, 'How a run goes'));
   const ol = el('ol', 'run');
   for (const s of DOCS.RUN) {
@@ -6308,19 +6458,19 @@ function renderOverview(box) {
   box.append(el('h3', null, 'Headline numbers'), specTable(HEADLINE));
   box.append(el('h3', null, 'How to use it'));
   for (const s of [
-    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The buttons at the view’s left edge zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, turn about the machine’s own axis (the middle of the ring under it, wherever you pan) or about the middle of the view, and fold the side panels.',
-    'The assembly list starts folded to its rail, so the machine has the room: the magnifier at the top of the rail, or /, opens it to search.',
+    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The view strip under the model lets you zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, turn about the machine’s own axis (the middle of the ring under it, wherever you pan) or about the middle of the view. The toolstrip’s panels button folds the side panels.',
+    'The assembly list starts folded away, so the machine has the room: Find a part on the toolstrip, or /, opens it to search.',
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
     'The search box above the list finds names, sizes and seals (M8, o-ring) and takes plain words: “the gasket between the right and back quarters” finds that gasket. The square on a button (Explode, Ghost, Sheets) is filled while it is on.',
     '“Where does it go?” lifts a part out above the machine: click where it goes. Five make a round, scored on first tries, and a round can be shared as a link. On a tablet, hold a finger still for a loupe that shows the view under it at 3× and names what it is on.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
-    'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades and the inspect bar says where it is. Esc goes back to the view you had.',
+    'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades and the Part tab (or the bar over the view on a phone) says where it is. Esc goes back to the view you had.',
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all. The table’s edges are named Front, Right, Back and Left for the quarters above them, printed on the table top, so you know which side you are looking from.',
     'Taken apart, a part steps through the order it comes off with the arrows by “All”: nuts, then bolts, then the flange, the gasket last. Each step says how, with the bolt size and spanner, and a ring of bolts or nuts is numbered on the heads in star order. Fitting runs back up the steps. On a gasket or a vessel joint flange, “Open this joint” does the same for the whole joint: nuts, bolts, the two quarters apart, then the gasket out, never to be reused.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
-    'The theme buttons at the top right draw the machine in colour, in greyscale with cast shadows, as a blueprint (white drafting lines on blue paper, with centre lines and dimensions), or as a hologram.',
+    'The toolstrip’s theme menu (Colour) draws the machine in colour, in greyscale with cast shadows, as a blueprint (white drafting lines on blue paper, with centre lines and dimensions), or as a hologram.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
   ]) box.append(el('p', null, s));
   markTerms(box, 'machine');
@@ -6357,7 +6507,7 @@ function renderSources(box) {
 }
 function renderHelp(box) {
   box.append(el('h2', null, 'Settings'));
-  box.append(el('h3', null, 'Text size: the sheets, the inspect bar and the view’s labels'));
+  box.append(el('h3', null, 'Text size: the sheets, the part’s tools and the view’s labels'));
   const sizes = el('div', 'actions');
   sizes.setAttribute('role', 'radiogroup');
   sizes.setAttribute('aria-label', 'Text size');
@@ -6385,30 +6535,30 @@ function renderHelp(box) {
       ['Left-drag', 'turn (turntable): sideways spins about the machine’s own axis (unlocked, about the middle of the view), up and down tilts'],
       ['Right-drag, Shift-drag, middle-drag', 'pan'],
       ['Wheel', 'zoom toward the pointer'],
-      ['The buttons at the view’s left edge', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis, and the side panels'],
+      ['The view strip under the model', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis; the toolstrip’s panels button folds the side panels'],
       ['The half-wheel at the view’s left edge (assembly list folded)', 'the seven groups: rest the pointer on one, or click it, and its parts fan out as pictures; a click selects one, a double-click inspects it. From the keyboard, Enter opens a group, the arrows step through its parts, Esc folds it'],
-      ['The turntable under the machine', 'turn it an eighth of a turn either way'],
+      ['The turntable in the view strip under the model', 'turn it an eighth of a turn either way'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
       ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
       ['Click a piece (inspecting, every piece shown)', 'pick that piece'],
       ['Click a sub-part (inspecting, one piece shown)', 'keep its sheet; a click on a kept one shows its sheet again. × on the sheet, or its Made of row, closes it'],
       ['Click near a small part', 'a click that hits nothing picks the smallest part within 12 px'],
-      ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed; the inspect bar says where it is. Esc goes back'],
+      ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed; the Part tab (or the bar over the view on a phone) says where it is. Esc goes back'],
       ['A callout on a part taken apart', 'preview its sheet; its number is the Made of row’s'],
-      ['Turn to see (inspect bar)', 'offered when a part taken apart, or a joint opened, comes apart toward you: turns the view so its sub-parts lie across it'],
-      ['‹ Step n / N › (inspect bar, taken apart)', 'step through the order it comes off: each step says how (size, spanner, star order) and its sub-parts light; “All” has every sub-part off. Fitting runs back up the steps'],
-      ['Open this joint (inspect bar, a gasket or a joint flange)', 'the joint’s nuts, bolts, flanges and gasket in four steps, the gasket last; Close the joint, or Esc, puts it back'],
+      ['Turn to see (Part tab)', 'offered when a part taken apart, or a joint opened, comes apart toward you: turns the view so its sub-parts lie across it'],
+      ['‹ Step n / N › (Part tab, taken apart)', 'step through the order it comes off: each step says how (size, spanner, star order) and its sub-parts light; “All” has every sub-part off. Fitting runs back up the steps'],
+      ['Open this joint (Part tab, a gasket or a joint flange)', 'the joint’s nuts, bolts, flanges and gasket in four steps, the gasket last; Close the joint, or Esc, puts it back'],
       ['Rest the pointer on one bolt or nut of a ring (inspecting)', 'name it: “Bolt 7 of 20 · star 3”, its place round the ring from the top and its turn in the star order; a click still keeps the ring’s sheet'],
       ['Show me on a ring of bolts', 'one sample bolt has its length, grip and width across flats drawn on'],
-      ['Link icon in the inspect bar', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
+      ['Copy link on the Part tab', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
       ['Drag a sheet or the preview out of the column', 'it floats where you drop it, kept; drop it back on the column to return it'],
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
       ['Hover a sheet', 'light its sub-part in the model'],
-      ['Click a connected part', 'inspect it at the piece nearest this one; ← in the inspect bar goes back'],
-      ['Take the tour (Machine tab)', 'inspect the parts in the order of a run; Next › in the inspect bar goes on, Done leaves'],
-      ['Control desk (Machine tab)', 'run the machine with a stand-in for its own software: INITIALISE, pump down and let in gas, GLOW ON, then the TF and PF coils; SEQUENCE runs a program, and a click on the emergency stop on the table trips it. Esc or Done leaves'],
-      ['Where does it go? (Machine tab)', 'a part is lifted out: click its place on the model, or pick in the bar; five make a round, scored on first tries. Esc or Done ends it'],
+      ['Click a connected part', 'inspect it at the piece nearest this one; ← on the Part tab goes back'],
+      ['Take the tour (Learn tab)', 'inspect the parts in the order of a run; Next › on the Part tab goes on, Done leaves'],
+      ['Control desk (Run tab)', 'run the machine with a stand-in for its own software: INITIALISE, pump down and let in gas, GLOW ON, then the TF and PF coils; SEQUENCE runs a program, and a click on the emergency stop on the table trips it. Esc or Done leaves'],
+      ['Where does it go? (Learn tab)', 'a part is lifted out: click its place on the model, or pick in the bar; five make a round, scored on first tries. Esc or Done ends it'],
       ['Search box (assembly list)', 'names, sizes (M8) and seals (o-ring), in plain words; the best matches show, and a line says which words found nothing'],
       ['A word with a dotted underline', 'click it, or Tab onto it, for what it means; click again to close'],
       ['Drag a panel’s edge', 'size the panel; double-click the edge for the default'],
@@ -6420,7 +6570,7 @@ function renderHelp(box) {
       ['Tap', 'select'],
       ['Double-tap', 'inspect'],
       ['Tap (inspecting)', 'with every piece shown, pick a piece; with one, preview a sub-part’s sheet, and Keep keeps it. A tap picks the smallest part within 24 px'],
-      ['Show me (on a sheet’s bar or a Made of row)', 'frame the sub-part close up; the links in the inspect bar go back'],
+      ['Show me (on a sheet’s bar or a Made of row)', 'frame the sub-part close up; the links on the Part tab (or the bar over the view on a phone) go back'],
       ['Hold a finger still', 'a loupe shows the view under it at 3×, with the name of what it is on; slide to move it, lift to act as a tap there (preview the sheet, select, or answer). Lifting over nothing keeps the preview'],
     ]],
     ['Made of rows', [
@@ -6575,11 +6725,106 @@ function applyLink(h) {
 window.addEventListener('popstate', () => { if (guide.on) guideExit({ url: false, focus: false }); applyLink(location.hash); });
 // Copy link copies only on a click. In the guided analysis it copies the link of what is shown without writing it to
 // the address.
-$('bLink').addEventListener('click', async () => {
+async function copyLink() {
   if (guide.on) guide.copies++; else writeLink();
   const href = guide.on ? `${location.href.split('#')[0]}${linkOf()}` : location.href;
   try { await navigator.clipboard.writeText(href); announce('Link copied.'); } catch { announce(guide.on ? 'The link could not be copied.' : 'The link could not be copied; it is in the address bar.'); }
+}
+$('bLink').addEventListener('click', copyLink);
+$('bLinkHere').addEventListener('click', copyLink);
+
+// ---------- The toolstrip ----------
+// Which page of the strip shows. Explore and Learn are the reader's choice; Part is there while a part is inspected and
+// Run while the desk is open, on a wide window (where the panels stack their controls are on the bar over the view), so
+// a page that has gone falls back to Explore. A tab whose mode is on is marked, whichever page shows.
+function syncStrip(to) {
+  const wide = !stacked(), top = $('strip');
+  if (to) strip.tab = to;
+  if ((strip.tab === 'part' && !((iso.part || state.select) && wide)) || (strip.tab === 'run' && !(desk.on && wide))) strip.tab = 'explore';
+  top.dataset.tab = strip.tab;
+  const live = { explore: false, part: !!iso.part, learn: quiz.on || guide.on, run: desk.on };
+  for (const b of top.querySelectorAll('.ts-tabs button')) {
+    b.setAttribute('aria-pressed', b.dataset.tab === strip.tab ? 'true' : 'false');
+    b.setAttribute('aria-selected', String(b.dataset.tab === strip.tab));
+    const page = $(b.getAttribute('aria-controls'));
+    page.hidden = b.dataset.tab !== strip.tab;
+    page.setAttribute('role', 'tabpanel');
+    page.setAttribute('aria-labelledby', b.id);
+    b.classList.toggle('live', live[b.dataset.tab]);
+  }
+  const sel = iso.part || state.select, tp = $('tsPart'), name = sel ? partById.get(sel).name : '';
+  tp.hidden = !sel;
+  tp.setAttribute('aria-disabled', sel ? 'false' : 'true');
+  $('rowPart').dataset.inspected = String(!!iso.part);
+  $('gSelected').hidden = !sel || !!iso.part;
+  if ($('tsPartName').textContent !== name) $('tsPartName').textContent = name;
+  $('tsPartName').title = name; // Keep the full name available when the tab abbreviates it.
+  tp.title = iso.part ? `The tools of the part inspected: ${name}` : sel ? `Inspect ${name} on its own (I, or a double-click on it)` : 'Select a part first: click it on the model, in the wheel or in the list';
+  setPressed('bWheel', !panels.tree);
+  setPressed('bList', panels.tree);
+  setPressed('bTour', iso.tour !== null);
+  setPressed('bQuiz', quiz.on);
+  syncStart();
+}
+$('strip').querySelector('.ts-tabs').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const t = b.dataset.tab;
+  if (t === 'part') { if (iso.part) syncStrip('part'); else if (state.select) inspect(state.select); }
+  else if (t === 'run') { if (desk.on) syncStrip('run'); else startDesk(); }
+  else syncStrip(t);
 });
+// A step of the guided analysis whose control is on another page of the strip opens that page, and the theme menu for
+// the themes.
+function stripShow(e) {
+  const isEl = e instanceof Element;
+  setLookMenu(isEl && (e === $('looks') || $('looks').contains(e)));
+  const pg = isEl && e.closest('.ts-page');
+  if (pg && pg.dataset.tab !== strip.tab) syncStrip(pg.dataset.tab);
+}
+$('bInspectSelected').addEventListener('click', () => inspect(state.select));
+$('strip').querySelector('.ts-tabs').addEventListener('keydown', (e) => {
+  const tabs = [...e.currentTarget.querySelectorAll('button')].filter((b) => !b.hidden);
+  const i = tabs.indexOf(document.activeElement);
+  if (i < 0) return;
+  const j = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : -1;
+  if (j < 0) return;
+  tabs[j].focus(); e.preventDefault(); e.stopPropagation();
+});
+$('bWheel').addEventListener('click', () => setPanel('tree', false));
+$('bList').addEventListener('click', () => setPanel('tree', true));
+// A tab of the inspector, opened from the strip: the panel unfolds, and where the panels stack the page goes to it.
+function openInsp(t) {
+  if (!panels.insp && !stacked()) setPanel('insp', true);
+  setTab(t);
+  if (stacked()) $('inspPanel').scrollIntoView({ block: 'start', behavior: reduceMotion.matches ? 'auto' : 'smooth' });
+}
+$('bHelp').addEventListener('click', () => openInsp('help'));
+$('bKeys').addEventListener('click', () => openInsp('help'));
+$('bSources').addEventListener('click', () => openInsp('sources'));
+$('bTour').addEventListener('click', () => startTour());
+$('bQuiz').addEventListener('click', () => { if (quiz.on) { endQuiz(); return; } startQuiz(); $('quizChoices').querySelector('button')?.focus(); });
+// The start card: there on a wide window while the inspector is folded away and nothing has been opened. A part, the
+// inspector, a mode or its × sends it off for good; the machine is framed clear of it while it shows.
+const startReserve = () => { const sc = $('startCard'); return sc.hidden || !sc.getClientRects().length ? 0 : Math.round($('card').getBoundingClientRect().right - sc.getBoundingClientRect().left + 12); };
+function syncStart(gone = false) {
+  const sc = $('startCard');
+  if (gone || panels.insp || state.select || iso.part || quiz.on || desk.on || guide.on || store.get('spm1-start') === '0') strip.startGone = true;
+  if (strip.startGone && store.get('spm1-start') !== '0') store.set('spm1-start', '0');
+  const show = !strip.startGone && !stacked();
+  if (sc.hidden === !show) return;
+  const had = sc.contains(document.activeElement);
+  sc.hidden = !show;
+  if (had) stage.focus({ preventScroll: true });
+  // Shown, it is there before the view is first fitted; gone, the machine takes the room it kept.
+  if (show || !renderer) return;
+  fitFoot();
+  fitView();
+  dirty = true;
+}
+$('bStartX').addEventListener('click', () => syncStart(true));
+$('bStartTour').addEventListener('click', () => startTour());
+$('bStartAbout').addEventListener('click', () => openInsp('machine'));
 
 // ---------- Modebar ----------
 function setPressed(id, on) { $(id).setAttribute('aria-pressed', on ? 'true' : 'false'); }
@@ -6660,10 +6905,29 @@ $('looks').addEventListener('keydown', (e) => {
   setLook(b.dataset.look);
   b.focus();
 });
+// The themes are a menu under one button, which names the theme in use. A pick, a press outside it or Esc closes it;
+// the guided analysis keeps it open for its step on the themes.
+function setLookMenu(open, focus = false) {
+  const m = $('looks'), b = $('bLook');
+  if (m.hidden === !open) return;
+  m.hidden = !open;
+  b.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (!open && m.contains(document.activeElement)) b.focus({ preventScroll: true });
+  if (open && focus) (lookBtns.find((x) => x.getAttribute('aria-checked') === 'true') || lookBtns[0]).focus();
+}
+$('bLook').addEventListener('click', (e) => setLookMenu($('looks').hidden, e.detail === 0));
+$('looks').addEventListener('click', (e) => {
+  if (!e.target.closest('[data-look]') || guide.on) return;
+  setLookMenu(false);
+  $('bLook').focus({ preventScroll: true });
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('looks').hidden && !guide.on) { setLookMenu(false); $('bLook').focus(); e.preventDefault(); e.stopPropagation(); } });
+document.addEventListener('pointerdown', (e) => { if (!$('looks').hidden && !guide.on && !$('looks').contains(e.target) && !$('bLook').contains(e.target)) setLookMenu(false); });
 systemDark.addEventListener('change', applyTheme);
 
 function applyTheme() {
   const t = themeName();
+  $('lookName').textContent = { light: 'Colour', greyscale: 'Greyscale', blueprint: 'Blueprint', dark: 'Hologram' }[t] || 'Colour';
   const pal = THEME[t];
   holo = t === 'dark';
   greyscale = t === 'greyscale';
@@ -6750,7 +7014,7 @@ function updateDraft() {
   const svg = $('draft');
   if (!blueprint) { if (svg.firstChild) svg.replaceChildren(); $('card').classList.remove('tight'); return; }
   const W = width, H = height, o = 8, i = 22;
-  if ($('card').classList.contains('tight') !== W < 760) { $('card').classList.toggle('tight', W < 760); updateReadout(); fitWheel(); }
+  if ($('card').classList.contains('tight') !== W < 760) { $('card').classList.toggle('tight', W < 760); updateReadout(); fitFoot(); fitWheel(); }
   // A view with no room for the frame (a hidden or collapsed pane) gets no sheet until it has.
   if (W < 4 * i || H < 4 * i) { if (svg.firstChild) svg.replaceChildren(); return; }
   const parts = [];
@@ -6884,9 +7148,11 @@ function drawScale() {
   let L = steps[0];
   for (const s of steps) if (s <= target) L = s;
   const px = L / cmPerPx;
-  const bar = $('scale');
-  bar.firstChild.style.width = `${px.toFixed(0)}px`;
-  bar.lastChild.textContent = L >= 100 ? `${L / 100} m` : L < 1 ? `${L * 10} mm` : `${L} cm`;
+  // On the drawing (Blueprint, and where the panels stack) and on the status bar, which grows with the text size.
+  for (const [bar, k] of [[$('scale'), 1], [$('scale2'), uiScale]]) {
+    bar.firstChild.style.width = `${(px / k).toFixed(0)}px`;
+    bar.lastChild.textContent = L >= 100 ? `${L / 100} m` : L < 1 ? `${L * 10} mm` : `${L} cm`;
+  }
 }
 // The 3D view's text description says which side it is seen from, in the quarters' names, once the view stops.
 const SIDES = ['right', 'back right', 'back', 'back left', 'left', 'front left', 'front', 'front right'];
@@ -6913,7 +7179,11 @@ function updateReadout() {
   // inch) and the units of its dimensions.
   const scale = blueprint ? `1:${Math.max(1, Math.round(37.8 / (height / (2 * halfNow()))))}` : '';
   if (r.dataset.l1 === line1 && r.dataset.l2 === line2 && r.dataset.sc === scale) return;
+  const sheet = !!r.dataset.sc;
   r.dataset.l1 = line1; r.dataset.l2 = line2; r.dataset.sc = scale;
+  $('roLine').textContent = `${line1}  ·  ${line2}`;
+  // The title block comes and goes with Blueprint: the view's strip keeps clear of it.
+  if (sheet !== blueprint) requestAnimationFrame(fitFoot);
   if (!blueprint) { r.replaceChildren(el('div', null, line1), el('div', null, line2)); return; }
   const row = (k, v) => { const d = el('div', 'tb-row'); d.append(el('span', null, k), el('span', null, v)); return d; };
   r.replaceChildren(el('div', 'tb-title', 'MinimaK SPM1 · Anatomy'), row('Scale', `${scale} · dimensions in mm`), row('View', line1), row('Shows', line2), row('Fig', '1 · after Rideo Systems photos and specs'));
@@ -6921,7 +7191,7 @@ function updateReadout() {
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
 // While inspecting, the hint says what the pointer does now; outside, how to move and how to inspect.
-const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : desk.on ? 'Work the desk below the view · tap the emergency stop on the table to trip it' : iso.show ? 'Show me · the bar’s links go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : desk.on ? 'Work the desk below the view · tap the emergency stop on the table to trip it' : iso.show ? 'Show me · links on the Part tab (bar over the view on a phone) go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
   : iso.show ? 'Show me · drag to turn round it · Esc goes back'
   : iso.joint ? 'Step through the joint with ‹ › · point at a bolt to name it · Esc closes the joint'
   : quiz.on ? 'Click where the lifted part goes, or pick in the bar · drag to turn · Esc ends the questions'
@@ -6935,24 +7205,23 @@ function setHint(text) {
   h.textContent = t;
   fitFoot();
 }
-// The foot of the view: the turntable's rulers only where they clear the readout (with room for a longer line in it),
-// and the hint on two lines at most, else folded into its i. Lines are counted from the text's own line boxes, so the
-// text size is taken in.
+// The foot of the view on a wide window: the view's strip stands in the middle of the room the view has left, right of
+// the desk where the desk reaches down to it and left of the sheet column, Blueprint's title block or the start card;
+// where that room is short it gives up the turntable (the triad and a drag still turn the machine).
 function fitFoot() {
-  const card = $('card'), h = $('hint'), t = $('turnTable'), ro = $('readout');
-  if (!card) return;
-  card.classList.remove('foot-tight');
-  if (t.getClientRects().length && ro.getClientRects().length && t.getBoundingClientRect().right > ro.getBoundingClientRect().left - 40) card.classList.add('foot-tight');
-  card.classList.remove('hint-fold');
-  const range = document.createRange();
-  range.selectNodeContents(h);
-  const lines = new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
-  if (lines > 2) card.classList.add('hint-fold');
-  else $('bHint').setAttribute('aria-expanded', 'false');
+  const card = $('card'), vb = $('viewbar');
+  if (!card || !vb) return;
+  vb.classList.remove('tight');
+  if (stacked()) { card.style.removeProperty('--res-l'); card.style.removeProperty('--res-r'); return; }
+  // Reserve only content that reaches the actual tool row, including its clearance.
+  const c = card.getBoundingClientRect(), low = (e) => e.getClientRects().length && e.getBoundingClientRect().bottom > vb.getBoundingClientRect().top - 8;
+  let l = 0, r = iso.part && HUD.on && !dockLayout() ? SCREEN_W * uiScale + 20 : 0;
+  if (desk.on && deskEl?.parentNode === card && low(deskEl)) l = deskEl.getBoundingClientRect().right - c.left + 8;
+  for (const e of [$('readout'), $('startCard')]) if (low(e)) r = Math.max(r, c.right - e.getBoundingClientRect().left + 12);
+  card.style.setProperty('--res-l', `${Math.round(l)}px`);
+  card.style.setProperty('--res-r', `${Math.round(r)}px`);
+  if (vb.getBoundingClientRect().width > c.width - l - r - 16) vb.classList.add('tight');
 }
-// A tap on the i shows the hint until the next tap anywhere.
-$('bHint').addEventListener('click', (e) => { const b = e.currentTarget; b.setAttribute('aria-expanded', b.getAttribute('aria-expanded') === 'true' ? 'false' : 'true'); });
-document.addEventListener('pointerdown', (e) => { if (e.target !== $('bHint')) $('bHint').setAttribute('aria-expanded', 'false'); }, true);
 
 // ---------- Pointer, wheel and keys ----------
 const pointers = new Map();
@@ -7750,24 +8019,24 @@ function deskPage() {
   $('deskLbl').replaceChildren(el('b', null, 'Control desk'), ` · ${(DESK_SCENES[desk.scene] || DESK_SCENES.off)[0]}`);
   if (tab === 'machine') renderInspector();
 }
-// Where the desk's panel stands: at the view's left on a desktop, with the bar centred in the room beside it; in the
-// Machine tab where the panels stack.
+// Where the desk's panel stands: at the view's left on a wide window, its state and Done on the toolstrip's Run page;
+// in the Machine tab where the panels stack, its state and Done on the bar over the view.
 function placeDesk() {
   if (!deskEl) return;
   const card = $('card'), bar = $('deskbar');
-  if (stacked()) { bar.style.left = bar.style.right = bar.style.maxWidth = ''; if (tab === 'machine') renderInspector(); return; }
+  const home = stacked() ? [bar, bar] : [$('gDesk'), $('gDeskLeave')];
+  if ($('deskLbl').parentNode !== home[0]) home[0].prepend($('deskLbl'));
+  if ($('bDeskDone').parentNode !== home[1]) home[1].append($('bDeskDone'));
+  if (stacked()) { if (tab === 'machine') renderInspector(); return; }
   deskEl.classList.remove('in-page');
   if (deskEl.parentNode !== card) card.append(deskEl);
-  const c = card.getBoundingClientRect(), l = deskEl.getBoundingClientRect().right - c.left + 8, r = c.right - $('triad').getBoundingClientRect().left + 8;
-  bar.style.left = `${Math.round(l / uiScale)}px`;
-  bar.style.right = `${Math.round(r / uiScale)}px`;
-  bar.style.maxWidth = `${Math.max(120, Math.round((c.width - l - r) / uiScale))}px`;
+  fitFoot();
 }
 // The whole machine beside the desk and under the bar, from a little higher, so the glow shows in the cut vessel.
 function deskFrame(glideFor = MOVE.fly) {
   const b = new THREE.Box3();
   for (const pc of pieces) if (pc.visible) b.union(pc.userData.restBox);
-  const bar = $('deskbar').getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6;
+  const db = $('deskbar'), bar = db.getClientRects().length ? db.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top + 6 : 0;
   goal.az = nearestAz(HOME.az); goal.el = 34;
   frameBox(b, 1.08, { l: navReserve(), r: 0, b: 0, t: bar });
   if (glideFor && !reduceMotion.matches) glide = { at: performance.now() / 1000, dur: glideFor, from: null };
@@ -7791,6 +8060,7 @@ function startDesk() {
   deskEl.hidden = false;
   $('deskbar').classList.add('on');
   $('card').classList.add('desk-on');
+  syncStrip('run');
   setTab('machine', false);
   deskSync();
   deskPage();
@@ -7807,7 +8077,7 @@ function startDesk() {
 // Leave the desk: everything off, and the cutaway, the panels and the view come back.
 function endDesk(restore = true) {
   if (!desk.on) return;
-  const lost = deskEl.contains(document.activeElement) || $('deskbar').contains(document.activeElement) || $('inspBody').contains(document.activeElement);
+  const lost = deskEl.contains(document.activeElement) || $('deskbar').contains(document.activeElement) || $('rowRun').contains(document.activeElement) || $('inspBody').contains(document.activeElement);
   desk.on = false; desk.seq = null; desk.struck = false; desk.playing = false; desk.hot = null;
   deskLive.clear();
   $('deskbar').classList.remove('on');
@@ -7826,7 +8096,7 @@ function endDesk(restore = true) {
   refreshLit();
   setHint();
   renderInspector();
-  if (lost) { const b = $('inspBody').querySelector('[data-fk="act:desk"]'); (b?.getClientRects().length ? b : stage).focus({ preventScroll: true }); }
+  if (lost) ($('tsRun').getClientRects().length ? $('tsRun') : stage).focus({ preventScroll: true });
   announce('Control desk closed: everything is off.');
   dirty = true;
 }
@@ -7967,14 +8237,14 @@ const GUIDE_STEPS = [
     done: () => iso.part === 'viewport',
     target: () => (iso.part ? null : { box: boxOfPiece(gLeft()) }) },
   { ch: 0, id: 'first.apart', q: 'How does it come off its port?',
-    how: () => `Switch <b>Take apart</b> on in the inspect bar${underMore()}, or press <kbd>T</kbd>.`,
+    how: () => `Turn on <b>Take apart</b> on the Part tab (bar over the view on a phone)${underMore()}, or press <kbd>T</kbd>.`,
     look: 'Seen from three-quarters, the 16 nuts come off the back and the 16 bolts slide out of the flange; the flange and its copper gasket part along the port’s axis.',
     need: () => gPart('viewport', gLeft(), { view: [HOME.az, HOME.el] }),
     act: () => setApart(true),
     done: () => iso.apart,
     target: () => $('bApart') },
   { ch: 0, id: 'first.steps', q: 'What comes off first, and where did the bolts sit?',
-    how: 'Step to <b>Step 2 / 4</b> with the arrows beside <b>Step</b> in the inspect bar.',
+    how: 'Step to <b>Step 2 / 4</b> with the arrows beside <b>Step</b> on the Part tab (bar over the view on a phone).',
     look: '<b>Step 2 of 4 · 16 bolts</b>: “Draw out the 16 bolts, M8 × 50 mm (13 mm spanner).” The bolts are out, each head numbered in star order, and the flange’s 16 empty holes show where they sat.',
     need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
     act: () => setStep(2),
@@ -7982,7 +8252,7 @@ const GUIDE_STEPS = [
     target: () => $('bStepNext') },
   { ch: 0, id: 'first.showme', q: 'How long is one of these bolts?',
     how: () => `Choose <b>Show me</b> on the <b>16 bolts</b> row: the frame button at the end of the row under <b>Made of</b>${partBeside() ? ' in the Part tab' : ''}. Or focus the row and press <kbd>Z</kbd>.`,
-    look: 'The camera closes in on one bolt and draws its sizes under the head: <b>M8 × 50 mm</b>, the <b>grip 41 mm</b> it spans, <b>13 mm across flats</b>. The bar names where it is: Left quarter › Viewports › Left viewport (webcam) › 16 bolts.',
+    look: 'The camera closes in on one bolt and draws its sizes under the head: <b>M8 × 50 mm</b>, the <b>grip 41 mm</b> it spans, <b>13 mm across flats</b>. The Part tab (bar over the view on a phone) names it: Left quarter › Viewports › Left viewport (webcam) › 16 bolts.',
     need: () => gPart('viewport', gLeft(), { apart: true, step: 2, tab: 'part', view: [HOME.az, HOME.el] }),
     act: () => showMe('viewport', '16 bolts', gLeft()),
     done: () => iso.show?.sub === '16 bolts',
@@ -8012,7 +8282,7 @@ const GUIDE_STEPS = [
     done: () => tab === 'part' && iso.part === 'viewport' && iso.focus === gLeft() && isPinned(BOLTS),
     target: () => $('inspBody').querySelector('.src-back') },
   { ch: 0, id: 'first.home', q: 'Can the viewport find its way home?',
-    how: 'Press <b>Done</b> in the inspect bar. <kbd>Esc</kbd> steps back one level at a time instead: Show me, the step, the piece, then the part.',
+    how: 'Press <b>Done</b> on the Part tab (bar over the view on a phone). <kbd>Esc</kbd> steps back one level at a time instead: Show me, the step, the piece, then the part.',
     look: 'In reverse: the bolts and nuts go back in, the viewport flies home onto its port while the camera returns, and the machine turns solid. The assembled SPM1 faces you again.',
     need: () => gPart('viewport', gLeft(), { apart: true, step: 2, pins: ['16 bolts'], tab: 'part', view: [HOME.az, HOME.el] }),
     act: () => endInspect(),
@@ -8031,7 +8301,7 @@ const GUIDE_STEPS = [
     target: () => stage },
   { ch: 1, id: 'orient.pan', q: 'Can you slide the machine aside?',
     zone: () => $('card'),
-    how: () => tapOr('Drag with two fingers.', 'Right-drag, Shift-drag or middle-drag. Or switch on the pan button at the view’s left edge (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.'),
+    how: () => tapOr('Drag with two fingers.', 'Right-drag, Shift-drag or middle-drag. Or switch on the pan button in the view strip under the model (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.'),
     look: () => (spinAxis ? 'The machine slides without turning. A turn still goes about its own axis, so it turns in place where it now stands.' : 'The machine slides without turning, and the point it turns about moves with it: the middle of the view.'),
     base: () => ({ t: goal.target.clone() }),
     act: () => gGlide(() => panBy(-140, 0)),
@@ -8039,7 +8309,7 @@ const GUIDE_STEPS = [
     target: () => (coarse ? stage : document.querySelector('[data-drag]')) },
   { ch: 1, id: 'orient.axis', q: 'Should a turn go about the machine, or about the middle of the view?',
     zone: () => $('card'),
-    how: 'The axis button at the view’s left edge, under the pan button, switches it (<kbd>R</kbd>). Lit, as every visit starts, a turn goes about the machine’s own axis wherever you slide it; off, about the middle of the view.',
+    how: 'The axis button in the view strip under the model, beside pan, switches it (<kbd>R</kbd>). Lit, as every visit starts, a turn goes about the machine’s own axis wherever you slide it; off, about the middle of the view.',
     look: () => (spinAxis ? 'Locked: turn the machine and it spins in place, its axis fixed on the screen.' : 'Unlocked: turn the machine and, after a slide, it swings round the middle of the view instead. Exit gives your choice back.'),
     base: () => ({ a: spinAxis }),
     act: () => setSpinAxis(!spinAxis),
@@ -8054,27 +8324,27 @@ const GUIDE_STEPS = [
     done: (b) => goal.zoom > b.z * 1.3,
     target: () => (coarse ? stage : $('bZoomIn')) },
   { ch: 1, id: 'orient.scale', q: 'How big is it?',
-    how: () => `Read the scale bar at the view’s lower left${blueprint ? ', or the scale in the title block' : ''}, and compare it with any part, near or far.`,
+    how: () => `Read the scale bar ${stacked() || blueprint ? 'at the view’s lower left' : 'in the status bar below the view'}${blueprint ? ', or the scale in the title block' : ''}, and compare it with any part, near or far.`,
     look: 'The bar is true at every zoom, because the view has no perspective: a part at the back is drawn at the same scale as one at the front.',
-    target: () => $('scale') },
+    target: () => $(stacked() || blueprint ? 'scale' : 'scale2') },
   { ch: 1, id: 'orient.views', q: 'What does the machine look like from above?',
     zone: () => $('card'),
-    how: 'Open <b>Views</b> at the view’s left edge and pick <b>Above</b> (<kbd>4</kbd>). A click on an axis end of the triad, top right, looks along that axis.',
+    how: 'Open <b>Views</b> in the view strip under the model and pick <b>Above</b> (<kbd>4</kbd>). A click on an axis end of the triad, top right, looks along that axis.',
     look: 'The view turns to look straight down: the ring of eight TF coils round the vessel, and the four corner posts.',
     act: () => gGlide(() => lookFrom(...VIEWS.top)),
     done: () => goal.el > 80,
     target: () => $('bViews') },
   { ch: 1, id: 'orient.home', q: 'Lost? Get back to the whole machine.',
     zone: () => $('card'),
-    how: () => `Press the home button at the view’s left edge, or <kbd>0</kbd>${coarse ? '' : ', or double-click empty space'}. While you inspect a part, home frames that part.`,
+    how: () => `Press the home button in the view strip under the model, or <kbd>0</kbd>${coarse ? '' : ', or double-click empty space'}. While you inspect a part, home frames that part.`,
     look: 'The three-quarter view of the whole SPM1, stand and pump included.',
     act: () => gGlide(resetView),
     done: () => Math.abs(goal.az - nearestAz(HOME.az)) < 1 && Math.abs(goal.el - HOME.el) < 1 && Math.abs(goal.zoom / home.zoom - 1) < 0.03,
     target: () => $('bHome') },
   { ch: 1, id: 'orient.panels', below: true, q: 'Can the model have the whole window?',
     how: () => (stacked() ? 'On a narrow screen the panels sit under the view: scroll down to the inspector, then the assembly list.'
-      : 'Press the panels button at the view’s left edge (<kbd>F</kbd>). Drag the edge between a panel and the view to size it, and double-click the edge for the default width. A folded panel’s rail opens it again.'),
-    look: () => (stacked() ? 'Below the view: the inspector’s tabs, then the assembly list.' : 'Both panels fold to thin rails and the view takes the width. Press it again to bring them back.'),
+      : 'Press the toolstrip’s panels button (<kbd>F</kbd>). Drag the edge between a panel and the view to size it, and double-click the edge for the default width. The panels button opens them again.'),
+    look: () => (stacked() ? 'Below the view: the inspector’s tabs, then the assembly list.' : 'Both panels fold away and the view takes the width. Press it again to bring them back.'),
     need: () => gAssembly(),
     base: () => ({ tree: panels.tree, insp: panels.insp }),
     act: () => (stacked() ? $('inspPanel').scrollIntoView({ behavior: reduceMotion.matches ? 'auto' : 'smooth' }) : togglePanels()),
@@ -8084,7 +8354,7 @@ const GUIDE_STEPS = [
   // 3. Find hardware.
   { ch: 2, id: 'find.wheel', right: true, q: 'Which parts are the magnets?',
     zone: () => (gWheel() ? [$('whRing'), ...$('whGroups').children, $('whFan')] : gTreeZone()),
-    how: () => (gWheel() ? `While the assembly list is folded to its rail, the half-wheel at the view’s left edge holds the seven groups. Rest the pointer on <b>II</b>, the magnets, or click it. ${tapOr('Tap', 'Click')} a picture to select that part; ${tapOr('double-tap', 'double-click')} to inspect it.`
+    how: () => (gWheel() ? `While the assembly list is folded away, the half-wheel at the view’s left edge holds the seven groups. Rest the pointer on <b>II</b>, the magnets, or click it. ${tapOr('Tap', 'Click')} a picture to select that part; ${tapOr('double-tap', 'double-click')} to inspect it.`
       : 'With a mouse and the assembly list folded, a half-wheel of the seven groups stands at the view’s left edge. Here it has no room, so the groups in the assembly list are the way in.'),
     look: () => (gWheel() ? 'The magnets’ wedge lifts and its five parts fan out as pictures, each with its count: the TF coils, the inner PF coils, the satellite coils, the central solenoid and its former. The pointer on one lights it on the model.'
       : 'Magnets is the second group in the list, with its five parts.'),
@@ -8094,7 +8364,7 @@ const GUIDE_STEPS = [
     target: () => (gWheel() ? gWedge('magnets') : gGroup('Magnets')) },
   { ch: 2, id: 'find.search', below: true, q: 'Which parts use M8 bolts?',
     zone: gTreeZone,
-    how: 'Type <b>M8</b> in the assembly list’s search box. <kbd>/</kbd> puts the cursor there; when the list is folded to its rail, its magnifier opens it.',
+    how: 'Type <b>M8</b> in the assembly list’s search box. <kbd>/</kbd> puts the cursor there; Find a part on the toolstrip opens the list to search.',
     look: 'The list narrows to the parts with M8 hardware, each with its matching rows: the joint flanges’ 20 bolts and nuts, the viewports’ 16 bolts and nuts…',
     need: () => { gAssembly(); gTree(); gType(''); },
     act: () => { findPart(); gType('M8'); },
@@ -8143,7 +8413,7 @@ const GUIDE_STEPS = [
 
   // 4. See inside.
   { ch: 3, id: 'inside.cut', q: 'Where is the glow?',
-    how: 'Switch <b>Cutaway</b> in the top bar on, then off again (<kbd>C</kbd>).',
+    how: 'On the Explore tab, switch <b>Cutaway</b> on, then off again (<kbd>C</kbd>).',
     look: 'With Cutaway on, the top of the vessel is cut away to show the plasma inside; off, the vessel is closed over it.',
     need: () => { gAssembly({ unhide: true }); gGlide(() => { lookFrom(HOME.az, 34); fitAll(); }, 0.9); },
     base: () => ({ last: state.cut, n: 0 }),
@@ -8173,7 +8443,7 @@ const GUIDE_STEPS = [
     done: () => !state.explode,
     target: () => $('bExplode') },
   { ch: 3, id: 'inside.themes', q: 'Which drawing reads best for you?',
-    how: 'Pick a theme with the last buttons in the top bar: <b>Colour</b>, <b>Greyscale</b>, <b>Blueprint</b> or <b>Hologram</b>. In the group, <kbd>←</kbd> <kbd>→</kbd> move to the next.',
+    how: 'Pick a theme from the toolstrip’s theme menu: <b>Colour</b>, <b>Greyscale</b>, <b>Blueprint</b> or <b>Hologram</b>. In the group, <kbd>←</kbd> <kbd>→</kbd> move to the next.',
     look: 'The same machine drawn again. Greyscale shades it like a CAD rendering, Blueprint sets it out as a drawing sheet, Hologram lets you see through it. Everything works in every theme, and Exit gives yours back.',
     need: () => gAssembly(),
     base: () => ({ t: themeName() }),
@@ -8193,14 +8463,14 @@ const GUIDE_STEPS = [
 
   // 5. Inspect a connection.
   { ch: 4, id: 'connect.pieces', q: 'Which of the eight TF coils is which?',
-    how: () => `Step through the coils with the arrows beside <b>All</b> in the inspect bar (<kbd>,</kbd> <kbd>.</kbd>), or ${tapOr('tap', 'click')} one coil. A row of the <b>Pieces</b> table picks one too.`,
-    look: 'One coil stays solid and the other seven fade, and the bar counts it: <b>1 / 8</b>. <b>All</b> brings every coil back.',
+    how: () => `Step through the coils with the arrows beside <b>All</b> on the Part tab (bar over the view on a phone) (<kbd>,</kbd> <kbd>.</kbd>), or ${tapOr('tap', 'click')} one coil. A row of the <b>Pieces</b> table picks one too.`,
+    look: 'One coil stays solid and the other seven fade, and the Part tab (bar over the view on a phone) counts it: <b>1 / 8</b>. <b>All</b> brings every coil back.',
     need: () => gPart('tf', null, { view: [HOME.az, HOME.el] }),
     act: () => stepPiece(1),
     done: () => iso.part === 'tf' && !!iso.focus,
     target: () => $('bNext') },
   { ch: 4, id: 'connect.ghost', q: 'Can you hide the rest of the machine?',
-    how: () => `Switch <b>Ghost</b> off in the inspect bar${underMore()}, or press <kbd>G</kbd>.`,
+    how: () => `Switch <b>Ghost</b> off on the Part tab (bar over the view on a phone)${underMore()}, or press <kbd>G</kbd>.`,
     look: 'The see-through ghost of the machine goes; the parts the coil is joined to stay half solid. Switch it on again to see where the coil sits.',
     need: () => gPart('tf', gTf(), { view: [HOME.az, HOME.el], context: true, tab: 'part' }),
     base: () => ({ c: iso.context }),
@@ -8215,14 +8485,14 @@ const GUIDE_STEPS = [
     done: () => iso.part === 'vessel',
     target: () => gLink('vessel') },
   { ch: 4, id: 'connect.back', q: 'And back to the coil?',
-    how: 'Press <b>← Toroidal field coils</b> at the start of the inspect bar, or <kbd>Backspace</kbd>.',
+    how: 'Press <b>← Toroidal field coils</b> on the Part tab (bar over the view on a phone), or <kbd>Backspace</kbd>.',
     look: 'Back on the coil you came from, at the same piece.',
     need: () => { if (!(iso.part === 'vessel' && iso.history.at(-1)?.part === 'tf')) { gPart('tf', gTf(), { view: [HOME.az, HOME.el], tab: 'part' }); followLink('vessel'); } },
     act: () => goBack(),
     done: () => iso.part === 'tf',
     target: () => $('bBack') },
   { ch: 4, id: 'connect.apart', q: 'How far apart do the viewport’s parts go?',
-    how: () => `Take the left viewport apart (<b>Take apart</b>, <kbd>T</kbd>), then drag its own <b>Spread</b> slider in the inspect bar${underMore()}, or press <kbd>[</kbd> <kbd>]</kbd>.`,
+    how: () => `Take the left viewport apart (<b>Take apart</b>, <kbd>T</kbd>), then drag its own <b>Spread</b> slider on the Part tab (bar over the view on a phone)${underMore()}, or press <kbd>[</kbd> <kbd>]</kbd>.`,
     look: 'This spread is the part’s own, apart from the machine’s: the nuts, bolts, flange and gasket move further apart or closer along the port’s axis.',
     need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
     base: () => ({ s: iso.apartSpread }),
@@ -8245,7 +8515,7 @@ const GUIDE_STEPS = [
     done: () => !!iso.joint,
     target: () => $('bJoint') },
   { ch: 4, id: 'connect.turn', q: 'The parts come apart toward you. What now?',
-    how: () => `You are looking along the joint’s axis, so its parts hide one another and <b>Turn to see</b> appears in the inspect bar${phoneBar() ? ' (⋯ carries a dot: it is under <b>⋯</b>)' : ''}. Press it.`,
+    how: () => `You are looking along the joint’s axis, so its parts hide one another and <b>Turn to see</b> appears on the Part tab (bar over the view on a phone)${phoneBar() ? ' (⋯ carries a dot: it is under <b>⋯</b>)' : ''}. Press it.`,
     look: 'The view turns until the joint’s parts lie across it, a little short of square so it keeps some depth. The view never turns by itself.',
     need: () => {
       gPart('gaskets', gRB(), { joint: true, view: [HOME.az, HOME.el] });
@@ -8312,7 +8582,7 @@ const GUIDE_STEPS = [
     done: (b) => (dockLayout() ? HUD.card !== b.card : HUD.pos.size === 0),
     target: () => (dockLayout() ? $('bCardPrev') : $('bTidy')) },
   { ch: 5, id: 'evidence.crumb', q: 'Where exactly is this nut?',
-    how: () => `Choose <b>Show me</b> on the <b>16 nuts</b> row (or focus it and press <kbd>Z</kbd>). The inspect bar then reads as a path; ${tapOr('tap', 'click')} <b>Viewports</b> in it to go back to the whole part.`,
+    how: () => `Choose <b>Show me</b> on the <b>16 nuts</b> row (or focus it and press <kbd>Z</kbd>). The Part tab (bar over the view on a phone) then reads as a path; ${tapOr('tap', 'click')} <b>Viewports</b> in it to go back to the whole part.`,
     look: 'The path reads <b>Left quarter › Viewports › Left viewport (webcam) › 16 nuts</b>: the quarter it is mounted on, the part, the piece, the sub-part. Each step is a link.',
     need: () => gPart('viewport', gLeft(), { apart: true, tab: 'part', view: [HOME.az, HOME.el] }),
     act: () => showMe('viewport', '16 nuts', gLeft()),
@@ -8340,7 +8610,7 @@ const GUIDE_STEPS = [
 
   // 7. Use the result.
   { ch: 6, id: 'use.link', q: 'How do you send someone exactly this view?',
-    how: () => `Press the link icon in the inspect bar${phoneBar() ? ' (<b>Copy link</b>, under <b>⋯</b>)' : ''}. It copies a link to this part, piece, its kept sheets and the view: <code>${esc(linkOf().replace(/&view=[^&]*/, ''))}</code>. The guide never copies for you.`,
+    how: () => `Press the link icon on the Part tab (bar over the view on a phone)${phoneBar() ? ' (<b>Copy link</b>, under <b>⋯</b>)' : ''}. It copies a link to this part, piece, its kept sheets and the view: <code>${esc(linkOf().replace(/&view=[^&]*/, ''))}</code>. The guide never copies for you.`,
     look: 'Opened in any browser, even a fresh one, the link shows the same inspection with the same sheets kept.',
     need: () => gPart('viewport', gLeft(), { apart: true, pins: ['16 bolts'], view: [HOME.az, HOME.el] }),
     base: () => ({ n: guide.copies }),
@@ -8357,25 +8627,25 @@ const GUIDE_STEPS = [
     done: () => !!state.select && !iso.part,
     target: () => gRun() },
   { ch: 6, id: 'use.tour', q: 'What does each part do in a run?',
-    how: '<b>Take the tour</b> in the Machine tab inspects the parts in the order of a run: eight stops from the empty chamber to the glow, with <b>Next ›</b> in the inspect bar. Starting it closes this guide and gives your view back first; <b>Guided analysis</b> brings you back here.',
+    how: '<b>Take the tour</b> on the toolstrip’s <b>Learn</b> tab inspects the parts in the order of a run: eight stops from the empty chamber to the glow, with <b>Next ›</b> among the part’s tools. Starting it closes this guide and gives your view back first; <b>Guided analysis</b> brings you back here.',
     look: 'Stop 1 of 8: the vessel.',
-    need: () => { gAssembly(); setTab('machine'); },
-    act: () => $('inspBody').querySelector('[data-fk="act:tour"]')?.click(),
-    target: () => $('inspBody').querySelector('[data-fk="act:tour"]') },
+    need: () => { gAssembly(); syncStrip('learn'); },
+    act: () => $('bTour').click(),
+    target: () => $('bTour') },
   { ch: 6, id: 'use.quiz', q: 'Can you place the parts yourself?',
     how: '<b>Where does it go?</b> lifts a part out above the machine, and you click its place or pick one of four parts: five questions, scored on first tries. Like the tour, it closes this guide first.',
     look: 'The first question, in a bar above the view.',
-    need: () => { gAssembly(); setTab('machine'); },
-    act: () => $('inspBody').querySelector('[data-fk="act:quiz"]')?.click(),
-    target: () => $('inspBody').querySelector('[data-fk="act:quiz"]') },
+    need: () => { gAssembly(); syncStrip('learn'); },
+    act: () => $('bQuiz').click(),
+    target: () => $('bQuiz') },
   { ch: 6, id: 'use.desk', q: 'Can you run the machine yourself?',
-    how: '<b>Control desk</b> in the Machine tab is a stand-in for the SPM1’s own control software: INITIALISE, pump down and let in a little gas, GLOW ON, then the TF and PF coils shape the glow. Like the tour, it closes this guide first.',
-    look: 'The desk at the view’s left, its monitor in the Machine tab, and the first thing to try: INITIALISE.',
-    need: () => { gAssembly(); setTab('machine'); },
-    act: () => $('inspBody').querySelector('[data-fk="act:desk"]')?.click(),
-    target: () => $('inspBody').querySelector('[data-fk="act:desk"]') },
+    how: '<b>Run</b> on the toolstrip opens the control desk, a stand-in for the SPM1’s own control software: INITIALISE, pump down and let in a little gas, GLOW ON, then the TF and PF coils shape the glow. Like the tour, it closes this guide first.',
+    look: 'Run holds the state and Done (over the view on a phone). The desk is left of the model, or below on a phone; its monitor is in the Machine tab. First try: INITIALISE.',
+    need: () => { gAssembly(); },
+    act: () => $('tsRun').click(),
+    target: () => $('tsRun') },
   { ch: 6, id: 'use.settings', below: true, q: 'Is the text too small, or do letters get pressed by accident?',
-    how: 'In the <b>Controls</b> tab, <b>Text size</b> 1×, 1.5× or 2× scales the sheets, the inspect bar, the view’s labels and this card; <b>Single-letter keys</b> can be turned off for speech input.',
+    how: 'In the <b>Controls</b> tab, <b>Text size</b> 1×, 1.5× or 2× scales the sheets, the part’s tools, the view’s labels and this card; <b>Single-letter keys</b> can be turned off for speech input.',
     look: 'The text grows at once. The guide stores nothing, and Exit gives your settings back.',
     need: () => { gAssembly(); setTab('help'); },
     base: () => ({ s: uiScale, k: letterKeys }),
@@ -8399,7 +8669,7 @@ const GUIDE_STEPS = [
     target: () => $('tHelp') },
   { ch: 6, id: 'use.finish', q: 'That is the whole viewer.',
     how: 'Replay any chapter from <b>Chapters</b>, or press <b>Finish</b>: your view, sheets and settings come back as they were.',
-    look: '<b>Guided analysis</b> in the top bar opens this again, with <b>Resume</b> to pick up where you left. To keep or print, <b>User guide (PDF)</b> in the Machine tab downloads the same in 16 pages of screenshots.',
+    look: '<b>Learn</b>, then <b>Guided analysis</b> opens this again, with <b>Resume</b> to pick up where you left. To keep or print, <b>User guide (PDF)</b> on the Learn tab downloads the same in 16 pages of screenshots.',
     need: () => { gAssembly(); gHome(); } },
 ];
 const gText = (v) => (typeof v === 'function' ? v() : v || '');
@@ -8443,13 +8713,18 @@ function gMark(force) {
   if (ok && was === false && guide.ready && stacked() && !s.below && scrollY > 0) scrollTo({ top: 0, behavior: reduceMotion.matches ? 'auto' : 'smooth' });
   if (ok && was === false && guide.ready) $('gLive').textContent = `That’s it. ${$('gLook').textContent.replace(/^✓ That’s it\.\s*/, '')}`;
 }
-// A control out of sight: under ⋯ on a phone, or in a folded panel. The ring goes to the way in, and the card says so.
+// A control out of sight: under ⋯ on a phone, in a folded panel, or on another page of the toolstrip. The ring goes to
+// the way in, and the card says so.
 function gReach(e) {
   if (!e) return null;
   if (e.getClientRects().length) return e;
   if ($('isoMore').contains(e)) return $('bMore').getClientRects().length ? $('bMore') : null;
-  if ($('inspPanel').contains(e) && !panels.insp) return $('inspPanel').querySelector('.rail');
-  if ($('treePanel').contains(e) && !panels.tree) return $('treePanel').querySelector('.rail-search');
+  if ($('inspPanel').contains(e) && !panels.insp) return $('bPanels');
+  if ($('treePanel').contains(e) && !panels.tree) return $('bFind');
+  // A tool on a page of the toolstrip that is not the one shown, or a theme in its menu: the tab, or the menu's button.
+  const pg = e.closest('.ts-page');
+  if (pg && pg.dataset.tab !== strip.tab) return $('strip').querySelector(`.ts-tabs [data-tab="${pg.dataset.tab}"]`);
+  if ($('looks').contains(e) || e === $('looks')) return $('bLook');
   return null;
 }
 function gRing(r) {
@@ -8566,7 +8841,7 @@ function guideTick() {
   sh.classList.remove('busy');
   sh.classList.toggle('lit', guide.ok === true);
   gShade(gHole(s, r));
-  const say = !via ? '' : via === $('bMore') ? 'It is under ⋯: open ⋯ first.' : via.classList.contains('rail-search') ? 'Open the assembly list first: its magnifier, or /.' : 'Open the panel from its rail first.';
+  const say = !via ? '' : via === $('bMore') ? 'It is under ⋯: open ⋯ first.' : via === $('bFind') ? 'Open the assembly list first: Find a part, or /.' : via === $('bPanels') ? 'Open the panels first: the panels button on the toolstrip, or F.' : via === $('bLook') ? 'Open the theme menu first.' : 'It is on another tab of the toolstrip: open that tab first.';
   if ($('gReach').textContent !== say) { $('gReach').textContent = say; $('gReach').hidden = !say; }
 }
 // Go to step i: the text fades out, the step's state is set up with the controls' own calls, the camera and parts
@@ -8591,6 +8866,7 @@ async function guideGo(i, o = {}) {
   gPlace();
   try { await s.need?.(t); } catch (e) { console.error(`guide ${s.id}:`, e); }
   if (gStale(t)) return;
+  stripShow(s.target?.());
   await gSettle(t);
   if (gStale(t)) return;
   gFill();
@@ -8648,7 +8924,7 @@ function gSnapshot() {
     hidden: new Set(hidden), explode: state.explode, spread: state.spread, cut: state.cut,
     panels: { ...panels }, theme: document.documentElement.dataset.theme ?? null, dims: draft.dims.map((d) => ({ ...d })),
     scale: uiScale, keys: letterKeys, drag: dragMode, spin: spinAxis, tab, search: $('search').value, nd: gNd()?.getAttribute('aria-expanded') === 'true',
-    scroll: scrollY, active: document.activeElement,
+    scroll: scrollY, active: document.activeElement, stripTab: strip.tab, startGone: strip.startGone,
   };
 }
 function gRestore(s, o = {}) {
@@ -8727,6 +9003,8 @@ function guideStart(at = 0) {
   guide.saved = gSnapshot();
   guide.on = true;
   store.quiet = true;
+  if (!stacked() && !panels.insp) setPanel('insp', true);
+  syncStrip();
   touched = true;
   $('guide').hidden = false;
   $('gShade').hidden = false;
@@ -8746,6 +9024,9 @@ function guideExit(o = {}) {
   try { gRestore(guide.saved, o); } catch (e) { console.error('guide: restore', e); }
   const back = guide.saved?.active;
   guide.on = false;
+  strip.startGone = guide.saved.startGone;
+  setLookMenu(false);
+  syncStrip(guide.saved.stripTab);
   store.quiet = false;
   guide.saved = null;
   $('guide').hidden = true;
@@ -8754,7 +9035,11 @@ function guideExit(o = {}) {
   $('card').style.height = '';
   $('bGuide').setAttribute('aria-pressed', 'false');
   $('gLive').textContent = 'Guided analysis closed. Your view, sheets and settings are back as they were.';
-  if (o.focus !== false) ($('bGuide').getClientRects().length ? $('bGuide') : back?.isConnected ? back : stage).focus({ preventScroll: true });
+  if (o.focus !== false) {
+    const target = back?.isConnected && back !== document.body && back.getClientRects().length ? back : $('bGuide');
+    stripShow(target);
+    target.focus({ preventScroll: true });
+  }
 }
 $('bGuide').addEventListener('click', () => (guide.on ? guideExit() : guideStart()));
 $('gExit').addEventListener('click', () => guideExit());
@@ -8988,7 +9273,7 @@ if (renderer) {
 applyTheme();
 if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
-window.__spm1 = { desk, DESK, deskLive, startDesk, endDesk, deskTrip, deskFields, deskGlow, view, goal, iso, setSpinAxis, spinAxis: () => spinAxis, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
+window.__spm1 = { hasDrawn: () => footFitted, strip, syncStrip, desk, DESK, deskLive, startDesk, endDesk, deskTrip, deskFields, deskGlow, view, goal, iso, setSpinAxis, spinAxis: () => spinAxis, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
   lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf, draft, dimAt,
   setGrid: (v) => { draft.grid = v; applyTheme(); },
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,

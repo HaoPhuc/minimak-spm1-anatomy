@@ -11,23 +11,23 @@ os.makedirs(O, exist_ok=True)
 FULL = ['first', 'guide', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'desk', 'greyscale', 'blueprint', 'hologram']
 PHONE = ['phone', 'phone-inspect', 'phone-more']
 CROPS = {
-    'bar': ('apart', 150, 98, 856, 168),        # the inspect bar's two rows, without the step's caption
-    'menu': ('views', 285, 470, 492, 715),      # the view buttons and the Views menu
-    'tooltip': ('hover', 560, 470, 960, 660),
-    'term': ('term', 964, 64, 1264, 470),
-    'controls': ('controls', 964, 64, 1264, 784),
-    'sources': ('sources', 964, 64, 1264, 520),
-    'triad': ('first', 852, 62, 954, 164),
-    'hero': ('first', 248, 168, 955, 706),      # the cover: the model alone, on the view's ground, as wide as the box
-    'select': ('select', 290, 60, 953, 720),    # the view only, with the coils selected
-    'wheel': ('wheel', 16, 64, 540, 620),       # the groups' wheel with the magnets fanned out
-    'joint': ('joint', 61, 66, 953, 782),       # the view only, without the panels
-    'tour': ('tour', 168, 60, 1264, 700),
-    'quiz': ('quiz', 47, 60, 953, 720),
+    'bar': ('apart', 16, 48, 1264, 102),        # the Part tab's tools, without the step's caption
+    'menu': ('views', 612, 481, 944, 763),      # the view buttons and the Views menu
+    'tooltip': ('hover', 570, 495, 930, 635),
+    'term': ('term', 886, 112, 1266, 492),
+    'controls': ('controls', 886, 112, 1266, 646),
+    'sources': ('sources', 886, 112, 1266, 383),
+    'triad': ('first', 1166, 113, 1264, 211),
+    'hero': ('first', 346, 203, 836, 720),      # the cover: the model alone, on the view's ground, as wide as the box
+    'select': ('select', 286, 112, 954, 765),    # the view only, with the coils selected
+    'wheel': ('wheel', 16, 275, 540, 700),       # the groups' wheel with the magnets fanned out
+    'joint': ('joint', 16, 112, 954, 765),       # the view only, without the panels
+    'tour': ('tour', 16, 48, 1264, 765),
+    'quiz': ('quiz', 16, 112, 1264, 765),
     # The control desk's monitor in three states: VIDEO 1, its options and what the tracking reads.
-    'desk-glow': ('desk-glow', 980, 294, 1248, 548),
-    'desk-tf': ('desk', 980, 294, 1248, 548),
-    'desk-pf': ('desk-pf', 980, 294, 1248, 548),
+    'desk-glow': ('desk-glow', 980, 288, 1252, 590),
+    'desk-tf': ('desk', 980, 288, 1252, 590),
+    'desk-pf': ('desk-pf', 980, 288, 1252, 590),
 }
 PHOTO = {'select', 'wheel', 'joint', 'tour', 'quiz'}               # crops with much of the model in them go as JPEG
 
