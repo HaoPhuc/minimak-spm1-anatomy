@@ -55,25 +55,41 @@ const chrome = spawn('C:/Program Files/Google/Chrome/Application/chrome.exe', [
   'about:blank',
 ], { stdio: 'ignore' });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let wsUrl;
+let wsUrl, port, tabId;
 for (let i = 0; i < 120 && !wsUrl; i++) {
   await sleep(250);
   try {
-    const [port] = fs.readFileSync(path.join(prof, 'DevToolsActivePort'), 'utf8').split('\n');
+    [port] = fs.readFileSync(path.join(prof, 'DevToolsActivePort'), 'utf8').split('\n');
     const list = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
-    wsUrl = list.find((t) => t.type === 'page')?.webSocketDebuggerUrl;
+    const tab = list.find((t) => t.type === 'page');
+    wsUrl = tab?.webSocketDebuggerUrl; tabId = tab?.id;
   } catch { /* not up yet */ }
 }
 if (!wsUrl) { console.log('Chrome did not start'); process.exit(1); }
-const ws = new WebSocket(wsUrl);
-await new Promise((r) => ws.addEventListener('open', r));
+let ws;
 let id = 0;
 const pending = new Map();
 const events = [];
-ws.addEventListener('message', (m) => {
-  const d = JSON.parse(m.data);
-  if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else events.push(d);
-});
+const attach = async (url) => {
+  ws = new WebSocket(url);
+  await new Promise((r) => ws.addEventListener('open', r));
+  ws.addEventListener('message', (m) => {
+    const d = JSON.parse(m.data);
+    if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } else events.push(d);
+  });
+};
+await attach(wsUrl);
+// Each scenario gets a fresh tab: a tab keeps some emulation once it is set (after touch emulation is switched off,
+// Chrome still reports a coarse pointer and no hover), so a phone scenario would leak into the desktop ones after it.
+const freshTab = async () => {
+  const tab = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
+  ws.close();
+  await fetch(`http://127.0.0.1:${port}/json/close/${tabId}`).catch(() => {});
+  tabId = tab.id;
+  await attach(tab.webSocketDebuggerUrl);
+  await send('Page.enable');
+  await send('Runtime.enable');
+};
 const send = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 const evalJs = async (expr) => {
   const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
@@ -101,6 +117,7 @@ async function click(x, y, button = 'left', count = 1) {
 await send('Page.enable');
 await send('Runtime.enable');
 for (const s of scen) {
+  if (s !== scen[0]) await freshTab();
   const w = s.w || 1440, h = s.h || 900;
   await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: s.dpr || (s.mobile ? 2 : 1), mobile: !!s.mobile });
   await send('Emulation.setTouchEmulationEnabled', { enabled: !!s.mobile, maxTouchPoints: s.mobile ? 5 : 0 });

@@ -1,6 +1,7 @@
 // Inspect the actual hit areas after scrolling the strip's own overflow, including at 2x text.
 const checkLayout = async (state) => {
   scrollTo(0, 0); await settled();
+  await checkView(state);
   const controls = [...$('strip').querySelectorAll('button, a[href], input')].filter(shown);
   const clipped = [], overlaps = [], blocked = [];
   for (const e of controls) {
@@ -18,7 +19,9 @@ const checkLayout = async (state) => {
   const strip = R($('strip')), card = R($('card')), nav = R($('navCluster'));
   ok(state + ': strip clears model viewport and view tools', clear(strip, card) && clear(strip, nav) && inside(R($('stage')), card));
   ok(state + ': view tools stay inside view', inside(nav, card) && (!shown($('turnTable')) || inside(R($('turnTable')), card)));
-  const wheelExpected = innerWidth > 960 && !matchMedia('(pointer: coarse)').matches && !A.panels.tree && !A.iso.part && !A.desk.on;
+  // The moved tool row leaves less height: the wheel's existing 82% readability floor still applies.
+  const wheelRoom = card.bottom - R($('viewbar')).bottom - 20;
+  const wheelExpected = wheelRoom >= 336 * .82 && innerWidth > 960 && !matchMedia('(pointer: coarse)').matches && !A.panels.tree && !A.iso.part && !A.desk.on;
   ok(state + ': wheel visibility follows inspected part, input and folded tree', shown($('wheel')) === wheelExpected);
   if (shown($('wheel'))) {
     const pieces = [$('whRing'), ...$('whGroups').querySelectorAll('button')].filter(shown);
@@ -42,5 +45,19 @@ $('bApart').click(); await settled(); await checkLayout('Part apart');
 const longest = [...SPM1_DOCS.PARTS].sort((a, b) => b.name.length - a.name.length)[0];
 A.select(longest.id); A.inspect(longest.id); await checkLayout('Longest part (' + longest.name + ')');
 $('tsRun').click(); await settled(); await checkLayout('Run');
+if (innerWidth > 960) {
+  $('bDeskDone').click(); await settled();
+  $('tsLearn').click(); $('bGuide').click();
+  for (const id of ['orient.axis', 'orient.views', 'first.steps', 'connect.steps']) {
+    await A.guideGo(A.GUIDE_STEPS.findIndex(s => s.id === id));
+    if (!id.startsWith('orient.')) await A.gShowStep();
+    await settled(); await checkView('Guide ' + id, id === 'orient.views');
+    if (id === 'orient.axis') {
+      const b = $('bAxis'), r = R(b), hit = document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2);
+      ok('Guide rings accessible axis button', !$('gRing').hidden && b.contains(hit) && inside(r,R($('gRing')), 3));
+    } else if (!id.startsWith('orient.')) ok('Guide step caption is visible and scrollable', shown($('stepCap')) && R($('stepCap')).height > 0 && getComputedStyle($('isobar')).overflowY === 'auto');
+  }
+  $('gExit').click(); await settled();
+}
 return finish();
 

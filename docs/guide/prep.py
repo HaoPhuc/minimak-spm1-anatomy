@@ -12,7 +12,7 @@ FULL = ['first', 'guide', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'de
 PHONE = ['phone', 'phone-inspect', 'phone-more']
 CROPS = {
     'bar': ('apart', 16, 48, 1264, 102),        # the Part tab's tools, without the step's caption
-    'menu': ('views', 612, 481, 944, 763),      # the view buttons and the Views menu
+    'menu': ('views', 286, 112, 548, 395),      # the view buttons and the Views menu
     'tooltip': ('hover', 570, 495, 930, 635),
     'term': ('term', 886, 112, 1266, 492),
     'controls': ('controls', 886, 112, 1266, 646),

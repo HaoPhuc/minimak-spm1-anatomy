@@ -781,18 +781,31 @@
      other themes, so it never crosses the frame or the zone letters. */
   .blueprint .wheel { left: 22px; }
   .blueprint .corner.bl { bottom: 26px; left: 26px; }
-  .blueprint .corner.br { bottom: 26px; right: 26px; padding: 0; border-radius: 0; background: var(--card); border: 1.5px solid var(--bp-line); text-align: left; font-size: 11px; min-width: 250px; }
-  .blueprint .corner.br > div { padding: 3px 8px; }
-  .blueprint .corner.br > div + div { border-top: 1px solid var(--bp-line); }
-  .blueprint .corner.br .tb-title { font-size: 13px; font-weight: 650; padding: 5px 8px; }
+  .blueprint .corner.br { width: max-content; bottom: var(--tb-bottom, 26px); right: 26px; padding: 0; border-radius: 0; background: var(--card); border: 1.5px solid var(--bp-line); text-align: left; font-size: 11px; min-width: 250px; }
+  .blueprint .corner.br .tb-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 650; padding: 0 0 0 8px; white-space: nowrap; }
+  .blueprint .corner.br .tb-fold { flex-shrink: 0; pointer-events: auto; display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--ink); }
+  .blueprint .tb-fold::before { content: ''; width: 6px; height: 6px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: rotate(45deg) translate(-1px, -1px); }
+  .blueprint .tb-fold[aria-expanded="false"]::before { transform: rotate(225deg) translate(-1px, -1px); }
+  .blueprint .tb-fold:hover { background: var(--soft); }
+  .blueprint .tb-fold:focus-visible { outline: 2px solid var(--bp-line); outline-offset: -3px; }
+  .blueprint .tb-details { overflow: hidden; display: grid; grid-template-rows: 1fr; transition: grid-template-rows 160ms ease; }
+  .blueprint .tb-rows { min-height: 0; overflow: hidden; width: max-content; max-width: var(--tb-max-width, 320px); }
+  .blueprint .corner.br .tb-row { padding: 3px 8px; border-top: 1px solid var(--bp-line); }
+  .blueprint .corner.br.folded { min-width: 0; max-width: calc(100% - 52px); }
+  .blueprint .corner.br.folded .tb-details { grid-template-rows: 0fr; width: 0; }
+  @media (pointer: coarse) { .blueprint .corner.br .tb-fold { min-width: 32px; min-height: 32px; } }
+  @media (prefers-reduced-motion: reduce) { .blueprint .tb-details { transition: none; } }
   .blueprint .corner.br .tb-row { display: flex; justify-content: space-between; gap: 12px; }
   .blueprint .corner.br .tb-row span:first-child { color: var(--muted); }
   /* A narrow view (a phone, a narrow window or pane: updateDraft sets .tight) has no room for the full title block
-     beside the scale bar and the hint. It keeps its title and scale and moves to the empty top left, and gives way to
-     the inspect bar and the quiz, which take the top. */
-  .blueprint .view.tight .corner.br { min-width: 0; max-width: none; top: 26px; left: 26px; bottom: auto; right: auto; font-size: 10.5px; white-space: nowrap; }
+     beside the scale bar and the hint. It keeps its title and scale at the top left on stacked layouts, and gives way
+     to the inspect bar and quiz. Desktop keeps this compact block at the bottom right (see the viewbar rules). */
+  .blueprint .view.tight .corner.br { min-width: 0; max-width: calc(100% - 52px); top: 26px; left: 26px; bottom: auto; right: auto; font-size: 10.5px; white-space: nowrap; }
   .blueprint .view.tight .corner.br .tb-title { font-size: 12px; }
-  .blueprint .view.tight .corner.br > div:nth-child(n+3) { display: none; }
+  .blueprint .view.tight .tb-rows { width: auto; max-width: none; }
+  .blueprint .view.tight .tb-row { white-space: normal; }
+  .blueprint .tb-name { overflow: hidden; text-overflow: ellipsis; }
+  .blueprint .view.tight .corner.br .tb-row:nth-child(n+2) { display: none; }
   .blueprint .view.tight:has(.isobar.on) .corner.br { display: none; }
 
   /* ---------- The showroom, in every theme ----------
@@ -912,7 +925,7 @@
   .wh-lbl small { display: block; margin-top: 2px; font: 500 10px/1.2 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .wh-part.on .wh-lbl small { color: var(--sel); }
   .wh-head { position: absolute; white-space: nowrap; pointer-events: none; color: var(--stage-ink); }
-  .wheel.nohead .wh-head, .wheel.away { display: none; }
+  .wheel.nohead .wh-head, .app.fold-tree .wheel.away { display: none; }
   .wh-head .k { display: block; font: 500 11px/14px var(--mono); letter-spacing: 0.2em; text-transform: uppercase; color: var(--stage-muted); }
   .wh-head .t { display: block; font-size: 30px; line-height: 36px; font-weight: 300; letter-spacing: -0.02em; }
   .wh-head .t b { font-weight: 300; color: var(--stage-muted); }
@@ -939,6 +952,7 @@
   .turn button:hover { background: color-mix(in srgb, var(--card) 90%, transparent); }
   .turn button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .turn .deg { font: 400 15px/1 var(--mono); }
+  .turn .spin-toggle { display: none; }
   .view.docked .turn { display: none; }
   .corner.bl { --bl-max: calc(50% - 200px); }
   @media (max-width: 1180px) { .turn::before, .turn::after { display: none; } .corner.bl { --bl-max: calc(50% - 90px); } }
@@ -1173,6 +1187,9 @@
   /* Stacked, the card spans the window's foot, under the view; the body scrolls when the step is long. */
   .guide.dock { left: 8px; right: 8px; bottom: 8px; width: auto; height: min(38vh, 290px); }
   .guide.dock .g-body { flex: 1; min-height: 0; }
+  .guide:not(.dock) { overflow: auto; }
+  .guide:not(.dock) .g-body { min-height: 48px; }
+  .guide:not(.dock) > :not(.g-body) { flex-shrink: 0; }
   @media (pointer: coarse) { .guide button { min-height: 44px; } .g-picker button { min-height: 44px; } }
   /* ---------- The toolstrip ----------
      One place for the commands, as an engineering program has it: the name, four tabs and what is set once (find, the
@@ -1249,28 +1266,37 @@
   .ts-page.isobar .lbl { font-weight: 600; }
   .ts-page.isobar .tour { padding-left: 0; border-left: 0; }
 
-  /* The view's own tools: one strip under the machine, the turntable and then home, the sides, zoom, pan and the
-     axis lock. It stands in the middle of the room the view has left, beside the desk or the sheets. Where the panels
-     stack they stay where a thumb finds them: the buttons in their column at the left, the turntable under the view. */
+  /* The view's own tools take the top left, inside Blueprint's inner frame. The caption and desk start below them.
+     Stacked, the buttons keep their column at the left and the turntable stays under the view. */
   @media (min-width: 961px) {
-    .viewbar { position: absolute; left: calc((100% + var(--res-l, 0px) - var(--res-r, 0px)) / 2); bottom: 10px; transform: translateX(-50%); z-index: 3; display: flex; align-items: center; gap: 14px; }
+    .view { --tools-inset: 8px; --tools-bottom: 50px; }
+    .blueprint .view { --tools-inset: 26px; --tools-bottom: 68px; }
+    .viewbar { position: absolute; left: var(--tools-inset); top: var(--tools-inset); bottom: auto; z-index: 5; display: flex; align-items: center; gap: 14px; }
+    .viewbar #bSpinL, .viewbar #bSpinR { display: none; }
+    .blueprint .view .corner.br, .blueprint .view.tight .corner.br { top: auto; left: auto; bottom: var(--tb-bottom, calc(26px / var(--ui-scale, 1))); right: calc(26px / var(--ui-scale, 1)); }
+    .view > .desk { top: var(--tools-bottom); max-height: calc(100% - var(--tools-bottom) - 26px); }
+    .blueprint .view > .desk { max-height: calc(100% - var(--tools-bottom) - 82px - 90px * var(--ui-scale, 1)); }
     .viewbar .turn { position: static; transform: none; gap: 9px; }
     .viewbar .turn::before, .viewbar .turn::after { display: none; }
     .viewbar .turn button { width: 32px; height: 32px; }
     .viewbar .turn .deg { font-size: 14px; }
+    .viewbar .turn span.deg { display: none; }
+    .viewbar .turn .spin-toggle { display: grid; width: auto; min-width: 42px; padding: 0 6px; border-radius: 0; }
+    .viewbar .turn .spin-toggle[aria-pressed="true"] { background: var(--soft); }
     .viewbar .navcluster { position: relative; left: auto; top: auto; bottom: auto; transform: none; flex-direction: row; }
     .viewbar .navcluster .mb { flex-direction: row; }
     .viewbar .navcluster .mb button { padding: 8px; }
     .viewbar .navcluster .mb button + button { border-top: 0; border-left: 1px solid var(--rule); }
     .viewbar .navcluster .mb svg { width: 14px; height: 14px; }
-    .viewbar .vmenu { left: 0; top: auto; bottom: calc(100% + 6px); transform: none; }
+    .viewbar .vmenu { left: 0; top: calc(100% + 6px); bottom: auto; transform: none; max-height: min(var(--view-menu-height), var(--guide-menu-height, 10000px)); overflow-y: auto; }
     .viewbar.tight .turn, .view.docked .viewbar .turn { display: none; }
     /* The scale and the readout have the status bar; Blueprint keeps them on its sheet, the readout as its title block. */
     html:not(.blueprint) .corner.bl, html:not(.blueprint) .corner.br { display: none; }
-    .blueprint .statbar .scale, .blueprint .statbar .ro { visibility: hidden; }
+    .blueprint .statbar .scale, .blueprint:not(.tb-folded) .statbar .ro { visibility: hidden; }
     /* The part's and the desk's controls are on the strip: what is left of their bars over the view is the caption
        of the step shown, and nothing of the desk's. */
-    .view > #isobar { top: 10px; padding: 2px 10px; }
+    .view > #isobar { top: calc(var(--tools-bottom) / var(--ui-scale, 1)); left: calc(var(--tools-inset) / var(--ui-scale, 1)); right: calc((var(--tools-inset) + 94px) / var(--ui-scale, 1)); width: auto; max-width: none; max-height: calc(min(var(--caption-height), var(--guide-caption-height, 10000px)) / var(--ui-scale, 1)); overflow-y: auto; padding: 2px 10px; }
+    .view > .startcard { top: var(--start-top, 50%); transform: var(--start-shift, translateY(-50%)); max-height: var(--start-height, none); overflow-y: auto; }
     .view > #isobar.on:not(:has(> .stepcap:not([hidden]))) { display: none; }
     .view > #isobar > .stepcap { margin: 0; padding: 4px 2px; border-top: 0; }
     .view > .deskbar { display: none !important; }
@@ -1420,6 +1446,7 @@
       <div class="turn" id="turnTable" role="group" aria-label="Turn the machine">
         <button type="button" id="bSpinL" title="Turn the machine an eighth to the left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
         <span class="deg" aria-hidden="true">360°</span>
+        <button type="button" class="deg spin-toggle" aria-pressed="false" aria-label="Start the turntable" title="Start the turntable">360°</button>
         <button type="button" id="bSpinR" title="Turn the machine an eighth to the right" aria-label="Turn right"><svg viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></svg></button>
       </div>
       <div class="navcluster" id="navCluster" role="group" aria-label="View">
@@ -2902,13 +2929,14 @@ let dirty = true;
 // ticks 168 px either side of its hub, an open group's pictures 268 px) down to 82%, where its names stay readable;
 // with less room than that only the wheel itself is fitted, and an open group's pictures run past the view's edge;
 // with less still it steps aside, and the list is the way in. The heading of an open group shows where there is room
-// under its pictures. In a narrow Blueprint view the title block takes the top left corner, so the wheel stands under
-// it. Lengths are the wheel's own, at its full size.
+// under its pictures. The desktop tools take the top left, so the wheel stands below their row.
+// Lengths are the wheel's own, at its full size.
 function fitWheel() {
   const card = $('card'), w = $('wheel');
   if (!card || !w) return;
   const c = card.getBoundingClientRect();
-  const tb = $('readout'), top = blueprint && card.classList.contains('tight') && tb.getClientRects().length ? tb.getBoundingClientRect().bottom - c.top + 8 : 8;
+  const tb = $('readout'), vb = $('viewbar');
+  const top = !stacked() ? vb.getBoundingClientRect().bottom - c.top + 12 : blueprint && card.classList.contains('tight') && tb.getClientRects().length ? tb.getBoundingClientRect().bottom - c.top + 8 : 8;
   const h = c.height - top - 8;
   w.classList.remove('away', 'nohead');
   let s = Math.min(1, h / (2 * 268));
@@ -5771,7 +5799,20 @@ $('wheel').addEventListener('keydown', (e) => {
   e.preventDefault();
   e.stopPropagation();
 });
-// The turntable under the machine: an eighth of a turn each way.
+// The stacked turntable keeps its eighth-turn arrows. Desktop has a start/stop control.
+const spinToggle = $('turnTable').querySelector('.spin-toggle');
+let turning = false;
+function setTurning(on) {
+  turning = on;
+  spinToggle.setAttribute('aria-pressed', String(on));
+  spinToggle.title = on ? 'Stop the turntable' : 'Start the turntable';
+  spinToggle.setAttribute('aria-label', spinToggle.title);
+}
+spinToggle.addEventListener('click', () => { touched = true; stopGlide(); setTurning(!turning); });
+// Taking another control, or dragging the model, stops the requested turn.
+for (const type of ['pointerdown', 'focusin', 'keydown']) document.addEventListener(type, (e) => {
+  if (turning && !spinToggle.contains(e.target)) setTurning(false);
+}, true);
 $('bSpinL').addEventListener('click', () => { touched = true; lookFrom(goal.az + 45, goal.el); });
 $('bSpinR').addEventListener('click', () => { touched = true; lookFrom(goal.az - 45, goal.el); });
 // Stacked, the page scrolls under the window's backdrop: the view's own backdrop is drawn again to stay in line.
@@ -6458,7 +6499,7 @@ function renderOverview(box) {
   box.append(el('h3', null, 'Headline numbers'), specTable(HEADLINE));
   box.append(el('h3', null, 'How to use it'));
   for (const s of [
-    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The view strip under the model lets you zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, turn about the machine’s own axis (the middle of the ring under it, wherever you pan) or about the middle of the view. The toolstrip’s panels button folds the side panels.',
+    'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The view strip at the top left of the view (a column at the view’s left on a phone) lets you zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, turn about the machine’s own axis (the middle of the ring under it, wherever you pan) or about the middle of the view. The toolstrip’s panels button folds the side panels.',
     'The assembly list starts folded away, so the machine has the room: Find a part on the toolstrip, or /, opens it to search.',
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
     'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
@@ -6470,7 +6511,7 @@ function renderOverview(box) {
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all. The table’s edges are named Front, Right, Back and Left for the quarters above them, printed on the table top, so you know which side you are looking from.',
     'Taken apart, a part steps through the order it comes off with the arrows by “All”: nuts, then bolts, then the flange, the gasket last. Each step says how, with the bolt size and spanner, and a ring of bolts or nuts is numbered on the heads in star order. Fitting runs back up the steps. On a gasket or a vessel joint flange, “Open this joint” does the same for the whole joint: nuts, bolts, the two quarters apart, then the gasket out, never to be reused.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
-    'The toolstrip’s theme menu (Colour) draws the machine in colour, in greyscale with cast shadows, as a blueprint (white drafting lines on blue paper, with centre lines and dimensions), or as a hologram.',
+    'The toolstrip’s theme menu (Colour) draws the machine in colour, in greyscale with cast shadows, as a blueprint (white drafting lines on blue paper, with centre lines and dimensions), or as a hologram. Blueprint’s title block starts folded: its chevron unfolds or folds it, by click or Enter/Space. The choice is remembered; while folded, the status bar carries its readout.',
     'A word with a dotted underline is explained: click it, or Tab onto it, to read what it means.',
   ]) box.append(el('p', null, s));
   markTerms(box, 'machine');
@@ -6535,9 +6576,9 @@ function renderHelp(box) {
       ['Left-drag', 'turn (turntable): sideways spins about the machine’s own axis (unlocked, about the middle of the view), up and down tilts'],
       ['Right-drag, Shift-drag, middle-drag', 'pan'],
       ['Wheel', 'zoom toward the pointer'],
-      ['The view strip under the model', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis; the toolstrip’s panels button folds the side panels'],
+      ['The view strip at the top left of the view (a column at the view’s left on a phone)', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis; the toolstrip’s panels button folds the side panels'],
       ['The half-wheel at the view’s left edge (assembly list folded)', 'the seven groups: rest the pointer on one, or click it, and its parts fan out as pictures; a click selects one, a double-click inspects it. From the keyboard, Enter opens a group, the arrows step through its parts, Esc folds it'],
-      ['The turntable in the view strip under the model', 'turn it an eighth of a turn either way'],
+      ['The 360° button in the view strip at the top left of the view', 'start or stop the turntable; on narrow windows, the turntable below the view keeps its eighth-turn arrows'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
       ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
@@ -6585,6 +6626,7 @@ function renderHelp(box) {
     ]],
     ['Theme buttons (one Tab stop)', [
       ['← →', 'switch to the next theme: Colour, Greyscale, Blueprint, Hologram'],
+      ['Blueprint title-block chevron: click, Enter or Space', 'unfold or fold the title block; it starts folded and remembers your choice. While folded, its readout appears in the status bar on wide windows'],
     ]],
     ['Keys (click the model first; with single-letter keys off, only the arrows, Esc and Backspace)', [
       ['← → ↑ ↓', 'turn'],
@@ -7014,7 +7056,7 @@ function updateDraft() {
   const svg = $('draft');
   if (!blueprint) { if (svg.firstChild) svg.replaceChildren(); $('card').classList.remove('tight'); return; }
   const W = width, H = height, o = 8, i = 22;
-  if ($('card').classList.contains('tight') !== W < 760) { $('card').classList.toggle('tight', W < 760); updateReadout(); fitFoot(); fitWheel(); }
+  if ($('card').classList.contains('tight') !== W / uiScale < 760) { $('card').classList.toggle('tight', W / uiScale < 760); updateReadout(); fitFoot(); fitWheel(); }
   // A view with no room for the frame (a hidden or collapsed pane) gets no sheet until it has.
   if (W < 4 * i || H < 4 * i) { if (svg.firstChild) svg.replaceChildren(); return; }
   const parts = [];
@@ -7164,6 +7206,34 @@ function describeView() {
   const t = `3D model of the MinimaK SPM1, seen from ${from}. The table's edges are named for the quarters of the vessel above them: Front, Right, Back and Left. Drag to turn, right-drag to pan, scroll to zoom, double-click a part to inspect it on its own.`;
   if (t !== described) { described = t; stage.setAttribute('aria-label', t); }
 }
+// First visits fold the title; a saved choice wins, and only the button writes storage.
+let titleFolded = store.get('spm1-titleblock') !== 'open';
+let footQueued = false;
+function queueFoot() {
+  if (footQueued) return;
+  footQueued = true;
+  requestAnimationFrame(() => { footQueued = false; fitFoot(); });
+}
+function foldTitle(folded) {
+  const r = $('readout'), b = r.querySelector('.tb-fold');
+  const changed = r.classList.contains('folded') !== folded;
+  r.classList.toggle('folded', folded);
+  if (document.documentElement.classList.contains('tb-folded') !== folded) document.documentElement.classList.toggle('tb-folded', folded);
+  if (b) {
+    b.setAttribute('aria-expanded', String(!folded));
+    b.setAttribute('aria-label', folded ? 'Unfold the title block' : 'Fold the title block');
+    b.title = b.getAttribute('aria-label');
+    r.querySelector('.tb-details').setAttribute('aria-hidden', String(folded));
+  }
+  if (changed && blueprint) announce(folded ? 'Title block folded' : 'Title block unfolded');
+}
+$('readout').addEventListener('click', (e) => {
+  if (!e.target.closest('.tb-fold')) return;
+  titleFolded = !$('readout').classList.contains('folded');
+  store.set('spm1-titleblock', titleFolded ? 'folded' : 'open');
+  foldTitle(titleFolded);
+  queueFoot();
+});
 function updateReadout() {
   const az = ((Math.round(view.az) % 360) + 540) % 360 - 180;
   const zr = view.zoom / home.zoom;
@@ -7183,10 +7253,21 @@ function updateReadout() {
   r.dataset.l1 = line1; r.dataset.l2 = line2; r.dataset.sc = scale;
   $('roLine').textContent = `${line1}  ·  ${line2}`;
   // The title block comes and goes with Blueprint: the view's strip keeps clear of it.
-  if (sheet !== blueprint) requestAnimationFrame(fitFoot);
+  if (sheet !== blueprint) queueFoot();
   if (!blueprint) { r.replaceChildren(el('div', null, line1), el('div', null, line2)); return; }
   const row = (k, v) => { const d = el('div', 'tb-row'); d.append(el('span', null, k), el('span', null, v)); return d; };
-  r.replaceChildren(el('div', 'tb-title', 'MinimaK SPM1 · Anatomy'), row('Scale', `${scale} · dimensions in mm`), row('View', line1), row('Shows', line2), row('Fig', '1 · after Rideo Systems photos and specs'));
+  // Keep the button mounted as the camera or hover changes, including while it has keyboard focus.
+  if (!r.querySelector('.tb-fold')) {
+    const title = el('div', 'tb-title'), button = el('button', 'tb-fold');
+    button.type = 'button';
+    title.append(el('span', 'tb-name', 'MinimaK SPM1 · Anatomy'), button);
+    const details = el('div', 'tb-details');
+    details.append(el('div', 'tb-rows'));
+    r.replaceChildren(title, details);
+    foldTitle(titleFolded);
+  }
+  r.querySelector('.tb-rows').replaceChildren(row('Scale', `${scale} · dimensions in mm`), row('View', line1), row('Shows', line2), row('Fig', '1 · after Rideo Systems photos and specs'));
+  queueFoot();
 }
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
@@ -7205,23 +7286,46 @@ function setHint(text) {
   h.textContent = t;
   fitFoot();
 }
-// The foot of the view on a wide window: the view's strip stands in the middle of the room the view has left, right of
-// the desk where the desk reaches down to it and left of the sheet column, Blueprint's title block or the start card;
-// where that room is short it gives up the turntable (the triad and a drag still turn the machine).
+// The desktop tools reserve the top row; the title block only shares the foot with the scale and start card.
 function fitFoot() {
-  const card = $('card'), vb = $('viewbar');
+  const card = $('card'), vb = $('viewbar'), title = $('readout');
   if (!card || !vb) return;
   vb.classList.remove('tight');
-  if (stacked()) { card.style.removeProperty('--res-l'); card.style.removeProperty('--res-r'); return; }
-  // Reserve only content that reaches the actual tool row, including its clearance.
-  const c = card.getBoundingClientRect(), low = (e) => e.getClientRects().length && e.getBoundingClientRect().bottom > vb.getBoundingClientRect().top - 8;
-  let l = 0, r = iso.part && HUD.on && !dockLayout() ? SCREEN_W * uiScale + 20 : 0;
-  if (desk.on && deskEl?.parentNode === card && low(deskEl)) l = deskEl.getBoundingClientRect().right - c.left + 8;
-  for (const e of [$('readout'), $('startCard')]) if (low(e)) r = Math.max(r, c.right - e.getBoundingClientRect().left + 12);
-  card.style.setProperty('--res-l', `${Math.round(l)}px`);
-  card.style.setProperty('--res-r', `${Math.round(r)}px`);
-  if (vb.getBoundingClientRect().width > c.width - l - r - 16) vb.classList.add('tight');
+  title.style.removeProperty('--tb-bottom');
+  for (const prop of ['--start-top', '--start-shift', '--start-height']) card.style.removeProperty(prop);
+  foldTitle(titleFolded);
+  if (stacked()) { if (turning) setTurning(false); return; }
+  const c = card.getBoundingClientRect(), inset = blueprint ? 26 : 8;
+  const triadLeft = $('triad').getBoundingClientRect().left;
+  if (vb.getBoundingClientRect().right > triadLeft - 8) vb.classList.add('tight');
+  if (turning && !spinToggle.getClientRects().length) setTurning(false);
+  const bottom = Math.ceil(vb.getBoundingClientRect().bottom - c.top + 10);
+  card.style.setProperty('--tools-bottom', bottom + 'px');
+  card.style.setProperty('--view-menu-height', Math.max(48, c.height - bottom - inset) + 'px');
+  const scale = card.querySelector('.corner.bl'), scaleBox = scale.getBoundingClientRect();
+  const captionBottom = blueprint && scale.getClientRects().length ? scaleBox.top - 8 : c.bottom - inset;
+  card.style.setProperty('--caption-height', Math.max(40, captionBottom - c.top - bottom) + 'px');
+  if (blueprint && title.querySelector('.tb-fold')) {
+    title.style.setProperty('--tb-max-width', Math.max(248, c.width * 0.38 / uiScale - 3) + 'px');
+    // Large text can put even a folded title beside the scale: lift just the title above it.
+    const t = title.getBoundingClientRect(), b = scaleBox;
+    if (title.getClientRects().length && scale.getClientRects().length && t.left < b.right + 8 && t.bottom > b.top - 8)
+      title.style.setProperty('--tb-bottom', (c.bottom - b.top + 8) / uiScale + 'px');
+    // Keep a saved open title readable beside Start, even at a large text size.
+    const start = $('startCard'), st = start.getBoundingClientRect(), tb = title.getBoundingClientRect();
+    if (start.getClientRects().length && title.getClientRects().length && st.right > tb.left && st.left < tb.right && st.bottom > tb.top - 8) {
+      card.style.setProperty('--start-top', st.top - c.top - card.clientTop + 'px');
+      card.style.setProperty('--start-shift', 'none');
+      card.style.setProperty('--start-height', Math.max(48, tb.top - st.top - 8) + 'px');
+    }
+  }
+  fitWheel();
 }
+// Observe actual layout, not just the canvas: fonts, text size, panel grips, content and theme can all change it.
+const footObserver = new ResizeObserver(queueFoot);
+for (const id of ['card', 'readout', 'viewbar', 'startCard']) footObserver.observe($(id));
+new MutationObserver(queueFoot).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+document.fonts.ready.then(queueFoot);
 
 // ---------- Pointer, wheel and keys ----------
 const pointers = new Map();
@@ -8122,6 +8226,7 @@ const gSleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const phoneBar = () => $('isobar').classList.contains('compact');
 const underMore = () => (phoneBar() ? ' (under <b>⋯</b>)' : '');
 const tapOr = (tap, click) => (coarse ? tap : click);
+const viewToolsPlace = () => stacked() ? 'the column of view tools at the view’s left' : 'the view strip at the top left of the view';
 const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
 // Wait until the camera and the parts have stopped (the overlay's own clock), at most `max` s.
 async function gSettle(t, max = 2.5) {
@@ -8292,7 +8397,7 @@ const GUIDE_STEPS = [
   // 2. Orient the view.
   { ch: 1, id: 'orient.turn', q: 'What does the far side look like?',
     zone: () => $('card'),
-    how: () => `${tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.')}${gShown($('turnTable')) ? ' The arrows of the turntable under the machine turn it an eighth at a time.' : ''}`,
+    how: () => `${tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.')}${gShown($('turnTable')) ? (stacked() ? ' The turntable arrows below the view turn it an eighth at a time.' : ' The <b>360°</b> button in the view strip at the top left of the view starts and stops the turntable.') : ''}`,
     look: 'Sideways spins the machine about its own axis, the middle of the ring on the floor; up and down tilts it. The vertical always stays up.',
     need: () => { gAssembly(); gHome(); },
     base: () => ({ az: goal.az, el: goal.el }),
@@ -8301,7 +8406,7 @@ const GUIDE_STEPS = [
     target: () => stage },
   { ch: 1, id: 'orient.pan', q: 'Can you slide the machine aside?',
     zone: () => $('card'),
-    how: () => tapOr('Drag with two fingers.', 'Right-drag, Shift-drag or middle-drag. Or switch on the pan button in the view strip under the model (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.'),
+    how: () => tapOr('Drag with two fingers.', `Right-drag, Shift-drag or middle-drag. Or switch on the pan button in ${viewToolsPlace()} (<kbd>P</kbd>; <kbd>O</kbd> turns again) and drag. <kbd>Shift</kbd> + arrows pans from the keyboard.`),
     look: () => (spinAxis ? 'The machine slides without turning. A turn still goes about its own axis, so it turns in place where it now stands.' : 'The machine slides without turning, and the point it turns about moves with it: the middle of the view.'),
     base: () => ({ t: goal.target.clone() }),
     act: () => gGlide(() => panBy(-140, 0)),
@@ -8309,7 +8414,7 @@ const GUIDE_STEPS = [
     target: () => (coarse ? stage : document.querySelector('[data-drag]')) },
   { ch: 1, id: 'orient.axis', q: 'Should a turn go about the machine, or about the middle of the view?',
     zone: () => $('card'),
-    how: 'The axis button in the view strip under the model, beside pan, switches it (<kbd>R</kbd>). Lit, as every visit starts, a turn goes about the machine’s own axis wherever you slide it; off, about the middle of the view.',
+    how: () => `The axis button in ${viewToolsPlace()}, beside pan, switches it (<kbd>R</kbd>). Lit, as every visit starts, a turn goes about the machine’s own axis wherever you slide it; off, about the middle of the view.`,
     look: () => (spinAxis ? 'Locked: turn the machine and it spins in place, its axis fixed on the screen.' : 'Unlocked: turn the machine and, after a slide, it swings round the middle of the view instead. Exit gives your choice back.'),
     base: () => ({ a: spinAxis }),
     act: () => setSpinAxis(!spinAxis),
@@ -8317,26 +8422,26 @@ const GUIDE_STEPS = [
     target: () => $('bAxis') },
   { ch: 1, id: 'orient.zoom', q: 'Can you get close to the coils?',
     zone: () => $('card'),
-    how: () => tapOr('Pinch on the model.', 'Scroll the wheel over the coils: it zooms toward the pointer. The zoom buttons and <kbd>+</kbd> <kbd>−</kbd> zoom too.'),
+    how: () => tapOr('Pinch on the model.', `Scroll the wheel over the coils: it zooms toward the pointer. The zoom buttons in ${viewToolsPlace()} and <kbd>+</kbd> <kbd>−</kbd> zoom too.`),
     look: 'The machine grows about the pointer, and the scale bar’s length and label change with it.',
     base: () => ({ z: goal.zoom }),
     act: () => gGlide(() => zoomBy(1.8)),
     done: (b) => goal.zoom > b.z * 1.3,
     target: () => (coarse ? stage : $('bZoomIn')) },
   { ch: 1, id: 'orient.scale', q: 'How big is it?',
-    how: () => `Read the scale bar ${stacked() || blueprint ? 'at the view’s lower left' : 'in the status bar below the view'}${blueprint ? ', or the scale in the title block' : ''}, and compare it with any part, near or far.`,
+    how: () => `Read the scale bar ${stacked() || blueprint ? 'at the view’s lower left' : 'in the status bar below the view'}${blueprint ? ', or unfold the title block with its chevron to read its scale' : ''}, and compare it with any part, near or far.`,
     look: 'The bar is true at every zoom, because the view has no perspective: a part at the back is drawn at the same scale as one at the front.',
     target: () => $(stacked() || blueprint ? 'scale' : 'scale2') },
   { ch: 1, id: 'orient.views', q: 'What does the machine look like from above?',
     zone: () => $('card'),
-    how: 'Open <b>Views</b> in the view strip under the model and pick <b>Above</b> (<kbd>4</kbd>). A click on an axis end of the triad, top right, looks along that axis.',
+    how: () => `Open <b>Views</b> in ${viewToolsPlace()} and pick <b>Above</b> (<kbd>4</kbd>). A click on an axis end of the triad, top right, looks along that axis.`,
     look: 'The view turns to look straight down: the ring of eight TF coils round the vessel, and the four corner posts.',
     act: () => gGlide(() => lookFrom(...VIEWS.top)),
     done: () => goal.el > 80,
     target: () => $('bViews') },
   { ch: 1, id: 'orient.home', q: 'Lost? Get back to the whole machine.',
     zone: () => $('card'),
-    how: () => `Press the home button in the view strip under the model, or <kbd>0</kbd>${coarse ? '' : ', or double-click empty space'}. While you inspect a part, home frames that part.`,
+    how: () => `Press the home button in ${viewToolsPlace()}, or <kbd>0</kbd>${coarse ? '' : ', or double-click empty space'}. While you inspect a part, home frames that part.`,
     look: 'The three-quarter view of the whole SPM1, stand and pump included.',
     act: () => gGlide(resetView),
     done: () => Math.abs(goal.az - nearestAz(HOME.az)) < 1 && Math.abs(goal.el - HOME.el) < 1 && Math.abs(goal.zoom / home.zoom - 1) < 0.03,
@@ -8453,7 +8558,7 @@ const GUIDE_STEPS = [
   { ch: 3, id: 'inside.dims', q: 'How tall is the table, and can you move that dimension?',
     zone: () => $('card'),
     how: () => (gDims().length ? 'In Blueprint the whole machine at rest carries three dimensions in millimetres. Drag a dimension’s line further off, or drag its figure along it; double-click it to put it back.'
-      : 'Blueprint draws three dimensions on the whole machine at rest, on a desktop: there is no room for them here. The title block still gives the scale.'),
+      : 'Blueprint draws three dimensions on the whole machine at rest, on a desktop: there is no room for them here. Unfold the title block with its chevron to read the scale.'),
     look: () => { const f = [...document.querySelectorAll('#draft [data-dim] .dim')].map((e) => e.textContent).filter(Boolean); return `The dimension moves as on a drawing. The figures${f.length ? ` (${esc(f.join(', '))})` : ''} are the model’s own sizes: the table’s height and width, and the torus’s centre circle, twice R₀ = 230 mm (S2).`; },
     need: () => { gAssembly({ unhide: true, theme: 'blueprint' }); gHome(); },
     base: () => ({ d: draft.dims.map((d) => ({ ...d })) }),
@@ -8811,17 +8916,33 @@ function gPlace() {
   // Stacked, the card is fixed at the window's foot, and the view gives it room: from the top of the page, the whole
   // view (its inspect bar, the part and the bottom sheet) sits above the card.
   if (dock) {
-    if (g.style.left) g.style.left = g.style.bottom = g.style.maxHeight = '';
+    card.style.removeProperty('--guide-caption-height');
+    card.style.removeProperty('--guide-menu-height');
+    if (g.style.left) g.style.left = g.style.bottom = g.style.maxHeight = g.style.maxWidth = '';
     const h = `${Math.max(300, Math.round(innerHeight - (card.getBoundingClientRect().top + scrollY) - g.offsetHeight - 16))}px`;
     if (card.style.height !== h) card.style.height = h;
     return;
   }
   if (card.style.height) card.style.height = '';
   const v = card.getBoundingClientRect(), sc = $('scale').getBoundingClientRect();
-  const foot = sc.height ? sc.top : v.bottom - 12;
+  const bar = $('isobar'), toolsBottom = $('viewbar').getBoundingClientRect().bottom;
+  // On short sheets a caption leaves too little room above the scale for even a full button.
+  // Let the scrolling guide use the lower view in that case; the tool row and caption keep their own space.
+  const foot = sc.height && !(bar.getClientRects().length && sc.top - toolsBottom < 200) ? sc.top : v.bottom - 12;
   const right = GUIDE_STEPS[guide.i]?.right && gWheel();
-  const left = `${Math.round(right ? v.right - 12 - g.offsetWidth : v.left + Math.max(navReserve(), 12))}px`, bottom = `${Math.round(innerHeight - foot + 8)}px`;
-  const mh = `${Math.max(180, Math.round(foot - 8 - v.top - 12))}px`;
+  // Keep the card within the view even when 2x text makes it wider than the available pane.
+  const mw = `${Math.max(0, Math.floor(v.width - 24))}px`;
+  if (g.style.maxWidth !== mw) g.style.maxWidth = mw;
+  const x = right ? v.right - 12 - g.offsetWidth : Math.min(v.left + Math.max(navReserve(), 12), v.right - 12 - g.offsetWidth);
+  const left = `${Math.round(x)}px`, bottom = `${Math.ceil(innerHeight - foot + 8)}px`;
+  // Share the remaining height: a long caption and the guide each scroll inside their own space.
+  const capHeight = `${Math.max(0, Math.floor((foot - toolsBottom - 32) / 3))}px`;
+  if (card.style.getPropertyValue('--guide-caption-height') !== capHeight) card.style.setProperty('--guide-caption-height', capHeight);
+  const menuHeight = `${Math.max(0, Math.floor((foot - toolsBottom - 32) / 2))}px`;
+  if (card.style.getPropertyValue('--guide-menu-height') !== menuHeight) card.style.setProperty('--guide-menu-height', menuHeight);
+  const menu = $('viewMenu');
+  const top = Math.max(toolsBottom, bar.getClientRects().length ? bar.getBoundingClientRect().bottom : 0, menu.hidden ? 0 : menu.getBoundingClientRect().bottom) + 8;
+  const mh = `${Math.max(0, Math.floor(foot - 8 - top))}px`;
   if (g.style.left !== left) g.style.left = left;
   if (g.style.bottom !== bottom) g.style.bottom = bottom;
   if (g.style.maxHeight !== mh) g.style.maxHeight = mh;
@@ -9024,6 +9145,8 @@ function guideExit(o = {}) {
   try { gRestore(guide.saved, o); } catch (e) { console.error('guide: restore', e); }
   const back = guide.saved?.active;
   guide.on = false;
+  $('card').style.removeProperty('--guide-caption-height');
+  $('card').style.removeProperty('--guide-menu-height');
   strip.startGone = guide.saved.startGone;
   setLookMenu(false);
   syncStrip(guide.saved.stripTab);
@@ -9089,8 +9212,8 @@ function frame() {
   const low = coarse && (pointers.size > 0 || !!glide);
   if (low !== lowRes) { lowRes = low; resize(); }
 
-  // A slow turntable spin until the first touch or keyboard focus, never after it.
-  if (!touched && !reduceMotion.matches && now - idleSince > 2.5) { turnGoal(5 * dt); active = true; }
+  // Idle motion stops on first interaction; the desktop toggle can explicitly request it again.
+  if (turning || (!touched && !reduceMotion.matches && now - idleSince > 2.5)) { turnGoal(5 * dt); active = true; }
 
   const k = reduceMotion.matches ? 1 : 1 - Math.exp(-dt * 16);
   const d = Math.abs(goal.az - view.az) + Math.abs(goal.el - view.el) + Math.abs(Math.log(goal.zoom / view.zoom)) * 50 + goal.target.distanceTo(view.target);

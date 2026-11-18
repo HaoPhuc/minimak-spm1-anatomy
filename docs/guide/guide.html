@@ -159,11 +159,11 @@
     <i class="m" data-at="973,48">1</i>
     <i class="m" data-at="164,434">2</i>
     <i class="m" data-at="406,280">3</i>
-    <i class="m" data-at="814,738">4</i>
+    <i class="m" data-at="288,136">4</i>
     <i class="m" data-at="1176,195">5</i>
     <i class="m" data-at="640,766">6</i>
     <i class="m" data-at="290,765">7</i>
-    <i class="m" data-at="536,710">8</i>
+    <i class="m" data-at="48,172">8</i>
     <i class="m" data-at="1056,765">9</i>
     <i class="m" data-at="680,48">10</i>
     <i class="m" data-at="239,100">11</i>
@@ -176,11 +176,11 @@
     <li data-n="1"><b>Find a part.</b> Opens the assembly list with the cursor in its search box; <kbd>/</kbd> does the same (page 5).</li>
     <li data-n="2"><b>Groups’ wheel.</b> The seven groups on a half-wheel at the left edge. Rest the pointer on one and its parts fan out as pictures (page 5).</li>
     <li data-n="3"><b>The 3D view.</b> Drag to turn, right-drag to pan, scroll to zoom. Until you touch it, it turns slowly on its own.</li>
-    <li data-n="4"><b>View strip.</b> Under the model: Home, <b>Views</b> (look from a side), zoom, pan and the axis lock (page 4).</li>
+    <li data-n="4"><b>View strip.</b> At the view’s top left: Home, <b>Views</b> (a side), zoom, pan and the axis lock (page 4).</li>
     <li data-n="5"><b>Axis triad.</b> Shows which way is up; click an axis end to look along it.</li>
     <li data-n="6"><b>Scale bar.</b> True at every zoom: the view has no perspective, so sizes can be compared anywhere in it.</li>
     <li data-n="7"><b>Hint.</b> What a click or a drag does right now. It changes as you go.</li>
-    <li data-n="8"><b>Turntable.</b> <b>‹</b> and <b>›</b> turn the machine an eighth of a turn.</li>
+    <li data-n="8"><b>Turntable.</b> <b>360°</b> starts or stops the turn.</li>
     <li data-n="9"><b>Readout.</b> The view’s angles and zoom, and what is shown or selected.</li>
     <li data-n="10"><b>Learn</b> holds Guided analysis (page 3), the tour and quiz (page 11), User guide (PDF), Keys and gestures, and Sources.</li>
     <li data-n="11"><b>Explore → Model.</b> Explode takes every component off the machine; Spread sets the distance (page 10).</li>
@@ -250,7 +250,7 @@
   <table>
     <thead><tr><th>To</th><th>Mouse</th><th>Touch</th><th>Keys</th></tr></thead>
     <tbody>
-      <tr><td><b>Turn</b></td><td>Drag; or <b>‹</b> <b>›</b> on the turntable under the machine, an eighth at a time</td><td>One finger, or the turntable</td><td>Arrow keys</td></tr>
+      <tr><td><b>Turn</b></td><td>Drag; <b>360°</b> in the top-left view strip starts or stops the turntable above 960 px</td><td>One finger</td><td>Arrow keys</td></tr>
       <tr><td><b>Pan</b></td><td>Right-drag, Shift-drag or middle-drag; or switch on the pan button, then drag</td><td>Two fingers</td><td><kbd>Shift</kbd> + arrows</td></tr>
       <tr><td><b>Turn about the machine or the view</b></td><td>The axis button. Lit, as every visit starts, the machine turns in place wherever you pan it; off, a turn goes about the middle of the view</td><td>The same</td><td><kbd>R</kbd></td></tr>
       <tr><td><b>Zoom</b></td><td>Scroll wheel (it zooms toward the pointer), or the zoom buttons</td><td>Pinch</td><td><kbd>+</kbd> <kbd>−</kbd></td></tr>
@@ -265,7 +265,7 @@
   <div class="cols" style="margin-top:4mm;grid-template-columns:62mm 1fr;gap:8mm">
     <figure class="bare">
       <img src="img/menu.png" alt="The view buttons and the Views menu" style="border:0.25mm solid var(--rule);border-radius:1.6mm">
-      <figcaption>The view strip and the <b>Views</b> menu. From the left: turntable, home, Views, zoom out, zoom in, pan mode and the axis lock (lit). The panels toggle is on the toolstrip. The menu works from the keyboard too: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> picks, <kbd>Esc</kbd> closes.</figcaption>
+      <figcaption>The view strip at the top left of a wide view, with <b>Views</b> opening downwards. From the left: <b>360°</b>, home, Views, zoom out, zoom in, pan mode and the axis lock (lit). The panels toggle is on the toolstrip. The menu works from the keyboard too: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> picks, <kbd>Esc</kbd> closes.</figcaption>
     </figure>
     <div>
       <figure class="bare" style="width:46mm">
@@ -375,7 +375,7 @@
   <figure class="shot" data-css="1280,800">
     <img src="img/apart.jpg" alt="The left viewport taken apart, at step 2 of 4">
     <i class="m" data-at="107,285">1</i>
-    <i class="m" data-at="170,143">2</i>
+    <i class="m" data-at="132,190">2</i>
     <i class="m" data-at="680,100">3</i>
   </figure>
   <ol class="legend one">
@@ -614,7 +614,7 @@
     <figure>
       <img src="img/blueprint.jpg" alt="Blueprint theme">
       <h3>Blueprint</h3>
-      <p>White drafting lines on blue paper, set out as a drawing sheet: a frame with zones, centre lines, a grid, and a title block with the scale. Three dimensions (910, 900, Ø460 mm) can be dragged further off or along; double-click one to put it back. The selection is a red pencil mark.</p>
+      <p>White drafting lines on blue paper, set out as a drawing sheet: a frame with zones, centre lines and a grid. The view strip sits inside the frame at the top left. The title block at bottom right starts folded; its chevron opens the scale and details, then folds them away again. While folded, the status bar shows the readout. Three dimensions (910, 900, Ø460 mm) can be dragged further off or along; double-click one to put it back. The selection is a red pencil mark.</p>
     </figure>
     <figure>
       <img src="img/hologram.jpg" alt="Hologram theme">
@@ -628,7 +628,7 @@
 <!-- ============================================================ 11 -->
 <section>
   <h1><span class="n">13</span>Phones and tablets</h1>
-  <p class="lede">At 960 px or less the side panels stack under the model: scroll the page to read them. The part’s bar and the control desk’s bar stay over the view; the toolstrip above keeps Explore, Part, Learn and Run. One finger turns the model, two fingers pan, and a pinch zooms.</p>
+  <p class="lede">At 960 px or less the side panels stack under the model: scroll the page to read them. The part’s bar and the control desk’s bar stay over the view; the toolstrip above keeps Explore, Part, Learn and Run. The view tools keep their column at the left; the turntable below keeps its eighth-turn arrows where shown. One finger turns, two fingers pan, and a pinch zooms.</p>
   <div class="phones">
     <figure>
       <img src="img/phone.jpg" alt="The page on a phone">
@@ -743,7 +743,7 @@
         <tr><td>Double-click</td><td>Inspect; inspecting, Show me</td></tr>
         <tr><td>Rest on a sub-part</td><td>Preview its sheet</td></tr>
         <tr><td>Double-click space</td><td>Home view</td></tr>
-        <tr><td>Turntable <b>‹</b> <b>›</b></td><td>An eighth of a turn</td></tr>
+        <tr><td>Turntable <b>360°</b></td><td>Start or stop, in the top-left strip above 960 px; narrow layouts keep <b>‹</b> <b>›</b> for an eighth-turn step</td></tr>
         <tr><td>Rest on the wheel</td><td>Fan a group’s parts out</td></tr>
         <tr><td>Click the emergency stop</td><td>At the control desk: trip it</td></tr>
       </tbody></table>

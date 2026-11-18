@@ -9,7 +9,7 @@ window.__stripSettled = async () => {
     let previous = '', stable = 0;
     while (stable < 2) {
       await next();
-      const els = [...document.querySelectorAll('#strip, #strip button, #card, #stage, #wheel, #whRing, #whGroups button, #viewbar, #navCluster, #turnTable, #statbar')];
+      const els = [...document.querySelectorAll('#strip, #strip button, #card, #stage, #wheel, #whRing, #whGroups button, #viewbar, #navCluster, #turnTable, #statbar, #readout, .tb-details, #guide, #isobar, #stepCap')];
       const positions = JSON.stringify(els.map(e => {
         const r = e.getBoundingClientRect();
         return [r.x, r.y, r.width, r.height, getComputedStyle(e).display];

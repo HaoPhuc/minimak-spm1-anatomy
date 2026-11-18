@@ -2,10 +2,10 @@
 await open(); await ready(); $('dkHv').click(); await settle(2400);
 const R = (e) => e.getBoundingClientRect();
 const clear = (a, b) => a.right <= b.left + 0.5 || b.right <= a.left + 0.5 || a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5;
-const card = R($('card')), desk = R($('desk')), nav = R($('navCluster')), strip = R($('strip')), triad = R($('triad'));
+const card = R($('card')), desk = R($('desk')), nav = R($('viewbar')), strip = R($('strip')), triad = R($('triad'));
 const size = `${innerWidth}×${innerHeight}`;
 ok(`${size}: the desk is inside the view`, desk.left >= card.left && desk.top >= card.top && desk.right <= card.right && desk.bottom <= card.bottom, `${Math.round(desk.width)}×${Math.round(desk.height)}`);
-ok(`${size}: the view's strip is inside the view and clear of the desk`, nav.left >= card.left && nav.right <= card.right && nav.bottom <= card.bottom && clear(desk, nav), `desk ${Math.round(desk.left)}–${Math.round(desk.right)} × ${Math.round(desk.top)}–${Math.round(desk.bottom)}, strip ${Math.round(nav.left)}–${Math.round(nav.right)} × ${Math.round(nav.top)}–${Math.round(nav.bottom)}`);
+ok(`${size}: the view's strip is inside the view and clear of the desk`, nav.left >= card.left && nav.left <= card.left + 28 && nav.top >= card.top && nav.top <= card.top + 28 && nav.right <= card.right && nav.bottom <= card.bottom && clear(desk, nav), `desk ${Math.round(desk.left)}–${Math.round(desk.right)} × ${Math.round(desk.top)}–${Math.round(desk.bottom)}, strip ${Math.round(nav.left)}–${Math.round(nav.right)} × ${Math.round(nav.top)}–${Math.round(nav.bottom)}`);
 ok(`${size}: the wheel is away`, !$('wheel').getClientRects().length);
 ok(`${size}: the Run page shows the desk's state and Done, inside the strip`, A.strip.tab === 'run' && !!$('rowRun').getClientRects().length && R($('deskLbl')).width > 0 && R($('bDeskDone')).right <= strip.right + 0.5 && R($('bDeskDone')).bottom <= strip.bottom + 0.5, A.strip.tab);
 ok(`${size}: the desk's own bar is not over the view, the strip is clear of the triad`, !$('deskbar').getClientRects().length && clear(strip, triad));
