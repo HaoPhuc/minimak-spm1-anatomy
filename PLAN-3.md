@@ -17,7 +17,7 @@ are.
   - **Look for**, which turns to a tick with *That's it* once the page is in that state
   - **‹ Back**, **Show this step**, **Next ›** (**Finish** on the last step), **Chapters** and a separate **Exit**
 
-  On a desktop the card sits at the view's lower left, above the view strip, and the camera frames everything above it
+  On a desktop the card sits at the view's lower left, below the view strip at the top left, and the camera frames everything above it
   (it is a bottom inset in `hudInsets`). Where the panels stack (≤ 960 px) it is fixed at the window's foot, under the
   view, so the bottom sheet and the inspect bar keep the view. Its text sizes with the Controls tab's text size, like
   the toolstrip and the part’s bar.
@@ -73,12 +73,12 @@ listed after the table. On a wide window the part's controls are on the toolstri
 
 | # | Function | Question | Inputs | Needs | Visible result | Step | Verify |
 |---|---|---|---|---|---|---|---|
-| 1 | Turn | How does the back look? | drag, the turntable's arrows · arrows on the view · one finger | — | spins about the machine's axis, tilts | orient.turn | `goal.az` moves ≥ 25° |
+| 1 | Turn | How does the back look? | drag, 360° in the top-left view strip (start/stop; eighth-turn arrows only where panels stack) · arrows on the view · one finger | — | spins about the machine's axis, tilts | orient.turn | `goal.az` moves ≥ 25° |
 | 2 | Pan | Can I slide it aside? | right-, Shift- or middle-drag, or pan mode (O/P) · Shift+arrows · two fingers | — | the machine slides; a turn stays about its axis | orient.pan | `goal.target` moves |
 | 3 | Zoom | Closer on the coils? | wheel, ± buttons · + − · pinch | — | grows about the pointer; scale bar changes | orient.zoom | `goal.zoom` × 1.3 |
-| 4 | Scale | How big is it? | status bar scale (on the view where panels stack); Blueprint title block 1:N | — | true length label | orient.scale | read only |
+| 4 | Scale | How big is it? | status bar scale (on the view where panels stack); Blueprint scale on the sheet, or 1:N after unfolding the title block with its chevron (folded by default; wide-window readout in the status bar while folded) | — | true length label | orient.scale | read only |
 | 5 | Home | I'm lost | Home in the view strip, double-click space · 0 · Home | — | whole machine (the part while inspecting) | orient.home | `goal` ≈ home |
-| 6 | Look from a side | What is it from above? | Views in the view strip (left edge where panels stack), triad ends · 1–4, menu arrows · same | — | turns to the side | orient.views | `goal.el` > 80 |
+| 6 | Look from a side | What is it from above? | Views opens downwards from the top-left view strip on windows wider than 960 px (inside Blueprint’s frame; a column at the left where panels stack), triad ends · 1–4, menu arrows · same | — | turns to the side | orient.views | `goal.el` > 80 |
 | 7 | Fit | Everything in view? | — · A · — | exploded or panned | frames what is shown | inside.spread | `fitAll` ran |
 | 8 | Panels | More room? | toolstrip panels button, ‹ fold, drag or double-click the edge · F, arrows on the edge · (stacked: scroll) | desktop | panels fold away | orient.panels | `panels.tree`/`insp` false |
 | 9 | Hover name | What is that? | pointer · — · loupe | — | tooltip and light | first.find | look text |

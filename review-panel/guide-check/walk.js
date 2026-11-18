@@ -13,8 +13,17 @@ for (let i = 0; i < S.length; i++) {
   await new Promise(requestAnimationFrame);
   await new Promise(requestAnimationFrame);
   const ready = g.ready, before = g.ok, r0 = ring(), reach = document.getElementById('gReach').textContent;
+  let tools = '';
+  if (s.id.startsWith('orient.') && ['orient.pan','orient.axis','orient.zoom','orient.views','orient.home'].includes(s.id)) {
+    const target = s.target?.();
+    if (target instanceof Element && document.getElementById('viewbar').contains(target)) {
+      const b = target.getBoundingClientRect(), g = document.getElementById('gRing').getBoundingClientRect();
+      const hit = document.elementFromPoint((b.left+b.right)/2,(b.top+b.bottom)/2);
+      tools = ' targetClear=' + !!(target.contains(hit) && b.left >= g.left && b.right <= g.right && b.top >= g.top && b.bottom <= g.bottom);
+    }
+  }
   let after = '-';
   if (s.act && !/use\.(tour|quiz|desk)/.test(s.id)) { await __spm1.gShowStep(); await sleep(2400); after = g.ok; }
-  out.push(`${i + 1} ${s.id}: ready=${ready} before=${before} after=${after} ring=${r0}${reach ? ' reach=' + reach : ''}`);
+  out.push(`${i + 1} ${s.id}: ready=${ready} before=${before} after=${after} ring=${r0}${tools}${reach ? ' reach=' + reach : ''}`);
 }
 return out;
