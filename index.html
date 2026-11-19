@@ -740,6 +740,109 @@
   .holo .glance b { font-family: var(--mono); font-weight: 400; letter-spacing: -0.03em; color: #dcecf8; text-shadow: 0 0 16px rgb(111 184 232 / 0.4); }
   .holo .doc h2 .count { color: var(--accent); }
 
+  /* One viewport-wide mesh of six soft lobes: independent closed paths and breathing radii.
+     Only the root animates; all HUD surfaces sample the same fixed, non-repeating field.
+     A lighter gain-dependent veil reveals the colour; local text halos protect muted copy. The still backing blocks the model.
+     No extra work enters the 3D draw loop. */
+  @property --holo-drift { syntax: '<percentage>'; inherits: true; initial-value: 18%; }
+  @property --holo-tint { syntax: '<color>'; inherits: true; initial-value: #4f9fd6; }
+  @property --holo-gain { syntax: '<number>'; inherits: true; initial-value: 0.14; }
+  @property --holo-ay { syntax: '<percentage>'; inherits: true; initial-value: 22%; }
+  @property --holo-ar { syntax: '<percentage>'; inherits: true; initial-value: 36%; }
+  @property --holo-bx { syntax: '<percentage>'; inherits: true; initial-value: 88%; }
+  @property --holo-by { syntax: '<percentage>'; inherits: true; initial-value: 56%; }
+  @property --holo-br { syntax: '<percentage>'; inherits: true; initial-value: 39%; }
+  @property --holo-cx { syntax: '<percentage>'; inherits: true; initial-value: 42%; }
+  @property --holo-cy { syntax: '<percentage>'; inherits: true; initial-value: 80%; }
+  @property --holo-cr { syntax: '<percentage>'; inherits: true; initial-value: 48%; }
+  @property --holo-dx { syntax: '<percentage>'; inherits: true; initial-value: 6%; }
+  @property --holo-dy { syntax: '<percentage>'; inherits: true; initial-value: 69%; }
+  @property --holo-dr { syntax: '<percentage>'; inherits: true; initial-value: 32%; }
+  @property --holo-ex { syntax: '<percentage>'; inherits: true; initial-value: 93%; }
+  @property --holo-ey { syntax: '<percentage>'; inherits: true; initial-value: 9%; }
+  @property --holo-er { syntax: '<percentage>'; inherits: true; initial-value: 44%; }
+  @property --holo-fx { syntax: '<percentage>'; inherits: true; initial-value: 62%; }
+  @property --holo-fy { syntax: '<percentage>'; inherits: true; initial-value: 38%; }
+  @property --holo-fr { syntax: '<percentage>'; inherits: true; initial-value: 30%; }
+  :root.holo {
+    --holo-tint: #4f9fd6;
+    --holo-gain: 0.14;
+    animation: hud-aurora 37s ease-in-out infinite,
+      hud-aurora-b 53s ease-in-out infinite,
+      hud-aurora-c 71s ease-in-out infinite,
+      hud-aurora-d 89s ease-in-out infinite,
+      hud-aurora-e 113s ease-in-out infinite,
+      hud-aurora-f 137s ease-in-out infinite;
+    transition: --holo-tint 1.1s ease, --holo-gain 1.1s ease;
+  }
+  :root.holo.holo-ramping { --holo-gain: 0.18; }
+  :root.holo.holo-glow { --holo-tint: #b187ed; --holo-gain: 0.23; }
+  :root.holo.holo-glow.holo-ramping { --holo-gain: 0.26; }
+  :root.holo.holo-paused { animation-play-state: paused; }
+  @keyframes hud-aurora {
+    0%, 100% { --holo-drift: 18%; --holo-ay: 22%; --holo-ar: 36%; }
+    27% { --holo-drift: 30%; --holo-ay: 36%; --holo-ar: 40%; }
+    58% { --holo-drift: 8%; --holo-ay: 51%; --holo-ar: 34%; }
+    81% { --holo-drift: 24%; --holo-ay: 9%; --holo-ar: 38%; }
+  }
+  @keyframes hud-aurora-b {
+    0%, 100% { --holo-bx: 88%; --holo-by: 56%; --holo-br: 39%; }
+    27% { --holo-bx: 70%; --holo-by: 34%; --holo-br: 43%; }
+    58% { --holo-bx: 96%; --holo-by: 19%; --holo-br: 36%; }
+    81% { --holo-bx: 77%; --holo-by: 76%; --holo-br: 41%; }
+  }
+  @keyframes hud-aurora-c {
+    0%, 100% { --holo-cx: 42%; --holo-cy: 80%; --holo-cr: 48%; }
+    27% { --holo-cx: 64%; --holo-cy: 64%; --holo-cr: 44%; }
+    58% { --holo-cx: 29%; --holo-cy: 46%; --holo-cr: 51%; }
+    81% { --holo-cx: 13%; --holo-cy: 74%; --holo-cr: 46%; }
+  }
+  @keyframes hud-aurora-d {
+    0%, 100% { --holo-dx: 6%; --holo-dy: 69%; --holo-dr: 32%; }
+    27% { --holo-dx: 24%; --holo-dy: 88%; --holo-dr: 36%; }
+    58% { --holo-dx: 38%; --holo-dy: 51%; --holo-dr: 31%; }
+    81% { --holo-dx: 11%; --holo-dy: 35%; --holo-dr: 35%; }
+  }
+  @keyframes hud-aurora-e {
+    0%, 100% { --holo-ex: 93%; --holo-ey: 9%; --holo-er: 44%; }
+    27% { --holo-ex: 76%; --holo-ey: 28%; --holo-er: 48%; }
+    58% { --holo-ex: 60%; --holo-ey: 3%; --holo-er: 42%; }
+    81% { --holo-ex: 89%; --holo-ey: 44%; --holo-er: 46%; }
+  }
+  @keyframes hud-aurora-f {
+    0%, 100% { --holo-fx: 62%; --holo-fy: 38%; --holo-fr: 30%; }
+    27% { --holo-fx: 43%; --holo-fy: 13%; --holo-fr: 33%; }
+    58% { --holo-fx: 19%; --holo-fy: 29%; --holo-fr: 28%; }
+    81% { --holo-fx: 73%; --holo-fy: 62%; --holo-fr: 32%; }
+  }
+  .holo :is(.top, .panel, .screen, .startcard, .guide, .desk) { isolation: isolate; }
+  .holo .desk.in-page { position: relative; }
+  .holo :is(.top, .panel, .screen, .startcard, .guide, .desk)::after {
+    content: ''; position: absolute; inset: 1px; z-index: -1; pointer-events: none; border-radius: inherit;
+    background-color: rgb(6 18 30 / 0.97);
+    background-image:
+      linear-gradient(rgb(6 18 30 / calc(0.10 + (var(--holo-gain) - 0.14) * 3.2)), rgb(6 18 30 / calc(0.10 + (var(--holo-gain) - 0.14) * 3.2))),
+      radial-gradient(ellipse calc(var(--holo-ar) * 1.05) var(--holo-ar) at var(--holo-drift) var(--holo-ay), color-mix(in srgb, var(--holo-tint) calc(var(--holo-gain) * 190%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-br) * 0.85) var(--holo-br) at var(--holo-bx) var(--holo-by), color-mix(in srgb, #41b8ae calc(var(--holo-gain) * 157%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-cr) * 0.8) var(--holo-cr) at var(--holo-cx) var(--holo-cy), color-mix(in srgb, #493d99 calc(var(--holo-gain) * 272%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-dr) * 1.2) var(--holo-dr) at var(--holo-dx) var(--holo-dy), color-mix(in srgb, #8a6bd8 calc(var(--holo-gain) * 206%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-er) * 0.75) var(--holo-er) at var(--holo-ex) var(--holo-ey), color-mix(in srgb, #592d92 calc(var(--holo-gain) * 297%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-fr) * 1.5) var(--holo-fr) at var(--holo-fx) var(--holo-fy), color-mix(in srgb, #38abc4 calc(var(--holo-gain) * 182%), transparent), transparent 100%);
+    background-attachment: fixed;
+    background-size: 100vw 100vh;
+    background-repeat: no-repeat;
+  }
+  /* A local ink halo keeps secondary copy readable without flattening the empty glass. */
+  .holo :is(.top, .panel, .screen, .startcard, .guide, .desk) {
+    text-shadow: 0 0 1px #06121e, 0 0 1px #06121e, 0 0 3px #06121e, 0 0 3px #06121e;
+  }
+  /* Leave the HUD's corner marks clear; dense data and editable controls keep their own still backing. */
+  .holo :is(.panel, .screen)::after { inset: 5px; border-radius: 0; }
+  .holo :is(table.specs, table.ptab, .glance div, .search, .dk-set) { background-color: #081725; }
+  @media (prefers-reduced-motion: reduce) {
+    :root.holo { animation: none; transition: none; }
+  }
+
   /* ---------- Greyscale: the chrome in white and greys. The selection is marked in the orange as in the model, on an
      ink edge so the mark stands out from the white. ---------- */
   .greyscale .ti.sel, .greyscale table.ptab tr.on { box-shadow: inset 2px 0 0 var(--ink), inset 5px 0 0 var(--sel); }
@@ -1699,6 +1802,8 @@ const HOLO = new THREE.Color('#4f9fd6');
 // stand and the cabinets least, so the torus is what the eye finds. A part lit (selected, kept, under the pointer) or
 // inspected is always at full strength.
 const HOLO_WEIGHT = { diag: 0.8, vacuum: 0.6, power: 0.38, structure: 0.32 };
+// The breadboard is part of the luminous machine: both skins, edge trim and badges, but not its support frame.
+const HOLO_TABLE = new Set(['Breadboard top skin, M6 on 25 mm', 'Honeycomb core, black side trim', 'Name plates']);
 let holo = false, greyscale = false, blueprint = false;
 const clearColor = new THREE.Color();
 // The greyscale drawing is white, like a CAD line rendering: every material is white, and its greys and black come only
@@ -3058,7 +3163,7 @@ function draw() {
     else if (g >= 1 && lit) { m.material = GHOST_FADE; m.userData.solid = 0.55; }
     else if (g >= 1) { m.material = GHOST; m.visible = !FINE.has(m.userData.tone); }
     else { m.material = GHOST_FADE; m.userData.solid = 1 - g; }
-    if (holo && !iso.part && !lit) m.userData.dim *= HOLO_WEIGHT[partById.get(m.userData.part)?.group] ?? 1;
+    if (holo && !iso.part && !lit) m.userData.dim *= m.userData.part === 'table' && HOLO_TABLE.has(m.userData.sub) ? 1 : HOLO_WEIGHT[partById.get(m.userData.part)?.group] ?? 1;
   }
   projector.cone.visible = projector.motes.visible = holo && !iso.part;
   // The hologram's depth fade runs across what is framed: the part inspected, or the whole machine.
@@ -6975,6 +7080,7 @@ function applyTheme() {
   greyscale = t === 'greyscale';
   blueprint = t === 'blueprint';
   document.documentElement.classList.toggle('holo', holo);
+  syncAurora();
   document.documentElement.classList.toggle('greyscale', greyscale);
   document.documentElement.classList.toggle('blueprint', blueprint);
   post.mat.uniforms.uBlue.value = blueprint ? 1 : 0;
@@ -7873,8 +7979,19 @@ function deskLit() {
   }
   refreshLit();
 }
+// CSS owns the drift and one-second easing; only desk state changes update its targets, never the 3D draw loop.
+function syncAurora() {
+  const root = document.documentElement;
+  const glow = holo && desk.on && desk.io && desk.hv && !desk.trip;
+  const ramping = holo && desk.on && desk.io && Object.values(desk.coils).some(c => Math.abs((c.on ? c.set : 0) - c.I) > 0.1);
+  for (const [name, on] of [['holo-glow', glow], ['holo-ramping', ramping], ['holo-paused', document.hidden]]) {
+    if (root.classList.contains(name) !== on) root.classList.toggle(name, on);
+  }
+}
+document.addEventListener('visibilitychange', syncAurora);
 // Every switch, box and readout from the desk's state.
 function deskSync() {
+  syncAurora();
   if (!deskEl) return;
   const press = (id, on) => $(id).setAttribute('aria-pressed', on ? 'true' : 'false');
   press('dkInit', desk.io); press('dkPump', desk.pump); press('dkHv', desk.hv && desk.io); press('dkSeq', !!desk.seq);
@@ -8183,6 +8300,7 @@ function endDesk(restore = true) {
   if (!desk.on) return;
   const lost = deskEl.contains(document.activeElement) || $('deskbar').contains(document.activeElement) || $('rowRun').contains(document.activeElement) || $('inspBody').contains(document.activeElement);
   desk.on = false; desk.seq = null; desk.struck = false; desk.playing = false; desk.hot = null;
+  syncAurora();
   deskLive.clear();
   $('deskbar').classList.remove('on');
   $('card').classList.remove('desk-on');
@@ -9397,6 +9515,8 @@ applyTheme();
 if (location.hash.length > 1) applyLink(location.hash);
 requestAnimationFrame(frame);
 window.__spm1 = { hasDrawn: () => footFitted, strip, syncStrip, desk, DESK, deskLive, startDesk, endDesk, deskTrip, deskFields, deskGlow, view, goal, iso, setSpinAxis, spinAxis: () => spinAxis, state, HUD, panels, inspect, endInspect, select, lookFrom, setExplode, setCut, setApart, focusPiece, piecesOf, fitAll, resetView, keepSheet, toggleSub, setLive, pinSheet, unpinSheet, setFocus, stepPiece, setScreens, setPanel, togglePanels, tidySheets, foldAllSheets, closeAllSheets, hudInsets, screenBoxOf, boxOfPart, boxOfPiece,
+  // Read-only snapshots of the table weights after the last draw.
+  tableWeights: () => solids.filter(m => m.userData.part === 'table').map(m => ({ sub: m.userData.sub, dim: m.userData.dim })),
   lineInfo, setTab, startTour, nextStop, joinOf, setScale, setLetterKeys, dockLayout, linkOf, draft, dimAt,
   setGrid: (v) => { draft.grid = v; applyTheme(); },
   showMe, endShow, boxOfSub, seatBox, freeRect, toScreen, screenRect, ov,
