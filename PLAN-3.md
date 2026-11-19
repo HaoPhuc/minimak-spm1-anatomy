@@ -73,7 +73,7 @@ listed after the table. On a wide window the part's controls are on the toolstri
 
 | # | Function | Question | Inputs | Needs | Visible result | Step | Verify |
 |---|---|---|---|---|---|---|---|
-| 1 | Turn | How does the back look? | drag, 360° in the top-left view strip (start/stop; eighth-turn arrows only where panels stack) · arrows on the view · one finger | — | spins about the machine's axis, tilts | orient.turn | `goal.az` moves ≥ 25° |
+| 1 | Turn | How does the back look? | drag (eighth-turn arrows below the view where panels stack) · arrows on the view · one finger | — | spins about the machine's axis, tilts | orient.turn | `goal.az` moves ≥ 25° |
 | 2 | Pan | Can I slide it aside? | right-, Shift- or middle-drag, or pan mode (O/P) · Shift+arrows · two fingers | — | the machine slides; a turn stays about its axis | orient.pan | `goal.target` moves |
 | 3 | Zoom | Closer on the coils? | wheel, ± buttons · + − · pinch | — | grows about the pointer; scale bar changes | orient.zoom | `goal.zoom` × 1.3 |
 | 4 | Scale | How big is it? | status bar scale (on the view where panels stack); Blueprint scale on the sheet, or 1:N after unfolding the title block with its chevron (folded by default; wide-window readout in the status bar while folded) | — | true length label | orient.scale | read only |

@@ -29,7 +29,7 @@ Desktop layouts include 961 × 640, 1024 × 768, 1280 × 660, 1280 × 800,
 1366 × 700 and 1440 × 900, in all four themes at both text sizes. The complete
 view strip must sit at the view's top left, at least 4px inside Blueprint's
 22px inner frame, and clear the triad, Start card, desk, title block, guide and
-step caption. Desktop turntable arrows must be hidden. Views must open downward
+step caption. The desktop strip has no turntable control (no 360° button, no step arrows). Views must open downward
 inside the view, with every choice reachable and receiving pointer input.
 
 Each desktop layout also runs guide steps targeting Axis and Views and two

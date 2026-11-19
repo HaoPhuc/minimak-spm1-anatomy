@@ -1055,7 +1055,6 @@
   .turn button:hover { background: color-mix(in srgb, var(--card) 90%, transparent); }
   .turn button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   .turn .deg { font: 400 15px/1 var(--mono); }
-  .turn .spin-toggle { display: none; }
   .view.docked .turn { display: none; }
   .corner.bl { --bl-max: calc(50% - 200px); }
   @media (max-width: 1180px) { .turn::before, .turn::after { display: none; } .corner.bl { --bl-max: calc(50% - 90px); } }
@@ -1375,17 +1374,10 @@
     .view { --tools-inset: 8px; --tools-bottom: 50px; }
     .blueprint .view { --tools-inset: 26px; --tools-bottom: 68px; }
     .viewbar { position: absolute; left: var(--tools-inset); top: var(--tools-inset); bottom: auto; z-index: 5; display: flex; align-items: center; gap: 14px; }
-    .viewbar #bSpinL, .viewbar #bSpinR { display: none; }
+    .viewbar .turn { display: none; }
     .blueprint .view .corner.br, .blueprint .view.tight .corner.br { top: auto; left: auto; bottom: var(--tb-bottom, calc(26px / var(--ui-scale, 1))); right: calc(26px / var(--ui-scale, 1)); }
     .view > .desk { top: var(--tools-bottom); max-height: calc(100% - var(--tools-bottom) - 26px); }
     .blueprint .view > .desk { max-height: calc(100% - var(--tools-bottom) - 82px - 90px * var(--ui-scale, 1)); }
-    .viewbar .turn { position: static; transform: none; gap: 9px; }
-    .viewbar .turn::before, .viewbar .turn::after { display: none; }
-    .viewbar .turn button { width: 32px; height: 32px; }
-    .viewbar .turn .deg { font-size: 14px; }
-    .viewbar .turn span.deg { display: none; }
-    .viewbar .turn .spin-toggle { display: grid; width: auto; min-width: 42px; padding: 0 6px; border-radius: 0; }
-    .viewbar .turn .spin-toggle[aria-pressed="true"] { background: var(--soft); }
     .viewbar .navcluster { position: relative; left: auto; top: auto; bottom: auto; transform: none; flex-direction: row; }
     .viewbar .navcluster .mb { flex-direction: row; }
     .viewbar .navcluster .mb button { padding: 8px; }
@@ -1549,7 +1541,6 @@
       <div class="turn" id="turnTable" role="group" aria-label="Turn the machine">
         <button type="button" id="bSpinL" title="Turn the machine an eighth to the left" aria-label="Turn left"><svg viewBox="0 0 16 16"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg></button>
         <span class="deg" aria-hidden="true">360°</span>
-        <button type="button" class="deg spin-toggle" aria-pressed="false" aria-label="Start the turntable" title="Start the turntable">360°</button>
         <button type="button" id="bSpinR" title="Turn the machine an eighth to the right" aria-label="Turn right"><svg viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></svg></button>
       </div>
       <div class="navcluster" id="navCluster" role="group" aria-label="View">
@@ -5904,20 +5895,7 @@ $('wheel').addEventListener('keydown', (e) => {
   e.preventDefault();
   e.stopPropagation();
 });
-// The stacked turntable keeps its eighth-turn arrows. Desktop has a start/stop control.
-const spinToggle = $('turnTable').querySelector('.spin-toggle');
-let turning = false;
-function setTurning(on) {
-  turning = on;
-  spinToggle.setAttribute('aria-pressed', String(on));
-  spinToggle.title = on ? 'Stop the turntable' : 'Start the turntable';
-  spinToggle.setAttribute('aria-label', spinToggle.title);
-}
-spinToggle.addEventListener('click', () => { touched = true; stopGlide(); setTurning(!turning); });
-// Taking another control, or dragging the model, stops the requested turn.
-for (const type of ['pointerdown', 'focusin', 'keydown']) document.addEventListener(type, (e) => {
-  if (turning && !spinToggle.contains(e.target)) setTurning(false);
-}, true);
+// The stacked turntable keeps its eighth-turn arrows; desktop has none (drag or the arrow keys turn the model).
 $('bSpinL').addEventListener('click', () => { touched = true; lookFrom(goal.az + 45, goal.el); });
 $('bSpinR').addEventListener('click', () => { touched = true; lookFrom(goal.az - 45, goal.el); });
 // Stacked, the page scrolls under the window's backdrop: the view's own backdrop is drawn again to stay in line.
@@ -6682,8 +6660,8 @@ function renderHelp(box) {
       ['Right-drag, Shift-drag, middle-drag', 'pan'],
       ['Wheel', 'zoom toward the pointer'],
       ['The view strip at the top left of the view (a column at the view’s left on a phone)', 'zoom (not on touch, where you pinch), the home view, Views (look from a side; the same as a click on an axis of the triad, top right), pan with left-drag, turn about the machine’s axis; the toolstrip’s panels button folds the side panels'],
+      ['The ‹ › arrows below the view (where the panels stack)', 'turn the machine an eighth at a time'],
       ['The half-wheel at the view’s left edge (assembly list folded)', 'the seven groups: rest the pointer on one, or click it, and its parts fan out as pictures; a click selects one, a double-click inspects it. From the keyboard, Enter opens a group, the arrows step through its parts, Esc folds it'],
-      ['The 360° button in the view strip at the top left of the view', 'start or stop the turntable; on narrow windows, the turntable below the view keeps its eighth-turn arrows'],
       ['Click', 'select a part'],
       ['Double-click a part', 'inspect it on its own'],
       ['Rest the pointer on a sub-part (inspecting)', 'preview its sheet; it stays until another one replaces it, or × or Esc. A click that misses leaves it'],
@@ -7400,11 +7378,10 @@ function fitFoot() {
   title.style.removeProperty('--tb-bottom');
   for (const prop of ['--start-top', '--start-shift', '--start-height']) card.style.removeProperty(prop);
   foldTitle(titleFolded);
-  if (stacked()) { if (turning) setTurning(false); return; }
+  if (stacked()) return;
   const c = card.getBoundingClientRect(), inset = blueprint ? 26 : 8;
   const triadLeft = $('triad').getBoundingClientRect().left;
   if (vb.getBoundingClientRect().right > triadLeft - 8) vb.classList.add('tight');
-  if (turning && !spinToggle.getClientRects().length) setTurning(false);
   const bottom = Math.ceil(vb.getBoundingClientRect().bottom - c.top + 10);
   card.style.setProperty('--tools-bottom', bottom + 'px');
   card.style.setProperty('--view-menu-height', Math.max(48, c.height - bottom - inset) + 'px');
@@ -8515,7 +8492,7 @@ const GUIDE_STEPS = [
   // 2. Orient the view.
   { ch: 1, id: 'orient.turn', q: 'What does the far side look like?',
     zone: () => $('card'),
-    how: () => `${tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.')}${gShown($('turnTable')) ? (stacked() ? ' The turntable arrows below the view turn it an eighth at a time.' : ' The <b>360°</b> button in the view strip at the top left of the view starts and stops the turntable.') : ''}`,
+    how: () => `${tapOr('Drag one finger across the model.', 'Drag across the model. With the view focused (click it), the arrow keys turn it too.')}${gShown($('turnTable')) ? (stacked() ? ' The turntable arrows below the view turn it an eighth at a time.' : '') : ''}`,
     look: 'Sideways spins the machine about its own axis, the middle of the ring on the floor; up and down tilts it. The vertical always stays up.',
     need: () => { gAssembly(); gHome(); },
     base: () => ({ az: goal.az, el: goal.el }),
@@ -9330,8 +9307,8 @@ function frame() {
   const low = coarse && (pointers.size > 0 || !!glide);
   if (low !== lowRes) { lowRes = low; resize(); }
 
-  // Idle motion stops on first interaction; the desktop toggle can explicitly request it again.
-  if (turning || (!touched && !reduceMotion.matches && now - idleSince > 2.5)) { turnGoal(5 * dt); active = true; }
+  // Idle motion stops on first interaction.
+  if ((!touched && !reduceMotion.matches && now - idleSince > 2.5)) { turnGoal(5 * dt); active = true; }
 
   const k = reduceMotion.matches ? 1 : 1 - Math.exp(-dt * 16);
   const d = Math.abs(goal.az - view.az) + Math.abs(goal.el - view.el) + Math.abs(Math.log(goal.zoom / view.zoom)) * 50 + goal.target.distanceTo(view.target);
