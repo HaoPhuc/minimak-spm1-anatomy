@@ -16,6 +16,6 @@ ok('Esc from a theme closes and returns focus', $('looks').hidden && document.ac
 $('bLook').click(); $('strip').querySelector('.brand').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
 ok('outside press closes and returns focus from menu', $('looks').hidden && document.activeElement === $('bLook'));
 $('bHelp').click();
-ok('Controls explains the moved strip, turntable toggle and Blueprint fold', $('inspBody').textContent.includes('view strip at the top left of the view') && $('inspBody').textContent.includes('start or stop the turntable') && $('inspBody').textContent.includes('Blueprint title-block chevron: click, Enter or Space'));
+ok('Controls explains the moved strip and Blueprint fold, with no 360° button', $('inspBody').textContent.includes('view strip at the top left of the view') && !$('inspBody').textContent.includes('360°') && $('inspBody').textContent.includes('Blueprint title-block chevron: click, Enter or Space'));
 return finish();
 

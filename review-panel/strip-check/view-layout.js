@@ -9,7 +9,7 @@ const checkView = async (state, menu = true) => {
   const caption = () => { const r = R($('stepCap')), p = R($('isobar')); return new DOMRect(Math.max(r.left,p.left),Math.max(r.top,p.top),Math.min(r.right,p.right)-Math.max(r.left,p.left),Math.min(r.bottom,p.bottom)-Math.max(r.top,p.top)); };
   ok(state + ': view strip is at the top left inside the view', inside(bar, card) && Math.abs(bar.left - card.left - inset - 1) <= 1 && Math.abs(bar.top - card.top - inset - 1) <= 1);
   if (blue) ok(state + ': strip clears Blueprint inner frame by at least 4px', bar.left >= card.left + 26 && bar.top >= card.top + 26 && bar.right <= card.right - 26);
-  ok(state + ': desktop step arrows are hidden', !shown($('bSpinL')) && !shown($('bSpinR')));
+  ok(state + ': desktop has no turntable control', !shown($('turnTable')) && !document.querySelector('.spin-toggle'));
   for (const id of ['triad', 'startCard', 'desk', 'stepCap', 'guide', 'readout']) {
     const e = $(id);
     ok(state + ': view strip clears ' + id, !shown(e) || clear(bar, id === 'stepCap' ? caption() : R(e)));
