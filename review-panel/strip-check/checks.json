@@ -2735,5 +2735,159 @@
         ]
       }
     ]
+  },
+  {
+    "name": "aurora-field",
+    "w": 1440,
+    "h": 900,
+    "theme": "dark",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"field\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      },
+      {
+        "shot": "aurora-field"
+      }
+    ]
+  },
+  {
+    "name": "aurora-light",
+    "w": 1440,
+    "h": 900,
+    "theme": "light",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"light\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "aurora-greyscale",
+    "w": 1440,
+    "h": 900,
+    "theme": "greyscale",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"greyscale\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "aurora-blueprint",
+    "w": 1440,
+    "h": 900,
+    "theme": "blueprint",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"blueprint\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "aurora-desk",
+    "w": 1440,
+    "h": 900,
+    "theme": "dark",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"desk\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "aurora-hidden",
+    "w": 1440,
+    "h": 900,
+    "theme": "dark",
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"hidden\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "aurora-reduced",
+    "w": 1440,
+    "h": 900,
+    "theme": "dark",
+    "reduced": true,
+    "steps": [
+      {
+        "jsFile": "settled.js"
+      },
+      {
+        "js": "window.__auroraMode=\"reduced\""
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "aurora.js"
+        ]
+      },
+      {
+        "shot": "aurora-reduced"
+      }
+    ]
   }
 ]
