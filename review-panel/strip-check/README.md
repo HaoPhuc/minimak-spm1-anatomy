@@ -62,39 +62,43 @@ the ring is updated by `guideTick`, not by the asynchronous step setup. The loup
 still requires a ring around `stage`; hiding the phone status bar does not hide
 that target.
 
-## Hologram aurora
+## Hologram plasma
 
-Seven `aurora-*` scenarios (127 assertions) cover the six root clocks (37/53/71/89/113/137 s),
-the shared fixed field on all six HUD surface types, and plain tables, search
-and editable desk controls. Unmounted surface types use temporary CSS fixtures;
-mounted surfaces use the real elements. Colour, Greyscale and Blueprint are
-checked on arrival and after a live Hologram switch, including stale `holo-*`
-classes. Desk buttons cover INITIALISE, pumping, GLOW ON, violet tint and gain,
-a coil ramp, a trip, STOP and Done. Without the desk there is no glow or ramp.
+Seven `aurora-*` scenarios (195 assertions) cover the six root clocks (37/53/71/89/113/137 s),
+the shared fixed field on all six HUD surface types (six glow lobes sized to the
+viewport under three drifting plasma layers, and the hot-rim overlay), and plain
+tables, search and editable desk controls. The plasma's five textures, baked
+once in a worker, must arrive as blob URLs within 5 s and be used by the layers;
+outside the desk the hot rims are off. Unmounted surface types use temporary CSS
+fixtures; mounted surfaces use the real elements. Colour, Greyscale and Blueprint
+are checked on arrival and after a live Hologram switch, including stale
+`holo-*` classes, with no field and no overlay. Desk buttons cover INITIALISE,
+pumping, GLOW ON (violet tint, gain, hot rims at 0.45, half that in the toolstrip), a coil ramp, a trip, STOP
+and Done (the rims ease off). Without the desk there is no glow or ramp.
 
 Hidden-tab checks temporarily override `document.hidden` and dispatch
 `visibilitychange`, then restore it; all six clocks must pause and resume.
 Reduced motion removes the root animation and leaves the field drawn. The tiny
 read-only `__spm1.tableWeights()` hook returns copies of the last draw’s table
-sub-part names and weights: skins, trim and name plates are 1, frame and legs
-0.32, with nothing selected. Peak-frame and reduced-motion screenshots are saved.
+sub-part names and weights: every one, legs and all, is 2.6, with nothing
+selected and with the table selected. Peak-frame and reduced-motion screenshots
+are saved.
 
 ### Contrast: one-off pixel measurement
 
 This is documented evidence, not an automatic PASS in this suite: `shot.mjs`
-saves PNGs but does not return their pixels to the in-page scenario. The approved
-field was sampled at 1440 × 900, pausing its six root animations with
-`a.pause(); a.currentTime = 76000`, both without and with `holo-glow`, after
-allowing 1.4 s for tint and gain to settle. A 0–136 s sweep at 4 s intervals
-located this sampled peak; it is not a proof of the maximum over all six cycles.
-
-The computed panel field was rasterised over white (a conservative backing).
-Its brightest pixels were RGB (49, 85, 120) normally and (69, 74, 119) with
-glow: body text `#cfe3f2` exceeds 5.8:1 in both. Muted text `#7a9fb9` relies
-on the existing dark halo. Archivo and Red Hat Mono at 11–16 px, weights
-400/600, were rasterised over the brighter stress backing RGB (60, 95, 130).
-A text-free halo image and a white-on-black glyph mask isolate the background
-at glyph cores (mask ≥ 192/255); its brightest pixel was (21, 40, 60), giving
-5.34:1 for muted text. Ratios use linearised sRGB relative luminance and
-`(Llighter + 0.05) / (Ldarker + 0.05)`. These measurements exceed 4.5:1;
-repeat the pixel measurement if the field, veil, fonts, colours or halo change.
+saves PNGs but does not return their pixels to the in-page scenario. At 1440 ×
+900 with the panels open and the plasma's textures in place, the six root
+animations were paused at 20 times 7.3 s apart (0–139 s), normally and with
+`holo-glow` and `holo-ramping` (the brightest state, gain 0.26). Each frame
+was taken twice, with the panels' text shown and hidden. Letters are the pixels
+more than 0.02 brighter (relative luminance) with the text shown; the ring is
+the pixels 2–3 px outside them, where the dark halo meets the plasma. The 99th
+percentile of the ring's luminance in the right panel, the left panel and the
+toolstrip, over all frames, is the background the text is held against: at
+worst 0.070 normally and 0.085 with the glow (the toolstrip, whose hot rims run
+at half strength). Body text `#cfe3f2` is then 5.9:1 or more; muted text
+`#afcadf` 5.1:1 or more normally and 4.56:1 or more with the glow. Ratios use
+linearised sRGB relative luminance and `(Llighter + 0.05) / (Ldarker + 0.05)`.
+Repeat the measurement if the field, the textures, the halo, the fonts or the
+colours change.

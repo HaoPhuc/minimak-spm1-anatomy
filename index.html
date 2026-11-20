@@ -740,10 +740,16 @@
   .holo .glance b { font-family: var(--mono); font-weight: 400; letter-spacing: -0.03em; color: #dcecf8; text-shadow: 0 0 16px rgb(111 184 232 / 0.4); }
   .holo .doc h2 .count { color: var(--accent); }
 
-  /* One viewport-wide mesh of six soft lobes: independent closed paths and breathing radii.
-     Only the root animates; all HUD surfaces sample the same fixed, non-repeating field.
-     A lighter gain-dependent veil reveals the colour; local text halos protect muted copy. The still backing blocks the model.
-     No extra work enters the 3D draw loop. */
+  /* One viewport-wide plasma field: soft glow under two drifting, folded filament sheets.
+     Only the root animates; every HUD surface samples the same fixed coordinates.
+     The periodic textures are baked once in a worker, never in the 3D draw loop.
+     Different scales and paths let the sheets cross and unfold without a visible tile. */
+  @property --holo-flow-x { syntax: '<length>'; inherits: true; initial-value: -90px; }
+  @property --holo-flow-y { syntax: '<length>'; inherits: true; initial-value: -60px; }
+  @property --holo-fold-x { syntax: '<length>'; inherits: true; initial-value: -580px; }
+  @property --holo-fold-y { syntax: '<length>'; inherits: true; initial-value: -310px; }
+  @property --holo-spark-x { syntax: '<length>'; inherits: true; initial-value: -160px; }
+  @property --holo-spark-y { syntax: '<length>'; inherits: true; initial-value: -100px; }
   @property --holo-drift { syntax: '<percentage>'; inherits: true; initial-value: 18%; }
   @property --holo-tint { syntax: '<color>'; inherits: true; initial-value: #4f9fd6; }
   @property --holo-gain { syntax: '<number>'; inherits: true; initial-value: 0.14; }
@@ -780,22 +786,22 @@
   :root.holo.holo-glow.holo-ramping { --holo-gain: 0.26; }
   :root.holo.holo-paused { animation-play-state: paused; }
   @keyframes hud-aurora {
-    0%, 100% { --holo-drift: 18%; --holo-ay: 22%; --holo-ar: 36%; }
-    27% { --holo-drift: 30%; --holo-ay: 36%; --holo-ar: 40%; }
-    58% { --holo-drift: 8%; --holo-ay: 51%; --holo-ar: 34%; }
-    81% { --holo-drift: 24%; --holo-ay: 9%; --holo-ar: 38%; }
+    0%, 100% { --holo-drift: 18%; --holo-ay: 22%; --holo-ar: 36%; --holo-flow-x: -90px; --holo-flow-y: -60px; }
+    27% { --holo-drift: 30%; --holo-ay: 36%; --holo-ar: 40%; --holo-flow-x: -38px; --holo-flow-y: -35px; }
+    58% { --holo-drift: 8%; --holo-ay: 51%; --holo-ar: 34%; --holo-flow-x: -70px; --holo-flow-y: 12px; }
+    81% { --holo-drift: 24%; --holo-ay: 9%; --holo-ar: 38%; --holo-flow-x: -120px; --holo-flow-y: -16px; }
   }
   @keyframes hud-aurora-b {
-    0%, 100% { --holo-bx: 88%; --holo-by: 56%; --holo-br: 39%; }
-    27% { --holo-bx: 70%; --holo-by: 34%; --holo-br: 43%; }
-    58% { --holo-bx: 96%; --holo-by: 19%; --holo-br: 36%; }
-    81% { --holo-bx: 77%; --holo-by: 76%; --holo-br: 41%; }
+    0%, 100% { --holo-bx: 88%; --holo-by: 56%; --holo-br: 39%; --holo-fold-x: -580px; --holo-fold-y: -310px; }
+    27% { --holo-bx: 70%; --holo-by: 34%; --holo-br: 43%; --holo-fold-x: -625px; --holo-fold-y: -260px; }
+    58% { --holo-bx: 96%; --holo-by: 19%; --holo-br: 36%; --holo-fold-x: -550px; --holo-fold-y: -220px; }
+    81% { --holo-bx: 77%; --holo-by: 76%; --holo-br: 41%; --holo-fold-x: -520px; --holo-fold-y: -285px; }
   }
   @keyframes hud-aurora-c {
-    0%, 100% { --holo-cx: 42%; --holo-cy: 80%; --holo-cr: 48%; }
-    27% { --holo-cx: 64%; --holo-cy: 64%; --holo-cr: 44%; }
-    58% { --holo-cx: 29%; --holo-cy: 46%; --holo-cr: 51%; }
-    81% { --holo-cx: 13%; --holo-cy: 74%; --holo-cr: 46%; }
+    0%, 100% { --holo-cx: 42%; --holo-cy: 80%; --holo-cr: 48%; --holo-spark-x: -160px; --holo-spark-y: -100px; }
+    27% { --holo-cx: 64%; --holo-cy: 64%; --holo-cr: 44%; --holo-spark-x: -145px; --holo-spark-y: -120px; }
+    58% { --holo-cx: 29%; --holo-cy: 46%; --holo-cr: 51%; --holo-spark-x: -120px; --holo-spark-y: -105px; }
+    81% { --holo-cx: 13%; --holo-cy: 74%; --holo-cr: 46%; --holo-spark-x: -140px; --holo-spark-y: -85px; }
   }
   @keyframes hud-aurora-d {
     0%, 100% { --holo-dx: 6%; --holo-dy: 69%; --holo-dr: 32%; }
@@ -821,20 +827,40 @@
     content: ''; position: absolute; inset: 1px; z-index: -1; pointer-events: none; border-radius: inherit;
     background-color: rgb(6 18 30 / 0.97);
     background-image:
+      var(--holo-sparks, linear-gradient(transparent, transparent)),
+      var(--holo-filaments, linear-gradient(transparent, transparent)),
+      var(--holo-folds, linear-gradient(transparent, transparent)),
       linear-gradient(rgb(6 18 30 / calc(0.10 + (var(--holo-gain) - 0.14) * 3.2)), rgb(6 18 30 / calc(0.10 + (var(--holo-gain) - 0.14) * 3.2))),
       radial-gradient(ellipse calc(var(--holo-ar) * 1.05) var(--holo-ar) at var(--holo-drift) var(--holo-ay), color-mix(in srgb, var(--holo-tint) calc(var(--holo-gain) * 190%), transparent), transparent 100%),
-      radial-gradient(ellipse calc(var(--holo-br) * 0.85) var(--holo-br) at var(--holo-bx) var(--holo-by), color-mix(in srgb, #41b8ae calc(var(--holo-gain) * 157%), transparent), transparent 100%),
-      radial-gradient(ellipse calc(var(--holo-cr) * 0.8) var(--holo-cr) at var(--holo-cx) var(--holo-cy), color-mix(in srgb, #493d99 calc(var(--holo-gain) * 272%), transparent), transparent 100%),
-      radial-gradient(ellipse calc(var(--holo-dr) * 1.2) var(--holo-dr) at var(--holo-dx) var(--holo-dy), color-mix(in srgb, #8a6bd8 calc(var(--holo-gain) * 206%), transparent), transparent 100%),
-      radial-gradient(ellipse calc(var(--holo-er) * 0.75) var(--holo-er) at var(--holo-ex) var(--holo-ey), color-mix(in srgb, #592d92 calc(var(--holo-gain) * 297%), transparent), transparent 100%),
-      radial-gradient(ellipse calc(var(--holo-fr) * 1.5) var(--holo-fr) at var(--holo-fx) var(--holo-fy), color-mix(in srgb, #38abc4 calc(var(--holo-gain) * 182%), transparent), transparent 100%);
+      radial-gradient(ellipse calc(var(--holo-br) * 0.85) var(--holo-br) at var(--holo-bx) var(--holo-by), color-mix(in srgb, #3d4dff calc(var(--holo-gain) * 157%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-cr) * 0.8) var(--holo-cr) at var(--holo-cx) var(--holo-cy), color-mix(in srgb, #30216c calc(var(--holo-gain) * 272%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-dr) * 1.2) var(--holo-dr) at var(--holo-dx) var(--holo-dy), color-mix(in srgb, #8a3dff calc(var(--holo-gain) * 206%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-er) * 0.75) var(--holo-er) at var(--holo-ex) var(--holo-ey), color-mix(in srgb, #722a9d calc(var(--holo-gain) * 297%), transparent), transparent 100%),
+      radial-gradient(ellipse calc(var(--holo-fr) * 1.5) var(--holo-fr) at var(--holo-fx) var(--holo-fy), color-mix(in srgb, #418bcc calc(var(--holo-gain) * 182%), transparent), transparent 100%);
     background-attachment: fixed;
-    background-size: 100vw 100vh;
-    background-repeat: no-repeat;
+    background-size: 1536px 1536px, 1536px 1536px, 1872px 1680px, 100vw 100vh, 100vw 100vh, 100vw 100vh, 100vw 100vh, 100vw 100vh, 100vw 100vh, 100vw 100vh;
+    background-position: var(--holo-spark-x) var(--holo-spark-y), var(--holo-flow-x) var(--holo-flow-y), var(--holo-fold-x) var(--holo-fold-y), 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+    background-repeat: repeat, repeat, repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
   }
+  /* A transparent hot-rim overlay eases with the existing gain. Opacity zero costs no paint
+     outside a desk ramp/glow; the textures below need neither blend modes nor colour filters. */
+  .holo :is(.top, .panel, .screen, .startcard, .guide, .desk)::after { z-index: -2; }
+  .holo :is(.top, .panel, .screen, .startcard, .guide, .desk)::before {
+    content: ''; position: absolute; inset: 1px; z-index: -1; pointer-events: none; border-radius: inherit;
+    background-image: var(--holo-hot-filaments, linear-gradient(transparent, transparent)), var(--holo-hot-folds, linear-gradient(transparent, transparent));
+    background-attachment: fixed;
+    background-size: 1536px 1536px, 1872px 1680px;
+    background-position: var(--holo-flow-x) var(--holo-flow-y), var(--holo-fold-x) var(--holo-fold-y);
+    background-repeat: repeat;
+    opacity: calc((var(--holo-gain) - 0.14) * 5);
+  }
+  .holo :is(.panel, .screen)::before { inset: 5px; border-radius: 0; }
+  /* The toolstrip's captions are small: its hot rims glow at half strength. */
+  .holo .top::before { opacity: calc((var(--holo-gain) - 0.14) * 2.5); }
   /* A local ink halo keeps secondary copy readable without flattening the empty glass. */
   .holo :is(.top, .panel, .screen, .startcard, .guide, .desk) {
-    text-shadow: 0 0 1px #06121e, 0 0 1px #06121e, 0 0 3px #06121e, 0 0 3px #06121e;
+    --muted: #afcadf;
+    text-shadow: 0 0 1px #06121e, 0 0 1px #06121e, 0 0 2px #06121e, 0 0 3px #06121e, 0 0 3px #06121e;
   }
   /* Leave the HUD's corner marks clear; dense data and editable controls keep their own still backing. */
   .holo :is(.panel, .screen)::after { inset: 5px; border-radius: 0; }
@@ -1790,11 +1816,13 @@ const LIGHT = [-0.42, 0.58, 0.7];
 // selection is orange (THEME.dark.lit), the blue's opposite.
 const HOLO = new THREE.Color('#4f9fd6');
 // In the hologram the vessel, its magnets and the discharge are lit at full strength; what stands round them less, the
-// stand and the cabinets least, so the torus is what the eye finds. A part lit (selected, kept, under the pointer) or
+// cabinets least, so the torus is what the eye finds. A part lit (selected, kept, under the pointer) or
 // inspected is always at full strength.
 const HOLO_WEIGHT = { diag: 0.8, vacuum: 0.6, power: 0.38, structure: 0.32 };
-// The breadboard is part of the luminous machine: both skins, edge trim and badges, but not its support frame.
-const HOLO_TABLE = new Set(['Breadboard top skin, M6 on 25 mm', 'Honeycomb core, black side trim', 'Name plates']);
+// The optical table, legs and all, is part of the luminous machine. Its broad flat faces catch the least light (the
+// hologram gathers it at the rims), so at full strength it still reads dim beside the coils: it gets more, also while
+// lit, enough to read as bright as the machine while the torus stays what the eye finds first.
+const HOLO_TABLE_GAIN = 2.6;
 let holo = false, greyscale = false, blueprint = false;
 const clearColor = new THREE.Color();
 // The greyscale drawing is white, like a CAD line rendering: every material is white, and its greys and black come only
@@ -3154,7 +3182,7 @@ function draw() {
     else if (g >= 1 && lit) { m.material = GHOST_FADE; m.userData.solid = 0.55; }
     else if (g >= 1) { m.material = GHOST; m.visible = !FINE.has(m.userData.tone); }
     else { m.material = GHOST_FADE; m.userData.solid = 1 - g; }
-    if (holo && !iso.part && !lit) m.userData.dim *= m.userData.part === 'table' && HOLO_TABLE.has(m.userData.sub) ? 1 : HOLO_WEIGHT[partById.get(m.userData.part)?.group] ?? 1;
+    if (holo && !iso.part) m.userData.dim *= m.userData.part === 'table' ? HOLO_TABLE_GAIN : lit ? 1 : HOLO_WEIGHT[partById.get(m.userData.part)?.group] ?? 1;
   }
   projector.cone.visible = projector.motes.visible = holo && !iso.part;
   // The hologram's depth fade runs across what is framed: the part inspected, or the whole machine.
@@ -7956,8 +7984,103 @@ function deskLit() {
   }
   refreshLit();
 }
+// The plasma's sheets: deterministic periodic ridged noise, warped into curved sheets with a narrow luminous rim, as
+// four RGBA maps (cool and hot, two weights each), plus a sparse scatter of sparks. Self-contained, so a worker can run it.
+function holoPlasmaMaps(size, cells) {
+  const wrap = (n, period) => ((n % period) + period) % period;
+  const hash = (x, y, seed = 0) => {
+    let h = Math.imul(x + 19, 374761393) ^ Math.imul(y + 73, 668265263) ^ Math.imul(seed + 1, 1274126177);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+  const noise = (x, y, period, seed) => {
+    const ix = Math.floor(x), iy = Math.floor(y);
+    let fx = x - ix, fy = y - iy;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);
+    const a = hash(wrap(ix, period), wrap(iy, period), seed), b = hash(wrap(ix + 1, period), wrap(iy, period), seed);
+    const c = hash(wrap(ix, period), wrap(iy + 1, period), seed), d = hash(wrap(ix + 1, period), wrap(iy + 1, period), seed);
+    return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+  };
+  const maps = Array.from({ length: 4 }, () => new Uint8ClampedArray(size * size * 4));
+  for (let row = 0; row < size; row++) {
+    for (let px = 0; px < size; px++) {
+      const x = px / size * cells, y = row / size * cells;
+      const wx = x + 2.7 * (noise(x, y, cells, 3) - .5) + .48 * (noise(x * 3, y * 3, cells * 3, 7) - .5);
+      const wy = y + 2.7 * (noise(x, y, cells, 5) - .5) + .48 * (noise(x * 3, y * 3, cells * 3, 9) - .5);
+      const field = noise(wx, wy, cells, 31) + .14 * noise(wx * 2, wy * 2, cells * 2, 37) - .57;
+      const gap = Math.abs(field) * 1.6;
+      const rim = Math.exp(-gap * gap * 750), sheet = Math.exp(-gap * (field > 0 ? 9 : 22));
+      const wisp = Math.exp(-Math.pow((gap - .09) * 32, 2)) * .12;
+      const heat = noise(x * 2, y * 2, cells * 2, 17), strength = .25 + .75 * noise(x * 3, y * 3, cells * 3, 19);
+      const alpha = Math.min(.58, (rim * .36 + sheet * .22 + wisp) * strength), at = (row * size + px) * 4;
+      for (let k = 0; k < 4; k++) {
+        const data = maps[k];
+        data[at] = 61 + heat * 77 + rim * ((k % 2 ? 45 : 17) + (k > 1 ? 70 : 0));
+        data[at + 1] = 61 + (1 - heat) * 16 + rim * 20;
+        data[at + 2] = 255;
+        data[at + 3] = alpha * 255 * (k % 2 ? .65 : 1) * (k > 1 ? 1.16 : 1);
+      }
+    }
+  }
+  const sparks = Array.from({ length: 95 }, (_, i) => [2 + hash(i, 1, 23) * (size - 4), 2 + hash(i, 2, 23) * (size - 4), .35 + hash(i, 3, 23) * .4]);
+  return { maps, sparks };
+}
+// The sparks, painted on a 2D context (a page canvas or a worker's OffscreenCanvas).
+function holoPlasmaSparks(g, sparks) {
+  for (const [x, y, r] of sparks) {
+    const light = g.createRadialGradient(x, y, 0, x, y, r * 2);
+    light.addColorStop(0, 'rgba(155,185,255,.26)'); light.addColorStop(1, 'rgba(100,120,255,0)');
+    g.fillStyle = light; g.fillRect(x - 2, y - 2, 4, 4);
+  }
+}
+// Baked once, the first time Hologram is shown, in a worker (a fraction of a second), maps and PNGs both, so neither the
+// 3D view nor the page waits for it (a page canvas's PNG waits for idle time, which a turning view rarely leaves). Where a
+// worker cannot start, or cannot draw, the page finishes it a moment later. The CSS glow shows until it is ready. The PNGs
+// are held for the document's lifetime; there are no per-panel canvases.
+let holoPlasmaStarted = false;
+function prepareHoloPlasma() {
+  if (holoPlasmaStarted) return;
+  holoPlasmaStarted = true;
+  const size = 768, cells = 8;
+  const show = (blobs) => {
+    const names = ['--holo-filaments', '--holo-folds', '--holo-hot-filaments', '--holo-hot-folds', '--holo-sparks'];
+    blobs.forEach((blob, i) => document.documentElement.style.setProperty(names[i], 'url("' + URL.createObjectURL(blob) + '")'));
+  };
+  const apply = ({ blobs, maps, sparks }) => {
+    if (blobs) { show(blobs); return; }
+    const canvases = Array.from({ length: 5 }, () => Object.assign(document.createElement('canvas'), { width: size, height: size }));
+    const contexts = canvases.map(c => c.getContext('2d'));
+    if (contexts.some(c => !c)) return; // The CSS glow remains the fallback.
+    maps.forEach((data, i) => contexts[i].putImageData(new ImageData(data, size, size), 0, 0));
+    holoPlasmaSparks(contexts[4], sparks);
+    Promise.all(canvases.map(c => new Promise(resolve => c.toBlob(resolve)))).then(blobs => { if (!blobs.some(b => !b)) show(blobs); });
+  };
+  const onPage = () => setTimeout(() => apply(holoPlasmaMaps(size, cells)), 1500);
+  try {
+    const src = URL.createObjectURL(new Blob([`const holoPlasmaMaps = ${holoPlasmaMaps};
+const holoPlasmaSparks = ${holoPlasmaSparks};
+onmessage = async (e) => {
+  const { size, cells } = e.data, r = holoPlasmaMaps(size, cells);
+  try {
+    const blobs = [];
+    for (let i = 0; i < 5; i++) {
+      const c = new OffscreenCanvas(size, size), g = c.getContext('2d');
+      if (i < 4) g.putImageData(new ImageData(r.maps[i], size, size), 0, 0); else holoPlasmaSparks(g, r.sparks);
+      blobs.push(await c.convertToBlob());
+    }
+    postMessage({ blobs });
+  } catch { postMessage(r, r.maps.map(m => m.buffer)); }
+};`], { type: 'text/javascript' }));
+    const worker = new Worker(src);
+    const done = () => { worker.terminate(); URL.revokeObjectURL(src); };
+    worker.onmessage = (e) => { done(); apply(e.data); };
+    worker.onerror = (e) => { e.preventDefault(); done(); onPage(); };
+    worker.postMessage({ size, cells });
+  } catch { onPage(); }
+}
 // CSS owns the drift and one-second easing; only desk state changes update its targets, never the 3D draw loop.
 function syncAurora() {
+  if (holo) prepareHoloPlasma();
   const root = document.documentElement;
   const glow = holo && desk.on && desk.io && desk.hv && !desk.trip;
   const ramping = holo && desk.on && desk.io && Object.values(desk.coils).some(c => Math.abs((c.on ? c.set : 0) - c.I) > 0.1);
