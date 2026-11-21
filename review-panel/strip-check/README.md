@@ -64,41 +64,43 @@ that target.
 
 ## Hologram plasma
 
-Seven `aurora-*` scenarios (195 assertions) cover the six root clocks (37/53/71/89/113/137 s),
+Seven `aurora-*` scenarios (198 assertions) cover the six root clocks (37/53/71/89/113/137 s),
 the shared fixed field on all six HUD surface types (six glow lobes sized to the
-viewport under three drifting plasma layers, and the hot-rim overlay), and plain
+viewport, with plasma textures and hot rims fading in over them), and plain
 tables, search and editable desk controls. The plasma's five textures, baked
 once in a worker, must arrive as blob URLs within 5 s and be used by the layers;
-outside the desk the hot rims are off. Unmounted surface types use temporary CSS
-fixtures; mounted surfaces use the real elements. Colour, Greyscale and Blueprint
+at rest all plasma filaments and sparks are off, leaving the soft glow.
+Unmounted surface types use temporary CSS fixtures; mounted surfaces use the
+real elements. Colour, Greyscale and Blueprint
 are checked on arrival and after a live Hologram switch, including stale
 `holo-*` classes, with no field and no overlay. Desk buttons cover INITIALISE,
-pumping, GLOW ON (violet tint, gain, hot rims at 0.45, half that in the toolstrip), a coil ramp, a trip, STOP
-and Done (the rims ease off). Without the desk there is no glow or ramp.
+pumping, GLOW ON (plasma fades in over 1.1 s, violet tint, gain, hot rims at 0.45,
+half that in the toolstrip), a coil ramp, a trip, STOP and Done (all plasma fades
+out). Without the desk there is no glow or ramp.
 
 Hidden-tab checks temporarily override `document.hidden` and dispatch
 `visibilitychange`, then restore it; all six clocks must pause and resume.
-Reduced motion removes the root animation and leaves the field drawn. The tiny
-read-only `__spm1.tableWeights()` hook returns copies of the last draw’s table
+Reduced motion removes the root animation; the soft field stays drawn and plasma
+still follows the desk’s glow. The tiny read-only `__spm1.tableWeights()` hook returns copies of the last draw’s table
 sub-part names and weights: every one, legs and all, is 2.6, with nothing
 selected and with the table selected. Peak-frame and reduced-motion screenshots
 are saved.
 
 ### Contrast: one-off pixel measurement
 
-This is documented evidence, not an automatic PASS in this suite: `shot.mjs`
-saves PNGs but does not return their pixels to the in-page scenario. At 1440 ×
-900 with the panels open and the plasma's textures in place, the six root
-animations were paused at 20 times 7.3 s apart (0–139 s), normally and with
-`holo-glow` and `holo-ramping` (the brightest state, gain 0.26). Each frame
-was taken twice, with the panels' text shown and hidden. Letters are the pixels
-more than 0.02 brighter (relative luminance) with the text shown; the ring is
-the pixels 2–3 px outside them, where the dark halo meets the plasma. The 99th
-percentile of the ring's luminance in the right panel, the left panel and the
-toolstrip, over all frames, is the background the text is held against: at
-worst 0.070 normally and 0.085 with the glow (the toolstrip, whose hot rims run
-at half strength). Body text `#cfe3f2` is then 5.9:1 or more; muted text
-`#afcadf` 5.1:1 or more normally and 4.56:1 or more with the glow. Ratios use
-linearised sRGB relative luminance and `(Llighter + 0.05) / (Ldarker + 0.05)`.
-Repeat the measurement if the field, the textures, the halo, the fonts or the
-colours change.
+This is documented evidence, not an automatic PASS in this suite. Brief 14
+re-measured the changed field at 1440 × 900: a full-viewport panel fixture,
+with the same pseudo-elements over a white backing, was sampled at eight paused
+animation times (0, 17, 38, 76, 121, 197, 253 and 307 s), at rest, with glow,
+and with glow plus a coil ramp: 24 frames. The brightest raw background pixel
+was compared with body text `#cfe3f2` and muted text `#afcadf`, without taking
+credit for the text halo. The sampled minimum was **6.52:1 body, 5.05:1 muted**
+(glow at 76 s; background luminance 0.07213). At rest the minima were 6.56:1
+and 5.08:1; during the ramp, 6.86:1 and 5.32:1.
+
+These replace the earlier text-ring percentile figures (5.9:1 body, 4.56:1
+muted with glow). They still hold for this documentation pass: the brightest
+field, textures, halo, fonts and colours are unchanged from that measurement.
+Ratios use linearised sRGB relative luminance and
+`(Llighter + 0.05) / (Ldarker + 0.05)`. These are sampled minima, not a bound
+on every animation frame. Repeat if the field or text styling changes.
