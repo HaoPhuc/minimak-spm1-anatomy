@@ -569,7 +569,9 @@
   button.chip:hover { background: var(--rule); }
   .actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 2px 0 14px; }
   .actions :is(button, .dl) { border: 1px solid var(--line); background: var(--card); border-radius: 2px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
-  .actions :is(button, .dl):hover { background: var(--soft); }
+  .actions :is(button:not(.primary), .dl):hover { background: var(--soft); }
+  /* The main action keeps its fill and text under the pointer: a ring of its own colour marks it instead. */
+  .actions button.primary:hover { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent); }
   /* The user guide as a PDF to keep or print: a link, so the browser downloads it as any file. */
   .actions .dl { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); text-decoration: none; line-height: normal; }
   .actions .dl svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -5384,12 +5386,6 @@ function freeRect() {
   return { x0: i.l, y0: i.t, x1: width - i.r, y1: height - i.b };
 }
 const inRect = (s, r, m = 0) => s.x >= r.x0 + m && s.x <= r.x1 - m && s.y >= r.y0 + m && s.y <= r.y1 - m;
-// Where the way from `a` (inside `r`) to `b` leaves the rectangle `r`: a tether starts at the edge of what it leaves.
-function exitOf(a, b, r) {
-  const dx = b.x - a.x, dy = b.y - a.y;
-  const t = Math.min(1, dx ? ((dx > 0 ? r.x1 : r.x0) - a.x) / dx : Infinity, dy ? ((dy > 0 ? r.y1 : r.y0) - a.y) / dy : Infinity);
-  return { x: a.x + dx * t, y: a.y + dy * t };
-}
 // Where a piece, or one of its sub-parts, rests in the machine: not lifted, not taken apart, but exploded with it.
 function seatBox(pc, sub) {
   const off = new V3();
@@ -5460,11 +5456,14 @@ function layoutOverlay() {
   camera.updateMatrixWorld();
   const free = freeRect();
   const occ = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost && !m.userData.dimmed && m.userData.tone !== 'glass'; });
-  const lead = drawLeader(free, occ);
-  drawTrail(free);
+  // A dot that ends a line must sit on what you can plainly see: something behind a window's glass reads as nothing, so
+  // for those the glass hides it too. (A bolt head's number behind glass still counts as seen.)
+  const plain = solids.filter((m) => { const pc = m.userData.piece; return pc && pc.visible && !pc.userData.ghost && !m.userData.dimmed && (m.userData.tone !== 'glass' || m.visible); });
+  const lead = drawLeader(free, plain);
+  drawTrail(free, plain);
   drawStars(occ);
   drawDims(free, occ);
-  drawCallouts(free, occ, lead);
+  drawCallouts(free, plain, lead);
   showTurn(turnOffered());
   ov.shown = true;
 }
@@ -5484,16 +5483,23 @@ function trailSub() {
   return x && x.part === iso.part && subMeshes(pc, x.sub).length ? { pc, sub: x.sub } : null;
 }
 const trailKey = () => { const t = trailSub(); return t ? `${t.pc.id}|${t.sub}` : ''; };
-function drawTrail(free) {
+// It runs between two points of the sub-part itself, not the middles of its boxes: a ring's middle is its empty hole.
+// The point is the one in sight nearest where the sub-part sat; the move is a straight slide, so on this orthographic
+// view every point of it moved by the same step on screen.
+function drawTrail(free, occ) {
   ov.trail = trailKey();
   const t = trailSub();
   if (!t) return;
   const now = screenRect(boxOfSub(t.pc, t.sub)), home = screenRect(boxOfSub(t.pc, t.sub, 0));
   const c = { x: (now.x0 + now.x1) / 2, y: (now.y0 + now.y1) / 2 }, h = { x: (home.x0 + home.x1) / 2, y: (home.y0 + home.y1) / 2 };
-  if (Math.hypot(c.x - h.x, c.y - h.y) < 10 || !inRect(h, free)) return;
+  if (Math.hypot(c.x - h.x, c.y - h.y) < 10) return;
+  const a = anchorOf(t.pc, t.sub, h, occ);
+  if (!a) return;
+  const was = { x: a.x - (c.x - h.x), y: a.y - (c.y - h.y) };
+  if (!inRect(was, free)) return;
   const g = svgEl('g', {}, 'trail');
-  line(g, h, exitOf(c, h, now));
-  g.append(svgEl('circle', { cx: h.x, cy: h.y, r: 4 }, 'home'));
+  line(g, was, a);
+  g.append(svgEl('circle', { cx: was.x, cy: was.y, r: 4 }, 'home'));
   ov.svg.append(g);
 }
 // Where one of a ring is, in the world: a point at height `y` on its own axis (its head's top, its tip...).
