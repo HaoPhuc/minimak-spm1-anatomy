@@ -14,7 +14,7 @@ CROPS = {
     'bar': ('apart', 16, 48, 1264, 102),        # the Part tab's tools, without the step's caption
     'menu': ('views', 286, 112, 548, 395),      # the view buttons and the Views menu
     'tooltip': ('hover', 570, 495, 930, 635),
-    'term': ('term', 886, 112, 1266, 492),
+    'term': ('term', 886, 112, 1266, 376),
     'controls': ('controls', 886, 112, 1266, 646),
     'sources': ('sources', 886, 112, 1266, 383),
     'triad': ('first', 1166, 113, 1264, 211),

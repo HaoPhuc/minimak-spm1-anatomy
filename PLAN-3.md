@@ -118,7 +118,7 @@ listed after the table. On a wide window the part's controls are on the toolstri
 | 43 | Glossary | What is a knife edge? | dotted word · Tab, Enter · tap | — | definition opens | evidence.term | `aria-expanded` |
 | 44 | Copy link | Send this view | Part → Share: Copy link (also on Explore) · — · ⋯ | inspecting | copied | use.link | click seen |
 | 45 | Browser Back | Undo a jump? | browser Back | — | part before | use.history | read only |
-| 46 | How a run goes | In what order is it used? | Machine tab, part chips | — | selects a part | use.run | tab |
+| 46 | How a run goes | In what order is it used? | Machine tab, part pictures | — | selects a part | use.run | tab |
 | 47 | Tour | The machine's role, stop by stop | Learn → Take the tour | — | guide ends, tour starts | use.tour | `iso.tour` = 0 |
 | 48 | Quiz | Can I place parts? | Learn → Where does it go? | — | guide ends, quiz starts | use.quiz | `quiz.on` |
 | 55 | Control desk | Can I run the machine? | Run tab | — | guide ends, the desk opens | use.desk | `desk.on` |

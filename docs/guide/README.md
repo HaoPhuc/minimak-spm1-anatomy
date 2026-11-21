@@ -19,7 +19,7 @@ repository's root:
 3. Print the page:
 
    ```bash
-   "C:/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf="$(pwd -W)/docs/user-guide.pdf" "file:///$(pwd -W)/docs/guide/guide.html"
+   "C:/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --no-sandbox --no-pdf-header-footer --virtual-time-budget=8000 --print-to-pdf="$(pwd -W)/docs/user-guide.pdf" "file:///$(pwd -W)/docs/guide/guide.html"
    ```
 
 `shots/` and `img/` are not committed.

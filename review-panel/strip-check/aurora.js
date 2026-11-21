@@ -14,8 +14,8 @@ const surfaces = active => {
     if (fixture) { e = document.createElement('div'); e.className = cls; document.body.append(e); }
     const s = getComputedStyle(e, '::after'), n = (s.backgroundImage.match(/radial-gradient/g) || []).length;
     const sizes = s.backgroundSize.split(',').map(x => x.trim()), b = getComputedStyle(e, '::before');
-    ok(cls + ': ' + (active ? 'six lobes in the fixed viewport field under three drifting plasma layers' : 'no aurora field'), active ? n === 6 && s.content === '""' && s.backgroundAttachment.split(',').every(x => x.trim() === 'fixed') && sizes.length === 10 && sizes.slice(0, 3).join('|') === '1536px 1536px|1536px 1536px|1872px 1680px' && sizes.slice(3).every(x => x === innerWidth + 'px ' + innerHeight + 'px') : n === 0, sizes.join('|'));
-    ok(cls + ': ' + (active ? 'hot-rim overlay in the same fixed field' : 'no hot-rim overlay'), active ? b.content === '""' && b.backgroundAttachment.split(',').every(x => x.trim() === 'fixed') : !/url\(|gradient/.test(b.backgroundImage));
+    ok(cls + ': ' + (active ? 'six soft lobes in the fixed viewport field' : 'no aurora field'), active ? n === 6 && s.content === '""' && s.backgroundAttachment.split(',').every(x => x.trim() === 'fixed') && sizes.length === 7 && sizes.every(x => x === innerWidth + 'px ' + innerHeight + 'px') : n === 0, sizes.join('|'));
+    ok(cls + ': ' + (active ? 'event-only plasma overlay in the same fixed field' : 'no hot-rim overlay'), active ? b.content === '""' && b.backgroundAttachment.split(',').every(x => x.trim() === 'fixed') : !/url\(|gradient/.test(b.backgroundImage));
     if (fixture) e.remove();
   }
 };
@@ -51,8 +51,8 @@ if (['light', 'greyscale', 'blueprint'].includes(mode)) {
     // The plasma's textures are baked once in a worker and arrive as five blob URLs on the root.
     ok('plasma textures arrive within 5 s', await until(() => (root.getAttribute('style') || '').split('blob:').length - 1 === 5, 5000));
     const top = document.querySelector('.top');
-    ok('the plasma layers use them', (getComputedStyle(top, '::after').backgroundImage.match(/url\("blob:/g) || []).length === 3 && (getComputedStyle(top, '::before').backgroundImage.match(/url\("blob:/g) || []).length === 2);
-    ok('outside the desk the hot rims are off', getComputedStyle(top, '::before').opacity === '0');
+    ok('soft field has no textures; event overlay holds all five', !/url\(/.test(getComputedStyle(top, '::after').backgroundImage) && (getComputedStyle(top, '::before').backgroundImage.match(/url\("blob:/g) || []).length === 5);
+    ok('at rest all filaments and sparks are off', getComputedStyle(top, '::before').opacity === '0');
     // Reproducible peak-frame screenshot, without changing the application's CSS.
     aa.forEach(a => { a.pause(); a.currentTime = 76000; });
   }
@@ -81,10 +81,12 @@ if (['light', 'greyscale', 'blueprint'].includes(mode)) {
   const d = A.desk, tint = () => getComputedStyle(root).getPropertyValue('--holo-tint').trim();
   $('tsRun').click(); await settled();
   ok('desk alone: no glow or ramp', !has('glow') && !has('ramping'));
+  ok('desk at rest has no filaments or sparks', +getComputedStyle(document.querySelector('.panel'),'::before').opacity === 0);
   $('dkInit').click(); $('dkPump').click(); set('dkGas', 45);
   ok('INITIALISE and pump do not light aurora', d.io && d.pump && !has('glow'));
   ok('pump reaches glow pressure', await until(() => Math.abs(d.p - .4) < .02));
   const initial = tint(); $('dkHv').click();
+  ok('plasma fades over about a second', getComputedStyle(document.querySelector('.panel'),'::before').transitionDuration === '1.1s');
   ok('GLOW ON sets holo-glow', d.hv && has('glow'));
   await sleep(1400);
   ok('glow eases tint to violet and increases gain', initial !== tint() && tint() === 'rgb(177, 135, 237)' && +getComputedStyle(root).getPropertyValue('--holo-gain') === .23, tint());
@@ -95,6 +97,7 @@ if (['light', 'greyscale', 'blueprint'].includes(mode)) {
   ok('coil ramp sets holo-ramping', await until(() => has('ramping'), 1000));
   ok('settled coil clears holo-ramping', await until(() => !has('ramping')));
   A.deskTrip(); ok('trip clears glow', d.trip && !has('glow'));
+  ok('trip fades every filament and spark out', await until(() => hot() === 0, 2500));
   $('dkInit').click(); $('dkHv').click(); ok('reset permits glow again', has('glow'));
   $('dkStop').click(); ok('STOP clears glow', !has('glow'));
   $('dkHv').click(); ok('glow on before Done', has('glow'));
