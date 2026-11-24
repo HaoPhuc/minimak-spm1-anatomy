@@ -4,10 +4,10 @@ Scenarios for [`../shot.mjs`](../shot.mjs) that work the control desk in headles
 line per thing checked, `PASS` or `FAIL`. From the repository's root:
 
 ```bash
-node review-panel/shot.mjs . review-panel/desk-check/checks.json review-panel/desk-check/out
+node review-panel/shot.mjs . review-panel/desk-check/checks.json <temporary-output-folder>
 ```
 
-It runs 151 checks in about four minutes. Any console error is printed after its scenario's lines.
+It runs 154 checks in about four minutes. Any console error is printed after its scenario's lines.
 
 | Scenario | What it does | It passes when |
 | --- | --- | --- |
@@ -16,6 +16,6 @@ It runs 151 checks in about four minutes. Any console error is printed after its
 | `leave` | Leaves the desk by Done, by Esc, by a link and by Back, and starts the tour, the quiz, the guided analysis, Explode and an inspect over it. | Done gives back the cutaway, the panels and the view, and the focus; each other mode ends the desk; `#desk=1` opens it; opening adds one step to the history. |
 | `layout-…` | Opens the desk (Run tab) with a glow at 1440 × 900, 1280 × 800, 1366 × 700, 1280 × 660 and 1024 × 768, in each theme, and at text size 2×. | The desk is inside the view; the complete view strip stays at the view’s top left, inside the view and clear of the desk; the wheel is hidden; Run shows the desk's state and Done in the toolstrip, clear of the triad, with no desk bar over the view; the machine stands right of the desk; at the usual text size the whole desk shows, STOP included; no readback is clipped. |
 | `phone` | Runs at 390 × 844 with touch. | The desk's panel is in the Machine tab under the monitor, a run works from there, and Done takes it out again. |
-| `reduced` | Runs with `prefers-reduced-motion: reduce`. | The pressure, a coil's current and the glow are there at once. |
+| `reduced` | Runs with `prefers-reduced-motion: reduce`. | Pressure falls through Pumping down and settles in the glow window. A coil passes through intermediate readbacks on its way up and down, the glow responds and the nudge stays still. These transitions teach how the desk responds, so both motion preferences use the same rates. |
 
 `out/` is not committed.

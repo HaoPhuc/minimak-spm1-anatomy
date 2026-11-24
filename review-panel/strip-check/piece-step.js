@@ -1,0 +1,37 @@
+const pieces = id => A.piecesOf.get(id);
+const figures = () => $('inspBody').querySelector('.glance').innerText.replace(/\s+/g, ' ');
+const checkFigure = (id, name, expected, absent) => {
+  A.inspect(id, name ? pieces(id).find(pc => pc.userData.label.startsWith(name)) : null);
+  const text = figures();
+  ok((name || id + ' together') + ': headline figures and sources', expected.every(s => text.includes(s)) && (!absent || !text.includes(absent)), text);
+};
+checkFigure('viewport', null, ['65.0', 'front, DN63CF reference', '90.0', 'left/back, DN100CF reference', 'S10']);
+for (const name of ['Left', 'Back']) checkFigure('viewport', name, ['90.0', 'DN100CF reference', 'S10'], '65.0');
+checkFigure('diagPorts', null, ['69.9', 'front/left, DN40CF reference', '114.3', 'back gauge port, DN63CF reference', 'S9']);
+checkFigure('diagPorts', 'Back', ['114.3', 'DN63CF reference', 'S9'], '69.9');
+checkFigure('diagPorts', 'Left', ['69.9', 'DN40CF reference', 'S9'], '114.3');
+checkFigure('satellite', 'Lower', ['604', 'lower centre line, drawn as upper', 'assumed'], 'measured');
+checkFigure('satellite', 'Upper', ['604', 'upper centre line, top-down photo', 'measured'], 'assumed');
+checkFigure('pfInner', 'PF1', ['240', 'inside, measured on the upper coil', 'measured']);
+checkFigure('pfInner', 'PF2', ['26', 'Height', 'assumed'], '240');
+checkFigure('viewport', 'Front', ['65.0', 'Clear view', 'front, DN63CF reference', 'S10'], '90.0');
+A.setApart(true); A.keepSheet('viewport', '16 bolts'); A.setStep(1);
+await settled();
+const pc = A.iso.focus, stepSub = A.stepList()[0][0].sub;
+const closeUp = () => $('sheetList').querySelector('button.show');
+const camera = () => [A.goal.az, A.goal.el, A.goal.zoom, ...A.goal.target.toArray()];
+const before = camera();
+const highlight = sub => A.subMeshes(pc, sub).every(m => m.userData.lit > 0 && !m.userData.dimmed);
+const separated = () => R($('sheetsHead')).top >= R($('isobar')).bottom;
+ok('step caption clears the kept sheets header', separated());
+for (const exit of ['Resume', 'Escape', 'Show me']) {
+  closeUp().click(); await settled();
+  ok(exit + ': caption names the close-up and the step to resume', $('stepCap').innerText.includes('Viewing 16 bolts') && $('stepCap').querySelector('button')?.textContent === 'Resume step 1 · ' + stepSub && separated());
+  ok(exit + ': close-up highlights the sheet and hides the step markings', highlight('16 bolts') && A.subMeshes(pc, stepSub).every(m => m.userData.dimmed && !m.userData.lit) && !$('overlay').querySelector('.stars') && closeUp().getAttribute('aria-pressed') === 'true');
+  if (exit === 'Resume') $('stepCap').querySelector('button').click();
+  else if (exit === 'Escape') key('Escape');
+  else closeUp().click();
+  await settled();
+  ok(exit + ': restores the numbered step, highlight and saved camera', !A.iso.show && A.iso.step === 1 && $('stepCap').innerText.includes('Step 1 of') && highlight(stepSub) && camera().every((n,i) => Math.abs(n-before[i]) < .0001) && separated());
+}
+return finish();

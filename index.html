@@ -401,7 +401,7 @@
      a tap there, or ⌃) it takes 72 % to read; pushed down it peeks again. The camera never moves for it. */
   .hud .sheets.dock { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 30%; gap: 0; padding-top: 12px; pointer-events: auto; touch-action: none;
     background: var(--card); border-top: 1px solid var(--rule); border-radius: 4px 4px 0 0; transition: max-height .28s ease; }
-  .hud .sheets.dock.up { max-height: 72%; }
+  .hud .sheets.dock.up { max-height: min(72%, calc(100% - var(--bar-b, 0px) - 6px)); }
   .hud .sheets.dock.none { display: none; }
   .hud .sheets.dock::before { content: ''; position: absolute; top: 5px; left: 50%; width: 36px; height: 4px; margin-left: -18px; background: var(--rule); }
   .hud .sheets.dock .sheets-head { padding: 0 8px 0 10px; border: 0; border-radius: 0; background: none; box-shadow: none; flex-wrap: nowrap; cursor: ns-resize; -webkit-user-select: none; user-select: none; }
@@ -418,7 +418,7 @@
   .sheets-head #bSheetUp svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
   .sheets.up #bSheetUp svg { transform: rotate(180deg); }
   .view.docked .corner.bl, .view.docked .corner.br { display: none; }
-  /* Pulled up, the sheet is over the view's own controls, under the bar. */
+  /* Leave the drawer its full touch area as it grows or shrinks. */
   .view.sheet-up .hud { z-index: 4; }
   @media (prefers-reduced-motion: reduce) { .hud .sheets.dock, .sheets-head #bSheetUp svg { transition: none; } }
   @media (prefers-reduced-motion: reduce) { .screen.enter { animation: none; } }
@@ -1502,6 +1502,9 @@
   }
   @media (max-width: 960px) {
     .viewbar { display: contents; }
+    .view.docked .navcluster { bottom: calc(var(--drawer-height, 30%) + 6px); }
+    .view.docked .vmenu { top: auto; bottom: 0; transform: none; }
+    .view.sheet-up .navcluster { visibility: hidden; }
     /* Stacked, the strip keeps its two rows: the name over the tabs, and a page that scrolls sideways. */
     .ts-r1 { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; padding: 0 6px 0 12px; }
     .ts-r1 .brand { min-height: 34px; }
@@ -3582,7 +3585,9 @@ function refreshLit() {
     const here = sub && p === iso.part ? { part: p, sub } : null;
     const pointed = iso.part && pc && state.hoverMesh && pc === state.hoverMesh.userData.piece && sub && sub === state.hoverMesh.userData.sub;
     let lit = 0, code = 0;
-    if (sameSheet(state.hotSheet, here)) { lit = 0.55; code = 1; }
+    if (iso.show) {
+      if (pc === iso.show.pc && sub === iso.show.sub) { lit = 0.55; code = 1; }
+    } else if (sameSheet(state.hotSheet, here)) { lit = 0.55; code = 1; }
     else if (here && isPinned(here)) { lit = 0.42; code = 0.75; }
     else if (sameSheet(state.live, here)) { lit = 0.32; code = 0.5; }
     else if (iso.step && stepNow().some((x) => x.pc === pc && x.sub === sub)) { lit = 0.3; code = 0.25; }
@@ -3859,7 +3864,12 @@ function updateIsoBar() {
   $('bSteps').textContent = iso.step ? `${compact ? '' : 'Step '}${iso.step} / ${steps.length}` : `All ${steps.length}`;
   const cap = $('stepCap');
   cap.hidden = !iso.step;
-  if (iso.step) {
+  if (iso.step && iso.show) {
+    const resume = el('button', null, `Resume step ${iso.step} · ${stepName()}`);
+    resume.type = 'button';
+    resume.addEventListener('click', () => { endShow(true); $('bSteps').focus({ preventScroll: true }); });
+    cap.replaceChildren(el('b', null, `Viewing ${iso.show.sub}`), ' ', resume);
+  } else if (iso.step) {
     const t = el('span', 'note', ` Order `);
     cap.replaceChildren(el('b', null, `Step ${iso.step} of ${steps.length} · ${stepName()}`), stepSay(),
       iso.step === steps.length ? (iso.joint ? ' To close it, run back from here to step 1 with the new gasket.' : ' Fitting runs back from here to step 1.') : '', t, refButton('assumed'));
@@ -3911,6 +3921,7 @@ function placeBar() {
   if (a && a !== document.activeElement && a.isConnected && (bar.contains(a) || $('rowPart').contains(a))) a.focus({ preventScroll: true });
   // What the triad sits under, and nothing to open under ⋯ is not offered.
   card.style.setProperty('--bar-b', `${Math.round(barBottom())}px`);
+  if (iso.part && !dockLayout()) $('sheets').style.top = hudTop() + 'px';
   if (compact) $('bMore').disabled = ![...more.children].some((e) => !e.hidden);
   markMore();
   // A breadcrumb too long for the row shows its end, the sub-part, and fades out at the start.
@@ -4279,6 +4290,7 @@ function stepSay() {
 function setStep(n) {
   const N = stepList().length;
   if (!N) return;
+  if (iso.show) endShow(true);
   iso.step = n >= 1 && n <= N ? n : null;
   // A joint is framed at each step: its gasket rises well clear, so one frame for all four would leave the first three
   // small. A piece taken apart keeps one frame, with every sub-part off.
@@ -4473,9 +4485,10 @@ function pieceFor(part, sub) {
 }
 function refreshDim() {
   const s = iso.show;
+  document.querySelectorAll('button.show').forEach(syncShowButton);
   for (const m of solids) m.userData.dimmed = !!s && m.userData.part === iso.part && !(m.userData.piece === s.pc && m.userData.sub === s.sub);
+  refreshLit();
   ov.dirty = true;
-  dirty = true;
 }
 function showMe(part, sub, pc = null) {
   if (!part || !sub || !partById.has(part)) return;
@@ -4499,14 +4512,16 @@ function endShow(restore) {
   const { saved } = iso.show;
   iso.show = null;
   refreshDim();
+  updateIsoBar();
   if (restore && saved) {
+    // Restoring the step controls can resize the stage. Fit its layout before restoring the saved camera.
+    resize();
     stopGlide();
     goal.az = nearestAz(saved.az); goal.el = saved.el; goal.zoom = saved.zoom; goal.target.copy(saved.target);
     if (!reduceMotion.matches) glide = { at: performance.now() / 1000, dur: 0.7, from: null };
     dirty = true;
-    announce('Back to the frame before Show me.');
+    announce(iso.step ? `Resumed step ${iso.step} · ${stepName()}.` : 'Back to the frame before Show me.');
   }
-  updateIsoBar();
   setHint();
 }
 // What Z shows: the Made of row or the sheet that has focus, else the sheet under the pointer, the preview, the
@@ -4525,15 +4540,24 @@ function showCandidate() {
   if (iso.part && m?.userData.sub && m.userData.part === iso.part) return { part: iso.part, sub: m.userData.sub, pc: m.userData.piece };
   return iso.part ? state.pins.at(-1) || null : null;
 }
-function showButton(fn, fk) {
+function showButton(part, sub, fk) {
   const b = el('button', 'show');
   b.type = 'button';
   b.innerHTML = SHOW;
-  b.title = 'Show me: frame it close up (Z)';
   b.setAttribute('aria-label', 'Show me');
   b.dataset.fk = fk;
-  b.addEventListener('click', fn);
+  b.dataset.part = part; b.dataset.sub = sub;
+  syncShowButton(b);
+  b.addEventListener('click', () => {
+    if (iso.part === part && iso.show?.sub === sub) endShow(true);
+    else showMe(part, sub);
+  });
   return b;
+}
+function syncShowButton(b) {
+  const on = iso.part === b.dataset.part && iso.show?.sub === b.dataset.sub;
+  b.setAttribute('aria-pressed', String(on));
+  b.title = on ? 'Leave Show me and return to the previous view' : 'Show me: frame it close up (Z)';
 }
 // The piece of the vessel a piece is mounted on, for the breadcrumb: the quarter whose group carries it.
 function quarterOf(pc) {
@@ -5037,7 +5061,7 @@ function sheetScreen(x, live) {
   const list = piecesOf.get(part.id) || [];
   const n = subsOf(part.id).get(x.sub) || 0;
   const badge = part.count > 1 && list.length > 1 && n ? (n === list.length ? `Same on all ${n}` : `On ${n} of ${list.length}`) : null;
-  const show = showButton(() => showMe(x.part, x.sub), 'show');
+  const show = showButton(x.part, x.sub, 'show');
   const buttons = live
     ? [show, barButton('Keep', 'Keep this sheet', 'keep', () => pinSheet(x.part, x.sub), 'keep'), barButton('×', 'Close the preview', 'close', () => setLive(null))]
     : [show, barButton('×', 'Close this sheet', 'close', (e) => { unpinSheet(x); if (!e.detail) focusRow(x.sub); })];
@@ -5512,7 +5536,7 @@ function ringPoint(m, i, y, x = 0) {
 // The step shown, if it takes off a ring of bolts or nuts: each head numbered with its turn in the star order. A number
 // whose head is hidden behind something is drawn faint.
 function drawStars(occ) {
-  if (!iso.step) return;
+  if (!iso.step || iso.show) return;
   const g = svgEl('g', {}, 'stars');
   for (const { pc, sub } of stepNow()) for (const m of subMeshes(pc, sub)) {
     const r = ringOf(m);
@@ -6479,21 +6503,33 @@ function sourceBar(p) {
 // count, or a size with its unit), not a pair of sizes.
 const GLANCE = /^(≈\s*)?(\d(?:[\d.,]*\d)?)(?:\s*(mm|cm|m|kg|g|L|A|mA|V|kV|mT|T|mbar|bar|Pa|W|kW|Hz|kHz|°|%|turns)(?![\w]))?/;
 function glance(p) {
+  const focus = iso.part === p.id && iso.focus ? iso.focus.userData.label : null;
+  const rows = p.specs.flatMap(row => {
+    const variants = p.figureVariants?.[row[0]];
+    if (!variants) return [row];
+    return variants.filter(v => !focus || v.pieces.includes(focus)).map(v => {
+      const [label, value, source] = v.sheet
+        ? DOCS.SUBDOCS[v.sheet].rows.find(r => r[0] === (v.field || row[0]))
+        : row;
+      return [label, value, v.source || source, v.basis];
+    });
+  });
   const out = [];
-  for (const [label, v] of p.specs || []) {
+  for (const [label, v, source, basis] of rows) {
     if (typeof v !== 'string' || /^\S+\s*×/.test(v)) continue;
     const m = GLANCE.exec(v);
     if (!m || /^[\d.,]+[A-Za-z]/.test(v)) continue;
-    out.push([label, `${m[1] ? '≈' : ''}${m[2]}`, m[3] || '']);
+    out.push([label, `${m[1] ? '≈' : ''}${m[2]}`, m[3] || '', source, basis]);
     if (out.length === 3) break;
   }
   if (out.length < 2) return null;
   const box = el('div', 'glance');
-  for (const [label, num, unit] of out) {
+  for (const [label, num, unit, source, basis] of out) {
     const d = el('div');
     const b = el('b', null, num);
     if (unit) b.append(el('small', null, unit));
-    d.append(b, el('span', null, label));
+    d.append(b, el('span', null, basis ? `${label} · ${basis}` : label));
+    if (p.figureVariants) d.append(refButton(source));
     box.append(d);
   }
   return box;
@@ -6558,7 +6594,7 @@ function subsList(p) {
       showMe(p.id, name);
     });
     // The keyboard has Enter and Z on the row, so the button is not a Tab stop of its own.
-    const s = showButton(() => showMe(p.id, name), `show:${name}`);
+    const s = showButton(p.id, name, `show:${name}`);
     s.tabIndex = -1;
     lights(li, () => { state.hoverSub = name; refreshLit(); }, () => { state.hoverSub = null; refreshLit(); });
     li.append(b, s);
@@ -7625,6 +7661,17 @@ function fitFoot() {
   fitWheel();
 }
 // Observe actual layout, not just the canvas: fonts, text size, panel grips, content and theme can all change it.
+// The drawer animates and short sheets can be smaller than its limit.
+new ResizeObserver(() => {
+  const card = $('card');
+  if (card.classList.contains('docked')) card.style.setProperty('--drawer-height', $('sheets').offsetHeight + 'px');
+}).observe($('sheets'));
+// The caption can wrap when fonts, text size or the guide change the space it has.
+new ResizeObserver(() => {
+  if (!iso.part) return;
+  $('card').style.setProperty('--bar-b', Math.round(barBottom()) + 'px');
+  if (!dockLayout()) $('sheets').style.top = hudTop() + 'px';
+}).observe($('isobar'));
 const footObserver = new ResizeObserver(queueFoot);
 for (const id of ['card', 'readout', 'viewbar', 'startCard']) footObserver.observe($(id));
 new MutationObserver(queueFoot).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
@@ -7930,7 +7977,8 @@ window.addEventListener('keydown', (e) => {
   // every piece, the part to the assembly, then the selection. It never closes a kept sheet. On the tour it stops at every piece: only Done leaves.
   // On a phone, ⋯ open closes first, then a sheet pulled up comes down.
   else if (k === 'escape') {
-    if (!$('isoMore').hidden) setMore(false);
+    if (iso.step && iso.show) endShow(true);
+    else if (!$('isoMore').hidden) setMore(false);
     else if (HUD.up && $('card').classList.contains('sheet-up')) setSheetUp(false);
     else if (state.live) setLive(null);
     else if (iso.show) endShow(true);
@@ -8307,13 +8355,12 @@ function deskSync() {
 // Each frame while the desk is on: the pressure, the coil currents, the running program, whether the glow is struck,
 // and the glow easing toward what the rules give. Says whether anything is still moving.
 function deskTick(dt, now) {
-  const still = reduceMotion.matches;
   let moved = false;
   const lp = Math.log10(desk.p);
   const eq = desk.pump ? Math.log10(DESK.pBase) + 2.5 * desk.gas : desk.gas > 0.02 ? Math.log10(1013) : lp;
   if (Math.abs(eq - lp) > 1e-4) {
     const rate = desk.pump ? 1.6 : 0.7; // decades a second: time is compressed
-    desk.p = 10 ** (still ? eq : lp + clamp(eq - lp, -rate * dt, rate * dt));
+    desk.p = 10 ** (lp + clamp(eq - lp, -rate * dt, rate * dt));
     moved = true;
   }
   const settled = Math.abs(eq - Math.log10(desk.p)) < 0.02;
@@ -8321,7 +8368,7 @@ function deskTick(dt, now) {
   for (const c of Object.values(desk.coils)) {
     const to = c.on && desk.io ? c.set : 0;
     if (c.I === to) continue;
-    c.I = still ? to : c.I + clamp(to - c.I, -DESK.ramp * dt, DESK.ramp * dt);
+    c.I += clamp(to - c.I, -DESK.ramp * dt, DESK.ramp * dt);
     moved = true;
   }
   if (desk.seq && now >= desk.seq.at) { deskSeqStep(now); moved = true; }
@@ -8336,7 +8383,7 @@ function deskTick(dt, now) {
   let glowMoved = false;
   for (const [key, rate] of [['k', 4], ['stri', 4], ['minor', 5], ['z', 5]]) {
     if (Math.abs(to[key] - n[key]) < 1e-3) { if (n[key] !== to[key]) { n[key] = to[key]; glowMoved = true; } continue; }
-    n[key] = still ? to[key] : n[key] + (to[key] - n[key]) * (1 - Math.exp(-dt * rate));
+    n[key] += (to[key] - n[key]) * (1 - Math.exp(-dt * rate));
     glowMoved = true;
   }
   if (glowMoved) { applyLook(); dirty = true; }
@@ -8449,7 +8496,7 @@ function deskMonitor(now, changed) {
   const s = rp ? rp.glow : desk.now, drift = s.stri > 0.12 && s.k > 0.01 && !reduceMotion.matches;
   if (!changed && !(drift && now - desk.vidAt > 0.12) && desk.drawnOn === video) return;
   desk.vidAt = now; desk.drawnOn = video;
-  if (video) deskVideo(video, s, now, rp ? `REPLAY · frame ${desk.replay + 1} of ${desk.rec.length} · ${rp.say}` : 'VIDEO 1 · webcam, left viewport');
+  if (video) deskVideo(video, s, reduceMotion.matches ? 0 : now, rp ? `REPLAY · frame ${desk.replay + 1} of ${desk.rec.length} · ${rp.say}` : 'VIDEO 1 · webcam, left viewport');
   if (spec) deskSpectrum(spec, s.k);
   const tr = $('dkTrack'); if (tr) tr.textContent = desk.blob ? deskTrack(s) : 'Blob analysis is off';
   const f = deskFields();
