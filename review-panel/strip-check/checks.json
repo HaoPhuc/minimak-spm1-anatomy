@@ -1,5 +1,46 @@
 [
   {
+    "name": "piece-figures-and-step",
+    "w": 1440,
+    "h": 900,
+    "reduced": true,
+    "steps": [
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "piece-step.js"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "phone-sheets",
+    "w": 390,
+    "h": 844,
+    "mobile": true,
+    "reduced": true,
+    "steps": [
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "phone-sheets.js"
+        ]
+      },
+      {
+        "tap": "(()=>{const r=document.getElementById('bCardPrev').getBoundingClientRect();return [r.x+r.width/2,r.y+r.height/2]})()"
+      },
+      {
+        "jsFile": [
+          "settled.js",
+          "common.js",
+          "phone-sheets-up.js"
+        ]
+      }
+    ]
+  },
+  {
     "name": "tabs",
     "w": 1280,
     "h": 800,

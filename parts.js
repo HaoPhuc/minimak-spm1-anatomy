@@ -175,6 +175,12 @@
         ['Clear view', '90 mm on a standard DN100CF Kodial viewport; 65 mm on the front’s DN63CF (make not published)', 'S10'],
         ['Used by', 'webcam, spectrometer, eyes', 'S4'],
       ],
+      figureVariants: {
+        'Clear view': [
+          { pieces: ['Front viewport (eyes)'], basis: 'front, DN63CF reference', sheet: 'vp-flange-63' },
+          { pieces: ['Left viewport (webcam)', 'Back viewport (spectrometer)'], basis: 'left/back, DN100CF reference', sheet: 'vp-flange-100' },
+        ],
+      },
       connects: ['lateral', 'camera', 'spectro'],
       // Which window serves which use is not published: S4 names the three uses, the drawing assigns them.
       pieces: {
@@ -194,6 +200,12 @@
         ['Gauge port', '≈ DN63CF on the back quarter (photo)', 'photo'],
         ['Placement', 'top and bottom of two quarters', 'photo'],
       ],
+      figureVariants: {
+        Flange: [
+          { pieces: ['Front top port', 'Front bottom port', 'Left top port', 'Left bottom port'], basis: 'front/left, DN40CF reference', sheet: 'cf40', field: 'Outside diameter' },
+          { pieces: ['Back top gauge port (DN63)'], basis: 'back gauge port, DN63CF reference', sheet: 'cf63', field: 'Outside diameter' },
+        ],
+      },
       connects: ['vessel', 'laser', 'probe', 'electrode', 'stack'],
       pieces: {
         'Front top port': [['Carries', 'the laser diagnostics window', 'photo']],
@@ -237,6 +249,9 @@
         ['Size', '240 mm inside, 312 mm outside (PF1’s copper top on the top-down photo, ≈ 95 mm above the midplane)', 'measured'],
         ['Height', '26 mm, 70–95 mm from the midplane, so its outer edge clears the TF coils', 'assumed'],
       ],
+      figureVariants: {
+        Size: [{ pieces: ['PF1 (upper)'], basis: 'inside, measured on the upper coil' }],
+      },
       connects: ['former', 'psu'],
       know: 'With no plasma current the PF coils move and shape the glow; they cannot hold it in place on their own. Which of the pair is PF1 is not published; the drawing calls the upper one PF1.',
       sources: ['S2', 'S4'],
@@ -250,6 +265,12 @@
         ['Hose', 'Ø30 mm', 'measured'],
         ['Mounting', 'brackets above, pads on the table below', 'photo'],
       ],
+      figureVariants: {
+        Diameter: [
+          { pieces: ['Upper satellite coil'], basis: 'upper centre line, top-down photo' },
+          { pieces: ['Lower satellite coil'], basis: 'lower centre line, drawn as upper', source: 'assumed' },
+        ],
+      },
       connects: ['posts', 'table', 'psu'],
       pieces: {
         'Upper satellite coil': [['Held by', 'brackets from the corner posts, above the vessel', 'photo'], ['Height', '110 mm above the midplane: on the photo it passes over the TF coils and flanges and under the junction box, so 95–140 mm', 'assumed']],
