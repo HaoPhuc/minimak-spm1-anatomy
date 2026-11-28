@@ -26,9 +26,9 @@ repository's root:
 
 ## What to check after a change
 
-- [`scenarios.json`](scenarios.json) has one entry per screenshot: its view (1280 × 800 at 2×, a phone at 390 × 844),
-  its theme, and the steps that set it up, mostly a link (`__spm1.applyLink('#part=…')`).
+- [`scenarios.json`](scenarios.json) sets the view (1280 × 800 at 2×, a phone at 390 × 844) and theme for each scenario.
+  Each `shot` step names a screenshot. Many scenarios open a part from a link (`__spm1.applyLink('#part=…')`).
 - The crop boxes in [`prep.py`](prep.py), the numbered markers on a screenshot and the labels on the inspect bar
   (`data-at` in `guide.html`) are in CSS px of the 1280 × 800 view. If the page's layout moves, look at the markers
-  on pages 2, 3, 7, 8 and 12 and the inspect bar on page 6.
+  on pages 2, 3, 7, 8 and 12. Check that page 5 shows the selection chip and Details together, and that each label on page 6 points to its control in the Inspecting row.
 - Each section starts a page and should fit on it, as the page numbers in the contents are written by hand.

@@ -11,7 +11,7 @@ os.makedirs(O, exist_ok=True)
 FULL = ['first', 'guide', 'inspect', 'apart', 'sheets', 'showme', 'explode', 'desk', 'greyscale', 'blueprint', 'hologram']
 PHONE = ['phone', 'phone-inspect', 'phone-more']
 CROPS = {
-    'bar': ('apart', 16, 48, 1264, 102),        # the Part tab's tools, without the step's caption
+    'bar': ('apart', 16, 48, 1264, 102),        # the Inspecting tab's tools, without the step's caption
     'menu': ('views', 286, 112, 548, 395),      # the view buttons and the Views menu
     'tooltip': ('hover', 570, 495, 930, 635),
     'term': ('term', 886, 112, 1266, 376),
@@ -19,7 +19,8 @@ CROPS = {
     'sources': ('sources', 886, 112, 1266, 383),
     'triad': ('first', 1166, 113, 1264, 211),
     'hero': ('first', 346, 203, 836, 720),      # the cover: the model alone, on the view's ground, as wide as the box
-    'select': ('select', 286, 112, 954, 765),    # the view only, with the coils selected
+    'select': ('select', 306, 242, 674, 464),    # the selected coils on the assembled machine
+    'selection-tools': ('select', 966, 48, 1266, 220),  # selection chip and the actions in Details
     'wheel': ('wheel', 16, 275, 540, 700),       # the groups' wheel with the magnets fanned out
     'joint': ('joint', 16, 112, 954, 765),       # the view only, without the panels
     'tour': ('tour', 16, 48, 1264, 765),

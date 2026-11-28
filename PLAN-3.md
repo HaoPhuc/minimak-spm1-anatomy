@@ -68,8 +68,8 @@ are.
 ## Coverage
 
 One row per function. *Inputs* are mouse · keys · touch. *Step* is the guide step that teaches it; the steps are
-listed after the table. On a wide window the part's controls are on the toolstrip's **Part** tab, in **Piece**,
-**Take apart**, **Show**, **Tour**, **Share** and **Leave**; where the panels stack they stay in the bar over the view.
+listed after the table. On a wide window the part's controls are on the toolstrip's **Inspecting ·** *part name* tab, in **Piece**,
+**Take apart**, **Show**, **Tour**, **Share** and **Leave**. **Done** ends inspection from that row, or from the bar over the view where the panels stack. Esc steps back one level at a time. On the tour it stops at the whole part.
 
 | # | Function | Question | Inputs | Needs | Visible result | Step | Verify |
 |---|---|---|---|---|---|---|---|
@@ -80,12 +80,12 @@ listed after the table. On a wide window the part's controls are on the toolstri
 | 5 | Home | I'm lost | Home in the view strip, double-click space · 0 · Home | — | whole machine (the part while inspecting) | orient.home | `goal` ≈ home |
 | 6 | Look from a side | What is it from above? | Views opens downwards from the top-left view strip on windows wider than 960 px (inside Blueprint’s frame; a column at the left where panels stack), triad ends · 1–4, menu arrows · same | — | turns to the side | orient.views | `goal.el` > 80 |
 | 7 | Fit | Everything in view? | — · A · — | exploded or panned | frames what is shown | inside.spread | `fitAll` ran |
-| 8 | Panels | More room? | toolstrip panels button, ‹ fold, drag or double-click the edge · F, arrows on the edge · (stacked: scroll) | desktop | panels fold away | orient.panels | `panels.tree`/`insp` false |
+| 8 | Panels | More room? | toolstrip panels button, ‹ to fold the list or › to fold the inspector, drag or double-click the edge · F, arrows on the edge · (stacked: scroll) | desktop | panels fold away | orient.panels | `panels.tree`/`insp` false |
 | 9 | Hover name | What is that? | pointer · — · loupe | — | tooltip and light | first.find | look text |
 | 10 | Search | Which parts use M8? | Find a part on the toolstrip, then search box · / · same | list shown | list narrows to hits | find.search | value `M8`, hits |
 | 11 | Search hit | Just the left viewport's bolts? | click hit · Enter · tap | hits | inspects that piece, keeps its sheet | find.pick | piece + pinned |
-| 12 | Select vs inspect | What's the difference? | click vs double-click · Enter vs I · tap vs double-tap | assembly | teal layer vs isolated | find.select | `state.select`, no `iso.part` |
-| 13 | Zoom to it | Look without lifting it out | inspector’s Part tab button | selected | frames the part | find.select | look text |
+| 12 | Select vs inspect | What's the difference? | click vs double-click · Enter vs I · tap vs double-tap | assembly | selection highlights the part, opens Details and keeps the toolstrip tab (chip with name, Inspect and ✕); inspection isolates it | find.select | `state.select`, no `iso.part` |
+| 13 | Zoom to it | Look without lifting it out | Zoom to it in Details | selected | frames the part | find.select | look text |
 | 14 | Hide, show | See past the table | eye, Hide · H, Space · eye | — | part or group goes | find.hide, find.show | `hidden` |
 | 15 | Listed, not drawn | Is the turbopump in it? | caret at the list's foot | list | upgrades, with tags | find.notdrawn | caret expanded |
 | 16 | List keys | No mouse? | Skip link, ↑ ↓ → ← Enter Space I | list | — | find.select | how text |
@@ -95,10 +95,10 @@ listed after the table. On a wide window the part's controls are on the toolstri
 | 20 | Reassemble | Back together? | Explore → Model: Explode · E | exploded | all home | inside.together | not exploded |
 | 21 | Themes | Another drawing? | toolstrip theme menu (Colour or the chosen theme's name) · ← → in the group | — | redrawn | inside.themes | theme ≠ start |
 | 22 | Dimensions | How tall is the table? | drag a line or figure, double-click | Blueprint, desktop, machine at rest | 910, 900, Ø460 move | inside.dims | `draft.dims` moved |
-| 23 | Inspect | Where is the left viewport? | double-click, Inspect on its own · I · double-tap | — | isolated, lifted, mount half solid | first.find | `iso.part`, piece |
+| 23 | Inspect | Where is the left viewport? | double-click, Inspect on the chip or in Details · I · double-tap | — | isolated, lifted, mount half solid | first.find | `iso.part`, piece |
 | 24 | Pieces, All | Which coil? | ‹ › All, click, Pieces row · , . · tap | repeated part | one piece, n of N | connect.pieces | `iso.focus` |
 | 25 | Ghost | Hide the rest? | switch · G | inspecting | ghost goes | connect.ghost | `iso.context` toggled |
-| 26 | How it attaches | What is it wound on? | link in the inspector's Part tab or part card | inspecting | neighbour inspected | connect.attach | `iso.part` = vessel |
+| 26 | How it attaches | What is it wound on? | link in the inspector's Details tab or part card | inspecting | neighbour inspected | connect.attach | `iso.part` = vessel |
 | 27 | Back | Back to the coil | ← name · Backspace | came by a link | part before | connect.back | `iso.part` = tf |
 | 28 | Take apart | How does it come off? | switch · T · ⋯ | part comes apart | sub-parts off | first.apart, connect.apart | `iso.apart` |
 | 29 | Its Spread | Further? | slider · [ ] | apart | spacing | connect.apart | `apartSpread` ≠ start |
@@ -113,10 +113,10 @@ listed after the table. On a wide window the part's controls are on the toolstri
 | 38 | Float, Tidy | Put one aside? | drag the bar · L, Tidy | column | floats, returns | evidence.float, evidence.tidy | `HUD.pos` |
 | 39 | Bottom sheet | Read on a phone? | — · Esc · tap or drag the head, ⌃ | view < 660 px | 30 % ↔ 72 % | evidence.float | `HUD.up` |
 | 40 | Show me | How long is a bolt? | frame button, double-click · Z, Enter on a row · frame button | inspecting | close-up, crumbs, M8 × 50 drawn | first.showme, evidence.crumb | `iso.show` |
-| 41 | Citation | Where is it from? | tag · Enter · tap | a sheet or inspector's Part tab | Sources tab, ← back | first.source, first.back, evidence.cite | tab |
-| 42 | Basis vs tags | How far to trust it? | chip, dots, tags | inspector's Part tab | photo vs S10 | evidence.basis | read only |
+| 41 | Citation | Where is it from? | tag · Enter · tap | a sheet or inspector's Details tab | Sources tab, ← back | first.source, first.back, evidence.cite | tab |
+| 42 | Basis vs tags | How far to trust it? | chip, dots, tags | inspector's Details tab | photo vs S10 | evidence.basis | read only |
 | 43 | Glossary | What is a knife edge? | dotted word · Tab, Enter · tap | — | definition opens | evidence.term | `aria-expanded` |
-| 44 | Copy link | Send this view | Part → Share: Copy link (also on Explore) · — · ⋯ | inspecting | copied | use.link | click seen |
+| 44 | Copy link | Send this view | Inspecting → Share → Copy link (also on Explore) · — · ⋯ | inspecting | copied | use.link | click seen |
 | 45 | Browser Back | Undo a jump? | browser Back | — | part before | use.history | read only |
 | 46 | How a run goes | In what order is it used? | Machine tab, part pictures | — | selects a part | use.run | tab |
 | 47 | Tour | The machine's role, stop by stop | Learn → Take the tour | — | guide ends, tour starts | use.tour | `iso.tour` = 0 |
@@ -140,8 +140,8 @@ Seven chapters, each replayable from **Chapters**. **Next** runs through all of 
    4. *How long is one of these bolts?* **Show me** on the bolt row: M8 × 50 mm under the head.
    5. Keep the bolts' sheet: the leader line runs from the sheet to the bolt.
    6. The **S9** tag on *Holes they pass*: the Sources tab.
-   7. **← Back to the part tab**: the same piece and sheet.
-   8. **Done**: the viewport goes back together and flies home, and the machine faces you again.
+   7. **← Back to the Details tab**: the same piece and sheet.
+   8. **Done** in the inspect row: the viewport goes back together and flies home, and the machine faces you again.
 2. **Orient the view**: turn (with the turntable), pan, the axis lock, zoom, scale, a side, home, panels.
 3. **Find hardware**: the magnets on the groups' wheel, search M8, pick the left viewport's bolts, select vs inspect,
    hide the table, show it, listed not drawn.
