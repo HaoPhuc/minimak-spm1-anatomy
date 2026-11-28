@@ -24,7 +24,7 @@ const before = camera();
 const highlight = sub => A.subMeshes(pc, sub).every(m => m.userData.lit > 0 && !m.userData.dimmed);
 const separated = () => R($('sheetsHead')).top >= R($('isobar')).bottom;
 ok('step caption clears the kept sheets header', separated());
-for (const exit of ['Resume', 'Escape', 'Show me']) {
+for (const exit of ['Resume', 'Show me', 'Escape']) {
   closeUp().click(); await settled();
   ok(exit + ': caption names the close-up and the step to resume', $('stepCap').innerText.includes('Viewing 16 bolts') && $('stepCap').querySelector('button')?.textContent === 'Resume step 1 · ' + stepSub && separated());
   ok(exit + ': close-up highlights the sheet and hides the step markings', highlight('16 bolts') && A.subMeshes(pc, stepSub).every(m => m.userData.dimmed && !m.userData.lit) && !$('overlay').querySelector('.stars') && closeUp().getAttribute('aria-pressed') === 'true');
@@ -34,4 +34,12 @@ for (const exit of ['Resume', 'Escape', 'Show me']) {
   await settled();
   ok(exit + ': restores the numbered step, highlight and saved camera', !A.iso.show && A.iso.step === 1 && $('stepCap').innerText.includes('Step 1 of') && highlight(stepSub) && camera().every((n,i) => Math.abs(n-before[i]) < .0001) && separated());
 }
+key('Escape');
+ok('Esc goes back to All steps and keeps the sheet', !A.iso.step && A.iso.focus === pc && A.state.pins.some(p => p.part === 'viewport' && p.sub === '16 bolts'));
+key('Escape');
+ok('Esc goes from one viewport to every viewport', !A.iso.focus && A.iso.part === 'viewport');
+key('Escape');
+ok('Esc from the whole part returns to the assembly with the part selected', !A.iso.part && A.state.select === 'viewport' && shown($('bInspectSelected')));
+key('Escape');
+ok('Esc in the assembly clears the selection', !A.state.select && !shown($('gSelected')));
 return finish();

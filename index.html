@@ -332,7 +332,7 @@
   .tip.on { opacity: 0.94; }
   .tip small { opacity: 0.7; margin-left: 6px; }
   /* Information screens. While inspecting, the sheet column on the right of the view holds, in order, the part card
-     (when the Part tab is not beside the view), the kept sheets and the preview. Its room is kept even while it is
+     (when the Details tab is not beside the view), the kept sheets and the preview. Its room is kept even while it is
      empty, so nothing in it moves the camera. It scrolls; nothing in it folds or closes by itself. A view under 660 px
      has a bottom sheet instead, one card at a time. A sheet dragged out floats where it is dropped. */
   .hud { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
@@ -1169,8 +1169,8 @@
   .greyscale .corner.br { background: #c4c7c0; color: #1b1e18; border-color: transparent; box-shadow: inset 0 2px 5px rgb(0 0 0 / 0.18); }
 
   /* Tabs: a game's tab bar, the one in use a filled block. */
-  .tabs { gap: 0; }
-  .tabs button { padding: 7px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .tabs { gap: 0; flex-wrap: wrap; min-width: 0; }
+  .tabs button { padding: 7px 6px; border-radius: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); }
   .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; font-weight: 600; }
   .ti { border-radius: 8px; }
   .ti.sel { background: color-mix(in srgb, var(--sel) 20%, transparent); box-shadow: inset 2px 0 0 var(--sel); }
@@ -1400,15 +1400,14 @@
   /* ---------- The toolstrip ----------
      One place for the commands, as an engineering program has it: the name, four tabs and what is set once (find, the
      theme, the panels, help) on its first row; the tab's tools on its second, in named groups. Explore is the whole
-     machine; Part holds the tools of the part inspected and is there only while one is; Learn the guide, the tour,
-     the quiz and the reference; Run the control desk. A tab is a view of the strip: it changes nothing on the model
-     but Part, which inspects the selected part, and Run, which opens the desk. Its controls are the ones the page
+     machine; Inspecting holds the isolated part’s tools; Learn holds the guide, tour, quiz and reference.
+     Run opens the control desk. The strip shares one selection chip across its pages. Its controls are the ones the page
      always had, moved: where the panels stack (a phone) the part's and the desk's stay on their bar over the view. */
   .top { position: relative; z-index: 4; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 14px; color: var(--ink);
     background-color: color-mix(in srgb, var(--card) calc(var(--glass) * 100%), transparent); -webkit-backdrop-filter: blur(18px) saturate(1.15); backdrop-filter: blur(18px) saturate(1.15);
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 10px 26px rgb(0 0 0 / 0.16); }
   .ts-r1 { display: grid; grid-template-columns: minmax(120px, auto) auto minmax(min-content, 1fr); column-gap: 20px; align-items: stretch; min-height: 36px; padding: 0 8px 0 16px; }
-  .ts-r2 { border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+  .ts-r2 { display: flex; flex-wrap: wrap; align-items: center; border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
   .top svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .top kbd { font: 500 10px/1 var(--mono); padding: 2px 4px; border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 4px; color: var(--muted); background: none; }
   .ts-tabs { display: flex; gap: 2px; }
@@ -1424,7 +1423,15 @@
   .ts-tabs button i:empty { display: none; }
   .ts-tabs button:focus-visible { outline-offset: -3px; }
   .ts-tabs button[hidden], .ts-page[hidden], .ts-g[hidden] { display: none !important; }
-  #rowPart[data-inspected="false"] > .ts-g:not(.ts-selected) { display: none; }
+  .ts-r2 > .ts-page { flex: 1 1 auto; min-width: 0; }
+  .ts-selected { display: inline-flex; align-items: center; max-width: calc(100% - 16px); margin: 4px 8px; padding-left: 10px;
+    border: 1px solid var(--rule); border-radius: 8px; background: var(--chip); font-size: calc(13px * var(--ui-scale, 1)); }
+  .ts-selected[hidden] { display: none; }
+  #selectionName { font-weight: 600; overflow-wrap: anywhere; }
+  #selectionCount { margin: 0 8px 0 4px; color: var(--muted); white-space: nowrap; }
+  .ts-selected button { flex: none; padding: 4px 8px; border: 0; border-left: 1px solid var(--rule); background: none; cursor: pointer; }
+  .ts-selected button:hover { background: var(--soft); }
+  .blueprint .ts-selected { border-radius: 0; }
   .ts-util { display: flex; justify-content: flex-end; align-items: center; gap: 4px; min-width: 0; }
   .ts-util > button, .ts-menu > button { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 7px; border: 1px solid transparent; border-radius: 8px; background: none; cursor: pointer; font-size: 12.5px; line-height: 1; white-space: nowrap; }
   .ts-util > button:hover, .ts-menu > button:hover, .ts-menu > button[aria-expanded="true"] { background: var(--soft); }
@@ -1513,6 +1520,8 @@
     .ts-tabs button i { display: none; }
     .ts-util .ts-find { flex: none; width: auto; border-color: transparent; background: none; color: inherit; }
     .ts-find span, .ts-find kbd, #bLook .lbl { display: none; }
+    .ts-r2 > .ts-page { flex-basis: 100%; }
+    .top[data-tab="part"] #rowPart { display: none; } /* Its controls are on the bar over the model. */
     .ts-page.isobar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
     .ts-g { flex: none; }
     .brand h1 span { display: none; }
@@ -1577,7 +1586,7 @@
       <div class="brand"><h1>MinimaK SPM1 <span>Anatomy of a tabletop magnetised torus</span></h1></div>
       <div class="ts-tabs" role="tablist" aria-label="Tools for">
         <button type="button" id="tsExplore" role="tab" aria-controls="rowExplore" data-tab="explore" aria-pressed="true" title="The whole machine: its parts as a wheel or a list, Explode and Cutaway">Explore</button>
-        <button type="button" id="tsPart" role="tab" aria-controls="rowPart" data-tab="part" aria-pressed="false" aria-disabled="true" title="Select a part first: click it on the model, in the wheel or in the list"><span>Part</span><i id="tsPartName"></i></button>
+        <button type="button" id="tsPart" role="tab" aria-controls="rowPart" data-tab="part" aria-pressed="false" hidden><span>Inspecting</span><i id="tsPartName"></i></button>
         <button type="button" id="tsLearn" role="tab" aria-controls="rowLearn" data-tab="learn" aria-pressed="false" title="The guided analysis, the tour, the quiz, the user guide and the keys">Learn</button>
         <button type="button" id="tsRun" role="tab" aria-controls="rowRun" data-tab="run" aria-pressed="false" title="Control desk: run the machine yourself with a stand-in for its own software">Run</button>
       </div>
@@ -1607,7 +1616,6 @@
         <div class="ts-g"><div class="ts-c"><button type="button" id="bLinkHere" title="Copy a link to what is shown: the view, the theme and what is selected"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.5 9.5l3-3M7 4.5l1.2-1.2a2.6 2.6 0 0 1 3.7 3.7L10.7 8.2M9 11.5l-1.2 1.2a2.6 2.6 0 0 1-3.7-3.7L5.3 7.8"/></svg>Copy link</button></div><small>Share</small></div>
       </div>
       <div class="ts-page isobar" data-tab="part" id="rowPart" role="group" aria-label="The part inspected">
-        <div class="ts-g ts-selected" id="gSelected" hidden><div class="ts-c"><button type="button" id="bInspectSelected">Inspect on its own</button></div><small>Selected part</small></div>
         <div class="ts-g"><div class="ts-c" id="gPiece"></div><small>Piece</small></div>
         <div class="ts-g"><div class="ts-c" id="gApart"></div><small>Take apart</small></div>
         <div class="ts-g"><div class="ts-c" id="gShow"></div><small>Show</small></div>
@@ -1625,6 +1633,11 @@
       <div class="ts-page isobar" data-tab="run" id="rowRun" role="group" aria-label="Control desk">
         <div class="ts-g"><div class="ts-c" id="gDesk"></div><small>Control desk</small></div>
         <div class="ts-g end"><div class="ts-c" id="gDeskLeave"></div><small>Leave</small></div>
+      </div>
+      <div class="ts-selected" id="gSelected" role="group" aria-label="Selected part" hidden>
+        <span id="selectionName"></span><span id="selectionCount"></span>
+        <button type="button" id="bInspectSelected" title="Inspect the selected part (I)">Inspect</button>
+        <button type="button" id="bClearSelected" aria-label="Clear selection" title="Clear selection">✕</button>
       </div>
     </div>
   </header>
@@ -1759,7 +1772,7 @@
       <div class="head-row">
         <div class="tabs" role="tablist">
           <button type="button" role="tab" id="tMachine" aria-selected="true" aria-controls="inspBody">Machine</button>
-          <button type="button" role="tab" id="tPart" aria-selected="false" aria-controls="inspBody">Part</button>
+          <button type="button" role="tab" id="tPart" aria-selected="false" aria-controls="inspBody">Details</button>
           <button type="button" role="tab" id="tSources" aria-selected="false" aria-controls="inspBody">Sources</button>
           <button type="button" role="tab" id="tHelp" aria-selected="false" aria-controls="inspBody">Controls</button>
         </div>
@@ -3712,7 +3725,7 @@ function inspect(id, focusPiece = null, o = {}) {
     if (panels.tree && !stacked() && width < 1000) { panels.tree = false; iso.foldTree = true; applyPanels(); resize(); }
     // A tablet in landscape under 1100 px folds the inspector too, so the sheets get their column beside the part.
     if (coarse && panels.insp && !stacked() && innerWidth < 1100 && innerWidth > innerHeight) { panels.insp = false; iso.foldInsp = true; applyPanels(); resize(); }
-    // The inspector starts folded away on a first visit: a part inspected, however it is reached, opens it for its Part tab.
+    // Inspecting opens the part’s details even if the inspector started folded.
     else if (!panels.insp && !stacked() && !(coarse && innerWidth < 1100 && innerWidth > innerHeight)) { panels.insp = true; applyPanels(); resize(); }
   }
   if (hidden.has(id)) hidden.delete(id);
@@ -3736,12 +3749,12 @@ function inspect(id, focusPiece = null, o = {}) {
   updateIsoBar(); // the bar (back button, piece step) settles before the screens measure where it ends
   renderHud();
   frameIsolated(!focusPiece, MOVE.fly, MOVE.lift);
-  // Inspecting shows the part's Part tab: the part card only stands in for it when it is not beside the view.
+  // The part card stands in for Details when the inspector is not beside the view.
   if (entering && tab !== 'part') setTab('part', false);
   renderInspector();
   setHint();
   announceInspect();
-  // Stacked, Inspect may be pressed in the Part tab or the list below the view, so the view comes into sight: with the
+  // Stacked, Inspect may be pressed in the Details tab or the list below the view, so the view comes into sight: with the
   // top of the page when both fit, else at the top of the window.
   if (entering && stacked()) {
     const v = $('card').getBoundingClientRect();
@@ -3749,7 +3762,7 @@ function inspect(id, focusPiece = null, o = {}) {
   }
   if (fromTree) focusPartName();
 }
-// The part's name: in the Part tab when it is beside the view, otherwise on the part card.
+// The part's name: in the Details tab when it is beside the view, otherwise on the part card.
 function focusPartName() {
   const t = partBeside() ? $('inspBody').querySelector('h2') : HUD.els.get('part')?.querySelector('.ttl');
   t?.focus();
@@ -3761,7 +3774,7 @@ function endInspect() {
   if (!iso.part) return;
   const now = performance.now() / 1000;
   const slow = !reduceMotion.matches;
-  // Focus on a sheet or the inspect bar would be lost as they go, so it returns to the part's row in the list.
+  // When the inspect controls disappear, return keyboard focus to the selection chip.
   const lost = hud.contains(document.activeElement) || $('isobar').contains(document.activeElement) || $('rowPart').contains(document.activeElement);
   endShow(false);
   const mine = piecesOf.get(iso.part) || [];
@@ -3791,7 +3804,7 @@ function endInspect() {
   updateIsoBar();
   renderInspector();
   setHint();
-  if (lost || document.activeElement === document.body) focusTreeRow(state.select);
+  if (lost || document.activeElement === document.body) $('bInspectSelected').focus({ preventScroll: true });
   announce('Back to the assembly.');
   dirty = true;
 }
@@ -3829,8 +3842,8 @@ function stepPiece(d) {
 function updateIsoBar() {
   const bar = $('isobar'), was = bar.classList.contains('on');
   bar.classList.toggle('on', !!iso.part);
-  // A part inspected brings the toolstrip's Part page; leaving it gives the page back.
-  if (was !== !!iso.part) syncStrip(iso.part ? 'part' : 'explore');
+  // A part inspected brings the toolstrip's Inspecting page; leaving it gives the page back.
+  if (was !== !!iso.part) syncStrip(iso.part ? 'part' : undefined);
   if (!iso.part) { setMore(false); placeBar(); return; }
   const compact = dockLayout() && stacked();
   const p = partById.get(iso.part);
@@ -3894,7 +3907,7 @@ function updateIsoBar() {
 // and its state; a wider view puts them back in the bar's own order.
 const BAR_ORDER = ['bBack', 'isoLabel', 'crumbs', 'pieceStep', 'bApart', 'bJoint', 'apartWrap', 'stepStep', 'bTurn', 'bContext', 'bScreens', 'tourStep', 'bLink', 'bMore', 'isoMore', 'bDone', 'stepCap'];
 const MORE_ORDER = ['bApart', 'bJoint', 'apartWrap', 'stepStep', 'bTurn', 'bContext', 'bScreens', 'bLink', 'pieceStep', 'bBack'];
-// On a wide window the same controls stand on the toolstrip's Part page, each in its group; the bar over the view
+// On a wide window the same controls stand on the toolstrip's Inspecting page, each in its group; the bar over the view
 // keeps the caption of the step shown.
 const STRIP_HOME = { bBack: 'gPiece', isoLabel: 'gPiece', crumbs: 'gPiece', pieceStep: 'gPiece', bApart: 'gApart', bJoint: 'gApart', apartWrap: 'gApart', stepStep: 'gApart', bTurn: 'gApart',
   bContext: 'gShow', bScreens: 'gShow', tourStep: 'gTour', bLink: 'gShare', bDone: 'gLeave' };
@@ -4681,7 +4694,7 @@ for (const g of document.querySelectorAll('.grip')) {
 
 // ---------- Information screens beside the part ----------
 // While inspecting, sub-part sheets sit in a column on the right of the view: the part card first when the
-// inspector's Part tab is not beside the view, then the sheets you kept, in the order you kept them, then the preview
+// inspector's Details tab is not beside the view, then the sheets you kept, in the order you kept them, then the preview
 // of the sub-part the pointer stopped on. A view under 660 px has a bottom sheet instead, one card at a time.
 // The room for either is kept even while it is empty, so nothing in it moves the camera, and nothing in it folds or
 // closes by itself: the column scrolls. A sheet dragged out of the column floats where it is dropped.
@@ -4699,7 +4712,7 @@ const SCREEN_W = 280, COLUMN_MIN = 660, DOCK_H = 0.30;
 const stackedMQ = matchMedia('(max-width: 960px)');
 const stacked = () => stackedMQ.matches;
 const dockLayout = () => width < COLUMN_MIN + SCREEN_W * (uiScale - 1);
-// The Part tab is beside the view unless the inspector is folded, or stacked under the view; then the part card shows.
+// The Details tab is beside the view unless the inspector is folded, or stacked under the view; then the part card shows.
 const partBeside = () => !stacked() && panels.insp;
 const partCardDue = () => !!iso.part && HUD.on && !partBeside();
 // Sheets belong to sub-parts, not pieces: the former kept on one coil is the same sheet on all eight.
@@ -4980,7 +4993,7 @@ function tagKey(host) {
   used.forEach((k, i) => key.append(i ? ' · ' : '', el('b', k, k), ` ${TAGS[k]}`));
   host.append(key);
 }
-// The glossary (GLOSSARY in parts.js). On each page (the Machine tab, a Part tab, a part card, a sheet) the first use of
+// The glossary (GLOSSARY in parts.js). On each page (the Machine tab, the Details tab, a part card, a sheet) the first use of
 // a word in its text is underlined: a click, or Tab onto it, opens the definition under the paragraph or table row it
 // is in. Headings, bars, buttons, links and tags are not searched. Pages are rebuilt often, so which definitions were
 // opened by a click is remembered by page and word.
@@ -5092,8 +5105,8 @@ function sheetScreen(x, live) {
   lights(sc, () => { state.hotSheet = x; sc.classList.add('hot'); refreshLit(); }, () => { if (sameSheet(state.hotSheet, x)) state.hotSheet = null; sc.classList.remove('hot'); refreshLit(); });
   return sc;
 }
-// The part card: what the Part tab shows, built by the same function, first in the column or the dock whenever the
-// Part tab is not beside the view. It folds like a sheet, and has no ×.
+// The part card: what the Details tab shows, built by the same function, first in the column or the dock whenever the
+// Details tab is not beside the view. It folds like a sheet, and has no ×.
 function partCard() {
   const p = partById.get(iso.part);
   const list = piecesOf.get(p.id) || [];
@@ -5812,18 +5825,14 @@ $('sheetList').addEventListener('scroll', () => { ov.dirty = true; }, { passive:
 
 // ---------- Selection ----------
 function select(id, o = {}) {
-  const keepMachine = o.machine && tab === 'machine' && !desk.on && !iso.part;
+  if (iso.part && id !== iso.part) endInspect();
   state.select = id;
   touched = true;
-  if (iso.part && id && id !== iso.part) inspect(id);
   refreshLit();
-  // A part opens its Part tab; clearing the selection goes back to the Machine tab. At the control desk the Machine
-  // tab stays, as the monitor is there.
-  // A part selected opens the inspector on a wide window, where it starts folded away: its Part tab is what a click asks for.
+  // Only the inspector follows selection. The desk keeps its monitor in the Machine tab.
   if (id && !panels.insp && !stacked() && !iso.part && !quiz.on && !desk.on && !guide.on) setPanel('insp', true);
-  if (!desk.on) setTab(o.machine ? 'machine' : id ? 'part' : 'machine', !keepMachine);
-  if (!desk.on && !quiz.on && !guide.on) syncStrip(id ? 'part' : 'explore');
-  if (keepMachine) updateWheel(); else renderInspector();
+  if (!desk.on) setTab(id ? 'part' : 'machine', false);
+  renderInspector();
   const row = id && document.querySelector(`.ti[data-part="${id}"]`);
   if (row && o.scroll !== false) revealRow(row);
   // Tab into the list lands on the selected part.
@@ -6073,12 +6082,6 @@ function setTreeCursor(li) {
   li.tabIndex = 0;
 }
 const shownItems = () => [...$('tree').querySelectorAll('[role="treeitem"]')].filter((li) => li.getClientRects().length);
-function focusTreeRow(id) {
-  const row = (id && document.querySelector(`.ti[data-part="${id}"]`)) || treeCursor;
-  if (!row || !row.getClientRects().length) return;
-  setTreeCursor(row);
-  row.focus({ preventScroll: true });
-}
 function openGroup(sec, open) {
   sec.classList.toggle('closed', !open);
   sec.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -6323,7 +6326,7 @@ function showSource(id) {
     li.scrollIntoView({ block: 'center' });
     li.classList.remove('flash'); void li.offsetWidth; li.classList.add('flash');
     if (fromTab !== 'sources') {
-      const back = el('button', 'src-back', `← Back to the ${fromTab === 'part' ? 'part' : fromTab} tab`);
+      const back = el('button', 'src-back', `← Back to the ${fromTab === 'part' ? 'Details' : fromTab} tab`);
       back.type = 'button';
       back.addEventListener('click', () => {
         setTab(fromTab);
@@ -6380,21 +6383,17 @@ function pieceLine(p) {
   const list = piecesOf.get(p.id) || [];
   return iso.part === p.id && iso.focus ? `${iso.focus.userData.label} · ${list.indexOf(iso.focus) + 1} of ${list.length}` : null;
 }
-// The component, in one order wherever it shows: the Part tab, or the part card in the sheet column or the dock (`card`,
+// The component, in one order wherever it shows: the Details tab, or the part card in the sheet column or the dock (`card`,
 // whose bar names it). Its actions, then name and piece, what it is drawn from, what it does, what it connects to,
 // what it is made of, its pieces, its specification, practical notes, its sources, and one key to the tags used.
 function renderPart(box, card) {
   const p = partById.get(card ? iso.part : state.select);
   const here = iso.part === p.id;
   if (!card) {
-    // The actions come first, so "Inspect on its own" is the first control in the tab.
     const acts = el('div', 'actions');
     if (here) {
-      const done = action('Done', endInspect, true, 'act:done');
-      done.title = 'Back to the assembly (Esc)';
-      acts.append(done);
-      if (comesApart.has(p.id)) acts.append(action(iso.apart ? 'Put back together' : 'Take apart', () => setApart(!iso.apart), false, 'act:apart'));
-    } else acts.append(action('Inspect on its own', () => inspect(p.id), true, 'act:inspect'), action('Zoom to it', () => zoomToPart(p.id), false, 'act:zoom'));
+      if (iso.apart) acts.append(action('Put back together', () => setApart(false), true, 'act:apart'));
+    } else acts.append(action('Inspect', () => inspect(p.id), true, 'act:inspect'), action('Zoom to it', () => zoomToPart(p.id), false, 'act:zoom'));
     acts.append(action(hidden.has(p.id) ? 'Show' : 'Hide', () => { setHidden([p.id], !hidden.has(p.id)); renderInspector(); }, false, 'act:hide'));
     box.append(acts);
     const grp = DOCS.GROUPS.find((g) => g.id === p.group);
@@ -6724,17 +6723,25 @@ function machinePlan() {
   const svg = svgEl('svg', { viewBox: '-78 -51 156 102', 'aria-label': 'Assembled machine, plan view' });
   const key = el('div', 'plan-key');
   const bindings = new Map();
+  // Opening Details replaces the plan. Let a second pointer click on the same mark inspect it first.
+  let pendingPick;
+  function planPick(e) {
+    clearTimeout(pendingPick);
+    const mark = e.currentTarget, id = mark.dataset.part;
+    if (e.detail > 1) inspect(id);
+    else if (!e.detail) select(id);
+    else pendingPick = setTimeout(() => { if (mark.isConnected) select(id); }, 350);
+  }
   const bind = (id) => {
     if (bindings.has(id)) return bindings.get(id);
     const name = partById.get(id).name;
     const g = svgEl('g', { tabindex: '0', role: 'button', 'aria-label': name, 'data-part': id, 'data-fk': 'plan:' + id }, 'plan-part');
     const title = svgEl('title', {}); title.textContent = name; g.append(title);
-    g.addEventListener('click', () => select(id, { machine: true }));
-    g.addEventListener('dblclick', () => inspect(id));
-    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); select(id, { machine: true }); } });
+    g.addEventListener('click', planPick);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); select(id); } });
     lights(g, () => { state.legendHot = id; refreshLit(); }, () => { state.legendHot = null; refreshLit(); });
-    const b = action(name, () => select(id, { machine: true }), false, 'plan-key:' + id);
-    b.dataset.part = id; b.addEventListener('dblclick', () => inspect(id));
+    const b = action(name, planPick, false, 'plan-key:' + id);
+    b.dataset.part = id;
     lights(b, () => { state.legendHot = id; refreshLit(); }, () => { state.legendHot = null; refreshLit(); });
     key.append(b);
     // On touch the labelled key provides roomy targets for the small, overlapping traces.
@@ -6841,12 +6848,12 @@ function renderOverview(box) {
     'Drag to turn the model like a turntable; right-drag or shift-drag to slide; scroll to zoom where the pointer is. The view strip at the top left of the view (a column at the view’s left on a phone) lets you zoom, go back to the home view (the whole machine), look from a side (Views, or a click on an axis of the triad), make left-drag pan, turn about the machine’s own axis (the middle of the ring under it, wherever you pan) or about the middle of the view. The toolstrip’s panels button folds the side panels.',
     'The assembly list starts folded away, so the machine has the room: Find a part on the toolstrip, or /, opens it to search.',
     'Click a part, here or in the assembly list, to read what it is, its numbers and where they come from.',
-    'Double-click a part, or press “Inspect on its own”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
+    'Double-click a part, or press “Inspect”: it lifts out of the machine, the rest turns to a ghost, and the view frames it. “Take apart” then separates it into its sub-parts (flanges, gaskets, bolts, windings), with a slider for the spacing.',
     'Explode separates every component at once; the Spread slider beside it sets how far.',
     'The search box above the list finds names, sizes and seals (M8, o-ring) and takes plain words: “the gasket between the right and back quarters” finds that gasket. The square on a button (Explode, Ghost, Sheets) is filled while it is on.',
     '“Where does it go?” lifts a part out above the machine: click where it goes. Five make a round, scored on first tries, and a round can be shared as a link. On a tablet, hold a finger still for a loupe that shows the view under it at 3× and names what it is on.',
     'While inspecting, rest the pointer on a sub-part to preview its technical sheet (material, dimensions and sources) in the column beside the part. With every piece shown, a click picks a piece; with one piece shown, a click keeps the sheet and a second click closes it. Kept sheets stay in the column, which scrolls, until you close them. The arrows by “All”, or the Pieces table, step through the pieces one at a time.',
-    'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades and the Part tab (or the bar over the view on a phone) says where it is. Esc goes back to the view you had.',
+    'Show me (the frame button on a sheet or a Made of row, Z, or a double-click on a sub-part) brings one sub-part close up: the rest of the part fades and the Inspecting tab (or the bar over the view on a phone) says where it is. Esc goes back to the view you had.',
     'While you inspect a part, what it fits onto is drawn half solid, bolts and all. The table’s edges are named Front, Right, Back and Left for the quarters above them, printed on the table top, so you know which side you are looking from.',
     'Taken apart, a part steps through the order it comes off with the arrows by “All”: nuts, then bolts, then the flange, the gasket last. Each step says how, with the bolt size and spanner, and a ring of bolts or nuts is numbered on the heads in star order. Fitting runs back up the steps. On a gasket or a vessel joint flange, “Open this joint” does the same for the whole joint: nuts, bolts, the two quarters apart, then the gasket out, never to be reused.',
     'The dot next to each part, filled, half or hollow, says how far to trust its drawn shape and position.',
@@ -6924,19 +6931,19 @@ function renderHelp(box) {
       ['Click a piece (inspecting, every piece shown)', 'pick that piece'],
       ['Click a sub-part (inspecting, one piece shown)', 'keep its sheet; a click on a kept one shows its sheet again. × on the sheet, or its Made of row, closes it'],
       ['Click near a small part', 'a click that hits nothing picks the smallest part within 12 px'],
-      ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed; the Part tab (or the bar over the view on a phone) says where it is. Esc goes back'],
+      ['Double-click a sub-part (inspecting), or Show me on a sheet’s bar or a Made of row', 'Show me: frame it close up, the rest of the part dimmed; the Inspecting tab (or the bar over the view on a phone) says where it is. Esc goes back'],
       ['A callout on a part taken apart', 'preview its sheet; its number is the Made of row’s'],
-      ['Turn to see (Part tab)', 'offered when a part taken apart, or a joint opened, comes apart toward you: turns the view so its sub-parts lie across it'],
-      ['‹ Step n / N › (Part tab, taken apart)', 'step through the order it comes off: each step says how (size, spanner, star order) and its sub-parts light; “All” has every sub-part off. Fitting runs back up the steps'],
-      ['Open this joint (Part tab, a gasket or a joint flange)', 'the joint’s nuts, bolts, flanges and gasket in four steps, the gasket last; Close the joint, or Esc, puts it back'],
+      ['Turn to see (Inspecting tab)', 'offered when a part taken apart, or a joint opened, comes apart toward you: turns the view so its sub-parts lie across it'],
+      ['‹ Step n / N › (Inspecting tab, taken apart)', 'step through the order it comes off: each step says how (size, spanner, star order) and its sub-parts light; “All” has every sub-part off. Fitting runs back up the steps'],
+      ['Open this joint (Inspecting tab, a gasket or a joint flange)', 'the joint’s nuts, bolts, flanges and gasket in four steps, the gasket last; Close the joint, or Esc, puts it back'],
       ['Rest the pointer on one bolt or nut of a ring (inspecting)', 'name it: “Bolt 7 of 20 · star 3”, its place round the ring from the top and its turn in the star order; a click still keeps the ring’s sheet'],
       ['Show me on a ring of bolts', 'one sample bolt has its length, grip and width across flats drawn on'],
-      ['Copy link on the Part tab', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
+      ['Copy link on the Inspecting tab', 'copy a link to this part, piece and its kept sheets; the browser’s Back returns to the part before'],
       ['Drag a sheet or the preview out of the column', 'it floats where you drop it, kept; drop it back on the column to return it'],
       ['Chevron on a sheet’s bar', 'fold it to its bar, or open it again'],
       ['Hover a sheet', 'light its sub-part in the model'],
-      ['Click a connected part', 'inspect it at the piece nearest this one; ← on the Part tab goes back'],
-      ['Take the tour (Learn tab)', 'inspect the parts in the order of a run; Next › on the Part tab goes on, Done leaves'],
+      ['Click a connected part', 'inspect it at the piece nearest this one; ← on the Inspecting tab goes back'],
+      ['Take the tour (Learn tab)', 'inspect the parts in the order of a run; Next › on the Inspecting tab goes on, Done leaves'],
       ['Control desk (Run tab)', 'run the machine with a stand-in for its own software: INITIALISE, pump down and let in gas, GLOW ON, then the TF and PF coils; SEQUENCE runs a program, and a click on the emergency stop on the table trips it. Esc or Done leaves'],
       ['Where does it go? (Learn tab)', 'a part is lifted out: click its place on the model, or pick in the bar; five make a round, scored on first tries. Esc or Done ends it'],
       ['Search box (assembly list)', 'names, sizes (M8) and seals (o-ring), in plain words; the best matches show, and a line says which words found nothing'],
@@ -6950,7 +6957,7 @@ function renderHelp(box) {
       ['Tap', 'select'],
       ['Double-tap', 'inspect'],
       ['Tap (inspecting)', 'with every piece shown, pick a piece; with one, preview a sub-part’s sheet, and Keep keeps it. A tap picks the smallest part within 24 px'],
-      ['Show me (on a sheet’s bar or a Made of row)', 'frame the sub-part close up; the links on the Part tab (or the bar over the view on a phone) go back'],
+      ['Show me (on a sheet’s bar or a Made of row)', 'frame the sub-part close up; the links on the Inspecting tab (or the bar over the view on a phone) go back'],
       ['Hold a finger still', 'a loupe shows the view under it at 3×, with the name of what it is on; slide to move it, lift to act as a tap there (preview the sheet, select, or answer). Lifting over nothing keeps the preview'],
     ]],
     ['Made of rows', [
@@ -6991,7 +6998,7 @@ function renderHelp(box) {
       ['Backspace', 'back to the part you came from by a link'],
       ['F', 'fold or unfold the side panels'],
       ['H', 'hide the selected part'],
-      ['Esc', 'step back: the preview, Show me, the joint opened, the step shown, one piece, the part, then the selection. Kept sheets stay. On the tour it stops at every piece; Done leaves'],
+      ['Esc', 'step back: the preview, Show me, the joint opened, the step shown, one piece, the part (as Done), then the selection. Kept sheets stay. On the tour it stops at every piece; Done leaves'],
     ]],
   ];
   for (const [title, rows] of groups) {
@@ -7115,32 +7122,37 @@ $('bLink').addEventListener('click', copyLink);
 $('bLinkHere').addEventListener('click', copyLink);
 
 // ---------- The toolstrip ----------
-// Which page of the strip shows. Explore and Learn are the reader's choice; Part is there while a part is inspected and
-// Run while the desk is open, on a wide window (where the panels stack their controls are on the bar over the view), so
-// a page that has gone falls back to Explore. A tab whose mode is on is marked, whichever page shows.
+// Selection belongs to every assembly page. Only inspection opens Inspecting. The phone keeps its controls
+// over the model. A page whose mode has ended falls back to Explore.
 function syncStrip(to) {
   const wide = !stacked(), top = $('strip');
   if (to) strip.tab = to;
-  if ((strip.tab === 'part' && !((iso.part || state.select) && wide)) || (strip.tab === 'run' && !(desk.on && wide))) strip.tab = 'explore';
+  if ((strip.tab === 'part' && !iso.part) || (strip.tab === 'run' && !(desk.on && wide))) strip.tab = 'explore';
   top.dataset.tab = strip.tab;
   const live = { explore: false, part: !!iso.part, learn: quiz.on || guide.on, run: desk.on };
+  const tp = $('tsPart');
+  tp.setAttribute('aria-controls', wide ? 'rowPart' : 'isobar');
   for (const b of top.querySelectorAll('.ts-tabs button')) {
     b.setAttribute('aria-pressed', b.dataset.tab === strip.tab ? 'true' : 'false');
     b.setAttribute('aria-selected', String(b.dataset.tab === strip.tab));
-    const page = $(b.getAttribute('aria-controls'));
+    const page = b === tp ? $('rowPart') : $(b.getAttribute('aria-controls'));
     page.hidden = b.dataset.tab !== strip.tab;
     page.setAttribute('role', 'tabpanel');
     page.setAttribute('aria-labelledby', b.id);
     b.classList.toggle('live', live[b.dataset.tab]);
   }
-  const sel = iso.part || state.select, tp = $('tsPart'), name = sel ? partById.get(sel).name : '';
-  tp.hidden = !sel;
-  tp.setAttribute('aria-disabled', sel ? 'false' : 'true');
-  $('rowPart').dataset.inspected = String(!!iso.part);
-  $('gSelected').hidden = !sel || !!iso.part;
-  if ($('tsPartName').textContent !== name) $('tsPartName').textContent = name;
-  $('tsPartName').title = name; // Keep the full name available when the tab abbreviates it.
-  tp.title = iso.part ? `The tools of the part inspected: ${name}` : sel ? `Inspect ${name} on its own (I, or a double-click on it)` : 'Select a part first: click it on the model, in the wheel or in the list';
+  const part = partById.get(state.select);
+  const name = iso.part ? partById.get(iso.part).name : '';
+  tp.hidden = !iso.part;
+  tp.title = name ? `Inspecting · ${name}` : '';
+  tp.setAttribute('aria-label', tp.title || 'Inspecting');
+  $('tsPartName').textContent = name;
+  $('gSelected').hidden = !part || !!iso.part;
+  if (part && !iso.part) {
+    $('selectionName').textContent = part.name;
+    $('selectionCount').textContent = `×${part.count}`;
+    $('bInspectSelected').setAttribute('aria-label', `Inspect ${part.name}`);
+  }
   setPressed('bWheel', !panels.tree);
   setPressed('bList', panels.tree);
   setPressed('bTour', iso.tour !== null);
@@ -7151,9 +7163,11 @@ $('strip').querySelector('.ts-tabs').addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   const t = b.dataset.tab;
-  if (t === 'part') { if (iso.part) syncStrip('part'); else if (state.select) inspect(state.select); }
-  else if (t === 'run') { if (desk.on) syncStrip('run'); else startDesk(); }
-  else syncStrip(t);
+  if (t === 'run') { if (desk.on) syncStrip('run'); else startDesk(); }
+  else {
+    syncStrip(t);
+    if (t === 'part' && stacked()) $('isobar').scrollIntoView({ block: 'nearest' });
+  }
 });
 // A step of the guided analysis whose control is on another page of the strip opens that page, and the theme menu for
 // the themes.
@@ -7163,7 +7177,14 @@ function stripShow(e) {
   const pg = isEl && e.closest('.ts-page');
   if (pg && pg.dataset.tab !== strip.tab) syncStrip(pg.dataset.tab);
 }
-$('bInspectSelected').addEventListener('click', () => inspect(state.select));
+$('bInspectSelected').addEventListener('click', () => {
+  inspect(state.select);
+  $('tsPart').focus({ preventScroll: true });
+});
+$('bClearSelected').addEventListener('click', () => {
+  select(null);
+  $('strip').querySelector('.ts-tabs [aria-selected="true"]').focus({ preventScroll: true });
+});
 $('strip').querySelector('.ts-tabs').addEventListener('keydown', (e) => {
   const tabs = [...e.currentTarget.querySelectorAll('button')].filter((b) => !b.hidden);
   const i = tabs.indexOf(document.activeElement);
@@ -7612,7 +7633,7 @@ function updateReadout() {
 // With every piece of a part shown, a click picks a piece; with one piece shown, it keeps a sheet.
 const allShown = () => !!iso.part && !iso.focus && (piecesOf.get(iso.part) || []).length > 1;
 // While inspecting, the hint says what the pointer does now; outside, how to move and how to inspect.
-const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : desk.on ? 'Work the desk below the view · tap the emergency stop on the table to trip it' : iso.show ? 'Show me · links on the Part tab (bar over the view on a phone) go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
+const HINT = () => (coarse ? (quiz.on ? 'Tap where the lifted part goes, or pick in the bar' : desk.on ? 'Work the desk below the view · tap the emergency stop on the table to trip it' : iso.show ? 'Show me · links on the Inspecting tab (bar over the view on a phone) go back' : iso.part ? (allShown() ? 'Tap a piece to pick it · hold for a loupe' : 'Tap a sub-part to preview its sheet · hold a finger still for a loupe') : 'Drag to turn · two fingers to pan and zoom · double-tap to inspect')
   : iso.show ? 'Show me · drag to turn round it · Esc goes back'
   : iso.joint ? 'Step through the joint with ‹ › · point at a bolt to name it · Esc closes the joint'
   : quiz.on ? 'Click where the lifted part goes, or pick in the bar · drag to turn · Esc ends the questions'
@@ -7934,7 +7955,9 @@ function setHover(mesh, inst = null) {
 
 window.addEventListener('keydown', (e) => {
   const tag = (e.target && e.target.tagName) || '';
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const inspectEscape = iso.part && e.key === 'Escape' && e.target.type === 'range';
+  if (!inspectEscape && (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT')) return;
   // In the guide a key acts only when the step teaches it.
   if (guide.on && !gKeyOk(e)) return;
   // With single-letter keys off (Controls tab), only keys that are not characters act: arrows, Esc, Backspace.
@@ -7974,8 +7997,8 @@ window.addEventListener('keydown', (e) => {
   else if ((k === ',' || k === '.') && iso.part) stepPiece(k === '.' ? 1 : -1);
   else if (k === 'z' && showCandidate()) { const c = showCandidate(); showMe(c.part, c.sub, c.pc); }
   // Esc steps back, one rung at a time: the preview, the Show me frame, the joint opened, the step shown, one piece to
-  // every piece, the part to the assembly, then the selection. It never closes a kept sheet. On the tour it stops at every piece: only Done leaves.
-  // On a phone, ⋯ open closes first, then a sheet pulled up comes down.
+  // every piece, the part to the assembly (what Done does), then the selection. It never closes a kept sheet. On the tour it
+  // stops at every piece: only Done leaves. On a phone, ⋯ open closes first, then a sheet pulled up comes down.
   else if (k === 'escape') {
     if (iso.step && iso.show) endShow(true);
     else if (!$('isoMore').hidden) setMore(false);
@@ -8011,7 +8034,7 @@ window.addEventListener('keydown', (e) => {
 // PF2 and moved up or down by the difference between them. It is a sketch of those demonstrations by a few rules, not
 // a simulation: the page models no plasma physics, and every threshold and rate here is assumed and says so.
 const DESK = {
-  tfmT: 0.348,                 // mT on the axis per ampere through all eight TF coils: μ0·400·I / (2π·0.23 m), as the Part tab derives it
+  tfmT: 0.348,                 // mT on the axis per ampere through all eight TF coils: μ0·400·I / (2π·0.23 m), as the Details tab derives it
   pfmT: 0.42,                  // mT per ampere through PF1 and PF2, assumed: 12 A gives the demonstrations' 5 mT (S4)
   Imax: 40,                    // A continuous per coil (S1, S4 slide 17)
   ramp: 40,                    // A per second: a coil is an inductor, so its current follows its setpoint
@@ -8739,7 +8762,7 @@ function gPart(id, pc, o = {}) {
     if (o.pins.length) revealSheet({ part: id, sub: o.pins.at(-1) }); else renderHud();
   }
   if (o.show) showMe(id, o.show, pc); else if (iso.show) endShow(false);
-  // A step that points into the Part tab opens it: the inspector unfolded, or else the part card open.
+  // A step that points into the Details tab opens it: the inspector unfolded, or else the part card open.
   if (o.tab) {
     if (!stacked() && !panels.insp) setPanel('insp', true);
     if (HUD.folded.delete('part')) renderHud();
@@ -8750,7 +8773,7 @@ function gPart(id, pc, o = {}) {
 function gTree() { if (!panels.tree && !stacked()) setPanel('tree', true); }
 function gType(v) { const s = $('search'); if (s.value === v) return; s.value = v; s.dispatchEvent(new Event('input', { bubbles: true })); }
 function gSlide(inp, v) { inp.value = v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); }
-// Where the Part tab's controls are: beside the view, else the part card in the column. Stacked, the Part tab under the
+// Where the Details tab's controls are: beside the view, else the part card in the column. Stacked, the Details tab under the
 // view, where the rows are whole (the bottom sheet shows them a few lines at a time).
 function gHost() {
   const card = HUD.els.get('part');
@@ -8792,29 +8815,30 @@ async function gLoupe(t, box) {
 const GUIDE_STEPS = [
   // 1. A viewport, bolt by bolt: where it is, how it comes off, how long a bolt is and where that number comes from.
   { ch: 0, id: 'first.find', q: 'Where is the left viewport, the window the webcam looks through?',
-    how: () => `It is lit and ringed on the model. ${tapOr('Double-tap', 'Double-click')} it, or select <b>Viewports</b> in the assembly list and press <b>Inspect on its own</b> (<kbd>I</kbd>).`,
+    how: () => `It is lit and ringed on the model. ${tapOr('Double-tap', 'Double-click')} it, or select <b>Viewports</b> on the model and press <b>Inspect</b> beside its name (<kbd>I</kbd>).`,
     look: 'The rest of the machine fades to a ghost and the viewport lifts out. The lateral port it bolts to stays half solid, with its bolts and nuts: that is where it mounts.',
+    zone: () => [state.select === 'viewport' ? $('gSelected') : $('card')],
     need: () => { gAssembly({ unhide: true }); gHome(); gLight(gLeft()); },
     act: () => inspect('viewport', gLeft()),
     done: () => iso.part === 'viewport',
-    target: () => (iso.part ? null : { box: boxOfPiece(gLeft()) }) },
+    target: () => (iso.part ? null : state.select === 'viewport' ? $('bInspectSelected') : { box: boxOfPiece(gLeft()) }) },
   { ch: 0, id: 'first.apart', q: 'How does it come off its port?',
-    how: () => `Turn on <b>Take apart</b> on the Part tab (bar over the view on a phone)${underMore()}, or press <kbd>T</kbd>.`,
+    how: () => `Turn on <b>Take apart</b> on the Inspecting tab (bar over the view on a phone)${underMore()}, or press <kbd>T</kbd>.`,
     look: 'Seen from three-quarters, the 16 nuts come off the back and the 16 bolts slide out of the flange; the flange and its copper gasket part along the port’s axis.',
     need: () => gPart('viewport', gLeft(), { view: [HOME.az, HOME.el] }),
     act: () => setApart(true),
     done: () => iso.apart,
     target: () => $('bApart') },
   { ch: 0, id: 'first.steps', q: 'What comes off first, and where did the bolts sit?',
-    how: 'Step to <b>Step 2 / 4</b> with the arrows beside <b>Step</b> on the Part tab (bar over the view on a phone).',
+    how: 'Step to <b>Step 2 / 4</b> with the arrows beside <b>Step</b> on the Inspecting tab (bar over the view on a phone).',
     look: '<b>Step 2 of 4 · 16 bolts</b>: “Draw out the 16 bolts, M8 × 50 mm (13 mm spanner).” The bolts are out, each head numbered in star order, and the flange’s 16 empty holes show where they sat.',
     need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
     act: () => setStep(2),
     done: () => iso.apart && iso.step === 2,
     target: () => $('bStepNext') },
   { ch: 0, id: 'first.showme', q: 'How long is one of these bolts?',
-    how: () => `Choose <b>Show me</b> on the <b>16 bolts</b> row: the frame button at the end of the row under <b>Made of</b>${partBeside() ? ' in the Part tab' : ''}. Or focus the row and press <kbd>Z</kbd>.`,
-    look: 'The camera closes in on one bolt and draws its sizes under the head: <b>M8 × 50 mm</b>, the <b>grip 41 mm</b> it spans, <b>13 mm across flats</b>. The Part tab (bar over the view on a phone) names it: Left quarter › Viewports › Left viewport (webcam) › 16 bolts.',
+    how: () => `Choose <b>Show me</b> on the <b>16 bolts</b> row: the frame button at the end of the row under <b>Made of</b>${partBeside() ? ' in the Details tab' : ''}. Or focus the row and press <kbd>Z</kbd>.`,
+    look: 'The camera closes in on one bolt and draws its sizes under the head: <b>M8 × 50 mm</b>, the <b>grip 41 mm</b> it spans, <b>13 mm across flats</b>. The Inspecting tab (bar over the view on a phone) names it: Left quarter › Viewports › Left viewport (webcam) › 16 bolts.',
     need: () => gPart('viewport', gLeft(), { apart: true, step: 2, tab: 'part', view: [HOME.az, HOME.el] }),
     act: () => showMe('viewport', '16 bolts', gLeft()),
     done: () => iso.show?.sub === '16 bolts',
@@ -8828,14 +8852,14 @@ const GUIDE_STEPS = [
     target: () => (isPinned(BOLTS) ? gSheet('16 bolts') : gRow('16 bolts')) },
   { ch: 0, id: 'first.source', below: true, q: 'Which source gives the Ø8.4 mm holes the bolts pass through?',
     how: 'On the bolts’ sheet, press the <b>S9</b> tag on the <b>Holes they pass</b> row. A tag works the same anywhere on the page.',
-    look: 'The Sources tab opens on <b>S9</b>, MBE-Komponenten’s ConFlat flange, gasket and tube table, with what was taken from it. Above it: <b>← Back to the part tab</b>.',
+    look: 'The Sources tab opens on <b>S9</b>, MBE-Komponenten’s ConFlat flange, gasket and tube table, with what was taken from it. Above it: <b>← Back to the Details tab</b>.',
     need: () => { gPart('viewport', gLeft(), { apart: true, step: 2, show: '16 bolts', pins: ['16 bolts'], tab: 'part', up: true, view: [HOME.az, HOME.el] }); },
     act: () => { const b = gTag('16 bolts', 'Holes', 'S9'); if (b) { b.focus({ preventScroll: true }); b.click(); } else showSource('S9'); },
     done: () => tab === 'sources',
     target: () => gTag('16 bolts', 'Holes', 'S9') },
   { ch: 0, id: 'first.back', below: true, q: 'Can you get back to the same piece?',
-    how: 'Press <b>← Back to the part tab</b> above S9.',
-    look: 'The left viewport’s Part tab is back, the bolts’ sheet still kept and Show me still on the bolt: nothing was lost on the way.',
+    how: 'Press <b>← Back to the Details tab</b> above S9.',
+    look: 'The left viewport’s Details tab is back, the bolts’ sheet still kept and Show me still on the bolt: nothing was lost on the way.',
     need: () => {
       gPart('viewport', gLeft(), { apart: true, step: 2, show: '16 bolts', pins: ['16 bolts'], view: [HOME.az, HOME.el] });
       if (tab !== 'sources' || !$('inspBody').querySelector('.src-back')) { const b = gTag('16 bolts', 'Holes', 'S9'); if (b) { b.focus({ preventScroll: true }); b.click(); } else showSource('S9'); }
@@ -8844,7 +8868,7 @@ const GUIDE_STEPS = [
     done: () => tab === 'part' && iso.part === 'viewport' && iso.focus === gLeft() && isPinned(BOLTS),
     target: () => $('inspBody').querySelector('.src-back') },
   { ch: 0, id: 'first.home', q: 'Can the viewport find its way home?',
-    how: 'Press <b>Done</b> on the Part tab (bar over the view on a phone). <kbd>Esc</kbd> steps back one level at a time instead: Show me, the step, the piece, then the part.',
+    how: 'Press <b>Done</b> on the Inspecting tab (bar over the view on a phone). <kbd>Esc</kbd> steps back one level at a time instead: Show me, the step, the piece, then the part.',
     look: 'In reverse: the bolts and nuts go back in, the viewport flies home onto its port while the camera returns, and the machine turns solid. The assembled SPM1 faces you again.',
     need: () => gPart('viewport', gLeft(), { apart: true, step: 2, pins: ['16 bolts'], tab: 'part', view: [HOME.az, HOME.el] }),
     act: () => endInspect(),
@@ -8942,15 +8966,15 @@ const GUIDE_STEPS = [
     target: () => gHit('Left viewport (webcam) · 16 bolts') },
   { ch: 2, id: 'find.select', q: 'What is the difference between selecting and inspecting?',
     zone: () => [gTreeZone(), $('card')],
-    how: () => `${tapOr('Tap', 'Click')} <b>Toroidal field coils</b> in the list or on the model: that selects. ${tapOr('Double-tap', 'Double-click')}, <b>Inspect on its own</b> or <kbd>I</kbd> inspects. From the keyboard the list is one Tab stop: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> selects, <kbd>Space</kbd> hides.`,
-    look: 'Selected, the coils take the selection colour and outline, the rest fades back and the Part tab describes them, but the machine stays whole. <b>Zoom to it</b> frames them without lifting them out.',
+    how: () => `${tapOr('Tap', 'Click')} <b>Toroidal field coils</b> in the list or on the model: that selects. ${tapOr('Double-tap', 'Double-click')}, <b>Inspect</b> or <kbd>I</kbd> inspects. From the keyboard the list is one Tab stop: <kbd>↑</kbd> <kbd>↓</kbd> move, <kbd>Enter</kbd> selects, <kbd>Space</kbd> hides.`,
+    look: 'The machine stays assembled. The toolstrip shows <b>Toroidal field coils ×8</b> and the inspector opens <b>Details</b>. <b>Zoom to it</b> frames them without lifting them out.',
     need: () => { gAssembly(); gTree(); gType(''); },
     act: () => select('tf'),
     done: () => state.select === 'tf' && !iso.part,
     target: () => document.querySelector('#tree .ti[data-part="tf"]') },
   { ch: 2, id: 'find.hide', below: true, q: 'Can you see past the table?',
     zone: gTreeZone,
-    how: 'Press the eye on the <b>Optical table</b> row in the list. <b>Hide</b> in the Part tab, or <kbd>H</kbd>, hides the selected part; the eye on a group hides the whole group.',
+    how: 'Press the eye on the <b>Optical table</b> row in the list. <b>Hide</b> in the Details tab, or <kbd>H</kbd>, hides the selected part; the eye on a group hides the whole group.',
     look: 'The table goes and its eye closes: the pump and supplies under it are in the open.',
     need: () => { gAssembly(); gTree(); gType(''); if (hidden.has('table')) setHidden(['table'], false); document.querySelector('#tree .ti[data-part="table"]')?.scrollIntoView({ block: 'nearest' }); },
     act: () => { setHidden(['table'], true); renderInspector(); },
@@ -9025,14 +9049,14 @@ const GUIDE_STEPS = [
 
   // 5. Inspect a connection.
   { ch: 4, id: 'connect.pieces', q: 'Which of the eight TF coils is which?',
-    how: () => `Step through the coils with the arrows beside <b>All</b> on the Part tab (bar over the view on a phone) (<kbd>,</kbd> <kbd>.</kbd>), or ${tapOr('tap', 'click')} one coil. A row of the <b>Pieces</b> table picks one too.`,
-    look: 'One coil stays solid and the other seven fade, and the Part tab (bar over the view on a phone) counts it: <b>1 / 8</b>. <b>All</b> brings every coil back.',
+    how: () => `Step through the coils with the arrows beside <b>All</b> on the Inspecting tab (bar over the view on a phone) (<kbd>,</kbd> <kbd>.</kbd>), or ${tapOr('tap', 'click')} one coil. A row of the <b>Pieces</b> table picks one too.`,
+    look: 'One coil stays solid and the other seven fade, and the Inspecting tab (bar over the view on a phone) counts it: <b>1 / 8</b>. <b>All</b> brings every coil back.',
     need: () => gPart('tf', null, { view: [HOME.az, HOME.el] }),
     act: () => stepPiece(1),
     done: () => iso.part === 'tf' && !!iso.focus,
     target: () => $('bNext') },
   { ch: 4, id: 'connect.ghost', q: 'Can you hide the rest of the machine?',
-    how: () => `Switch <b>Ghost</b> off on the Part tab (bar over the view on a phone)${underMore()}, or press <kbd>G</kbd>.`,
+    how: () => `Switch <b>Ghost</b> off on the Inspecting tab (bar over the view on a phone)${underMore()}, or press <kbd>G</kbd>.`,
     look: 'The see-through ghost of the machine goes; the parts the coil is joined to stay half solid. Switch it on again to see where the coil sits.',
     need: () => gPart('tf', gTf(), { view: [HOME.az, HOME.el], context: true, tab: 'part' }),
     base: () => ({ c: iso.context }),
@@ -9040,21 +9064,21 @@ const GUIDE_STEPS = [
     done: (b) => iso.context !== b.c,
     target: () => $('bContext') },
   { ch: 4, id: 'connect.attach', q: 'What is a TF coil wound onto?',
-    how: () => `Under <b>How it attaches</b>${partBeside() ? ' in the Part tab' : ''}, press <b>Vessel quarters</b>.`,
+    how: () => `Under <b>How it attaches</b>${partBeside() ? ' in the Details tab' : ''}, press <b>Vessel quarters</b>.`,
     look: 'It inspects the quarter nearest the coil. The sentence above the link says how the two are joined: each coil is wound onto a copper former mounted on an elbow, two per quarter (S4).',
     need: () => gPart('tf', gTf(), { view: [HOME.az, HOME.el], context: true, tab: 'part' }),
     act: () => followLink('vessel'),
     done: () => iso.part === 'vessel',
     target: () => gLink('vessel') },
   { ch: 4, id: 'connect.back', q: 'And back to the coil?',
-    how: 'Press <b>← Toroidal field coils</b> on the Part tab (bar over the view on a phone), or <kbd>Backspace</kbd>.',
+    how: 'Press <b>← Toroidal field coils</b> on the Inspecting tab (bar over the view on a phone), or <kbd>Backspace</kbd>.',
     look: 'Back on the coil you came from, at the same piece.',
     need: () => { if (!(iso.part === 'vessel' && iso.history.at(-1)?.part === 'tf')) { gPart('tf', gTf(), { view: [HOME.az, HOME.el], tab: 'part' }); followLink('vessel'); } },
     act: () => goBack(),
     done: () => iso.part === 'tf',
     target: () => $('bBack') },
   { ch: 4, id: 'connect.apart', q: 'How far apart do the viewport’s parts go?',
-    how: () => `Take the left viewport apart (<b>Take apart</b>, <kbd>T</kbd>), then drag its own <b>Spread</b> slider on the Part tab (bar over the view on a phone)${underMore()}, or press <kbd>[</kbd> <kbd>]</kbd>.`,
+    how: () => `Take the left viewport apart (<b>Take apart</b>, <kbd>T</kbd>), then drag its own <b>Spread</b> slider on the Inspecting tab (bar over the view on a phone)${underMore()}, or press <kbd>[</kbd> <kbd>]</kbd>.`,
     look: 'This spread is the part’s own, apart from the machine’s: the nuts, bolts, flange and gasket move further apart or closer along the port’s axis.',
     need: () => gPart('viewport', gLeft(), { apart: true, view: [HOME.az, HOME.el] }),
     base: () => ({ s: iso.apartSpread }),
@@ -9077,7 +9101,7 @@ const GUIDE_STEPS = [
     done: () => !!iso.joint,
     target: () => $('bJoint') },
   { ch: 4, id: 'connect.turn', q: 'The parts come apart toward you. What now?',
-    how: () => `You are looking along the joint’s axis, so its parts hide one another and <b>Turn to see</b> appears on the Part tab (bar over the view on a phone)${phoneBar() ? ' (⋯ carries a dot: it is under <b>⋯</b>)' : ''}. Press it.`,
+    how: () => `You are looking along the joint’s axis, so its parts hide one another and <b>Turn to see</b> appears on the Inspecting tab (bar over the view on a phone)${phoneBar() ? ' (⋯ carries a dot: it is under <b>⋯</b>)' : ''}. Press it.`,
     look: 'The view turns until the joint’s parts lie across it, a little short of square so it keeps some depth. The view never turns by itself.',
     need: () => {
       gPart('gaskets', gRB(), { joint: true, view: [HOME.az, HOME.el] });
@@ -9091,7 +9115,7 @@ const GUIDE_STEPS = [
 
   // 6. Read the evidence.
   { ch: 5, id: 'evidence.callouts', q: 'What is the viewport made of?',
-    how: () => `Read the numbered <b>Made of</b> rows${partBeside() ? ' in the Part tab' : ''}. Taken apart, the same numbers label the sub-parts on the model.`,
+    how: () => `Read the numbered <b>Made of</b> rows${partBeside() ? ' in the Details tab' : ''}. Taken apart, the same numbers label the sub-parts on the model.`,
     look: '1 Copper gasket, 2 Viewport flange, 3 Window glass, 4 16 bolts, 5 16 nuts. A callout and its row carry the same number, and pointing at a row lights its sub-part.',
     need: () => gPart('viewport', gLeft(), { apart: true, pins: [], tab: 'part', view: [HOME.az, HOME.el] }),
     target: () => gHost().querySelector('ul.subs') },
@@ -9144,14 +9168,14 @@ const GUIDE_STEPS = [
     done: (b) => (dockLayout() ? HUD.card !== b.card : HUD.pos.size === 0),
     target: () => (dockLayout() ? $('bCardPrev') : $('bTidy')) },
   { ch: 5, id: 'evidence.crumb', q: 'Where exactly is this nut?',
-    how: () => `Choose <b>Show me</b> on the <b>16 nuts</b> row (or focus it and press <kbd>Z</kbd>). The Part tab (bar over the view on a phone) then reads as a path; ${tapOr('tap', 'click')} <b>Viewports</b> in it to go back to the whole part.`,
+    how: () => `Choose <b>Show me</b> on the <b>16 nuts</b> row (or focus it and press <kbd>Z</kbd>). The Inspecting tab (bar over the view on a phone) then reads as a path; ${tapOr('tap', 'click')} <b>Viewports</b> in it to go back to the whole part.`,
     look: 'The path reads <b>Left quarter › Viewports › Left viewport (webcam) › 16 nuts</b>: the quarter it is mounted on, the part, the piece, the sub-part. Each step is a link.',
     need: () => gPart('viewport', gLeft(), { apart: true, tab: 'part', view: [HOME.az, HOME.el] }),
     act: () => showMe('viewport', '16 nuts', gLeft()),
     done: () => iso.show?.sub === '16 nuts',
     target: () => (iso.show ? $('crumbs') : gRow('16 nuts', true)) },
   { ch: 5, id: 'evidence.cite', below: true, q: 'Where does the gasket’s “single use” come from?',
-    how: 'On the <b>DN100CF copper gasket</b> sheet, press <b>S6</b> under <b>Sources</b> at its foot. <b>← Back to the part tab</b> returns you.',
+    how: 'On the <b>DN100CF copper gasket</b> sheet, press <b>S6</b> under <b>Sources</b> at its foot. <b>← Back to the Details tab</b> returns you.',
     look: 'S6 is the article on vacuum flanges: how CF and KF joints seal. The sheet’s rows carry S9, the CF standard table.',
     need: () => gPart('viewport', gLeft(), { apart: true, pins: ['Copper gasket'], tab: 'part', up: true, view: [HOME.az, HOME.el] }),
     act: () => { const b = gTag('Copper gasket', null, 'S6'); if (b) { b.focus({ preventScroll: true }); b.click(); } else showSource('S6'); },
@@ -9172,7 +9196,7 @@ const GUIDE_STEPS = [
 
   // 7. Use the result.
   { ch: 6, id: 'use.link', q: 'How do you send someone exactly this view?',
-    how: () => `Press the link icon on the Part tab (bar over the view on a phone)${phoneBar() ? ' (<b>Copy link</b>, under <b>⋯</b>)' : ''}. It copies a link to this part, piece, its kept sheets and the view: <code>${esc(linkOf().replace(/&view=[^&]*/, ''))}</code>. The guide never copies for you.`,
+    how: () => `Press the link icon on the Inspecting tab (bar over the view on a phone)${phoneBar() ? ' (<b>Copy link</b>, under <b>⋯</b>)' : ''}. It copies a link to this part, piece, its kept sheets and the view: <code>${esc(linkOf().replace(/&view=[^&]*/, ''))}</code>. The guide never copies for you.`,
     look: 'Opened in any browser, even a fresh one, the link shows the same inspection with the same sheets kept.',
     need: () => gPart('viewport', gLeft(), { apart: true, pins: ['16 bolts'], view: [HOME.az, HOME.el] }),
     base: () => ({ n: guide.copies }),
@@ -9183,7 +9207,7 @@ const GUIDE_STEPS = [
     look: 'Try it after Exit: inspect two parts, then press Back.' },
   { ch: 6, id: 'use.run', q: 'In what order is the machine used?',
     how: 'In the <b>Machine</b> tab, read <b>How a run goes</b>: pump down, let in a little gas, strike the glow, add the magnetic field. Each step names its parts; press one.',
-    look: 'The part is selected and lit on the model, with its Part tab.',
+    look: 'The part is selected and lit on the model, with its Details tab.',
     need: () => { gAssembly(); setTab('machine'); gRun()?.scrollIntoView({ block: 'nearest' }); },
     act: () => gRun()?.click(),
     done: () => !!state.select && !iso.part,

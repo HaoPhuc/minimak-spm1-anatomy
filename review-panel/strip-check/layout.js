@@ -43,7 +43,7 @@ A.inspect('viewport'); await settled();
 A.setFocus([...A.piecesOf.get('viewport')].sort((a, b) => b.userData.label.length - a.userData.label.length)[0]);
 $('bApart').click(); await settled(); await checkLayout('Part apart');
 const longest = [...SPM1_DOCS.PARTS].sort((a, b) => b.name.length - a.name.length)[0];
-A.select(longest.id); A.inspect(longest.id); await checkLayout('Longest part (' + longest.name + ')');
+A.inspect(longest.id); await checkLayout('Longest part (' + longest.name + ')');
 $('tsRun').click(); await settled(); await checkLayout('Run');
 if (innerWidth > 960) {
   $('bDeskDone').click(); await settled();

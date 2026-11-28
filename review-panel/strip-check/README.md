@@ -6,12 +6,12 @@ Run from the repository root, with output outside the repository:
 node review-panel/shot.mjs . review-panel/strip-check/checks.json <temporary-output-folder>
 ```
 
-The 83 scenarios run 10,489 assertions covering tabs, themes, search, panels, learning tools, first visits,
+The 83 scenarios run 10,502 assertions covering tabs, themes, search, panels, learning tools, first visits,
 keyboard and touch input, and layout in four themes at 1× and 2× text. Each
 assertion prints `PASS` or `FAIL`; JavaScript exceptions and console errors also
 fail the run. Output images are disposable.
 
-The piece and step scenario checks sourced figures for the front, left and back viewports, diagnostic and gauge ports, satellite coils and inner PF coils. Each of the three exits from a step close-up must restore its caption, highlight and camera. The sheet header must clear both captions. The 390 × 844 sheet scenario hit-tests every visible header and card-bar button with the drawer peeking and expanded, and uses a native Previous card tap to move from Kept 2 of 2 to Kept 1 of 2.
+The piece and step scenario checks sourced figures for the front, left and back viewports, diagnostic and gauge ports, satellite coils and inner PF coils. Resume step, Esc and the active Show me button restore the step’s caption, highlight and camera. Successive Esc presses then show all steps with the sheet kept, show every piece, return to the assembly with the part selected, and clear the selection. The tab and keyboard checks cover the selection chip, Inspect in Details, the Inspecting tab and Done in the inspect row. The sheet header must clear both captions. The 390 × 844 sheet scenario hit-tests every visible header and card-bar button with the drawer peeking and expanded, and uses a native Previous card tap to move from Kept 2 of 2 to Kept 1 of 2.
 
 Allow about fifteen to sixteen minutes for a full run. Run this suite, desk-check and
 guide-check one at a time, so renderer contention cannot affect the results.

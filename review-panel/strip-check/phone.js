@@ -3,9 +3,11 @@ ok('panels stack below view', R($('inspPanel')).top >= R($('card')).bottom && R(
 ok('phone hides status bar and start card', !shown($('statbar')) && !shown($('startCard')));
 for (const id of ['tsExplore', 'tsLearn', 'tsRun']) ok(id + ': reachable touch tab', shown($(id)) && R($(id)).height >= 40 && R($(id)).width >= 40);
 ok('Learn responds to a real touch tap', A.strip.tab === 'learn' && shown($('rowLearn')));
-A.inspect('tf'); await sleep(1800); scrollTo(0, 0);
+A.select('tf'); page('learn');
+ok('phone selection exposes Inspect and clear', shown($('bInspectSelected')) && shown($('bClearSelected')) && !shown($('tsPart')));
+$('bInspectSelected').click(); await sleep(1800); scrollTo(0, 0);
 ok('Part bar stays over view on phone', shown($('isobar')) && inside(R($('isobar')), R($('card'))) && $('isobar').contains($('bDone')) && !$('rowPart').contains($('bDone')));
-ok('selected Part tab is reachable', shown($('tsPart')) && R($('tsPart')).height >= 40);
+ok('Inspecting tab is active and reachable', A.strip.tab === 'part' && shown($('tsPart')) && R($('tsPart')).height >= 40);
 $('bMore').click();
 ok('Part bar buttons have 40px touch targets', [...$('isobar').querySelectorAll('button')].filter(shown).every(e=>R(e).height >= 40 && R(e).width >= 40));
 $('bDone').click(); await sleep(2400); $('tsRun').click(); await sleep(600); scrollTo(0, 0);
